@@ -26,6 +26,10 @@
     respuestas: [],           // cifra elegida por nota (id) o null
     romanos: [],              // grado elegido por nota ('V') o null
     romanos2: [],             // en un pivote, grado en la tonalidad nueva (la casilla se parte: romano = anterior, romano2 = nueva)
+    funciones: [],            // función tonal elegida por nota ('T' | 'S' | 'D') o null
+    modoFun: null,            // null (sin fila «Función») | 'dadas' (rellena, fija) | 'pedir' (la rellena el alumno)
+    bajos: [],                // melodía de soprano: bajo deducido de cada respuesta (nota o null)
+    bajosMal: null,           // melodía de soprano: tras corregir, qué bajos van en rojo
     marcas: {},               // modulación según el alumno: índice de nota → tonalidad que rige desde ahí
     avisoMod: null,           // null (sin modulación) | 'completo' (se muestra dónde y a qué tonalidad) | 'existe' (solo se avisa)
     tonalidadBloqueada: false,// la fila «Tonalidad» ya no se edita (modo completo, o marcas acertadas en un reintento)
@@ -41,8 +45,8 @@
     bloqueadas: [],           // por nota: {cifra:bool, romano:bool} — casillas acertadas que ya no se editan
     mostrarSolucion: false,   // si se enseñan las respuestas modelo y las explicaciones
     reintentos: true,         // si el alumno puede corregir solo los errores antes de ver la solución
-    modoEj: 'armonizar',      // 'armonizar' | 'cifrar' (Análisis: se muestra la realización modelo) | 'audicion'
-    realizacionCuando: 'siempre', // 'siempre' | 'alCorregir' | 'nunca'
+    modoEj: 'armonizar',      // 'armonizar' | 'cifrar' (Análisis: se muestra la realización modelo) | 'audicion' | 'soprano' (melodía dada; el bajo se deduce)
+    realizacionCuando: 'siempre', // 'siempre' (Análisis) | 'alCerrar' (Armonización y Audición: al mostrar la solución)
     verRealizacion: true,     // interruptor del alumno
     rotacion: 0,              // posición inicial de Furno (0, 1, 2)
     rigida: false,            // misma disposición en todos los acordes (solo en pruebas.html; el alumno ya no lo ve)
@@ -83,15 +87,19 @@
     estado.respuestas = new Array(n).fill(null);
     estado.romanos = new Array(n).fill(null);
     estado.romanos2 = new Array(n).fill(null);
-    estado.pedirRomano = Ejercicios.pideRomano(ej);
+    estado.pedirRomano = Ejercicios.pideRomano(ej) || Ejercicios.esSoprano(ej);   // en la melodía de soprano el grado es imprescindible: de él sale el bajo
+    estado.modoFun = Ejercicios.funciones(ej);
+    estado.funciones = estado.modoFun === 'dadas' ? ej.respuestas.map((_, i) => Ejercicios.funcionModelo(ej, i)) : new Array(n).fill(null);
+    estado.bajos = new Array(n).fill(null);
+    estado.bajosMal = null;
     estado.activa = 0;
-    estado.campo = Ejercicios.pideRomano(ej) ? 'romano' : 'cifra';
+    estado.campo = estado.modoFun === 'pedir' ? 'funcion' : estado.pedirRomano ? 'romano' : 'cifra';
     estado.corregido = false;
     estado.resultados = null;
     estado.resultadoMod = null;
     estado.intento = 0;
     estado.primerIntento = null;
-    estado.bloqueadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false }));
+    estado.bloqueadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false }));
     // Modulación: en modo 'completo' las marcas vienen dadas; en 'existe' las pone el alumno
     estado.avisoMod = Ejercicios.modula(ej) ? Ejercicios.aviso(ej) : null;
     estado.marcas = estado.avisoMod === 'completo' ? marcasModelo() : {};
@@ -103,7 +111,7 @@
     estado.sonando = null;
     estado.alSonar = sonarAcorde;
     Sonido.parar();
-    try { estado.propuesta = Reglas.proponer(ej); } catch (e) { estado.propuesta = null; }
+    try { estado.propuesta = Ejercicios.esSoprano(ej) ? Reglas.proponerSoprano(ej, { funciones: ej.funcionesNotas || null }) : Reglas.proponer(ej); } catch (e) { estado.propuesta = null; }
     // El desplegable del corpus y «Otro ejercicio» solo se ven en la práctica libre
     // (la dirección se abrió sin ejercicio). Un enlace a un ejercicio concreto, sea del
     // corpus (#ej=) o configurado (#e=), muestra solo ese ejercicio.
@@ -126,22 +134,30 @@
     $('#titulo').textContent = (ej.coleccion ? ej.coleccion + ' · ' : '') + (ej.titulo || '');
     const ton = '<b>' + Teoria.nombreTonalidad(ej.tonalidad) + '</b>';
     // Primero el grado de la fundamental, después el cifrado (orden en que se rellenan)
-    const que = estado.pedirRomano ? 'el grado sobre el que se construye la fundamental del acorde y después el cifrado' : 'el cifrado';
+    const conFun = estado.modoFun === 'pedir' ? 'la función tonal (T, S o D), ' : '';
+    const que = conFun + (estado.pedirRomano ? 'el grado sobre el que se construye la fundamental del acorde y después el cifrado' : 'el cifrado');
     const b = t => '<span class="ref-boton">' + t + '</span>';
     let html;
     if (estado.modoEj === 'cifrar') {
-      html = '<b>Análisis.</b> Observa la armonización a cuatro voces y, para cada acorde, indica ' + que + '. Tonalidad: ' + ton + '. '
+      html = '<b>Análisis.</b> Ves el bajo y su armonización a cuatro voces: para cada acorde indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la armonización que ves, y el ' + b('▶') + ' sobre cada acorde, solo ese acorde; '
         + b('▶ Mi cifrado') + ' hace sonar lo que llevas cifrado.';
     } else if (estado.modoEj === 'audicion') {
-      html = '<b>Audición.</b> Pulsa ' + b('▶ Tono inicial') + ' para situarte en la tonalidad (' + ton + ') y ' + b('▶ Escuchar propuesta') + ' para oír la armonización que has de reconocer, '
-        + 'o el ' + b('▶') + ' sobre cada acorde para oírlo uno a uno. Para cada nota del bajo indica, de lo que suena, ' + que + '. '
-        + 'A medida que cifres verás tu propia realización, y ' + b('▶ Mi cifrado') + ' la hace sonar para compararla.';
+      const conBajo = Ejercicios.verBajo(ej);
+      html = '<b>Audición.</b> ' + (conBajo ? 'Ves el bajo, pero no la armonización: has de reconocerla de oído.' : 'No ves nada: solo oyes.') + ' Pulsa ' + b('▶ Tono inicial') + ' para situarte en la tonalidad (' + ton + ') y ' + b('▶ Escuchar propuesta') + ' para oír la armonización que has de reconocer, '
+        + 'o el ' + b('▶') + ' de cada acorde para oírlo uno a uno. Para cada acorde indica ' + que + '. '
+        + b('▶ Mi cifrado') + ' hace sonar lo que llevas cifrado, para compararlo. Al terminar verás ' + (conBajo ? 'la realización.' : 'el bajo y la realización.');
+    } else if (estado.modoEj === 'soprano') {
+      html = '<b>Melodía de soprano.</b> Ves la melodía: para cada nota indica ' + que + '; el bajo que corresponde aparece escrito en el pentagrama de fa. Tonalidad: ' + ton + '. '
+        + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la melodía (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
+        + b('▶ Mi cifrado') + ', tu armonización. Al terminar verás la realización a cuatro voces, con la melodía en la voz superior.';
     } else {
-      html = '<b>Armonización.</b> Para cada nota del bajo indica ' + que + '. Tonalidad: ' + ton + '. '
+      html = '<b>Armonización.</b> Ves solo el bajo: para cada nota indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar el bajo (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
-        + b('▶ Mi cifrado') + ', lo que llevas cifrado.';
+        + b('▶ Mi cifrado') + ', lo que llevas cifrado. Al terminar verás la realización a cuatro voces de tu cifrado.';
     }
+    if (estado.modoFun === 'dadas') html += ' La fila <b>Función</b> te da la función tonal de cada acorde (T tónica, S subdominante, D dominante): elige acordes que la cumplan.';
+    else if (estado.modoFun === 'pedir') html += ' En la fila <b>Función</b> indica primero la función tonal de cada acorde (T tónica, S subdominante, D dominante).';
     if (estado.avisoMod === 'completo') {
       const mods = Ejercicios.modulaciones(ej);
       html += ' <b>Modula</b> ' + mods.map(m => 'a <b>' + Teoria.nombreTonalidad(m.tonalidad) + '</b> desde la nota ' + (m.nota + 1)).join(' y ')
@@ -186,6 +202,22 @@
   const atajo = k => (k < 9 ? String(k + 1) : k === 9 ? '0' : '');
 
   function pintarPaletas() {
+    // Paleta de funciones tonales (solo si se piden): T = 1, S = 2, D = 3
+    const pf = $('#paleta-funciones');
+    pf.innerHTML = '';
+    $('#paleta-funciones-caja').hidden = estado.modoFun !== 'pedir';
+    if (estado.modoFun === 'pedir') {
+      Teoria.FUNCIONES.forEach((f, k) => {
+        const cont = document.createDocumentFragment();
+        const txt = document.createElement('span'); txt.className = 'tecla-romano-texto'; txt.textContent = f; cont.appendChild(txt);
+        const num = document.createElement('span'); num.className = 'tecla-num'; num.textContent = String(k + 1); cont.appendChild(num);
+        const b = tecla('tecla-fun', cont, Teoria.NOMBRE_FUNCION[f] + ' (tecla ' + (k + 1) + ')', () => responderFuncion(f));
+        b.dataset.funcion = f; b.dataset.atajo = String(k + 1);
+        b.setAttribute('aria-label', 'Función ' + Teoria.NOMBRE_FUNCION[f]);
+        pf.appendChild(b);
+      });
+      pf.appendChild(tecla('tecla-borrar', 'Borrar', 'Vaciar la casilla activa (Retroceso)', borrar));
+    }
     // Paleta de grados: el número pequeño es el del grado (I = 1 … VII = 7)
     const pr = $('#paleta-romanos');
     pr.innerHTML = '';
@@ -306,6 +338,40 @@
     }
   }
 
+  // Estado que la partitura necesita para la fila «Función»
+  function prepararFunciones() {
+    const ej = estado.ejercicio;
+    if (!estado.modoFun) { estado.filaFunciones = null; return; }
+    const celdas = estado.respuestas.map((_, i) => {
+      const c = { texto: estado.funciones[i] || '', clase: '', fija: false };
+      if (estado.modoFun === 'dadas') { c.clase = 'dada'; c.fija = true; }
+      else if (estado.corregido && estado.resultados) c.clase = estado.resultados[i].okFuncion ? 'bien' : 'mal';
+      else if (bloqueada(i, 'funcion')) c.clase = 'bien fija';
+      if (estado.corregido && estado.mostrarSolucion && !c.texto) c.texto = Ejercicios.funcionModelo(ej, i);
+      return c;
+    });
+    estado.filaFunciones = { visible: true, editable: estado.modoFun === 'pedir' && !estado.corregido, celdas };
+  }
+
+  // Melodía de soprano: el bajo que corresponde a cada respuesta (fundamental + cifra)
+  function prepararBajos() {
+    if (estado.modoEj !== 'soprano') { estado.vozDada = null; estado.bajos = []; return; }
+    estado.vozDada = 'soprano';
+    estado.bajos = Ejercicios.bajosDe(estado.ejercicio, estado.romanos, estado.respuestas);
+    estado.bajosMal = estado.corregido && estado.resultados ? estado.resultados.map(r => !r.ok) : null;
+  }
+  const melodia = () => Reglas.notasDe(estado.ejercicio);
+
+  function responderFuncion(f) {
+    if (estado.corregido || estado.modoFun !== 'pedir' || bloqueada(estado.activa, 'funcion')) return;
+    const i = estado.activa;
+    estado.campo = 'funcion';
+    estado.funciones[i] = f;
+    if (estado.tocadas) estado.tocadas[i].funcion = true;
+    avanzar();
+    pintar();
+  }
+
   function marcarTonalidad(t) {
     if (!tonalidadEditable()) return;
     const i = estado.activa;
@@ -317,12 +383,12 @@
     pintar();
   }
 
-  // ¿Puede verse ahora el pentagrama de sol?
-  function realizacionVisible() {
-    if (estado.realizacionCuando === 'nunca') return false;
-    if (estado.realizacionCuando === 'alCorregir' && !estado.corregido) return false;
-    return estado.verRealizacion;
-  }
+  // ¿Puede verse ahora el pentagrama de sol? En Análisis, siempre; en Armonización y
+  // Audición, cuando el ejercicio está cerrado (solución a la vista).
+  const puedeVerseRealizacion = () => estado.realizacionCuando === 'siempre' || estado.mostrarSolucion;
+  function realizacionVisible() { return puedeVerseRealizacion() && estado.verRealizacion; }
+  // ¿Se dibuja el pentagrama del bajo? En Audición, solo al cerrar el ejercicio.
+  const bajoVisible = () => Ejercicios.verBajo(estado.ejercicio) || estado.mostrarSolucion;
 
   // ¿La nota i tiene ya cifra y grado (o solo cifra, si no se pide el grado)?
   // En una nota marcada como cambio de tonalidad hacen falta los dos grados.
@@ -333,18 +399,20 @@
   const cifrasModelo = () => estado.ejercicio.respuestas.map((_, i) => Ejercicios.admisibles(estado.ejercicio, i)[0]);
 
   // Cifras que se dibujan en el pentagrama de sol: las modelo en Análisis; en
-  // Armonización y Audición, las del alumno, solo en las notas completas (grado y cifra).
+  // Armonización, Audición y Melodía de soprano, las del alumno, solo en las notas completas (grado y cifra).
   function cifrasParaRealizar() {
     if (estado.modoEj === 'cifrar') return cifrasModelo();
     return estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null));
   }
+  // ¿La nota está respondida del todo (también la función, si se pide)?
+  const notaRespondida = i => notaCompleta(i) && (estado.modoFun !== 'pedir' || !!estado.funciones[i]);
 
   // El bajo se dobla a la octava grave al sonar, para que destaque y se oigan bien las inversiones.
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];
 
   function calcularRealizacion() {
     if (!realizacionVisible()) { estado.realizacion = null; estado.realizacionMal = null; estado.paralelas = []; return; }
-    const r = Realizacion.realizar(estado.ejercicio, cifrasParaRealizar(), { modo: estado.rigida ? 'rigida' : 'auto', rotacion: estado.rotacion });
+    const r = Realizacion.realizar(estado.ejercicio, cifrasParaRealizar(), opcionesRealizacion());
     estado.realizacion = r.acordes;
     estado.paralelas = r.paralelas;
     estado.realizacionMal = (estado.modoEj !== 'cifrar' && estado.corregido && estado.resultados) ? estado.resultados.map(x => !x.okCifra) : null;
@@ -355,27 +423,30 @@
 
   function pintarBarraRealizacion() {
     // Controles de la realización visible: solo cuando puede verse ahora
-    const puedeVerse = !(estado.realizacionCuando === 'nunca' || (estado.realizacionCuando === 'alCorregir' && !estado.corregido));
+    const puedeVerse = puedeVerseRealizacion();
     $('#control-realizacion').hidden = !puedeVerse;
     $('#ver-realizacion').checked = estado.verRealizacion;
     $('#sonar').checked = estado.sonar;
     $('#btn-propuesta').hidden = !propuestaAudible();
     $('#btn-parar').hidden = !Sonido.enCurso();
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.classList.toggle('activo', Number(b.dataset.pos) === estado.rotacion));
-    $('#posicion-control').hidden = !estado.verRealizacion;
+    $('#posicion-control').hidden = !estado.verRealizacion || estado.modoEj === 'soprano';
     $('#realizacion-barra').classList.toggle('audicion', estado.modoEj === 'audicion');
   }
 
   function pintar() {
+    prepararBajos();
     calcularRealizacion();
     pintarBarraRealizacion();
     prepararModulacion();
+    prepararFunciones();
+    estado.ocultarBajo = !bajoVisible();
     Partitura.dibujar($('#partitura'), estado.ejercicio, estado, seleccionar);
     pintarPaletaTonalidades();
     ajustarCompacto();
     enfocarActiva();
     const n = estado.respuestas.length;
-    const hechas = estado.respuestas.filter((r, i) => notaCompleta(i)).length;
+    const hechas = estado.respuestas.filter((r, i) => notaRespondida(i)).length;
     // Tras corregir, el número de intento solo tiene sentido si el ejercicio sigue abierto (hay errores que corregir)
     const enCurso = estado.intento > 0 && !estado.mostrarSolucion;
     $('#progreso').textContent = hechas + ' de ' + n + ' notas completas' + (enCurso ? ' · intento ' + (estado.intento + 1) : '');
@@ -384,6 +455,7 @@
     document.querySelectorAll('.paleta-caja').forEach(p => p.classList.remove('destacada'));
     if (!estado.corregido) {
       const caja = estado.campo === 'tonalidad' && tonalidadEditable() ? '#paleta-tonalidades-caja'
+        : estado.campo === 'funcion' && estado.modoFun === 'pedir' ? '#paleta-funciones-caja'
         : (estado.campo === 'romano' || estado.campo === 'romano2') && estado.pedirRomano ? '#paleta-romanos-caja' : '#paleta-caja';
       $(caja).classList.add('destacada');
     }
@@ -421,16 +493,19 @@
   // Casillas de respuesta de la nota j en el ORDEN en que se rellenan: primero el grado
   // de la fundamental (los dos, en un pivote) y después el cifrado (así lo pidió Diego).
   // La fila «Tonalidad» no entra: es opcional.
-  const camposDe = j => (estado.pedirRomano ? (esDoble(j) ? ['romano', 'romano2', 'cifra'] : ['romano', 'cifra']) : ['cifra']);
+  // Si se pide la función tonal, va la primera (es el plan del que sale el acorde).
+  const conFuncion = () => estado.modoFun === 'pedir';
+  const camposDe = j => (conFuncion() ? ['funcion'] : []).concat(estado.pedirRomano ? (esDoble(j) ? ['romano', 'romano2', 'cifra'] : ['romano', 'cifra']) : ['cifra']);
   // Las mismas casillas en su orden VISUAL, de arriba abajo (para las flechas ↑ ↓)
-  const camposVisuales = j => (estado.pedirRomano ? (esDoble(j) ? ['cifra', 'romano', 'romano2'] : ['cifra', 'romano']) : ['cifra']);
-  const campoInicial = () => (estado.pedirRomano ? 'romano' : 'cifra');
-  const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : estado.romanos[j]);
+  const camposVisuales = j => (estado.pedirRomano ? (esDoble(j) ? ['cifra', 'romano', 'romano2'] : ['cifra', 'romano']) : ['cifra']).concat(conFuncion() ? ['funcion'] : []);
+  const campoInicial = () => (conFuncion() ? 'funcion' : estado.pedirRomano ? 'romano' : 'cifra');
+  const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : campo === 'funcion' ? estado.funciones[j] : estado.romanos[j]);
 
   function seleccionar(i, campo) {
     if (estado.corregido) return;
     campo = campo || campoInicial();
     if (campo === 'tonalidad') { if (!tonalidadEditable() || i === 0) return; }
+    else if (campo === 'funcion' && !conFuncion()) return;
     else if (!camposDe(i).includes(campo)) campo = campoInicial();
     if (campo !== 'tonalidad' && bloqueada(i, campo)) {
       // Si la casilla pulsada está bloqueada, ir a otra editable de la misma nota
@@ -479,6 +554,12 @@
     const ej = estado.ejercicio;
     const notas = Reglas.notasDe(ej);
     try {
+      if (estado.modoEj === 'soprano') {
+        const bajo = estado.bajos[i];
+        if (!bajo || !id) { Sonido.acorde([notas[i]], 1.1); return; }
+        Sonido.acorde(conBajoDoblado(bajo, Realizacion.acordeConSoprano(id, bajo, Ejercicios.tonalidadEn(ej, i), notas[i])), 1.1);
+        return;
+      }
       const voces = id ? Realizacion.posicion(Realizacion.trio(id, notas[i], Ejercicios.tonalidadEn(ej, i)), estado.rotacion) : [];
       Sonido.acorde(conBajoDoblado(notas[i], voces), 1.1);
     } catch (e) { /* sin audio */ }
@@ -496,15 +577,27 @@
      Armonización, esa nota del bajo): reproduce el acorde, no el cifrado introducido. */
 
   const SEG_POR_NEGRA = 0.6;
-  const opcionesRealizacion = () => ({ modo: estado.rigida ? 'rigida' : 'auto', rotacion: estado.rotacion });
+  const opcionesRealizacion = () => {
+    const op = { modo: estado.rigida ? 'rigida' : 'auto', rotacion: estado.rotacion };
+    if (estado.modoEj === 'soprano') { op.bajos = estado.bajos; op.sopranos = melodia(); }
+    return op;
+  };
   const duraciones = () => { const d = []; estado.ejercicio.compases.forEach(c => c.forEach(([, x]) => d.push(x))); return d; };
 
-  // La propuesta: armonización modelo (Análisis y Audición) o solo el bajo (Armonización).
+  // La propuesta: armonización modelo (Análisis y Audición), solo el bajo (Armonización) o solo la melodía (Soprano).
   function acordesPropuesta() {
-    if (estado.modoEj === 'armonizar') return estado.respuestas.map(() => []);
+    if (estado.modoEj === 'armonizar' || estado.modoEj === 'soprano') return estado.respuestas.map(() => []);
     return Realizacion.realizar(estado.ejercicio, cifrasModelo(), opcionesRealizacion()).acordes;
   }
   function acordesMios() { return Realizacion.realizar(estado.ejercicio, estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null)), opcionesRealizacion()).acordes; }
+  // Qué suena en cada nota: el bajo (doblado a la octava grave) con las voces, o, en la melodía de
+  // soprano, la nota de la melodía sola cuando aún no tiene bajo (en la propuesta, siempre).
+  function notasQueSuenan(i, voces, conBajos) {
+    const dadas = Reglas.notasDe(estado.ejercicio);
+    if (estado.modoEj !== 'soprano') return conBajoDoblado(dadas[i], voces || []);
+    const bajo = conBajos ? estado.bajos[i] : null;
+    return bajo && voces && voces.length ? conBajoDoblado(bajo, voces) : [dadas[i]];
+  }
 
   // Resalta el botón ▶ de la nota que suena (sin redibujar la partitura)
   function marcarSonando(i) {
@@ -526,10 +619,10 @@
     }, 500);
   }
 
-  function reproducir(acordes) {
+  function reproducir(acordes, conBajos = true) {
     const notas = Reglas.notasDe(estado.ejercicio);
     const dur = duraciones();
-    const items = notas.map((n, i) => ({ notas: conBajoDoblado(n, acordes[i] || []), segundos: SEG_POR_NEGRA * dur[i], alEmpezar: () => marcarSonando(i) }));
+    const items = notas.map((n, i) => ({ notas: notasQueSuenan(i, acordes[i], conBajos), segundos: SEG_POR_NEGRA * dur[i], alEmpezar: () => marcarSonando(i) }));
     try {
       Sonido.secuencia(items, () => { marcarSonando(null); $('#btn-parar').hidden = true; });
       $('#btn-parar').hidden = false;
@@ -537,7 +630,7 @@
     } catch (e) { aviso('No se ha podido reproducir el sonido en este navegador: ' + e.message); }
   }
 
-  function escucharPropuesta() { if (propuestaAudible()) reproducir(acordesPropuesta()); }
+  function escucharPropuesta() { if (propuestaAudible()) reproducir(acordesPropuesta(), estado.modoEj !== 'soprano'); }
   function escucharMio() {
     if (!estado.respuestas.some((_, i) => notaCompleta(i))) { aviso('Todavía no hay ninguna nota con cifra y grado.'); return; }
     reproducir(acordesMios());
@@ -547,7 +640,7 @@
     const ej = estado.ejercicio;
     const notas = Reglas.notasDe(ej);
     try {
-      const cad = Realizacion.cadencia(ej.tonalidad, notas[0]);
+      const cad = Realizacion.cadencia(ej.tonalidad, estado.modoEj === 'soprano' ? 'C3' : notas[0]);
       const items = cad.map(a => ({ notas: conBajoDoblado(a.bajo, a.voces), segundos: SEG_POR_NEGRA * a.duracion }));
       Sonido.secuencia(items, () => { marcarSonando(null); $('#btn-parar').hidden = true; });
       $('#btn-parar').hidden = false;
@@ -560,7 +653,7 @@
     const notas = Reglas.notasDe(estado.ejercicio);
     const ac = acordesPropuesta()[i];
     try {
-      Sonido.acorde(conBajoDoblado(notas[i], ac || []), 1.4);
+      Sonido.acorde(notasQueSuenan(i, ac, estado.modoEj !== 'soprano'), 1.4);
       marcarSonando(i);
       vigilarAudio();
       setTimeout(() => { if (estado.sonando === i && !Sonido.enCurso()) marcarSonando(null); }, 1400);
@@ -596,6 +689,7 @@
     if (bloqueada(i, estado.campo)) return;
     if (estado.campo === 'romano2') estado.romanos2[i] = null;
     else if (estado.campo === 'romano') estado.romanos[i] = null;
+    else if (estado.campo === 'funcion') estado.funciones[i] = null;
     else estado.respuestas[i] = null;
     pintar();
   }
@@ -664,7 +758,20 @@
           okRomano2 = !doble || acierta(parejas, rom2);   // marca sobrante: la segunda mitad se juzga en la tonalidad que rige
         }
       }
-      return { ok: okCifra && okRomano && okRomano2, okCifra, okRomano, okRomano2, modelo: parejas[0].cifra, modeloRomano, cifra, romano: rom, romano2: rom2 };
+      // Función tonal (si se pide): vale la del acorde modelo, la de cualquier admisible o la del acorde dado si es correcto
+      let okFuncion = true;
+      const fun = estado.funciones[i];
+      if (estado.modoFun === 'pedir') okFuncion = !!fun && (Ejercicios.funcionesAdmisibles(ej, i).includes(fun) || (okRomano && okCifra && Teoria.funcionesDe(rom).includes(fun)));
+      return { ok: okCifra && okRomano && okRomano2 && okFuncion, okCifra, okRomano, okRomano2, okFuncion, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion: Ejercicios.funcionModelo(ej, i), cifra, romano: rom, romano2: rom2, funcion: fun };
+    });
+    // Melodía de soprano: el enlace entre dos respuestas correctas también ha de serlo
+    // (sensible o séptima en el bajo que no resuelven, octavas con la melodía, D → S)
+    if (estado.modoEj === 'soprano') estado.resultados.forEach((r, i) => {
+      if (i === 0 || !r.okCifra || !r.okRomano) return;
+      const ant = estado.resultados[i - 1];
+      if (!ant.okCifra || !ant.okRomano) return;
+      const e = Reglas.enlaceAlumno(ej, i, { romano: ant.romano, cifra: ant.cifra }, { romano: r.romano, cifra: r.cifra });
+      if (!e.ok) { r.okEnlace = false; r.enlace = e.motivo; r.ok = false; }
     });
     estado.intento += 1;
     const aciertos = estado.resultados.filter(r => r.ok).length;
@@ -681,9 +788,11 @@
   function corregirErrores() {
     if (!estado.corregido || estado.mostrarSolucion) return;
     estado.resultados.forEach((r, i) => {
-      if (r.okCifra) estado.bloqueadas[i].cifra = true;
-      if (!estado.pedirRomano || r.okRomano) estado.bloqueadas[i].romano = true;
+      // Con un enlace incorrecto, el acorde sigue editable aunque sus dos casillas estén entre las admisibles
+      if (r.okCifra && r.okEnlace) estado.bloqueadas[i].cifra = true;
+      if (!estado.pedirRomano || (r.okRomano && r.okEnlace)) estado.bloqueadas[i].romano = true;
       if (!estado.pedirRomano || !esDoble(i) || r.okRomano2) estado.bloqueadas[i].romano2 = true;
+      if (estado.modoFun !== 'pedir' || r.okFuncion) estado.bloqueadas[i].funcion = true;
     });
     if (estado.resultadoMod) {
       if (estado.resultadoMod.ok) estado.tonalidadBloqueada = true;
@@ -693,7 +802,7 @@
         estado.resultadoMod.info.forEach(x => { if (x.idx !== undefined && !x.bien) { delete estado.marcas[x.idx]; estado.romanos2[x.idx] = null; } });
       }
     }
-    estado.tocadas = estado.bloqueadas.map(() => ({ cifra: false, romano: false, romano2: false, tonalidad: false }));
+    estado.tocadas = estado.bloqueadas.map(() => ({ cifra: false, romano: false, romano2: false, funcion: false, tonalidad: false }));
     estado.corregido = false;
     estado.resultados = null;
     // Primera casilla editable
@@ -723,7 +832,10 @@
     const caja = $('#resultado');
     const pct = Math.round(100 * aciertos / n);
     let html = '<h2>' + aciertos + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
-    if (estado.pedirRomano) html += '<p class="desglose">Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
+    const aciertosFun = res.filter(r => r.okFuncion).length;
+    const enlacesMal = res.filter(r => !r.okEnlace).length;
+    if (estado.pedirRomano) html += '<p class="desglose">' + (estado.modoFun === 'pedir' ? 'Funciones: ' + aciertosFun + ' de ' + n + ' · ' : '') + 'Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
+      + (enlacesMal ? ' · Enlaces incorrectos: ' + enlacesMal : '')
       + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
     else if (estado.intento > 1 && estado.primerIntento !== null) html += '<p class="desglose">Al primer intento: ' + estado.primerIntento + ' de ' + n + '</p>';
     // Modulación
@@ -755,12 +867,17 @@
         const parejas = Ejercicios.parejas(ej, i);
         const ver = p => (estado.pedirRomano ? p.romano + ' ' : '') + Teoria.CIFRADOS[p.cifra].etiqueta;
         const gradoDado = esDoble(i) ? (r.romano || '¿?') + ' = ' + (r.romano2 || '¿?') : (r.romano || '¿grado?');
-        const dada = (estado.pedirRomano ? gradoDado + ' ' : '') + (r.cifra ? Teoria.CIFRADOS[r.cifra].etiqueta : '¿cifra?');
-        const modelo = (estado.pedirRomano ? r.modeloRomano + ' ' : '') + Teoria.CIFRADOS[r.modelo].etiqueta;
+        const funDada = estado.modoFun === 'pedir' ? (r.funcion || '¿función?') + ' · ' : '';
+        const dada = funDada + (estado.pedirRomano ? gradoDado + ' ' : '') + (r.cifra ? Teoria.CIFRADOS[r.cifra].etiqueta : '¿cifra?');
+        const modelo = (estado.modoFun === 'pedir' ? r.modeloFuncion + ' · ' : '') + (estado.pedirRomano ? r.modeloRomano + ' ' : '') + Teoria.CIFRADOS[r.modelo].etiqueta;
         let expl = '';
-        if (estado.propuesta && estado.propuesta[i] && estado.propuesta[i].modelo === r.modelo) expl = estado.propuesta[i].explicacion;
+        const modeloId = parejas[0] ? parejas[0].id : r.modelo;
+        if (estado.propuesta && estado.propuesta[i] && estado.propuesta[i].modelo === modeloId) expl = estado.propuesta[i].explicacion;
         const otras = parejas.slice(1).map(ver);
-        const que = !r.okCifra && !(r.okRomano && r.okRomano2) ? '' : (!r.okCifra ? ' (falla la cifra)' : ' (falla el grado)');
+        let que = '';
+        if (!r.okEnlace) que = ' (falla el enlace: ' + r.enlace + ')';
+        else if (!r.okFuncion && r.okCifra && r.okRomano && r.okRomano2) que = ' (falla la función)';
+        else if (!(!r.okCifra && !(r.okRomano && r.okRomano2))) que = !r.okCifra ? ' (falla la cifra)' : !(r.okRomano && r.okRomano2) ? ' (falla el grado)' : '';
         html += '<li><b>Nota ' + (i + 1) + ' (' + nombre + ')</b>' + que + ': has puesto <span class="cif mal">' + dada + '</span>; '
           + 'la respuesta modelo es <span class="cif bien">' + modelo + '</span>'
           + (otras.length ? ' (también se admite ' + otras.join(', ') + ')' : '') + '.'
@@ -819,6 +936,7 @@
     else if (/^[0-9]$/.test(ev.key)) {
       // El número pequeño de cada tecla de la paleta activa (cifra, grado o tonalidad)
       const paleta = estado.campo === 'tonalidad' ? '#paleta-tonalidades'
+        : estado.campo === 'funcion' && estado.modoFun === 'pedir' ? '#paleta-funciones'
         : (estado.campo === 'romano' || estado.campo === 'romano2') && estado.pedirRomano ? '#paleta-romanos' : '#paleta';
       const b = document.querySelector(paleta + ' .tecla[data-atajo="' + ev.key + '"]');
       if (b) { ev.preventDefault(); b.click(); }

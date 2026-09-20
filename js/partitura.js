@@ -21,7 +21,14 @@
                       dobles:[bool] (la casilla de grado de la nota se parte en dos:
                       'romano' = tonalidad anterior, 'romano2' = nueva; pivote),
                       romanos2:[…], filaTonalidad:{visible, editable, celdas:[{texto, clase, fija}]}
-                      (fila «Tonalidad» bajo los grados, campo 'tonalidad') }
+                      (fila «Tonalidad» bajo los grados, campo 'tonalidad'),
+                      ocultarBajo:bool (no se dibuja el pentagrama del bajo —ni sus notas—:
+                      solo las casillas y los botones ▶; ejercicio de Audición sin cerrar),
+                      vozDada:'soprano' (las notas del ejercicio son la melodía y van en el
+                      pentagrama de sol; el bajo lo aporta bajos:[nota|null…], deducido de
+                      cada respuesta, y bajosMal:[bool] lo pinta en rojo),
+                      filaFunciones:{visible, editable, celdas:[{texto, clase, fija}]}
+                      (fila «Función» T · S · D bajo los grados, campo 'funcion') }
        alPulsar   : función(índiceDeNota, campo) que se llama al pulsar una casilla
 
    Duraciones en negras: 4 redonda, 2 blanca, 1 negra, 0.5 corchea; ×1.5 = con puntillo.
@@ -152,16 +159,20 @@ const Partitura = (() => {
     // Medidas verticales
     const pedirRomano = !!estado.pedirRomano;
     const soloLectura = !!estado.soloLectura;
-    const conSol = Array.isArray(estado.realizacion);      // ¿se dibuja el pentagrama de sol con la realización?
+    const sopranoDada = estado.vozDada === 'soprano';     // melodía de soprano: las notas van arriba y el bajo se deduce
+    const conSol = Array.isArray(estado.realizacion) || sopranoDada;   // ¿se dibuja el pentagrama de sol?
+    const bajoDe = i => (sopranoDada ? (estado.bajos && estado.bajos[i] ? Teoria.nota(estado.bajos[i]) : null) : notas[i].nota);
     const numerar = !!estado.numerar;                      // ¿número de cada acorde encima del sistema (revisión del profesor)?
     const etiquetas = Array.isArray(estado.etiquetas) ? estado.etiquetas : [];   // rótulos de tonalidad encima del sistema
     const conSonar = typeof estado.alSonar === 'function' && !soloLectura;   // botón ▶ ENCIMA de cada acorde (suena ese acorde)
+    const sinBajo = !!estado.ocultarBajo;                  // Audición: no se ve el bajo (solo casillas y botones ▶)
+    const sinSistema = sinBajo && !conSol;                 // no hay ningún pentagrama que dibujar
     // Banda superior, de arriba abajo: números (configurador), rótulos de tonalidad, botones ▶
     const Y0 = (numerar ? 3 * SP : 0) + (etiquetas.length ? 3 * SP : 0) + (conSonar ? 3 * SP : 0);
     const Y_TOP_SOL = 5 * SP + Y0, Y_BOT_SOL = Y_TOP_SOL + 4 * SP;
     const Y_TOP = conSol ? Y_BOT_SOL + 7.5 * SP : 5.5 * SP + Y0; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
-    const Y_CASILLA = Y_BOT + 3.4 * SP;                    // borde superior de las casillas de cifra
+    const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // borde superior de las casillas de cifra
     const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
     const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
     const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;  // borde superior de las casillas de grado
@@ -177,15 +188,18 @@ const Partitura = (() => {
     const PASO_RENGLON = ALTO_ROMANO + 0.5 * SP;
     const yRenglon = r => Y_ROMANO + r * PASO_RENGLON;
     const Y_FIN_ROMANO = pedirRomano ? yRenglon(NUM_RENGLONES - 1) + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
+    const filaFun = estado.filaFunciones && estado.filaFunciones.visible ? estado.filaFunciones : null;   // fila «Función» (T · S · D)
+    const Y_FUN = Y_FIN_ROMANO + 0.8 * SP, ALTO_FUN = 2.7 * SP;
+    const Y_FIN_FUN = filaFun ? Y_FUN + ALTO_FUN : Y_FIN_ROMANO;
     const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
-    const Y_TON = Y_FIN_ROMANO + 0.8 * SP, ALTO_TON = 2.7 * SP;
-    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_ROMANO;
+    const Y_TON = Y_FIN_FUN + 0.8 * SP, ALTO_TON = 2.7 * SP;
+    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_FUN;
     const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
     const Y_MODELO = Y_FIN_CASILLAS + 2.4 * SP;            // centro de la respuesta modelo (tras corregir)
     const ALTO_TOTAL = Y_MODELO + 2.6 * SP;
 
     // Cálculo de posiciones x
-    let x = MARGEN + ANCHO_CLAVE + ANCHO_ARM + ANCHO_COMPAS;
+    let x = sinSistema ? MARGEN + 6 * SP : MARGEN + ANCHO_CLAVE + ANCHO_ARM + ANCHO_COMPAS;   // sin sistema queda sitio para «Do M:»
     const barras = [];                                     // x de cada barra de compás
     const xNotas = [];
     ej.compases.forEach((c, ci) => {
@@ -204,31 +218,33 @@ const Partitura = (() => {
     // Tamaño en pantalla: ESCALA_PX píxeles por unidad (SP = 10 unidades → 10 px por espacio);
     // si no cabe, el CSS lo reduce proporcionalmente (max-width: 100 %)
     const svg = el('svg', { viewBox: `0 0 ${ANCHO_TOTAL} ${ALTO_TOTAL}`, width: Math.round(ANCHO_TOTAL * ESCALA_PX), class: 'partitura', role: 'img',
-      'aria-label': 'Bajo del ejercicio con casillas de cifrado' });
+      'aria-label': sinBajo ? 'Casillas de cifrado del ejercicio (el bajo no se muestra)' : sopranoDada ? 'Melodía del ejercicio, bajo deducido y casillas de cifrado' : 'Bajo del ejercicio con casillas de cifrado' });
     const yLinea = i => Y_BOT - i * SP;                    // i = 0 (inferior) … 4 (superior)
 
     const yLineaSol = i => Y_BOT_SOL - i * SP;
     const Y_SISTEMA_TOP = conSol ? Y_TOP_SOL : Y_TOP;      // las barras abarcan todo el sistema
 
-    // Pentagrama del bajo
-    for (let i = 0; i < 5; i++)
-      svg.appendChild(el('line', { x1: MARGEN, x2: x, y1: yLinea(i), y2: yLinea(i), class: 'linea' }));
-    // Clave de fa: su línea de referencia es la 4ª (fa3)
-    svg.appendChild(glifo(MARGEN + 0.4 * SP, yLinea(3), G.claveFa));
+    // Pentagrama del bajo (salvo que el ejercicio lo oculte: Audición)
+    if (!sinBajo) {
+      for (let i = 0; i < 5; i++)
+        svg.appendChild(el('line', { x1: MARGEN, x2: x, y1: yLinea(i), y2: yLinea(i), class: 'linea' }));
+      // Clave de fa: su línea de referencia es la 4ª (fa3)
+      svg.appendChild(glifo(MARGEN + 0.4 * SP, yLinea(3), G.claveFa));
+    }
     // Pentagrama de sol (realización)
     if (conSol) {
       for (let i = 0; i < 5; i++)
         svg.appendChild(el('line', { x1: MARGEN, x2: x, y1: yLineaSol(i), y2: yLineaSol(i), class: 'linea' }));
       svg.appendChild(glifo(MARGEN + 0.4 * SP, yLineaSol(1), G.claveSol));
-      svg.appendChild(el('line', { x1: MARGEN, x2: MARGEN, y1: Y_TOP_SOL, y2: Y_BOT, class: 'barra' }));
+      if (!sinBajo) svg.appendChild(el('line', { x1: MARGEN, x2: MARGEN, y1: Y_TOP_SOL, y2: Y_BOT, class: 'barra' }));
     }
     // Armadura
-    if (nArm) {
+    if (nArm && !sinSistema) {
       const lista = nArm > 0 ? ARMADURA_SOST : ARMADURA_BEM;
       const listaSol = nArm > 0 ? ARMADURA_SOST_SOL : ARMADURA_BEM_SOL;
       for (let k = 0; k < Math.abs(nArm); k++) {
         const p = paso(Teoria.nota(lista[k]));
-        svg.appendChild(glifo(MARGEN + ANCHO_CLAVE + 0.3 * SP + k * 1.1 * SP, Y_BOT - p * SP / 2, nArm > 0 ? G.sostenido : G.bemol));
+        if (!sinBajo) svg.appendChild(glifo(MARGEN + ANCHO_CLAVE + 0.3 * SP + k * 1.1 * SP, Y_BOT - p * SP / 2, nArm > 0 ? G.sostenido : G.bemol));
         if (conSol) {
           const ps = pasoSol(Teoria.nota(listaSol[k]));
           svg.appendChild(glifo(MARGEN + ANCHO_CLAVE + 0.3 * SP + k * 1.1 * SP, Y_BOT_SOL - ps * SP / 2, nArm > 0 ? G.sostenido : G.bemol));
@@ -237,19 +253,22 @@ const Partitura = (() => {
     }
     // Compás (numerador centrado en la 4ª línea, denominador en la 2ª)
     const xC = MARGEN + ANCHO_CLAVE + ANCHO_ARM + 0.5 * SP;
-    svg.appendChild(glifo(xC, yLinea(3), G.compas(ej.compas[0])));
-    svg.appendChild(glifo(xC, yLinea(1), G.compas(ej.compas[1])));
+    if (!sinBajo) {
+      svg.appendChild(glifo(xC, yLinea(3), G.compas(ej.compas[0])));
+      svg.appendChild(glifo(xC, yLinea(1), G.compas(ej.compas[1])));
+    }
     if (conSol) {
       svg.appendChild(glifo(xC, yLineaSol(3), G.compas(ej.compas[0])));
       svg.appendChild(glifo(xC, yLineaSol(1), G.compas(ej.compas[1])));
     }
-    // Barras (de todo el sistema)
-    barras.forEach(b => {
+    // Barras (de todo el sistema); sin sistema no hay barras
+    const Y_SISTEMA_BOT = sinBajo ? Y_BOT_SOL : Y_BOT;
+    if (!sinSistema) barras.forEach(b => {
       if (b.final) {
-        svg.appendChild(el('line', { x1: b.x - 0.5 * SP, x2: b.x - 0.5 * SP, y1: Y_SISTEMA_TOP, y2: Y_BOT, class: 'barra' }));
-        svg.appendChild(el('line', { x1: b.x + 0.1 * SP, x2: b.x + 0.1 * SP, y1: Y_SISTEMA_TOP, y2: Y_BOT, class: 'barra gruesa' }));
+        svg.appendChild(el('line', { x1: b.x - 0.5 * SP, x2: b.x - 0.5 * SP, y1: Y_SISTEMA_TOP, y2: Y_SISTEMA_BOT, class: 'barra' }));
+        svg.appendChild(el('line', { x1: b.x + 0.1 * SP, x2: b.x + 0.1 * SP, y1: Y_SISTEMA_TOP, y2: Y_SISTEMA_BOT, class: 'barra gruesa' }));
       } else {
-        svg.appendChild(el('line', { x1: b.x, x2: b.x, y1: Y_SISTEMA_TOP, y2: Y_BOT, class: 'barra' }));
+        svg.appendChild(el('line', { x1: b.x, x2: b.x, y1: Y_SISTEMA_TOP, y2: Y_SISTEMA_BOT, class: 'barra' }));
       }
     });
 
@@ -291,8 +310,37 @@ const Partitura = (() => {
     // Corchete de corchea en el extremo de la plica
     const corchete = (g, xP, y2, arriba) => g.appendChild(glifo(xP, y2, arriba ? G.corcheteArriba : G.corcheteAbajo, EM, { class: 'nota' }));
 
+    // Una nota suelta (cabeza, alteración, líneas adicionales, puntillo y plica) en un
+    // pentagrama cuya línea inferior está en yBase; p = paso diatónico desde esa línea.
+    function notaSuelta(g, n, p, yBase, xN, f, plicaAbajoDesde = 4) {
+      const ancho = f.ancho, y = yBase - p * SP / 2, extra = 0.4 * SP;
+      if (p >= 10) for (let q = 10; q <= p; q += 2)
+        g.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: yBase - q * SP / 2, y2: yBase - q * SP / 2, class: 'linea' }));
+      if (p <= -2) for (let q = -2; q >= p; q -= 2)
+        g.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: yBase - q * SP / 2, y2: yBase - q * SP / 2, class: 'linea' }));
+      if (n.alt !== altArmadura(n.letra)) g.appendChild(glifo(xN - (anchoAlt(n.alt) + 0.25) * SP, y, glifoAlt(n.alt)));
+      g.appendChild(glifo(xN, y, f.cabeza, EM, { class: 'nota' }));
+      if (f.puntillo) puntillo(g, xN + ancho * SP, p, yBase);
+      if (f.plica) {
+        const arriba = p < plicaAbajoDesde;
+        const xP = arriba ? xN + ancho * SP - 0.07 * SP : xN + 0.07 * SP;
+        const y1 = arriba ? y - 0.17 * SP : y + 0.17 * SP;
+        const y2 = arriba ? y - 3.5 * SP : y + 3.5 * SP;
+        g.appendChild(el('line', { x1: xP, x2: xP, y1, y2, class: 'plica' }));
+        if (f.corchete) corchete(g, xP, y2, arriba);
+      }
+    }
+
+    // Melodía de soprano en el pentagrama de sol (cuando no la lleva ya el acorde de la realización)
+    if (sopranoDada) notas.forEach((it, i) => {
+      if (Array.isArray(estado.realizacion) && estado.realizacion[i]) return;
+      const g = el('g', { class: 'melodia' });
+      notaSuelta(g, it.nota, pasoSol(it.nota), Y_BOT_SOL, xNotas[i], figura(it.dur));
+      svg.appendChild(g);
+    });
+
     // Acordes de la realización sobre el pentagrama de sol
-    if (conSol) notas.forEach((it, i) => {
+    if (Array.isArray(estado.realizacion)) notas.forEach((it, i) => {
       const ac = estado.realizacion[i];
       if (!ac) return;
       const xN = xNotas[i];
@@ -345,34 +393,18 @@ const Partitura = (() => {
       svg.appendChild(g);
     });
 
-    // Notas
+    // Notas del bajo (dadas, o deducidas de las respuestas en la melodía de soprano) y,
+    // bajo cada una, sus casillas
     notas.forEach((it, i) => {
-      const n = it.nota, p = paso(n);
-      const y = Y_BOT - p * SP / 2;
+      const n = it.nota;
       const xN = xNotas[i];
       const f = figura(it.dur);
       const ancho = f.ancho;
-      // Líneas adicionales
-      const extra = 0.4 * SP;
-      if (p >= 10) for (let q = 10; q <= p; q += 2)
-        svg.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: Y_BOT - q * SP / 2, y2: Y_BOT - q * SP / 2, class: 'linea' }));
-      if (p <= -2) for (let q = -2; q >= p; q -= 2)
-        svg.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: Y_BOT - q * SP / 2, y2: Y_BOT - q * SP / 2, class: 'linea' }));
-      // Alteración (solo si difiere de la armadura)
-      if (n.alt !== altArmadura(n.letra)) {
-        svg.appendChild(glifo(xN - (anchoAlt(n.alt) + 0.25) * SP, y, glifoAlt(n.alt)));
-      }
-      // Cabeza (y puntillo)
-      svg.appendChild(glifo(xN, y, f.cabeza, EM, { class: 'nota' }));
-      if (f.puntillo) puntillo(svg, xN + ancho * SP, p, Y_BOT);
-      // Plica de blancas, negras y corcheas: hacia abajo si la nota está en la línea central o por encima
-      if (f.plica) {
-        const arriba = p < 4;
-        const xP = arriba ? xN + ancho * SP - 0.07 * SP : xN + 0.07 * SP;
-        const y1 = arriba ? y - 0.17 * SP : y + 0.17 * SP;
-        const y2 = arriba ? y - 3.5 * SP : y + 3.5 * SP;
-        svg.appendChild(el('line', { x1: xP, x2: xP, y1, y2, class: 'plica' }));
-        if (f.corchete) corchete(svg, xP, y2, arriba);
+      const nb = bajoDe(i);
+      if (!sinBajo && nb) {
+        const g = el('g', { class: (sopranoDada ? 'bajo-alumno' : 'bajo') + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') });
+        notaSuelta(g, nb, paso(nb), Y_BOT, xN, f);
+        svg.appendChild(g);
       }
 
       const cx = xN + ancho * SP / 2;
@@ -383,9 +415,10 @@ const Partitura = (() => {
       // Casilla de cifrado (bajo la nota)
       {
         const g = el('g', { 'data-indice': i, 'data-campo': 'cifra', tabindex: 0, role: 'button',
-          'aria-label': 'Cifrado de la nota ' + (i + 1) + ' (' + Teoria.nombreEs(n) + ')' });
+          'aria-label': 'Cifrado de la nota ' + (i + 1) + (sinBajo ? '' : ' (' + Teoria.nombreEs(n) + ')') });
         const clases = ['casilla', 'casilla-cifra'];
-        if (activa && !bloq.cifra && (!pedirRomano || estado.campo !== 'romano')) clases.push('activa');
+        const otroCampo = ['romano', 'romano2', 'funcion', 'tonalidad'].includes(estado.campo);   // la casilla activa es otra de la misma nota
+        if (activa && !bloq.cifra && !otroCampo) clases.push('activa');
         else if (activa && !bloq.cifra) clases.push('activa-nota');
         const resp = estado.respuestas[i];
         if (res) clases.push(res.okCifra ? 'bien' : 'mal');
@@ -415,7 +448,7 @@ const Partitura = (() => {
           const y0 = yRenglon(r);
           const alto = esPivote && k === 0 ? PASO_RENGLON : ALTO_ROMANO;    // la de arriba llega hasta la de abajo
           const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: 0, role: 'button',
-            'aria-label': 'Grado de la nota ' + (i + 1) + ' (' + Teoria.nombreEs(n) + ')' + (esPivote ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
+            'aria-label': 'Grado de la nota ' + (i + 1) + (sinBajo ? '' : ' (' + Teoria.nombreEs(n) + ')') + (esPivote ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
           const clases = ['casilla', 'casilla-romano'];
           if (esPivote) clases.push(k ? 'pivote-abajo' : 'pivote-arriba');
           const bloqueadaAqui = !!bloq[campo];
@@ -449,6 +482,29 @@ const Partitura = (() => {
             svg.appendChild(el('text', { x: x0 - 0.7 * SP, y: yRenglon(r) + ALTO_ROMANO / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, celda.texto + ':'));
           }
         }
+      }
+
+      // Fila «Función»: T · S · D de cada acorde (dada por el profesor o pedida al alumno)
+      if (filaFun) {
+        const celda = filaFun.celdas[i] || {};
+        const editable = filaFun.editable && !celda.fija;
+        const g = el('g', { 'data-indice': i, 'data-campo': 'funcion', tabindex: editable ? 0 : -1, role: editable ? 'button' : 'note',
+          'aria-label': 'Función tonal de la nota ' + (i + 1) });
+        const clases = ['casilla', 'casilla-fun'];
+        if (!editable) clases.push('fija');
+        if (celda.clase) clases.push(celda.clase);
+        if (activa && editable && estado.campo === 'funcion') clases.push('activa');
+        else if (activa && editable) clases.push('activa-nota');
+        if (celda.texto) clases.push('llena');
+        g.setAttribute('class', clases.join(' '));
+        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_FUN, width: ANCHO_CASILLA, height: ALTO_FUN, rx: 0.6 * SP, class: 'fondo' }));
+        g.appendChild(el('text', { x: cx, y: Y_FUN + ALTO_FUN / 2 + 0.6 * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
+        if (editable && !soloLectura) {
+          g.addEventListener('click', () => alPulsar(i, 'funcion'));
+          g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, 'funcion'); } });
+        }
+        svg.appendChild(g);
+        if (i === 0) svg.appendChild(el('text', { x: cx - ANCHO_CASILLA / 2 - 0.7 * SP, y: Y_FUN + ALTO_FUN / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, 'Función:'));
       }
 
       // Fila «Tonalidad»: desde qué nota rige cada tonalidad (modulación)

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Armonizar el bajo · Regla de la octava</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260920-1940">
-  <link rel="stylesheet" href="css/estilo.css?v=20260920-1940">
+  <link rel="stylesheet" href="css/bravura.css?v=20260920-2330">
+  <link rel="stylesheet" href="css/estilo.css?v=20260920-2330">
 </head>
 <body>
 
@@ -36,7 +36,7 @@
     <div id="realizacion-barra" class="realizacion-barra">
       <span class="control control-sonido">
         <button type="button" id="btn-cadencia" class="boton-pequeno" title="Cadencia I–IV–V7–I en la tonalidad inicial del ejercicio, para situar el oído">▶ Tono inicial</button>
-        <button type="button" id="btn-propuesta" class="boton-pequeno" title="Escuchar lo que propone el ejercicio: la armonización (Análisis y Audición) o el bajo solo (Armonización)">▶ Escuchar propuesta</button>
+        <button type="button" id="btn-propuesta" class="boton-pequeno" title="Escuchar lo que propone el ejercicio: la armonización (Análisis y Audición), el bajo solo (Armonización) o la melodía sola (Melodía de soprano)">▶ Escuchar propuesta</button>
         <button type="button" id="btn-mio" class="boton-pequeno" title="Escuchar la realización de lo que has cifrado hasta ahora (las notas sin grado y cifrado suenan solo con el bajo)">▶ Mi cifrado</button>
         <button type="button" id="btn-parar" class="boton-pequeno parar" hidden title="Detener la reproducción (también con Esc)">■ Parar</button>
         <label class="control control-instrumento" title="Con qué instrumento suena todo (muestras reales de piano, clave y órgano)"><span class="control-etiqueta">Instrumento</span><select id="instrumento" class="selector-pequeno"></select><span id="instrumento-estado" class="instrumento-estado" hidden>cargando…</span></label>
@@ -57,6 +57,10 @@
     <div id="partitura" class="partitura-caja"></div>
 
     <div id="paletas" class="paletas">
+      <div id="paleta-funciones-caja" class="paleta-caja" hidden>
+        <span class="paleta-etiqueta">Función tonal</span>
+        <div id="paleta-funciones" class="paleta" role="group" aria-label="Paleta de funciones tonales"></div>
+      </div>
       <div id="paleta-romanos-caja" class="paleta-caja">
         <span class="paleta-etiqueta">Grado de la fundamental</span>
         <div id="paleta-romanos" class="paleta" role="group" aria-label="Paleta de grados"></div>
@@ -85,16 +89,16 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260920-1940</span> · Regla de la octava (Furno) · Se abre directamente desde el disco, sin conexión. <a href="configurar.html">Configurador para el profesor</a> · Sonidos de piano, clave y órgano: FluidR3_GM (CC BY 3.0), véase <code>sonidos/LICENCIA-muestras.txt</code>.</p>
+    <p><span id="version">Versión 20260920-2330</span> · Regla de la octava (Furno) · Se abre directamente desde el disco, sin conexión. <a href="configurar.html">Configurador para el profesor</a> · Sonidos de piano, clave y órgano: FluidR3_GM (CC BY 3.0), véase <code>sonidos/LICENCIA-muestras.txt</code>.</p>
     <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre cifrado y grado · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
   </footer>
 
-  <script src="js/teoria.js?v=20260920-1940"></script>
-  <script src="js/reglas.js?v=20260920-1940"></script>
-  <script src="js/ejercicios.js?v=20260920-1940"></script>
-  <script src="js/partitura.js?v=20260920-1940"></script>
-  <script src="js/realizacion.js?v=20260920-1940"></script>
-  <script src="js/sonido.js?v=20260920-1940"></script>
-  <script src="js/app.js?v=20260920-1940"></script>
+  <script src="js/teoria.js?v=20260920-2330"></script>
+  <script src="js/reglas.js?v=20260920-2330"></script>
+  <script src="js/ejercicios.js?v=20260920-2330"></script>
+  <script src="js/partitura.js?v=20260920-2330"></script>
+  <script src="js/realizacion.js?v=20260920-2330"></script>
+  <script src="js/sonido.js?v=20260920-2330"></script>
+  <script src="js/app.js?v=20260920-2330"></script>
 </body>
 </html>

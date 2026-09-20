@@ -147,6 +147,21 @@ svg.partitura .casilla-ton.inicial .fondo, svg.partitura .casilla-ton.dada .fond
 svg.partitura .casilla-ton.inicial .ton, svg.partitura .casilla-ton.dada .ton { fill: var(--acento); }
 svg.partitura .casilla-ton.fija { cursor: default; }
 svg.partitura .casilla-ton.mal .ton, svg.partitura .casilla-ton.mal .interrogante-ton { fill: var(--mal); }
+.chip-fund { font-weight: bold; min-width: 1.6em; text-align: right; }
+.chip.con-aviso .icono-cifra { opacity: .75; }
+.sel-fun { font: inherit; font-size: .85rem; padding: 3px 4px; border-radius: 6px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); }
+/* Fila «Función» (T · S · D) y bajo deducido en la melodía de soprano */
+svg.partitura .casilla-fun .fondo { fill: var(--fondo); stroke: var(--linea); stroke-dasharray: 3 2; }
+svg.partitura .casilla-fun.llena .fondo, svg.partitura .casilla-fun.fija .fondo { stroke-dasharray: none; }
+svg.partitura .casilla-fun .fun { font-family: Georgia, "Times New Roman", serif; font-size: 15px; font-weight: bold; fill: var(--tinta); pointer-events: none; }
+svg.partitura .casilla-fun.dada .fondo { fill: var(--acento-suave); stroke: var(--acento); }
+svg.partitura .casilla-fun.dada .fun { fill: var(--acento); }
+svg.partitura .casilla-fun.fija { cursor: default; }
+svg.partitura .casilla-fun.mal .fun { fill: var(--mal); }
+svg.partitura .casilla-fun.bien .fun { fill: var(--bien); }
+svg.partitura .bajo-alumno.mal text { fill: var(--mal); }
+svg.partitura .bajo-alumno.mal .plica, svg.partitura .bajo-alumno.mal .linea { stroke: var(--mal); }
+.tecla-fun { min-width: 48px; min-height: 42px; font-size: 1.05rem; font-weight: bold; font-family: Georgia, "Times New Roman", serif; }
 svg.partitura .etiqueta-ton rect { fill: var(--acento-suave); stroke: var(--acento); stroke-width: 1.1; }
 svg.partitura .etiqueta-ton text { font-family: Georgia, "Times New Roman", serif; font-size: 13px; fill: var(--acento); pointer-events: none; }
 svg.partitura .etiqueta-ton.solucion rect { fill: var(--bien-suave); stroke: var(--bien); }

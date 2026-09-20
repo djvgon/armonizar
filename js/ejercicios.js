@@ -34,12 +34,14 @@
                        realización de lo que va escribiendo.
                    'cifrar' (Análisis): se muestran bajo y realización modelo a
                        cuatro voces desde el principio y el alumno debe cifrarla.
-                   'audicion' (Audición): el alumno ve solo el bajo, escucha la
-                       realización modelo («Escuchar propuesta», o acorde a acorde
-                       con el ▶ de cada nota) y cifra lo que suena; a medida que
-                       cifra ve y puede oír («Mi cifrado») su propia realización.
-     realizacion : (opcional, solo en 'armonizar') cuándo puede verse el pentagrama
-                   de sol: 'siempre' (por defecto), 'alCorregir' o 'nunca'.
+                   'audicion' (Audición): el alumno no ve ni el bajo ni la
+                       realización; escucha la armonización modelo («Escuchar
+                       propuesta», o acorde a acorde con el ▶ de cada acorde) y
+                       cifra lo que suena; puede oír lo que lleva cifrado («Mi
+                       cifrado»). Al cerrar el ejercicio se muestran bajo y
+                       realización.
+                   En 'armonizar' se ve solo el bajo mientras se trabaja; la
+                       realización de lo cifrado aparece al cerrar el ejercicio.
      pedirRomano : (opcional, por defecto true) si el alumno debe indicar también
                    el grado sobre el que se construye la fundamental (I … VII).
                    El grado correcto se deriva de cada cifra admisible
@@ -402,13 +404,68 @@ const Ejercicios = (() => {
   // ¿Se pide también el grado de la fundamental? (por defecto, sí)
   function pideRomano(ej) { return ej.pedirRomano !== false; }
 
-  const MODOS = { armonizar: 'Armonización', cifrar: 'Análisis', audicion: 'Audición' };
+  const MODOS = { armonizar: 'Armonización', cifrar: 'Análisis', audicion: 'Audición', soprano: 'Melodía de soprano' };
   function modo(ej) { return MODOS[ej.modo] ? ej.modo : 'armonizar'; }
-  function realizacion(ej) {
-    if (modo(ej) === 'cifrar') return 'siempre';
-    if (modo(ej) === 'audicion') return 'siempre';    // el alumno ve (su) realización a medida que cifra; la propuesta solo se oye
-    return ['siempre', 'alCorregir', 'nunca'].includes(ej.realizacion) ? ej.realizacion : 'siempre';
+  // Melodía de soprano: las notas de ej.compases son la melodía; el alumno da fundamental y
+  // cifra y el bajo se deduce. Las respuestas se guardan como parejas 'V|65d'.
+  const esSoprano = ej => modo(ej) === 'soprano';
+  function par(x) { const k = String(x).indexOf('|'); return k < 0 ? { romano: null, cifra: x } : { romano: x.slice(0, k), cifra: x.slice(k + 1) }; }
+  const cifraDe = x => par(x).cifra;
+
+  /* ---- Funciones tonales ----
+     ej.funciones: 'dadas' (el alumno ve la fila T · S · D rellena) | 'pedir' (la rellena él) |
+     ausente (sin fila). ej.funcionesNotas: la función de cada nota fijada por el profesor
+     (si falta, se deduce del acorde modelo). */
+  function funciones(ej) { return ej.funciones === 'dadas' || ej.funciones === 'pedir' ? ej.funciones : null; }
+  function funcionModelo(ej, i) {
+    if (Array.isArray(ej.funcionesNotas) && Teoria.FUNCIONES.includes(ej.funcionesNotas[i])) return ej.funcionesNotas[i];
+    const p = parejas(ej, i)[0];
+    if (!p) return 'T';
+    const sig = i + 1 < numNotas(ej) ? (parejas(ej, i + 1)[0] || {}).romano : null;
+    return Teoria.funcionDe(p.romano, sig);
   }
+  // Funciones que se dan por buenas en la nota i: la modelo y las de cualquier acorde admisible
+  function funcionesAdmisibles(ej, i) {
+    const out = new Set([funcionModelo(ej, i)]);
+    parejas(ej, i).forEach(p => Teoria.funcionesDe(p.romano).forEach(f => out.add(f)));
+    return Teoria.FUNCIONES.filter(f => out.has(f));
+  }
+
+  /* ---- Bajo deducido (melodía de soprano) ----
+     Para cada nota con fundamental y cifra, la nota del bajo: {letra, alt, octava}, en la
+     octava más cercana al bajo anterior (o a do3), dentro de mi2 … mi4. */
+  function bajosDe(ej, romanos, cifras) {
+    const tons = Teoria.tonalidadesPorNota(ej);
+    const melodia = [];
+    ej.compases.forEach(c => c.forEach(([n]) => melodia.push(Teoria.midi(Teoria.nota(n)))));
+    let ref = Teoria.midi(Teoria.nota('C3'));
+    return romanos.map((r, i) => {
+      const id = cifras[i];
+      if (!r || !id) return null;
+      const b = Teoria.bajoDe(r, id, tons[i]);
+      if (!b) return null;
+      // La octava más cercana al bajo anterior, con una ligera preferencia por el centro del
+      // registro (do3) y dejando sitio a las dos voces intermedias bajo la melodía (al menos una 5ª)
+      const coste = x => Math.abs(x - ref) + 0.5 * Math.abs(x - 52) + (x > melodia[i] - 7 ? 50 : 0);
+      let mejor = null;
+      for (let o = 1; o <= 4; o++) {
+        const n = { letra: b.letra, alt: b.alt, octava: o };
+        const m = Teoria.midi(n);
+        if (m < 36 || m > 64) continue;
+        if (!mejor || coste(m) < coste(Teoria.midi(mejor))) mejor = n;
+      }
+      if (mejor) ref = Teoria.midi(mejor);
+      return mejor;
+    });
+  }
+  // Qué ve el alumno mientras trabaja (decidido por Diego el 20/9/2026):
+  //   Análisis: bajo y realización modelo. Armonización: solo el bajo. Audición: nada
+  //   (o solo el bajo, si el profesor marca mostrarBajo: true).
+  // Cuando el ejercicio se cierra (solución a la vista) se muestran bajo y realización en los tres.
+  // (El campo ej.realizacion de versiones anteriores ya no se usa.)
+  function realizacion(ej) { return modo(ej) === 'cifrar' ? 'siempre' : 'alCerrar'; }
+  function verBajo(ej) { return modo(ej) !== 'audicion' || ej.mostrarBajo === true; }
+  // La realización en la melodía de soprano se ve al cerrar (como en Armonización)
 
   // Nivel de ayuda con los grados: 'ninguna' | 'lista' | 'paleta'
   function ayudaGrados(ej) { return ['ninguna', 'lista', 'paleta'].includes(ej.ayudaGrados) ? ej.ayudaGrados : 'lista'; }
@@ -419,11 +476,11 @@ const Ejercicios = (() => {
   function admisibles(ej, i) {
     let ids = ej.respuestas[i];
     if (ej.repertorio) {
-      const f = ids.filter(id => ej.repertorio.includes(id));
+      const f = ids.filter(id => ej.repertorio.includes(cifraDe(id)));
       if (f.length) ids = f;
     }
     if (ej.preferir) {
-      const pref = ej.preferir.find(id => ids.includes(id));
+      const pref = ids.find(id => ej.preferir.includes(cifraDe(id)));
       if (pref) ids = [pref, ...ids.filter(id => id !== pref)];
     }
     return ids;
@@ -476,7 +533,8 @@ const Ejercicios = (() => {
   function parejasEn(ej, i, ton) {
     const notas = [];
     ej.compases.forEach(c => c.forEach(([n]) => notas.push(n)));
-    return admisibles(ej, i).map(id => ({ cifra: id, romano: Teoria.romano(id, notas[i], ton) }));
+    if (esSoprano(ej)) return admisibles(ej, i).map(id => { const p = par(id); return { id, cifra: p.cifra, romano: p.romano, bajo: Teoria.bajoDe(p.romano, p.cifra, ton) }; });
+    return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.romano(id, notas[i], ton) }));
   }
   // Parejas en la tonalidad que rige en la nota (en el pivote, la nueva); la primera es la modelo.
   function parejas(ej, i) { return parejasEn(ej, i, tonalidadEn(ej, i)); }
@@ -506,6 +564,10 @@ const Ejercicios = (() => {
     if (!Array.isArray(ej.respuestas)) errores.push('Faltan las respuestas.');
     else if (ej.compases && numNotas(ej) !== ej.respuestas.length) errores.push('El número de respuestas no coincide con el de notas.');
     if (ej.repertorio) ej.repertorio.forEach(id => { if (!Teoria.CIFRADOS[id]) errores.push('Cifra desconocida en el repertorio: ' + id); });
+    if (Array.isArray(ej.respuestas) && esSoprano(ej)) ej.respuestas.forEach((a, i) => {
+      if (!Array.isArray(a)) errores.push('Respuestas mal formadas en la nota ' + (i + 1) + '.');
+      else a.forEach(x => { const p = par(x); if (!p.romano || !Teoria.ROMANOS.includes(p.romano) || !Teoria.CIFRADOS[p.cifra]) errores.push('Respuesta desconocida en la nota ' + (i + 1) + ': ' + x); });
+    });
     if (ej.modulaciones !== undefined) {
       if (!Array.isArray(ej.modulaciones)) errores.push('Las modulaciones no son una lista.');
       else ej.modulaciones.forEach(m => {
@@ -516,6 +578,7 @@ const Ejercicios = (() => {
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, modo, realizacion, admisibles, parejas, parejasEn, grados,
+  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
+    funciones, funcionModelo, funcionesAdmisibles, bajosDe,
     modulaciones, modula, aviso, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

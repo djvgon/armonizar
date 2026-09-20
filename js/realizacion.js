@@ -23,6 +23,12 @@
                                                   la tonalidad: [{bajo, voces}]
      Con ej.modulaciones, cada acorde se realiza en la tonalidad que rige en su
      nota (sensible, séptima y tónica final son las de cada tramo).
+     Melodía de soprano: opciones.bajos = [nota|null…] (el bajo deducido de cada
+     respuesta) y opciones.sopranos = [nota…] (la melodía): la voz superior de cada
+     acorde es la nota de la melodía y el bajo, el deducido; la posición inicial
+     no interviene (la fija la melodía).
+     Realizacion.acordeConSoprano(id, bajo, ton, soprano) → voces de un acorde suelto
+     con esa nota en la soprano (para hacerlo sonar al elegir).
 
    Reglas de realización:
      · Las voces superiores son los intervalos de la cifra sobre el bajo;
@@ -148,7 +154,7 @@ const Realizacion = (() => {
 
   /* ---- Disposiciones candidatas de un acorde ----
      Devuelve [{voces:[t,a,s], incompleta, doblaBajo, unisono}] con las voces de grave a agudo. */
-  function candidatas(d) {
+  function candidatas(d, sopranoFija = null) {
     const bajo = d.bajo;
     const conjuntos = [];                  // multiconjuntos de tres clases (como {letra, alt})
     let sup = d.superiores.slice();
@@ -183,8 +189,8 @@ const Realizacion = (() => {
       });
       perms.forEach(({ v }) => {
         const t0 = desde(v[0], mb, true);
-        [t0, octavaArriba(t0)].forEach(t => {
-          if (midi(t) - mb > 24) return;
+        (sopranoFija !== null ? [t0, octavaArriba(t0), octavaArriba(t0, 2)] : [t0, octavaArriba(t0)]).forEach(t => {
+          if (midi(t) - mb > (sopranoFija !== null ? 36 : 24)) return;
           const a0 = desde(v[1], midi(t), false);
           [a0, octavaArriba(a0)].forEach(a => {
             if (midi(a) - midi(t) > 12) return;
@@ -192,7 +198,8 @@ const Realizacion = (() => {
             [s0, octavaArriba(s0)].forEach(s => {
               if (midi(s) - midi(a) > 12) return;
               if (midi(s) - midi(t) > ABERTURA_MAX) return;        // las tres voces caben en la mano derecha
-              if (midi(s) < SOP_MIN_DURO || midi(s) > SOP_MAX_DURO) return;
+              if (sopranoFija !== null) { if (midi(s) !== sopranoFija) return; }
+              else if (midi(s) < SOP_MIN_DURO || midi(s) > SOP_MAX_DURO) return;
               const clave = [midi(t), midi(a), midi(s)].join(',');
               if (vistas.has(clave)) return;
               vistas.add(clave);
@@ -262,36 +269,59 @@ const Realizacion = (() => {
     return coste;
   }
 
+  // Mejor disposición de un acorde suelto con la nota dada en la soprano (o la de Furno si no cabe)
+  function acordeConSoprano(id, bajo, ton, soprano) {
+    const d = describir(id, bajo, ton);
+    const sm = midi(Teoria.nota(soprano));
+    const cands = candidatas(d, sm);
+    if (!cands.length) return posicion(trio(id, bajo, ton), 0);
+    let mejor = null;
+    cands.forEach(c => { const k = costeLocal(c, d, false, ton); if (!mejor || k < mejor.k) mejor = { k, c }; });
+    return mejor.c.voces;
+  }
+
   function realizar(ej, cifras, opciones = {}) {
     const modo = opciones.modo || 'auto';
     const rot = opciones.rotacion || 0;
     const tons = Teoria.tonalidadesPorNota(ej);          // tonalidad que rige en cada nota (modulaciones)
     const notas = [];
-    ej.compases.forEach(c => c.forEach(([n]) => notas.push(Teoria.nota(n))));
+    if (Array.isArray(opciones.bajos)) opciones.bajos.forEach(b => notas.push(b ? Teoria.nota(b) : null));
+    else ej.compases.forEach(c => c.forEach(([n]) => notas.push(Teoria.nota(n))));
+    const sopranos = Array.isArray(opciones.sopranos) ? opciones.sopranos.map(s => (s ? midi(Teoria.nota(s)) : null)) : null;
+    const fija = k => (sopranos && sopranos[k] !== null ? sopranos[k] : null);
     const n = notas.length;
     const acordes = new Array(n).fill(null);
+    const cifrada = k => !!(cifras[k] && Teoria.CIFRADOS[cifras[k]] && notas[k]);
 
     if (modo !== 'auto') {
       notas.forEach((bajo, i) => {
         const id = cifras[i];
-        if (id && Teoria.CIFRADOS[id]) acordes[i] = posicion(trio(id, bajo, tons[i]), rot);
+        if (cifrada(i)) acordes[i] = fija(i) !== null ? acordeConSoprano(id, bajo, tons[i], opciones.sopranos[i]) : posicion(trio(id, bajo, tons[i]), rot);
       });
     } else {
       // Tramos de notas cifradas consecutivas; cada tramo empieza en la posición elegida
+      // (o, con la soprano fija, en la mejor disposición que la tenga arriba)
       let i = 0;
       while (i < n) {
-        if (!cifras[i] || !Teoria.CIFRADOS[cifras[i]]) { i++; continue; }
+        if (!cifrada(i)) { i++; continue; }
         let j = i;
-        while (j < n && cifras[j] && Teoria.CIFRADOS[cifras[j]]) j++;
+        while (j < n && cifrada(j)) j++;
         const tramo = [];
         for (let k = i; k < j; k++) tramo.push(describir(cifras[k], notas[k], tons[k]));
         // Programación dinámica: mejor serie de disposiciones del tramo
-        const primera = posicion(trio(cifras[i], notas[i], tons[i]), rot);
-        let capa = [{ c: { voces: primera, incompleta: false, doblaBajo: true, unisono: false }, coste: 0, ant: null }];
+        let capa;
+        if (fija(i) !== null) {
+          const cands0 = candidatas(tramo[0], fija(i));
+          capa = (cands0.length ? cands0 : candidatas(tramo[0])).map(c => ({ c, coste: costeLocal(c, tramo[0], i === n - 1, tons[i]), ant: null }));
+        } else {
+          const primera = posicion(trio(cifras[i], notas[i], tons[i]), rot);
+          capa = [{ c: { voces: primera, incompleta: false, doblaBajo: true, unisono: false }, coste: 0, ant: null }];
+        }
         const capas = [capa];
         for (let k = 1; k < tramo.length; k++) {
           const dc = tramo[k], dp = tramo[k - 1];
-          const cands = candidatas(dc);
+          let cands = candidatas(dc, fija(i + k));
+          if (!cands.length) cands = candidatas(dc);
           const esFinal = i + k === n - 1;
           const nueva = cands.map(c => {
             const local = costeLocal(c, dc, esFinal, tons[i + k]);
@@ -318,7 +348,7 @@ const Realizacion = (() => {
     // Paralelas del resultado
     const paralelas = [];
     for (let i = 1; i < acordes.length; i++) {
-      if (!acordes[i] || !acordes[i - 1]) continue;
+      if (!acordes[i] || !acordes[i - 1] || !notas[i] || !notas[i - 1]) continue;
       paralelasEntre([notas[i - 1], ...acordes[i - 1]], [notas[i], ...acordes[i]]).forEach(p => paralelas.push({ i, tipo: p.tipo, voces: p.voces, texto: (p.tipo === '5' ? 'quintas' : 'octavas') + ' entre ' + NOMBRES_VOZ[p.voces[0]] + ' y ' + NOMBRES_VOZ[p.voces[1]] + ' (' + i + '→' + (i + 1) + ')' }));
     }
     return { acordes, paralelas };
@@ -338,5 +368,5 @@ const Realizacion = (() => {
     return [tonica, sub, dom, tonica].map((b, i) => ({ bajo: b, voces: r.acordes[i] || [], duracion: i === 3 ? 4 : 2 }));
   }
 
-  return { trio, rotar, colocar, posicion, realizar, paralelasEntre, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
+  return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, paralelasEntre, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
 })();

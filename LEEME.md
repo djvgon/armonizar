@@ -25,19 +25,26 @@ doble clic**: no necesita servidor, conexión ni instalación.
   armonización en Análisis y Audición; solo el bajo en Armonización),
   «▶ Mi cifrado» la realización de lo cifrado hasta el momento, el ▶ encima
   de cada acorde ese acorde de la propuesta, y «■ Parar» (o Esc) detiene.
-  «Copiar enlace» copia una dirección que abre ese mismo ejercicio. Hay tres
+  «Copiar enlace» copia una dirección que abre ese mismo ejercicio. Hay cuatro
   tipos de ejercicio: **Análisis** (se ven bajo y realización; se cifra),
-  **Armonización** (solo el bajo; la realización aparece al cifrar) y
-  **Audición** (solo el bajo; se escucha la realización y se cifra lo que
-  suena). Un ejercicio puede **modular** (tonalidades vecinas): la fila
+  **Armonización** (se ve solo el bajo; se cifra y puede oírse lo escrito),
+  **Audición** (no se ve nada —o solo el bajo, si el profesor lo pide—; se
+  escucha la realización y se cifra lo que suena) y **Melodía de soprano**
+  (se ve la melodía; en cada nota se dan fundamental y cifrado y el bajo que
+  resulta aparece escrito; la realización, con la melodía arriba, al
+  terminar). Al terminar, en todos se ven bajo y realización. Si el
+  ejercicio lleva fila «Función» (T · S · D), viene dada o la rellena el
+  alumno antes que la fundamental. Un ejercicio
+  puede **modular** (tonalidades vecinas): la fila
   «Tonalidad» bajo los grados muestra desde qué nota rige cada tonalidad, o
   la rellena el alumno si el ejercicio solo avisa de que hay modulación; en
   la nota del cambio (acorde pivote) se dan los dos grados (II = V).
 - `configurar.html` — la página del profesor. Escribe el bajo (`do3 re3 | mi3
-  do3 | sol3r`; `n` negra, `c` corchea, `.` puntillo; cualquier compás) o
+  do3 | sol3r`; `n` negra, `c` corchea, `.` puntillo; cualquier compás) —o la
+  melodía, en el tipo Melodía de soprano (`mi4 fa4n mi4n | re4 si3 | do4r`)— o
   arrastra un `.musicxml` de MuseScore (cada barra final es un
   ejercicio), elige el tipo de ejercicio, el repertorio y las opciones, pulsa
-  «Analizar», revisa las cifras admisibles y la modelo de cada nota, y genera
+  «Analizar», revisa las cifras (o acordes) admisibles y la modelo de cada nota, y genera
   la dirección para los alumnos (o las de todos los fragmentos del archivo).
   También guarda y carga ejercicios como `.json`.
 - `pruebas.html` — comprobación del motor de reglas frente a las respuestas del
@@ -55,7 +62,7 @@ Direcciones:
 | Archivo | Qué contiene |
 |---|---|
 | `js/teoria.js` | Notas, tonalidades, grados, catálogo de cifrados y cálculo de las voces de cada acorde. |
-| `js/reglas.js` | Motor de reglas: propone los cifrados admisibles de cada nota (RO de Furno + saltos, arpegios y cadencias). |
+| `js/reglas.js` | Motor de reglas: propone los cifrados admisibles de cada nota (RO de Furno + saltos, arpegios y cadencias) y, para una melodía de soprano, los acordes que contienen cada nota en sucesión válida. |
 | `js/ejercicios.js` | El corpus (35 ejercicios) con sus respuestas fijadas a mano, y la codificación de ejercicios en la URL. |
 | `js/partitura.js` | Dibuja el pentagrama en SVG con la fuente Bravura y las casillas pulsables. |
 | `js/app.js` | La interfaz del alumno: paletas, estado del ejercicio, corrección, barra de realización. |
@@ -77,8 +84,11 @@ Identificadores de cifra: `53` (sin cifra), `6`, `65`, `43`, `7`, `7+` (7/+), `+
 pasa a modelo de cuarto (dominante secundaria sobre el grado 6). El grado de la fundamental no se escribe: se
 deriva de cada cifra (`pruebas.html` lo muestra junto a cada respuesta). Para
 no pedir el grado en un ejercicio, añádele `pedirRomano: false`. El tipo de
-ejercicio se guarda como `modo: 'cifrar'` (Análisis) o `modo: 'audicion'`;
-sin `modo`, es Armonización. Una modulación se guarda como
+ejercicio se guarda como `modo: 'cifrar'` (Análisis), `modo: 'audicion'`
+(con `mostrarBajo: true` si en Audición ha de verse el bajo) o `modo: 'soprano'`
+(melodía dada; entonces las respuestas son parejas `'V|65d'`); sin `modo`, es
+Armonización. La fila de funciones se guarda como `funciones: 'dadas'` o
+`'pedir'` y `funcionesNotas: ['T', 'D', …]`. Una modulación se guarda como
 `modulaciones: [{nota: 2, tonalidad: {tonica: 'G', modo: 'mayor'}}]` (índice de la
 nota pivote desde 0) y `aviso: 'completo'` o `'existe'`.
 

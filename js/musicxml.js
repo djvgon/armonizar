@@ -3,7 +3,9 @@
    MuseScore) y extrae la línea del bajo como fragmentos de ejercicio.
 
    Uso:
-     const r = MusicXML.importar(textoXML);
+     const r = MusicXML.importar(textoXML, { voz: 'bajo' | 'soprano' });
+       voz 'bajo' (por defecto): pentagrama inferior y nota más grave de cada acorde;
+       voz 'soprano' (melodía dada): pentagrama superior y nota más aguda.
      r.fragmentos → [ { compases:[[['C3',2],…],…], tonalidad:{tonica,modo},
                         compas:[4,4], tonalidadSegura:bool, numCompases }, … ]
      r.avisos     → ['…']   (ligaduras, cambios de armadura, etc.)
@@ -41,7 +43,8 @@ const MusicXML = (() => {
     return step + alt + octave;
   }
 
-  function importar(xmlTexto) {
+  function importar(xmlTexto, opciones = {}) {
+    const soprano = opciones.voz === 'soprano';
     const doc = new DOMParser().parseFromString(xmlTexto, 'application/xml');
     if (doc.querySelector('parsererror')) throw new Error('El archivo no es un XML válido.');
     const part = doc.querySelector('score-partwise > part');
@@ -82,13 +85,13 @@ const MusicXML = (() => {
       [...m.querySelectorAll(':scope > note')].forEach(n => {
         if (n.querySelector('rest') || n.querySelector('grace')) return;
         const staff = parseInt(texto(n, 'staff') || '1', 10);
-        if (staff !== staves) return;                        // solo el pentagrama inferior
+        if (staff !== (soprano ? 1 : staves)) return;        // solo el pentagrama inferior (o el superior, para la melodía)
         const pitch = n.querySelector('pitch');
         if (!pitch) return;
         const nombre = nombreNota(pitch);
         const tie = [...n.querySelectorAll('tie')].map(t => t.getAttribute('type'));
-        if (n.querySelector('chord')) {                       // nota de un acorde: quedarse con la más grave
-          if (ultimaNota && Teoria.midi(Teoria.nota(nombre)) < Teoria.midi(Teoria.nota(ultimaNota.nota))) ultimaNota.nota = nombre;
+        if (n.querySelector('chord')) {                       // nota de un acorde: quedarse con la más grave (o la más aguda, para la melodía)
+          if (ultimaNota) { const m = Teoria.midi(Teoria.nota(nombre)), u = Teoria.midi(Teoria.nota(ultimaNota.nota)); if (soprano ? m > u : m < u) ultimaNota.nota = nombre; }
           return;
         }
         if (tie.includes('stop')) {
@@ -116,7 +119,7 @@ const MusicXML = (() => {
       }
     });
 
-    if (!fragmentos.length) throw new Error('No se ha encontrado ninguna nota en el pentagrama del bajo.');
+    if (!fragmentos.length) throw new Error('No se ha encontrado ninguna nota en el pentagrama ' + (soprano ? 'superior' : 'del bajo') + '.');
     return { fragmentos, avisos };
   }
 

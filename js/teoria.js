@@ -43,7 +43,7 @@ const Teoria = (() => {
 
   // 'sol♯2', 'Sib3', 'do3', 'fa#' (octava 3 por defecto) → 'G#2', 'Bb3', 'C3', 'F#3'
   const ES_A_LETRA = { do: 'C', re: 'D', mi: 'E', fa: 'F', sol: 'G', la: 'A', si: 'B' };
-  function notaEs(txt) {
+  function notaEs(txt, octavaDefecto = 3) {
     const m = /^(do|re|mi|fa|sol|la|si|[a-g])\s*(♯♯|##|♯|#|♭♭|bb|♭|b)?\s*(-?\d)?$/i.exec(txt.trim());
     if (!m) throw new Error('Nota no reconocida: «' + txt + '»');
     const l = m[1].toLowerCase();
@@ -53,15 +53,16 @@ const Teoria = (() => {
       const a = m[2];
       alt = (a === '♯' || a === '#') ? '#' : (a === '♯♯' || a === '##') ? '##' : (a === '♭' || a === 'b') ? 'b' : 'bb';
     }
-    return letra + alt + (m[3] !== undefined ? m[3] : '3');
+    return letra + alt + (m[3] !== undefined ? m[3] : String(octavaDefecto));
   }
 
   // Texto de un bajo → compases. Sintaxis: notas separadas por espacios y
   // compases por «|». Duración con sufijo: nada = blanca, «r» = redonda,
   // «n» = negra, «c» = corchea; un punto añade el puntillo
-  // (do3 re3 | mi3 do3 | sol3r | do3. | la3n si3n do4n).
+  // (do3 re3 | mi3 do3 | sol3r | do3. | la3n si3n do4n). Sin octava se toma la
+  // 3 (bajo) o la que se indique (4 para una melodía de soprano).
   const DURACION_SUFIJO = { r: 4, '': 2, n: 1, c: 0.5 };
-  function bajoDesdeTexto(txt) {
+  function bajoDesdeTexto(txt, octavaDefecto = 3) {
     const compases = [];
     const errores = [];
     txt.split(/\|/).forEach((trozo, ci) => {
@@ -70,7 +71,7 @@ const Teoria = (() => {
         const m = /^(.*?)([rncRNC])?(\.)?$/.exec(tok);
         let dur = DURACION_SUFIJO[(m[2] || '').toLowerCase()];
         if (m[3]) dur *= 1.5;
-        try { notas.push([notaEs(m[1]), dur]); }
+        try { notas.push([notaEs(m[1], octavaDefecto), dur]); }
         catch (e) { errores.push('Compás ' + (ci + 1) + ': ' + e.message); }
       });
       if (notas.length) compases.push(notas);
@@ -384,6 +385,46 @@ const Teoria = (() => {
     return ROMANOS[gradoFundamental(id, bajo, ton) - 1];
   }
 
+  /* ---- Funciones tonales (cuadro verde de Diego) ----
+     T = I y VI · S = II, IV y VI · D = V, VII y V7. El VI es T o S según el contexto:
+     S si va hacia la dominante, T en los demás casos (cadencia rota incluida). */
+  const FUNCIONES = ['T', 'S', 'D'];
+  const FUNCION_DE = { I: ['T'], II: ['S'], III: ['T'], IV: ['S'], V: ['D'], VI: ['T', 'S'], VII: ['D'] };
+  const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante' };
+  // Funciones posibles de un grado (la primera es la habitual)
+  function funcionesDe(romano) { return (FUNCION_DE[romano] || ['T']).slice(); }
+  // Función habitual, dado el grado siguiente (para el VI: S si sigue una dominante)
+  function funcionDe(romano, romanoSiguiente) {
+    const f = funcionesDe(romano);
+    if (romano === 'VI' && romanoSiguiente && funcionesDe(romanoSiguiente)[0] === 'D') return 'S';
+    return f[0];
+  }
+
+  /* ---- Bajo a partir de la fundamental y la cifra ----
+     La cifra dice qué nota del acorde está en el bajo (FUNDAMENTAL[id] = letras del
+     bajo a la fundamental): —/7/7+/9 la fundamental; 6, 6/5, 6/5̸ la tercera; 6/4,
+     4/3, +6 la quinta; +4 la séptima. Devuelve {letra, alt} sin octava, o null si la
+     cifra no puede darse sobre esa fundamental en la tonalidad. En menor, el bajo
+     sobre el 7.º grado lleva la sensible elevada salvo en el III. */
+  function bajoDe(romano, id, ton) {
+    const k = ROMANOS.indexOf(romano);
+    const pasos = FUNDAMENTAL[id];
+    if (k < 0 || pasos === undefined) return null;
+    // Convenciones del cifrado: las cifras de dominante (7/+, 6/5̸, +6, +4) son el V7
+    // (y +6 también el II como dominante secundaria del V, decisión 9); sobre el V la
+    // séptima se escribe siempre marcada, nunca 7, 6/5 o 4/3 (decisión 11).
+    if (DOMINANTES.includes(id) && !(romano === 'V' || (romano === 'II' && id === '+6'))) return null;
+    if (romano === 'V' && MARCADOS[id]) return null;
+    const gradoBajo = ((k - pasos) % 7 + 7) % 7;               // 0..6
+    const esc = escalaNatural(ton), escV = escalaVoces(ton);
+    const e = gradoBajo === 6 && romano !== 'III' ? escV[6] : esc[gradoBajo];
+    const bajo = { letra: e.letra, alt: e.alt, octava: 3 };
+    // Comprobación: la cifra sobre ese bajo ha de dar de verdad ese grado como fundamental
+    try { if (romano_(id, bajo, ton) !== romano) return null; } catch (err) { return null; }
+    return { letra: e.letra, alt: e.alt };
+  }
+  function romano_(id, bajo, ton) { return ROMANOS[grado(fundamental(id, bajo, ton), ton).grado - 1]; }
+
   // Conjunto de clases de altura del acorde completo (bajo incluido), como cadena ordenada.
   function claveAcorde(id, bajo, ton) {
     bajo = nota(bajo);
@@ -414,6 +455,7 @@ const Teoria = (() => {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, texto, nombreEs, midi, clase, indice, transportar,
     escalaNatural, escalaVoces, armadura, grado, nombreTonalidad, nombreCorto, mismaTonalidad,
     tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
-    CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, vocesSuperiores, fundamental, gradoFundamental, romano, claveAcorde, canonizar
+    CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
+    FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionDe, bajoDe
   };
 })();

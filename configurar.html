@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Configurador de ejercicios · Armonizar el bajo</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260920-1940">
-  <link rel="stylesheet" href="css/estilo.css?v=20260920-1940">
+  <link rel="stylesheet" href="css/bravura.css?v=20260920-2330">
+  <link rel="stylesheet" href="css/estilo.css?v=20260920-2330">
 </head>
 <body class="configurador">
 
@@ -22,20 +22,20 @@
 
     <!-- ===== Paso 1: el bajo ===== -->
     <section class="paso" id="paso-bajo">
-      <h2><span class="num">1</span> El bajo</h2>
+      <h2><span class="num">1</span> <span id="titulo-voz">El bajo</span></h2>
       <div class="columnas">
         <div class="columna">
           <label class="campo">
-            <span>Escribe el bajo</span>
+            <span id="etiqueta-voz">Escribe el bajo</span>
             <textarea id="texto-bajo" rows="3" spellcheck="false" placeholder="do3 re3 | mi3 do3 | sol3r | do3r"></textarea>
           </label>
-          <p class="ayuda">Notas separadas por espacios, compases por <code>|</code>. Sin sufijo = blanca; <code>r</code> = redonda; <code>n</code> = negra; <code>c</code> = corchea; un punto añade el puntillo (<code>do3.</code> = blanca con puntillo, para 3/4). Alteraciones: <code>fa#3</code>, <code>sib2</code>. Si no pones octava se toma la 3 (<code>do3</code> es el do del segundo espacio en clave de fa).</p>
+          <p class="ayuda">Notas separadas por espacios, compases por <code>|</code>. Sin sufijo = blanca; <code>r</code> = redonda; <code>n</code> = negra; <code>c</code> = corchea; un punto añade el puntillo (<code>do3.</code> = blanca con puntillo, para 3/4). Alteraciones: <code>fa#3</code>, <code>sib2</code>. Si no pones octava se toma la 3 (<code>do3</code> es el do del segundo espacio en clave de fa)<span id="ayuda-octava-soprano" hidden">; en una melodía de soprano, la 4 (<code>do4</code> es el do central)</span>.</p>
           <p id="errores-bajo" class="error" hidden></p>
         </div>
         <div class="columna">
           <div id="zona-archivo" class="zona-archivo" tabindex="0" role="button" aria-label="Importar archivo">
             <p><b>Arrastra aquí un archivo</b> o pulsa para elegirlo</p>
-            <p class="ayuda"><code>.musicxml</code> exportado de MuseScore (se toma el pentagrama del bajo y cada barra final cierra un ejercicio) o <code>.json</code> guardado desde este configurador.</p>
+            <p class="ayuda"><code>.musicxml</code> exportado de MuseScore (se toma el pentagrama del bajo —el superior, en una melodía de soprano— y cada barra final cierra un ejercicio) o <code>.json</code> guardado desde este configurador.</p>
             <input type="file" id="archivo" accept=".musicxml,.xml,.json,application/json,application/xml,text/xml" hidden>
           </div>
           <div id="fragmentos" class="fragmentos" hidden>
@@ -91,12 +91,17 @@
         <label class="tipo">
           <input type="radio" name="modo-ej" value="armonizar" checked>
           <span class="tipo-titulo">Armonización</span>
-          <span class="tipo-texto">Se le da el bajo; ha de cifrarlo y, a medida que cifra, ve (y puede oír) la realización de lo que escribe.</span>
+          <span class="tipo-texto">Ve solo el bajo; ha de cifrarlo (puede oír lo que escribe). Al terminar ve la realización de su cifrado.</span>
         </label>
         <label class="tipo">
           <input type="radio" name="modo-ej" value="audicion">
           <span class="tipo-titulo">Audición</span>
-          <span class="tipo-texto">Ve solo el bajo y escucha la realización (entera o acorde a acorde); ha de cifrar lo que suena. La realización se ve al corregir.</span>
+          <span class="tipo-texto">No ve nada (o solo el bajo, a elegir en las opciones): escucha la armonización (entera o acorde a acorde) y ha de cifrar lo que suena. Bajo y realización se ven al terminar.</span>
+        </label>
+        <label class="tipo">
+          <input type="radio" name="modo-ej" value="soprano">
+          <span class="tipo-titulo">Melodía de soprano</span>
+          <span class="tipo-texto">Ve la melodía y la armoniza: en cada nota elige la fundamental y el cifrado, y el bajo aparece escrito. La realización, con la melodía arriba, se ve al terminar.</span>
         </label>
       </div>
     </section>
@@ -115,14 +120,6 @@
           <input id="reintentos" type="checkbox" checked>
           <span>Permitir corregir solo los errores antes de ver la solución</span>
         </label>
-        <label class="campo" id="campo-realizacion">
-          <span>Realización a cuatro voces (solo en Armonización)</span>
-          <select id="realizacion-cuando">
-            <option value="siempre" selected>Visible desde el principio</option>
-            <option value="alCorregir">Solo después de corregir</option>
-            <option value="nunca">Nunca</option>
-          </select>
-        </label>
         <label class="campo">
           <span>Ayuda con los grados</span>
           <select id="ayuda-grados">
@@ -136,6 +133,21 @@
           <select id="preferir">
             <option value="">II4/3 (tercero)</option>
             <option value="+6">+6, dominante secundaria del V (cuarto)</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Funciones tonales (fila T · S · D)</span>
+          <select id="funciones">
+            <option value="" selected>Sin fila de funciones</option>
+            <option value="dadas">Dadas: el alumno ve la función de cada acorde</option>
+            <option value="pedir">Pedirlas: el alumno indica primero la función de cada acorde</option>
+          </select>
+        </label>
+        <label class="campo" id="campo-bajo-audicion" hidden>
+          <span>Audición: qué ve el alumno mientras escucha</span>
+          <select id="bajo-audicion">
+            <option value="" selected>Nada: ni el bajo ni la realización</option>
+            <option value="bajo">Solo el bajo (la realización, no)</option>
           </select>
         </label>
         <label class="campo" id="campo-aviso-mod" hidden>
@@ -157,10 +169,10 @@
       <h2><span class="num">4</span> Revisión de las respuestas</h2>
       <div id="vista-previa" class="partitura-caja"></div>
       <label class="campo campo-linea"><input id="ver-solucion" type="checkbox" checked><span>Mostrar la solución modelo en la vista previa</span></label>
-      <p class="ayuda">Marca las cifras admisibles de cada nota y elige cuál es la modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
+      <p class="ayuda">Marca las cifras admisibles de cada nota y elige cuál es la modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. En una <b>melodía de soprano</b> cada opción es un acorde (fundamental y cifra; entre paréntesis, el bajo que resulta): el motor propone los que caben en una sucesión válida y deja sin marcar los demás acordes que contienen la nota. Cambiar la <b>función</b> de una nota vuelve a analizar la melodía con esa función fijada. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
       <div class="tabla-caja">
         <table id="tabla-revision" class="tabla-revision">
-          <thead><tr><th>#</th><th>Nota</th><th>Tonalidad <small class="th-ayuda">(despliega para modular desde esa nota)</small></th><th>Grado</th><th>Cifras admisibles (● modelo)</th><th>Regla</th></tr></thead>
+          <thead><tr><th>#</th><th>Nota</th><th>Tonalidad <small class="th-ayuda">(despliega para modular desde esa nota)</small></th><th>Grado</th><th class="col-fun">Función</th><th id="th-admisibles">Cifras admisibles (● modelo)</th><th>Regla</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -195,15 +207,15 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260920-1940</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260920-2330</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260920-1940"></script>
-  <script src="js/reglas.js?v=20260920-1940"></script>
-  <script src="js/ejercicios.js?v=20260920-1940"></script>
-  <script src="js/partitura.js?v=20260920-1940"></script>
-  <script src="js/musicxml.js?v=20260920-1940"></script>
-  <script src="js/realizacion.js?v=20260920-1940"></script>
-  <script src="js/configurador.js?v=20260920-1940"></script>
+  <script src="js/teoria.js?v=20260920-2330"></script>
+  <script src="js/reglas.js?v=20260920-2330"></script>
+  <script src="js/ejercicios.js?v=20260920-2330"></script>
+  <script src="js/partitura.js?v=20260920-2330"></script>
+  <script src="js/musicxml.js?v=20260920-2330"></script>
+  <script src="js/realizacion.js?v=20260920-2330"></script>
+  <script src="js/configurador.js?v=20260920-2330"></script>
 </body>
 </html>
