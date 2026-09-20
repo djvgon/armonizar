@@ -160,19 +160,26 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
      interviene en las notas): si el alumno pone un grado incoherente con
      la cifra, verá el acorde de la cifra.
    - Tras corregir, los acordes de las cifras erróneas se dibujan en rojo.
-   - Sonido (`js/sonido.js`, Web Audio, osciladores). Tres cosas pueden
-     sonar, con **el bajo doblado a la octava grave** en toda reproducción
-     (para que destaque y ayude a reconocer las inversiones):
-     «▶ Cadencia» (I–IV–V7–I en la tonalidad, para situar el oído; el
-     enunciado empieza por ella), «▶ Propuesta» (la realización de las
-     cifras modelo: siempre en Análisis y Audición, en Armonización solo
-     tras ver la solución, porque delataría la respuesta) y «▶ Mi cifrado»
-     (la realización de lo que ha escrito el alumno; las notas sin cifra y
-     grado suenan solo con el bajo). Además, un botón ▶ bajo cada nota
-     hace sonar solo ese acorde (el propuesto en Análisis y Audición, el
-     escrito en Armonización: lo mismo que se dibuja), y se resalta el de la
-     nota que está sonando. «■ Parar» (o Esc) detiene la reproducción;
-     «sonar al elegir» suena el acorde al completar cifra y grado.
+   - Sonido (`js/sonido.js`, Web Audio, osciladores). Tres botones, con
+     **el bajo doblado a la octava grave** en toda reproducción (para que
+     destaque y ayude a reconocer las inversiones); nombres y comportamiento
+     fijados por Diego el 20/9/2026:
+     - «▶ Tono inicial»: cadencia I–IV–V7–I en la tonalidad inicial, para
+       situar el oído.
+     - «▶ Escuchar propuesta»: lo que propone el ejercicio. En Análisis, la
+       armonización que se ve; en Audición, la armonización que hay que
+       reconocer (no se ve); en Armonización, **solo el bajo**.
+     - «▶ Mi cifrado»: la realización de lo que el alumno ha cifrado hasta
+       el momento (las notas sin grado y cifrado suenan solo con el bajo).
+     - Un botón ▶ **encima de cada acorde** (sobre la clave de sol) hace
+       sonar ese acorde de la propuesta (en Armonización, esa nota del
+       bajo): reproduce el acorde, no el cifrado introducido; el botón de
+       lo que suena se resalta. «■ Parar» (o Esc) detiene; «sonar al
+       elegir» suena el acorde propio al completar grado y cifrado.
+     - Lo que se dibuja en el pentagrama de sol: en Análisis la
+       armonización modelo; en Armonización y en Audición la realización de
+       lo que el alumno va cifrando (en Audición, si cifra bien coincidirá
+       con lo que oye); tras corregir, los acordes erróneos en rojo.
 8. **Dos respuestas por nota.** El alumno indica, además de la cifra, el
    grado de la escala sobre el que se construye la fundamental del acorde
    (I … VII, siempre en mayúsculas). El grado correcto se **deriva** de cada
@@ -220,8 +227,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       `realizacion` (`siempre` / `alCorregir` / `nunca`), que solo existe en
       este tipo.
     - **Audición** (`'audicion'`): solo el bajo escrito; el alumno escucha
-      la realización modelo («Escuchar todo» o «Este acorde», con botones
-      destacados) y cifra lo que suena. La realización se ve al corregir.
+      la armonización modelo («Escuchar propuesta», o acorde a acorde con el
+      ▶ de encima de cada acorde, con botones destacados) y cifra lo que
+      suena; a medida que cifra ve su propia realización y puede oírla con
+      «Mi cifrado».
 13. **Ayuda con los grados** (`ayudaGrados`, por ejercicio): `ninguna`
     (paleta I–VII sin lista), `lista` (por defecto: paleta completa y la
     fila «Grados en este ejercicio», deducida de las respuestas admisibles o
@@ -476,3 +485,10 @@ anunciar.
 - Cuando la aplicación esté publicada, cada entrega a la carpeta de Drive va
   seguida de la subida a GitHub por parte de Diego (paso 6 de la guía); las
   direcciones para alumnos se generan siempre desde el configurador publicado.
+- **Versión visible y caché.** Los dos HTML llevan en el pie «Versión
+  AAAAMMDD-HHMM» y cargan sus `.js` y `.css` con `?v=` esa misma marca. En
+  cada entrega se actualiza la marca en `index.html` y `configurar.html`
+  (así el navegador vuelve a pedir los archivos cambiados y Diego puede
+  comprobar qué versión tiene delante). Si tras subir a GitHub sigue viéndose
+  la anterior, es la caché del navegador: recargar sin caché (Chrome
+  Cmd+Shift+R; Safari Opción+Cmd+R) o esperar hasta diez minutos.

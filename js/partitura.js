@@ -13,7 +13,7 @@
                       soloLectura:bool (vista previa sin interacción),
                       realizacion:[[n1,n2,n3]|null…] (si existe, se dibuja el pentagrama
                       de sol con esos acordes), realizacionMal:[bool] (acordes en rojo),
-                      alSonar:función(i) (si existe, un botón ▶ bajo cada nota la llama),
+                      alSonar:función(i) (si existe, un botón ▶ encima de cada acorde la llama),
                       sonando:índice (nota cuyo botón ▶ se resalta),
                       numerar:bool (número de cada acorde encima del sistema, como en la
                       tabla de revisión del configurador), alPulsarNumero:función(i),
@@ -155,7 +155,9 @@ const Partitura = (() => {
     const conSol = Array.isArray(estado.realizacion);      // ¿se dibuja el pentagrama de sol con la realización?
     const numerar = !!estado.numerar;                      // ¿número de cada acorde encima del sistema (revisión del profesor)?
     const etiquetas = Array.isArray(estado.etiquetas) ? estado.etiquetas : [];   // rótulos de tonalidad encima del sistema
-    const Y0 = (numerar ? 3 * SP : 0) + (etiquetas.length ? 3 * SP : 0);        // banda superior para números y rótulos
+    const conSonar = typeof estado.alSonar === 'function' && !soloLectura;   // botón ▶ ENCIMA de cada acorde (suena ese acorde)
+    // Banda superior, de arriba abajo: números (configurador), rótulos de tonalidad, botones ▶
+    const Y0 = (numerar ? 3 * SP : 0) + (etiquetas.length ? 3 * SP : 0) + (conSonar ? 3 * SP : 0);
     const Y_TOP_SOL = 5 * SP + Y0, Y_BOT_SOL = Y_TOP_SOL + 4 * SP;
     const Y_TOP = conSol ? Y_BOT_SOL + 7.5 * SP : 5.5 * SP + Y0; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
@@ -177,10 +179,8 @@ const Partitura = (() => {
     const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
     const Y_TON = Y_FIN_ROMANO + 0.8 * SP, ALTO_TON = 2.7 * SP;
     const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_ROMANO;
-    const conSonar = typeof estado.alSonar === 'function' && !soloLectura;   // botón ▶ bajo cada acorde
-    const Y_SONAR = Y_FIN_CASILLAS + 1.1 * SP, R_SONAR = 1.25 * SP;         // centro vertical del botón = Y_SONAR + R_SONAR
-    const Y_FIN_SONAR = conSonar ? Y_SONAR + 2 * R_SONAR : Y_FIN_CASILLAS;
-    const Y_MODELO = Y_FIN_SONAR + 2.4 * SP;               // centro de la respuesta modelo (tras corregir)
+    const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
+    const Y_MODELO = Y_FIN_CASILLAS + 2.4 * SP;            // centro de la respuesta modelo (tras corregir)
     const ALTO_TOTAL = Y_MODELO + 2.6 * SP;
 
     // Cálculo de posiciones x
@@ -472,12 +472,12 @@ const Partitura = (() => {
         svg.appendChild(g);
       }
 
-      // Botón ▶ para escuchar el acorde de esta nota
+      // Botón ▶ encima del acorde: hace sonar ese acorde de la propuesta
       if (conSonar) {
-        const cy = Y_SONAR + R_SONAR;
+        const cy = CY_SONAR;
         const g = el('g', { class: 'boton-sonar' + (estado.sonando === i ? ' sonando' : ''), 'data-indice': i, tabindex: 0, role: 'button',
-          'aria-label': 'Escuchar el acorde de la nota ' + (i + 1) });
-        g.appendChild(el('title', {}, 'Escuchar este acorde'));
+          'aria-label': 'Escuchar el acorde ' + (i + 1) + ' de la propuesta' });
+        g.appendChild(el('title', {}, 'Escuchar este acorde de la propuesta'));
         g.appendChild(el('circle', { cx, cy, r: R_SONAR, class: 'fondo' }));
         g.appendChild(el('path', { d: `M ${cx - 0.42 * SP} ${cy - 0.6 * SP} L ${cx + 0.62 * SP} ${cy} L ${cx - 0.42 * SP} ${cy + 0.6 * SP} Z`, class: 'triangulo' }));
         g.addEventListener('click', ev => { ev.stopPropagation(); estado.alSonar(i); });

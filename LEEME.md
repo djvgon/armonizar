@@ -19,9 +19,11 @@ doble clic**: no necesita servidor, conexión ni instalación.
   arreglan solo las rojas (sin ver la solución hasta pulsar «Ver la
   solución»). Sobre el bajo, un pentagrama de sol muestra la realización a
   cuatro voces (posición inicial de Furno a elegir). Sonido, siempre con el
-  bajo doblado a la octava grave: «▶ Cadencia» sitúa la tonalidad,
-  «▶ Propuesta» reproduce la realización del ejercicio, «▶ Mi cifrado» la de
-  lo escrito, el ▶ bajo cada nota su acorde, y «■ Parar» (o Esc) detiene.
+  bajo doblado a la octava grave: «▶ Tono inicial» sitúa la tonalidad,
+  «▶ Escuchar propuesta» reproduce lo que propone el ejercicio (la
+  armonización en Análisis y Audición; solo el bajo en Armonización),
+  «▶ Mi cifrado» la realización de lo cifrado hasta el momento, el ▶ encima
+  de cada acorde ese acorde de la propuesta, y «■ Parar» (o Esc) detiene.
   «Copiar enlace» copia una dirección que abre ese mismo ejercicio. Hay tres
   tipos de ejercicio: **Análisis** (se ven bajo y realización; se cifra),
   **Armonización** (solo el bajo; la realización aparece al cifrar) y

@@ -35,8 +35,9 @@
                    'cifrar' (Análisis): se muestran bajo y realización modelo a
                        cuatro voces desde el principio y el alumno debe cifrarla.
                    'audicion' (Audición): el alumno ve solo el bajo, escucha la
-                       realización modelo (botón «Escuchar», o acorde a acorde) y
-                       cifra lo que suena; la realización se ve al corregir.
+                       realización modelo («Escuchar propuesta», o acorde a acorde
+                       con el ▶ de cada nota) y cifra lo que suena; a medida que
+                       cifra ve y puede oír («Mi cifrado») su propia realización.
      realizacion : (opcional, solo en 'armonizar') cuándo puede verse el pentagrama
                    de sol: 'siempre' (por defecto), 'alCorregir' o 'nunca'.
      pedirRomano : (opcional, por defecto true) si el alumno debe indicar también
@@ -405,7 +406,7 @@ const Ejercicios = (() => {
   function modo(ej) { return MODOS[ej.modo] ? ej.modo : 'armonizar'; }
   function realizacion(ej) {
     if (modo(ej) === 'cifrar') return 'siempre';
-    if (modo(ej) === 'audicion') return 'alCorregir';
+    if (modo(ej) === 'audicion') return 'siempre';    // el alumno ve (su) realización a medida que cifra; la propuesta solo se oye
     return ['siempre', 'alCorregir', 'nunca'].includes(ej.realizacion) ? ej.realizacion : 'siempre';
   }
 

@@ -130,15 +130,17 @@
     const b = t => '<span class="ref-boton">' + t + '</span>';
     let html;
     if (estado.modoEj === 'cifrar') {
-      html = '<b>Análisis.</b> Observa la realización a cuatro voces y, para cada acorde, indica ' + que + '. Tonalidad: ' + ton + '. '
-        + b('▶ Cadencia') + ' sitúa la tonalidad; ' + b('▶ Propuesta') + ' y el ' + b('▶') + ' de cada nota hacen sonar la realización.';
+      html = '<b>Análisis.</b> Observa la armonización a cuatro voces y, para cada acorde, indica ' + que + '. Tonalidad: ' + ton + '. '
+        + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la armonización que ves, y el ' + b('▶') + ' sobre cada acorde, solo ese acorde; '
+        + b('▶ Mi cifrado') + ' hace sonar lo que llevas cifrado.';
     } else if (estado.modoEj === 'audicion') {
-      html = '<b>Audición.</b> Pulsa ' + b('▶ Cadencia') + ' para situarte en la tonalidad (' + ton + ') y ' + b('▶ Propuesta') + ' para escuchar el fragmento, '
-        + 'o el ' + b('▶') + ' de cada nota para oírlo acorde a acorde. Para cada nota del bajo indica, de lo que suena, ' + que + '. '
-        + 'Con ' + b('▶ Mi cifrado') + ' oirás lo que has escrito, para compararlo.';
+      html = '<b>Audición.</b> Pulsa ' + b('▶ Tono inicial') + ' para situarte en la tonalidad (' + ton + ') y ' + b('▶ Escuchar propuesta') + ' para oír la armonización que has de reconocer, '
+        + 'o el ' + b('▶') + ' sobre cada acorde para oírlo uno a uno. Para cada nota del bajo indica, de lo que suena, ' + que + '. '
+        + 'A medida que cifres verás tu propia realización, y ' + b('▶ Mi cifrado') + ' la hace sonar para compararla.';
     } else {
       html = '<b>Armonización.</b> Para cada nota del bajo indica ' + que + '. Tonalidad: ' + ton + '. '
-        + b('▶ Cadencia') + ' sitúa la tonalidad; ' + b('▶ Mi cifrado') + ' y el ' + b('▶') + ' de cada nota hacen sonar lo que vas escribiendo.';
+        + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar el bajo (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
+        + b('▶ Mi cifrado') + ', lo que llevas cifrado.';
     }
     if (estado.avisoMod === 'completo') {
       const mods = Ejercicios.modulaciones(ej);
@@ -330,10 +332,10 @@
 
   const cifrasModelo = () => estado.ejercicio.respuestas.map((_, i) => Ejercicios.admisibles(estado.ejercicio, i)[0]);
 
-  // Cifras que se realizan: las del alumno (armonizar), solo en las notas completas
-  // —cifra y grado—, o las modelo (análisis y audición).
+  // Cifras que se dibujan en el pentagrama de sol: las modelo en Análisis; en
+  // Armonización y Audición, las del alumno, solo en las notas completas (grado y cifra).
   function cifrasParaRealizar() {
-    if (estado.modoEj === 'cifrar' || estado.modoEj === 'audicion') return cifrasModelo();
+    if (estado.modoEj === 'cifrar') return cifrasModelo();
     return estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null));
   }
 
@@ -345,12 +347,11 @@
     const r = Realizacion.realizar(estado.ejercicio, cifrasParaRealizar(), { modo: estado.rigida ? 'rigida' : 'auto', rotacion: estado.rotacion });
     estado.realizacion = r.acordes;
     estado.paralelas = r.paralelas;
-    estado.realizacionMal = (estado.modoEj === 'armonizar' && estado.corregido && estado.resultados) ? estado.resultados.map(x => !x.okCifra) : null;
+    estado.realizacionMal = (estado.modoEj !== 'cifrar' && estado.corregido && estado.resultados) ? estado.resultados.map(x => !x.okCifra) : null;
   }
 
-  // ¿Puede oírse ya la realización propuesta? En análisis y audición, siempre; en
-  // armonización, solo cuando se ha mostrado la solución (si no, delataría la respuesta).
-  const propuestaAudible = () => estado.modoEj !== 'armonizar' || estado.mostrarSolucion;
+  // «Escuchar propuesta» suena siempre: en Armonización propone solo el bajo.
+  const propuestaAudible = () => true;
 
   function pintarBarraRealizacion() {
     // Controles de la realización visible: solo cuando puede verse ahora
@@ -462,21 +463,25 @@
 
   /* ---------- Escuchar ----------
      Tres cosas pueden sonar, siempre con el bajo doblado a la octava grave:
-       · la cadencia I–IV–V7–I de la tonalidad, para situar el oído;
-       · la realización PROPUESTA por el ejercicio (las cifras modelo);
-       · la realización de MI CIFRADO (lo que el alumno ha escrito; las notas sin
-         cifra y grado suenan solo con el bajo).
-     El ▶ de cada nota hace sonar un solo acorde: el propuesto en análisis y audición,
-     el escrito en armonización (lo mismo que se dibuja en el pentagrama de sol). */
+       · «Tono inicial»: la cadencia I–IV–V7–I de la tonalidad inicial, para situar el oído;
+       · «Escuchar propuesta»: lo que propone el ejercicio. En Análisis, la armonización
+         que se ve; en Audición, la armonización que se ha de reconocer (no se ve); en
+         Armonización, solo el bajo (no hay armonización propuesta que oír).
+       · «Mi cifrado»: la realización de lo que el alumno ha cifrado hasta el momento
+         (las notas sin grado y cifra suenan solo con el bajo).
+     El ▶ que hay ENCIMA de cada acorde hace sonar ese acorde de la propuesta (en
+     Armonización, esa nota del bajo): reproduce el acorde, no el cifrado introducido. */
 
   const SEG_POR_NEGRA = 0.6;
   const opcionesRealizacion = () => ({ modo: estado.rigida ? 'rigida' : 'auto', rotacion: estado.rotacion });
   const duraciones = () => { const d = []; estado.ejercicio.compases.forEach(c => c.forEach(([, x]) => d.push(x))); return d; };
 
-  function acordesPropuesta() { return Realizacion.realizar(estado.ejercicio, cifrasModelo(), opcionesRealizacion()).acordes; }
+  // La propuesta: armonización modelo (Análisis y Audición) o solo el bajo (Armonización).
+  function acordesPropuesta() {
+    if (estado.modoEj === 'armonizar') return estado.respuestas.map(() => []);
+    return Realizacion.realizar(estado.ejercicio, cifrasModelo(), opcionesRealizacion()).acordes;
+  }
   function acordesMios() { return Realizacion.realizar(estado.ejercicio, estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null)), opcionesRealizacion()).acordes; }
-  // Lo que se dibuja (y suena con el ▶ de cada nota): la propuesta en análisis y audición, lo escrito en armonización.
-  function acordesVisibles() { return estado.modoEj === 'armonizar' ? acordesMios() : acordesPropuesta(); }
 
   // Resalta el botón ▶ de la nota que suena (sin redibujar la partitura)
   function marcarSonando(i) {
@@ -511,11 +516,10 @@
     } catch (e) { aviso('No se ha podido reproducir el sonido en este navegador.'); }
   }
 
-  // Botón ▶ de la nota i: suena su acorde (propuesto o escrito, según el tipo de ejercicio)
+  // Botón ▶ sobre la nota i: suena ese acorde de la propuesta (en Armonización, la nota del bajo)
   function sonarAcorde(i) {
     const notas = Reglas.notasDe(estado.ejercicio);
-    const ac = acordesVisibles()[i];
-    if (!ac && estado.modoEj === 'armonizar') aviso('Esta nota aún no tiene cifra y grado: suena solo el bajo.');
+    const ac = acordesPropuesta()[i];
     try {
       Sonido.acorde(conBajoDoblado(notas[i], ac || []), 1.4);
       marcarSonando(i);
