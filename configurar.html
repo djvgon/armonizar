@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Configurador de ejercicios · Armonizar el bajo</title>
+  <link rel="stylesheet" href="css/bravura.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body class="configurador">
+
+  <header class="cabecera">
+    <div class="cabecera-texto">
+      <p class="sobretitulo">Armonización con cifrado barroco · profesor</p>
+      <h1>Configurador de ejercicios</h1>
+      <p class="instruccion">Escribe o importa un bajo, elige el repertorio, revisa las cifras que propone el motor y genera la dirección que recibirán los alumnos.</p>
+    </div>
+    <a class="enlace-boton" href="index.html">Ir a la página del alumno →</a>
+  </header>
+
+  <main>
+
+    <!-- ===== Paso 1: el bajo ===== -->
+    <section class="paso" id="paso-bajo">
+      <h2><span class="num">1</span> El bajo</h2>
+      <div class="columnas">
+        <div class="columna">
+          <label class="campo">
+            <span>Escribe el bajo</span>
+            <textarea id="texto-bajo" rows="3" spellcheck="false" placeholder="do3 re3 | mi3 do3 | sol3r | do3r"></textarea>
+          </label>
+          <p class="ayuda">Notas separadas por espacios, compases por <code>|</code>. Sin sufijo = blanca; <code>r</code> = redonda; <code>n</code> = negra; <code>c</code> = corchea; un punto añade el puntillo (<code>do3.</code> = blanca con puntillo, para 3/4). Alteraciones: <code>fa#3</code>, <code>sib2</code>. Si no pones octava se toma la 3 (<code>do3</code> es el do del segundo espacio en clave de fa).</p>
+          <p id="errores-bajo" class="error" hidden></p>
+        </div>
+        <div class="columna">
+          <div id="zona-archivo" class="zona-archivo" tabindex="0" role="button" aria-label="Importar archivo">
+            <p><b>Arrastra aquí un archivo</b> o pulsa para elegirlo</p>
+            <p class="ayuda"><code>.musicxml</code> exportado de MuseScore (se toma el pentagrama del bajo y cada barra final cierra un ejercicio) o <code>.json</code> guardado desde este configurador.</p>
+            <input type="file" id="archivo" accept=".musicxml,.xml,.json,application/json,application/xml,text/xml" hidden>
+          </div>
+          <div id="fragmentos" class="fragmentos" hidden>
+            <p class="ayuda" id="fragmentos-titulo"></p>
+            <div id="lista-fragmentos" class="lista-fragmentos"></div>
+            <p id="avisos-importacion" class="aviso-suave" hidden></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="fila-campos">
+        <label class="campo">
+          <span>Tónica</span>
+          <select id="tonica"></select>
+        </label>
+        <label class="campo">
+          <span>Modo</span>
+          <select id="modo">
+            <option value="mayor">mayor</option>
+            <option value="menor">menor</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Compás</span>
+          <select id="compas">
+            <option value="4/4">4/4</option>
+            <option value="3/4">3/4</option>
+            <option value="2/2">2/2</option>
+            <option value="2/4">2/4</option>
+            <option value="3/2">3/2</option>
+          </select>
+        </label>
+        <label class="campo campo-ancho">
+          <span>Título del ejercicio</span>
+          <input id="titulo" type="text" placeholder="Ejercicio 1">
+        </label>
+        <label class="campo campo-ancho">
+          <span>Colección (opcional)</span>
+          <input id="coleccion" type="text" placeholder="RO ascendente en Do mayor">
+        </label>
+      </div>
+    </section>
+
+    <!-- ===== Paso 2: tipo de ejercicio ===== -->
+    <section class="paso" id="paso-tipo">
+      <h2><span class="num">2</span> Tipo de ejercicio</h2>
+      <div class="tipos" role="radiogroup" aria-label="Tipo de ejercicio">
+        <label class="tipo">
+          <input type="radio" name="modo-ej" value="cifrar">
+          <span class="tipo-titulo">Análisis</span>
+          <span class="tipo-texto">Se le dan el bajo y la realización a cuatro voces; ha de señalar el cifrado armónico y el grado de cada acorde.</span>
+        </label>
+        <label class="tipo">
+          <input type="radio" name="modo-ej" value="armonizar" checked>
+          <span class="tipo-titulo">Armonización</span>
+          <span class="tipo-texto">Se le da el bajo; ha de cifrarlo y, a medida que cifra, ve (y puede oír) la realización de lo que escribe.</span>
+        </label>
+        <label class="tipo">
+          <input type="radio" name="modo-ej" value="audicion">
+          <span class="tipo-titulo">Audición</span>
+          <span class="tipo-texto">Ve solo el bajo y escucha la realización (entera o acorde a acorde); ha de cifrar lo que suena. La realización se ve al corregir.</span>
+        </label>
+      </div>
+    </section>
+
+    <!-- ===== Paso 3: opciones ===== -->
+    <section class="paso" id="paso-opciones">
+      <h2><span class="num">3</span> Repertorio y opciones</h2>
+      <p class="ayuda">Las cifras marcadas forman la paleta del alumno y limitan las respuestas admisibles.</p>
+      <div id="repertorio-opciones" class="repertorio-opciones"></div>
+      <div class="fila-campos">
+        <label class="campo campo-linea">
+          <input id="pedir-romano" type="checkbox" checked>
+          <span>Pedir también el grado de la fundamental (I … VII)</span>
+        </label>
+        <label class="campo campo-linea">
+          <input id="reintentos" type="checkbox" checked>
+          <span>Permitir corregir solo los errores antes de ver la solución</span>
+        </label>
+        <label class="campo" id="campo-realizacion">
+          <span>Realización a cuatro voces (solo en Armonización)</span>
+          <select id="realizacion-cuando">
+            <option value="siempre" selected>Visible desde el principio</option>
+            <option value="alCorregir">Solo después de corregir</option>
+            <option value="nunca">Nunca</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Ayuda con los grados</span>
+          <select id="ayuda-grados">
+            <option value="ninguna">Ninguna: paleta completa, sin lista</option>
+            <option value="lista" selected>Mostrar la lista de grados en juego (paleta completa)</option>
+            <option value="paleta">Limitar la paleta a los grados en juego</option>
+          </select>
+        </label>
+        <label class="campo">
+          <span>Sobre el grado 6 descendente, la respuesta modelo es</span>
+          <select id="preferir">
+            <option value="">II4/3 (tercero)</option>
+            <option value="+6">+6, dominante secundaria del V (cuarto)</option>
+          </select>
+        </label>
+      </div>
+      <div class="botonera">
+        <button id="btn-analizar" type="button" class="primario">Analizar el bajo</button>
+        <span class="ayuda">El motor propone las cifras de cada nota; después puedes corregirlas a mano.</span>
+      </div>
+    </section>
+
+    <!-- ===== Paso 3: revisión ===== -->
+    <section class="paso" id="paso-revision" hidden>
+      <h2><span class="num">4</span> Revisión de las respuestas</h2>
+      <div id="vista-previa" class="partitura-caja"></div>
+      <label class="campo campo-linea"><input id="ver-solucion" type="checkbox" checked><span>Mostrar la solución modelo en la vista previa</span></label>
+      <p class="ayuda">Marca las cifras admisibles de cada nota y elige cuál es la modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado.</p>
+      <div class="tabla-caja">
+        <table id="tabla-revision" class="tabla-revision">
+          <thead><tr><th>#</th><th>Nota</th><th>Grado</th><th>Cifras admisibles (● modelo)</th><th>Regla</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p id="avisos-revision" class="error" hidden></p>
+    </section>
+
+    <!-- ===== Paso 4: dirección ===== -->
+    <section class="paso" id="paso-direccion" hidden>
+      <h2><span class="num">5</span> Dirección para los alumnos</h2>
+      <div class="botonera">
+        <button id="btn-generar" type="button" class="primario">Generar dirección</button>
+        <button id="btn-copiar" type="button" disabled>Copiar</button>
+        <a id="btn-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
+        <button id="btn-json" type="button" class="secundario" disabled>Descargar .json</button>
+      </div>
+      <textarea id="direccion" rows="3" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección del ejercicio"></textarea>
+      <p class="ayuda">La dirección contiene el ejercicio completo (bajo, repertorio y respuestas); no hace falta guardar nada en ningún servidor. Es larga, pero se pega sin problema en Google Classroom.</p>
+
+      <div id="todos-fragmentos" hidden>
+        <h3>Todos los fragmentos del archivo importado</h3>
+        <p class="ayuda">Genera una dirección por fragmento con las cifras que propone el motor y las opciones actuales (sin revisión manual). Conviene comprobar en la lista si algún fragmento tiene notas sin propuesta.</p>
+        <div class="botonera">
+          <button id="btn-todos" type="button">Generar direcciones de todos los fragmentos</button>
+          <button id="btn-copiar-todos" type="button" disabled>Copiar la lista</button>
+        </div>
+        <textarea id="direcciones-todos" rows="8" readonly spellcheck="false" hidden></textarea>
+      </div>
+    </section>
+
+  </main>
+
+  <p id="aviso" class="aviso" hidden></p>
+
+  <footer class="pie">
+    <p>El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+  </footer>
+
+  <script src="js/teoria.js"></script>
+  <script src="js/reglas.js"></script>
+  <script src="js/ejercicios.js"></script>
+  <script src="js/partitura.js"></script>
+  <script src="js/musicxml.js"></script>
+  <script src="js/realizacion.js"></script>
+  <script src="js/configurador.js"></script>
+</body>
+</html>

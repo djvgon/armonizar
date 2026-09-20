@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Armonizar el bajo · Regla de la octava</title>
+  <link rel="stylesheet" href="css/bravura.css">
+  <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+
+  <header class="cabecera">
+    <div class="cabecera-texto">
+      <p class="sobretitulo">Armonización con cifrado barroco</p>
+      <h1 id="titulo">Ejercicio</h1>
+      <p class="instruccion" id="instruccion"></p>
+    </div>
+    <label class="selector-caja">
+      <span>Ejercicio</span>
+      <select id="selector" aria-label="Elegir ejercicio"></select>
+    </label>
+  </header>
+
+  <section class="repertorio-caja" aria-label="Cifras y grados del ejercicio">
+    <div class="repertorio-fila">
+      <span class="repertorio-etiqueta">Cifras en este ejercicio</span>
+      <div id="repertorio" class="repertorio"></div>
+    </div>
+    <div class="repertorio-fila" id="grados-fila">
+      <span class="repertorio-etiqueta">Grados en este ejercicio</span>
+      <div id="grados" class="repertorio"></div>
+    </div>
+  </section>
+
+  <main>
+    <div id="realizacion-barra" class="realizacion-barra">
+      <span class="control control-sonido">
+        <button type="button" id="btn-cadencia" class="boton-pequeno" title="Cadencia I–IV–V7–I en la tonalidad del ejercicio, para situar el oído">▶ Cadencia</button>
+        <button type="button" id="btn-propuesta" class="boton-pequeno" title="Escuchar la realización propuesta por el ejercicio">▶ Propuesta</button>
+        <button type="button" id="btn-mio" class="boton-pequeno" title="Escuchar la realización de las cifras que has escrito (las notas sin cifra y grado suenan solo con el bajo)">▶ Mi cifrado</button>
+        <button type="button" id="btn-parar" class="boton-pequeno parar" hidden title="Detener la reproducción (también con Esc)">■ Parar</button>
+        <label class="control"><input id="sonar" type="checkbox"><span>sonar al elegir</span></label>
+      </span>
+      <span id="control-realizacion" class="control control-vista">
+        <label class="control"><input id="ver-realizacion" type="checkbox" checked><span>Realización a cuatro voces</span></label>
+        <span class="control" id="posicion-control">
+          <span class="control-etiqueta">Posición inicial</span>
+          <span class="segmentos" role="group" aria-label="Posición inicial">
+            <button type="button" data-pos="0" class="activo" title="Octava en la soprano (para 5/3: 3–5–8)">1.ª</button>
+            <button type="button" data-pos="1" title="Décima en la soprano (para 5/3: 5–8–3)">2.ª</button>
+            <button type="button" data-pos="2" title="Quinta en la soprano (para 5/3: 8–3–5)">3.ª</button>
+          </span>
+          <label class="control"><input id="rigida" type="checkbox"><span>misma disposición en todos los acordes</span></label>
+        </span>
+        <span id="paralelas" class="paralelas"></span>
+      </span>
+    </div>
+    <div id="partitura" class="partitura-caja"></div>
+
+    <div id="paleta-caja" class="paleta-caja">
+      <span class="paleta-etiqueta">Cifra</span>
+      <div id="paleta" class="paleta" role="group" aria-label="Paleta de cifras"></div>
+    </div>
+    <div id="paleta-romanos-caja" class="paleta-caja">
+      <span class="paleta-etiqueta">Grado de la fundamental</span>
+      <div id="paleta-romanos" class="paleta" role="group" aria-label="Paleta de grados"></div>
+    </div>
+    <p id="progreso" class="progreso"></p>
+
+    <div class="botonera">
+      <button id="btn-corregir" type="button" class="primario">Corregir</button>
+      <button id="btn-reiniciar" type="button">Reiniciar</button>
+      <button id="btn-siguiente" type="button">Otro ejercicio</button>
+      <button id="btn-enlace" type="button" class="secundario">Copiar enlace</button>
+    </div>
+
+    <section id="resultado" class="resultado" hidden aria-live="polite"></section>
+  </main>
+
+  <p id="aviso" class="aviso" hidden></p>
+
+  <footer class="pie">
+    <p>Regla de la octava (Furno) · Prototipo · Se abre directamente desde el disco, sin conexión. <a href="configurar.html">Configurador para el profesor</a></p>
+    <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre cifra y grado · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
+  </footer>
+
+  <script src="js/teoria.js"></script>
+  <script src="js/reglas.js"></script>
+  <script src="js/ejercicios.js"></script>
+  <script src="js/partitura.js"></script>
+  <script src="js/realizacion.js"></script>
+  <script src="js/sonido.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
