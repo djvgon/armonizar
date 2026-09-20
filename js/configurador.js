@@ -56,7 +56,7 @@
     $('#campo-bajo-audicion').hidden = modoElegido() !== 'audicion';
     const sop = esSoprano();
     $('#titulo-voz').textContent = sop ? 'La melodía' : 'El bajo';
-    $('#etiqueta-voz').textContent = sop ? 'Escribe la melodía de soprano' : 'Escribe el bajo';
+    $('#etiqueta-voz').textContent = sop ? 'Escribe la melodía (soprano)' : 'Escribe el bajo';
     $('#texto-bajo').placeholder = sop ? 'mi4 fa4n mi4n | re4 si3 | do4r' : 'do3 re3 | mi3 do3 | sol3r | do3r';
     $('#ayuda-octava-soprano').hidden = !sop;
     $('#btn-analizar').textContent = sop ? 'Analizar la melodía' : 'Analizar el bajo';

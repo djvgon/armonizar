@@ -404,7 +404,8 @@ const Ejercicios = (() => {
   // ¿Se pide también el grado de la fundamental? (por defecto, sí)
   function pideRomano(ej) { return ej.pedirRomano !== false; }
 
-  const MODOS = { armonizar: 'Armonización', cifrar: 'Análisis', audicion: 'Audición', soprano: 'Melodía de soprano' };
+  // Nombres de los tipos, fijados por Diego el 20/9/2026 (las claves no cambian por compatibilidad con los enlaces ya repartidos)
+  const MODOS = { cifrar: 'Análisis', armonizar: 'Armonización de bajo', audicion: 'Audición', soprano: 'Armonización de soprano' };
   function modo(ej) { return MODOS[ej.modo] ? ej.modo : 'armonizar'; }
   // Melodía de soprano: las notas de ej.compases son la melodía; el alumno da fundamental y
   // cifra y el bajo se deduce. Las respuestas se guardan como parejas 'V|65d'.
@@ -422,12 +423,12 @@ const Ejercicios = (() => {
     const p = parejas(ej, i)[0];
     if (!p) return 'T';
     const sig = i + 1 < numNotas(ej) ? (parejas(ej, i + 1)[0] || {}).romano : null;
-    return Teoria.funcionDe(p.romano, sig);
+    return Teoria.funcionDe(p.romano, sig, p.cifra);
   }
   // Funciones que se dan por buenas en la nota i: la modelo y las de cualquier acorde admisible
   function funcionesAdmisibles(ej, i) {
     const out = new Set([funcionModelo(ej, i)]);
-    parejas(ej, i).forEach(p => Teoria.funcionesDe(p.romano).forEach(f => out.add(f)));
+    parejas(ej, i).forEach(p => Teoria.funcionesDeAcorde(p.romano, p.cifra).forEach(f => out.add(f)));
     return Teoria.FUNCIONES.filter(f => out.has(f));
   }
 

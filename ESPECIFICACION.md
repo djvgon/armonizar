@@ -3,7 +3,7 @@
 Documento de referencia del proyecto. Se lee al empezar cada sesión de trabajo
 sobre la aplicación y se actualiza al cerrarla.
 
-Última actualización: 20 de septiembre de 2026 (Etapas 0–4, 5a y 7 entregadas: prototipo, configurador, importación, realización a cuatro voces con conducción de voces y sonido, cuatro tipos de ejercicio —Análisis, Armonización, Audición y Melodía de soprano— con lo que ve el alumno fijado por tipo, fila de funciones tonales, atajos de teclado, compases ternarios y negras, modulación en ejercicios propios).
+Última actualización: 20 de septiembre de 2026 (Etapas 0–4, 5a y 7 entregadas: prototipo, configurador, importación, realización a cuatro voces con conducción de voces y sonido, cuatro tipos de ejercicio —Análisis, Armonización, Audición y Armonización de soprano— con lo que ve el alumno fijado por tipo, fila de funciones tonales, atajos de teclado, compases ternarios y negras, modulación en ejercicios propios).
 
 ## 1. Objetivo
 
@@ -241,7 +241,7 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - **Análisis** (`'cifrar'`): se muestran desde el principio el bajo y la
       realización modelo a cuatro voces (conducción automática desde la 1.ª
       posición) y el alumno cifra cada acorde.
-    - **Armonización** (`'armonizar'`, por defecto): **solo el bajo**; el
+    - **Armonización de bajo** (`'armonizar'`, por defecto): **solo el bajo**; el
       alumno lo cifra y puede oír lo que escribe («Mi cifrado»). La
       realización de su cifrado se ve al terminar.
     - **Audición** (`'audicion'`): **no se ve nada**, ni el bajo ni la
@@ -251,7 +251,7 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       «Mi cifrado». Bajo y realización aparecen al terminar. Opción por
       ejercicio (`mostrarBajo: true`, elegida en el configurador): que se
       vea el bajo mientras escucha (la realización sigue oculta).
-    - **Melodía de soprano** (`'soprano'`, Etapa 7, 20/9/2026): las notas
+    - **Armonización de soprano** (`'soprano'`, Etapa 7, 20/9/2026): las notas
       del ejercicio son la melodía, en el pentagrama de sol; el alumno da
       en cada nota la fundamental y la cifra **igual que en los otros
       tipos** (decisión de Diego: así responde de la misma forma en los
@@ -259,6 +259,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       de fa (la cifra dice qué nota del acorde va en el bajo:
       `Teoria.bajoDe`). La realización, con la melodía fija en la voz
       superior, se ve al terminar. Véase la decisión 21.
+    Nombres de los cuatro tipos (Diego, 20/9/2026): Análisis, Armonización
+    de bajo, Audición y Armonización de soprano; las claves internas
+    (`cifrar`, `armonizar`, `audicion`, `soprano`) no cambian, para que los
+    enlaces ya repartidos sigan valiendo.
     Lo que se ve en cada tipo lo fijó Diego el 20/9/2026 (antes Audición
     mostraba el bajo y Armonización tenía la opción `realizacion` para
     elegir cuándo ver la realización; esa opción ha desaparecido).
@@ -333,8 +337,23 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     séptima del bajo bajando, sin octavas ni quintas seguidas entre bajo y
     melodía, 6/4 solo cadencial y final en I o V en estado fundamental. La
     sucesión modelo se elige por programación dinámica con preferencias:
-    empezar en I, bajo por grados, las cifras de la RO en cada grado del
-    bajo, y cadencia T–S–D–T con el V en estado fundamental. El profesor
+    bajo por grados, las cifras de la RO en cada grado del bajo, S → D
+    mejor que T → D, y el V en estado fundamental en la cadencia. Además,
+    **reglas fijas de comienzo y cadencia** (Diego, 20/9/2026: «todo el
+    tiempo ha de sonar D–T o S–D–T, y en la cadencia final S–D–T»):
+    la primera nota lleva la tónica (I; si la nota no está en I, la
+    dominante, como anacrusa; nunca el VI); la penúltima, una dominante
+    (si la nota lo permite; si no, cadencia plagal: subdominante); la
+    antepenúltima, **solo subdominantes** (II, II6, II7, II6/5, II4/3, IV,
+    IV6, VI) siempre que la nota admita alguna; y, si el 6/4 está en el
+    repertorio, la nota anterior a la dominante es de la tónica y la
+    dominante va en estado fundamental, el **6/4 cadencial** es el modelo
+    (con las subdominantes también admitidas) y la subdominante pasa a la
+    nota anterior (S – 6/4 – V – I). El 6/4 solo existe en ese sitio y se
+    trata como función D (adorno de la dominante). En una semicadencia, la
+    penúltima lleva subdominante si puede. Otras exclusiones: VI solo en
+    estado fundamental, VII solo como VII6, y ninguna primera inversión de
+    I, IV o V con la tercera doblada en las voces extremas. El profesor
     revisa y fija el modelo como en los demás tipos; las respuestas se
     guardan como parejas `'V|65d'`. Al corregir, además de las parejas se
     comprueba el **enlace** entre dos respuestas admisibles seguidas
@@ -405,7 +424,7 @@ Equivalencias de escritura (para el futuro constructor de cifras):
 
 Notas en notación anglosajona con octava científica (`C3` = do de la clave de
 fa, segundo espacio; `F#2`, `Bb3`). Duración en negras (2 = blanca, 4 =
-redonda). En una melodía de soprano (`modo: 'soprano'`) `compases` es la
+redonda). En una armonización de soprano (`modo: 'soprano'`) `compases` es la
 melodía (`E4`, `F4`…) y cada respuesta es una pareja fundamental|cifra
 (`respuestas: [['I|53', 'VI|53'], ['V|65d', 'V|+6'], …]`, la primera es la
 modelo). Un ejercicio viaja en la URL como `#e=` + base64url del JSON
@@ -491,7 +510,7 @@ Decisiones tomadas al fijar el corpus, revisables:
 
 Cinco pasos en una página:
 
-1. **El bajo** (o **la melodía**, en el tipo Melodía de soprano). Por texto (`do3 re3 | mi3 do3 | sol3r | do3.`: nombres en
+1. **El bajo** (o **la melodía**, en el tipo Armonización de soprano). Por texto (`do3 re3 | mi3 do3 | sol3r | do3.`: nombres en
    español, `|` entre compases, sin sufijo = blanca, `r` redonda, `n` negra,
    `c` corchea, `.` puntillo, octava 3 por defecto —4 en una melodía—) o arrastrando un archivo: un `.musicxml` de MuseScore
    (`js/musicxml.js` toma el pentagrama inferior —el superior y la nota más aguda de cada acorde, en una melodía—, omite silencios, suma
@@ -500,7 +519,7 @@ Cinco pasos en una página:
    `.json` guardado desde el propio configurador. Tonalidad, compás, título y
    colección.
 2. **Tipo de ejercicio.** Cuatro tarjetas grandes: Análisis, Armonización
-   (por defecto), Audición y Melodía de soprano (decisión 14).
+   (por defecto), Audición y Armonización de soprano (decisión 14).
 3. **Repertorio y opciones.** Casillas para las diez cifras del catálogo
    (por defecto las nueve de la RO); pedir o no el grado; permitir o no
    corregir solo los errores; ayuda con los grados (ninguna / lista /
@@ -550,7 +569,7 @@ la dirección generada, para que no se distribuya una versión desfasada.
 | 5a | Modulación en ejercicios propios: tramos, pivote común, dos avisos, corrección, configurador y MusicXML (decisión 6) | Hecha (20/9/2026) |
 | 5b | Generador de bajos por combinación de fragmentos válidos de la RO, con modulación por acorde pivote | Pendiente |
 | 6 | *Schemata* de IJzerman (marchas progresivas, Romanesca, Quiescenza); respuestas por combinación | Pendiente |
-| 7 | Melodía de soprano: cuarto tipo de ejercicio (fundamental + cifra, bajo deducido, funciones tonales, motor de sucesiones válidas, enlace comprobado) y fila «Función» en todos los tipos (decisiones 20 y 21) | Hecha (20/9/2026) |
+| 7 | Armonización de soprano: cuarto tipo de ejercicio (fundamental + cifra, bajo deducido, funciones tonales, motor de sucesiones válidas, enlace comprobado) y fila «Función» en todos los tipos (decisiones 20 y 21) | Hecha (20/9/2026) |
 | 4b | Normas de enlace de la pauta de corrección incorporadas a la conducción automática (decisión 22) | Pendiente (siguiente) |
 | 8a | Publicación en GitHub Pages (guía `PUBLICAR-EN-GITHUB.md`) | Hecha (20/9/2026): <https://djvgon.github.io/armonizar/> |
 | 8b | Recogida de resultados: Apps Script (mismo dominio murciaeduca.es identifica al alumno) → hoja de cálculo, y calificación en Classroom vía API (solo en tareas creadas por el propio script; el alumno sigue pulsando «Entregar»). Opcional: corrección en el servidor para los ejercicios evaluables, de modo que las respuestas no viajen en el enlace. Decidido 20/9/2026: dejarlo para esta etapa | Pendiente |

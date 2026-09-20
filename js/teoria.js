@@ -393,8 +393,11 @@ const Teoria = (() => {
   const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante' };
   // Funciones posibles de un grado (la primera es la habitual)
   function funcionesDe(romano) { return (FUNCION_DE[romano] || ['T']).slice(); }
+  // …y de un acorde concreto: el 6/4 cadencial (I6/4 sobre el 5.º grado) es un adorno de la dominante
+  function funcionesDeAcorde(romano, cifra) { return cifra === '64' && romano === 'I' ? ['D'] : funcionesDe(romano); }
   // Función habitual, dado el grado siguiente (para el VI: S si sigue una dominante)
-  function funcionDe(romano, romanoSiguiente) {
+  function funcionDe(romano, romanoSiguiente, cifra) {
+    if (cifra === '64' && romano === 'I') return 'D';
     const f = funcionesDe(romano);
     if (romano === 'VI' && romanoSiguiente && funcionesDe(romanoSiguiente)[0] === 'D') return 'S';
     return f[0];
@@ -456,6 +459,6 @@ const Teoria = (() => {
     escalaNatural, escalaVoces, armadura, grado, nombreTonalidad, nombreCorto, mismaTonalidad,
     tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
-    FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionDe, bajoDe
+    FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe
   };
 })();

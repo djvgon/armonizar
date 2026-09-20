@@ -283,6 +283,8 @@ const Reglas = (() => {
         if (romano === 'III') return;                                   // fuera de la sintaxis diatónica del cuadro (T = I, VI; S = II, IV, VI; D = V, VII)
         if ((id === '65' || id === '43' || id === '7') && romano !== 'II') return;   // séptimas diatónicas: solo el II (II7, II6/5, II4/3)
         if (id === '9' && romano !== 'V') return;
+        if (romano === 'VI' && id !== '53') return;                     // el VI solo en estado fundamental (sobre el 1.º grado del bajo siempre va I)
+        if (romano === 'VII' && id !== '6') return;                     // el VII solo en primera inversión (VII6), como en la RO
         const b = Teoria.bajoDe(romano, id, ton);
         if (!b) return;
         const bajo = { letra: b.letra, alt: b.alt, octava: 3 };
@@ -302,6 +304,7 @@ const Reglas = (() => {
         if (cs === cb) {
           if (miembro === 6 || miembro === 1) return;                 // séptima (o novena) doblada
           if (sensibles.has(cs)) return;                               // sensible doblada
+          if (id === '6' && (romano === 'I' || romano === 'IV' || romano === 'V')) return;   // tercera de una tríada mayor doblada en las voces extremas
           if (id === '6' || id === '65' || id === '65d') avisos.push('dobla la tercera');
         }
         if (id === '64' && !(romano === 'I' && !esUltima)) return;     // solo el 6/4 cadencial (I6/4 sobre el 5.º grado)
@@ -314,7 +317,7 @@ const Reglas = (() => {
         if (romano === 'VII' || romano === 'III') coste += 3;
         if (id === '64') coste += 2;
         if (id === '9') coste += 4;
-        out.push({ id: romano + '|' + id, romano, cifra: id, bajo: b, gradoBajo, funciones: Teoria.funcionesDe(romano),
+        out.push({ id: romano + '|' + id, romano, cifra: id, bajo: b, gradoBajo, funciones: Teoria.funcionesDeAcorde(romano, id),
           miembro, sensibleBajo: sensibles.has(cb), septimaBajo: id === '+4', claseBajo: cb, claseFund: Teoria.clase(fund), avisos, coste });
       });
     });
@@ -341,8 +344,8 @@ const Reglas = (() => {
     return true;
   }
 
-  // Coste del paso p → q (para elegir la sucesión modelo).
-  function costeEnlace(p, q, sp, sq) {
+  // Coste del paso p → q (para elegir la sucesión modelo). esFinal: q es el último acorde.
+  function costeEnlace(p, q, sp, sq, esFinal = false) {
     let coste = 0;
     const mismoAcorde = p.claseFund === q.claseFund;
     // Movimiento del bajo: por grados, barato; los saltos, según su tamaño
@@ -351,6 +354,12 @@ const Reglas = (() => {
     coste += d <= 2 ? 0.5 * d : 2;                                     // por grados, casi gratis; los saltos, un poco
     if (mismoAcorde && p.cifra === q.cifra) coste += 3;               // el mismo acorde repetido
     else if (mismoAcorde) coste += 1;                                  // arpegio
+    // Sintaxis preferida: S → D mejor que T → D; la plagal (S → T) solo si no hay otra cosa
+    if (!mismoAcorde && p.cifra !== '64') {
+      const fp = p.funciones, fq = q.funciones;
+      if (fp.every(f => f === 'T') && fq.every(f => f === 'D')) coste += 2;
+      if (fp.every(f => f === 'S') && fq.every(f => f === 'T') && !esFinal) coste += 3;   // plagal: vale como cadencia final si no hay dominante
+    }
     // Quinta u octava directa entre bajo y soprano con salto de la soprano
     const csP = claseDe(sp), csQ = claseDe(sq);
     const ivQ = (csQ - q.claseBajo + 12) % 12;
@@ -369,7 +378,54 @@ const Reglas = (() => {
     // Candidatos por nota: todos los que contienen la nota (se devuelven para la revisión) y,
     // para las sucesiones, solo los de la función fijada, si la hay
     const candsTodos = notas.map((s, i) => candidatosSoprano(s, tons[i], repertorio, i === n - 1));
-    const cands = candsTodos.map((cs, i) => (forzadas[i] ? cs.filter(x => x.funciones.includes(forzadas[i])) : cs));
+    const cands = candsTodos.map((cs, i) => (forzadas[i] ? cs.filter(x => x.funciones.includes(forzadas[i])) : cs.slice()));
+    /* Comienzo y cadencia final (reglas de Diego, 20/9/2026), salvo en las notas con la
+       función fijada por el profesor:
+         · se empieza por la tónica (I); si la nota no está en I, por la dominante (anacrusa);
+           nunca por el VI;
+         · la frase acaba S – D – T siempre que la melodía lo permita: penúltima nota,
+           dominante; antepenúltima, subdominante (solo subdominantes, si la nota admite
+           alguna); y, si se puede, 6/4 cadencial: cuando la nota anterior a la dominante
+           es de la tónica y la dominante va en estado fundamental, el I6/4 es el modelo
+           (con las subdominantes también admitidas) y la subdominante pasa a la nota anterior;
+         · en una semicadencia (final en V), la penúltima nota lleva subdominante si puede. */
+    const esFun = (x, f) => x.funciones.includes(f);
+    const soloFun = (cs, f) => { const s = cs.filter(x => esFun(x, f)); return s.length ? s : null; };
+    if (n > 0 && !forzadas[0]) {
+      const c0 = cands[0].filter(x => x.cifra !== '64');
+      const tonica = c0.filter(x => x.romano === 'I');
+      const dominante = c0.filter(x => x.romano === 'V' || x.romano === 'VII');
+      cands[0] = tonica.length ? tonica : dominante.length ? dominante : c0;
+    }
+    let con64 = false, plagal = false;
+    if (n >= 3 && !forzadas[n - 1]) {
+      const finalEnI = cands[n - 1].some(x => x.romano === 'I');
+      if (finalEnI) {
+        if (!forzadas[n - 2]) {
+          const d = (() => { const x = cands[n - 2].filter(y => esFun(y, 'D') && y.cifra !== '64'); return x.length ? x : null; })();   // dominante de verdad (el 6/4 no cuenta)
+          if (d) cands[n - 2] = d;
+          else { const s = soloFun(cands[n - 2], 'S'); if (s) { cands[n - 2] = s; plagal = true; } }   // sin dominante posible: cadencia plagal
+        }
+        if (n >= 4 && !forzadas[n - 3] && !plagal) {
+          const seisCuatro = cands[n - 3].filter(x => x.romano === 'I' && x.cifra === '64');
+          const vRaiz = cands[n - 2].some(x => x.romano === 'V' && (x.cifra === '53' || x.cifra === '7+'));
+          if (seisCuatro.length && vRaiz) {
+            con64 = true;
+            seisCuatro.forEach(x => { x.coste = -4; });
+            cands[n - 3] = seisCuatro.concat(cands[n - 3].filter(x => x.cifra !== '64' && esFun(x, 'S')));
+          }
+        }
+        // Subdominante antes de la dominante (o antes del 6/4 cadencial), siempre que la nota lo permita
+        const posS = con64 ? n - 4 : n - 3;
+        if (!plagal && posS >= 1 && !forzadas[posS]) { const s = soloFun(cands[posS], 'S'); if (s) cands[posS] = s; }
+      } else if (cands[n - 1].some(x => x.romano === 'V') && !forzadas[n - 2]) {
+        const s = soloFun(cands[n - 2], 'S');
+        if (s) cands[n - 2] = s;
+        else { const noD = cands[n - 2].filter(x => !x.funciones.every(f => f === 'D')); if (noD.length) cands[n - 2] = noD; }
+      }
+    }
+    // El 6/4 solo como cadencial, en su sitio (la nota anterior a la dominante final)
+    for (let i = 0; i < n; i++) if (!(con64 && i === n - 3)) cands[i] = cands[i].filter(x => x.cifra !== '64' || forzadas[i]);
     // Programación dinámica hacia delante: mejor coste de llegar a cada candidato
     const capas = cands.map((cs, i) => cs.map(x => ({ x, coste: Infinity, ant: null, alcanzable: false })));
     capas[0].forEach(nd => { nd.coste = nd.x.coste + (nd.x.romano === 'I' ? 0 : 4) + (nd.x.cifra === '53' ? 0 : 2); nd.alcanzable = true; });   // empezar en I, mejor en estado fundamental
@@ -377,10 +433,10 @@ const Reglas = (() => {
       capas[i].forEach(nd => {
         capas[i - 1].forEach((pv, k) => {
           if (!pv.alcanzable || !enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i])) return;
-          let extra = nd.x.coste + costeEnlace(pv.x, nd.x, notas[i - 1], notas[i]);
-          // Cadencia: mejor V en estado fundamental → I (perfecta); antes, mejor una subdominante (T S D T)
-          if (i === n - 1) extra += (pv.x.romano === 'V' && (pv.x.cifra === '53' || pv.x.cifra === '7+')) ? 0 : pv.x.funciones.every(f => f === 'D') ? 3 : pv.x.funciones.includes('S') ? 4 : 6;
-          if (i === n - 2 && n > 3) extra += pv.x.funciones.includes('S') ? 0 : 4;
+          let extra = nd.x.coste + costeEnlace(pv.x, nd.x, notas[i - 1], notas[i], i === n - 1);
+          // Cadencia: mejor V en estado fundamental → I (perfecta); antes, mejor una subdominante (T S D T) o el 6/4 cadencial
+          if (i === n - 1) extra += (pv.x.romano === 'V' && (pv.x.cifra === '53' || pv.x.cifra === '7+')) ? 0 : pv.x.funciones.every(f => f === 'D') ? 3 : plagal ? 0 : pv.x.funciones.includes('S') ? 4 : 6;
+          if (i === n - 2 && n > 3) extra += (pv.x.cifra === '64' || pv.x.funciones.includes('S')) ? 0 : 4;
           const total = pv.coste + extra;
           if (total < nd.coste) { nd.coste = total; nd.ant = k; }
         });

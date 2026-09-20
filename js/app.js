@@ -148,11 +148,11 @@
         + 'o el ' + b('▶') + ' de cada acorde para oírlo uno a uno. Para cada acorde indica ' + que + '. '
         + b('▶ Mi cifrado') + ' hace sonar lo que llevas cifrado, para compararlo. Al terminar verás ' + (conBajo ? 'la realización.' : 'el bajo y la realización.');
     } else if (estado.modoEj === 'soprano') {
-      html = '<b>Melodía de soprano.</b> Ves la melodía: para cada nota indica ' + que + '; el bajo que corresponde aparece escrito en el pentagrama de fa. Tonalidad: ' + ton + '. '
+      html = '<b>Armonización de soprano.</b> Ves la melodía: para cada nota indica ' + que + '; el bajo que corresponde aparece escrito en el pentagrama de fa. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la melodía (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
         + b('▶ Mi cifrado') + ', tu armonización. Al terminar verás la realización a cuatro voces, con la melodía en la voz superior.';
     } else {
-      html = '<b>Armonización.</b> Ves solo el bajo: para cada nota indica ' + que + '. Tonalidad: ' + ton + '. '
+      html = '<b>Armonización de bajo.</b> Ves solo el bajo: para cada nota indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar el bajo (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
         + b('▶ Mi cifrado') + ', lo que llevas cifrado. Al terminar verás la realización a cuatro voces de tu cifrado.';
     }
@@ -761,7 +761,7 @@
       // Función tonal (si se pide): vale la del acorde modelo, la de cualquier admisible o la del acorde dado si es correcto
       let okFuncion = true;
       const fun = estado.funciones[i];
-      if (estado.modoFun === 'pedir') okFuncion = !!fun && (Ejercicios.funcionesAdmisibles(ej, i).includes(fun) || (okRomano && okCifra && Teoria.funcionesDe(rom).includes(fun)));
+      if (estado.modoFun === 'pedir') okFuncion = !!fun && (Ejercicios.funcionesAdmisibles(ej, i).includes(fun) || (okRomano && okCifra && Teoria.funcionesDeAcorde(rom, cifra).includes(fun)));
       return { ok: okCifra && okRomano && okRomano2 && okFuncion, okCifra, okRomano, okRomano2, okFuncion, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion: Ejercicios.funcionModelo(ej, i), cifra, romano: rom, romano2: rom2, funcion: fun };
     });
     // Melodía de soprano: el enlace entre dos respuestas correctas también ha de serlo

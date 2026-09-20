@@ -27,9 +27,9 @@ doble clic**: no necesita servidor, conexión ni instalación.
   de cada acorde ese acorde de la propuesta, y «■ Parar» (o Esc) detiene.
   «Copiar enlace» copia una dirección que abre ese mismo ejercicio. Hay cuatro
   tipos de ejercicio: **Análisis** (se ven bajo y realización; se cifra),
-  **Armonización** (se ve solo el bajo; se cifra y puede oírse lo escrito),
+  **Armonización de bajo** (se ve solo el bajo; se cifra y puede oírse lo escrito),
   **Audición** (no se ve nada —o solo el bajo, si el profesor lo pide—; se
-  escucha la realización y se cifra lo que suena) y **Melodía de soprano**
+  escucha la realización y se cifra lo que suena) y **Armonización de soprano**
   (se ve la melodía; en cada nota se dan fundamental y cifrado y el bajo que
   resulta aparece escrito; la realización, con la melodía arriba, al
   terminar). Al terminar, en todos se ven bajo y realización. Si el
@@ -41,7 +41,7 @@ doble clic**: no necesita servidor, conexión ni instalación.
   la nota del cambio (acorde pivote) se dan los dos grados (II = V).
 - `configurar.html` — la página del profesor. Escribe el bajo (`do3 re3 | mi3
   do3 | sol3r`; `n` negra, `c` corchea, `.` puntillo; cualquier compás) —o la
-  melodía, en el tipo Melodía de soprano (`mi4 fa4n mi4n | re4 si3 | do4r`)— o
+  melodía, en el tipo Armonización de soprano (`mi4 fa4n mi4n | re4 si3 | do4r`)— o
   arrastra un `.musicxml` de MuseScore (cada barra final es un
   ejercicio), elige el tipo de ejercicio, el repertorio y las opciones, pulsa
   «Analizar», revisa las cifras (o acordes) admisibles y la modelo de cada nota, y genera
