@@ -9,8 +9,9 @@ doble clic**: no necesita servidor, conexión ni instalación.
 - `index.html` — la página del alumno. Abierta sin más (práctica libre) muestra
   el desplegable con los 35 ejercicios del corpus; abierta desde un enlace a un
   ejercicio concreto (`#ej=` o `#e=`) muestra solo ese ejercicio, sin
-  desplegable. Para cada nota, la cifra (paleta «Cifra») y el grado sobre el que se
-  construye la fundamental (paleta «Grado»). Cada tecla de las paletas lleva
+  desplegable. Para cada nota, primero el grado sobre el que se construye la
+  fundamental (paleta «Grado de la fundamental») y después el cifrado (paleta
+  «Cifrados»). Cada tecla de las paletas lleva
   un número pequeño: pulsarlo en el teclado elige esa opción en la casilla
   activa (← → cambian de nota, ↑ ↓ de línea). La casilla activa avanza sola;
   se puede pulsar cualquier casilla para volver a ella. «Corregir» marca en

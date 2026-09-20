@@ -163,7 +163,7 @@
       } else {
         const sel = document.createElement('select');
         sel.className = 'sel-ton' + (esPivote ? ' pivote' : '');
-        sel.title = 'Tonalidad que rige desde esta nota';
+        sel.title = esPivote ? 'Tonalidad nueva desde esta nota (pivote). Elige «(quitar)» para deshacer la modulación.' : 'Rige ' + Teoria.nombreCorto(tonAntes) + '. Despliega y elige una tonalidad vecina para que la modulación empiece en esta nota (acorde pivote).';
         const o0 = document.createElement('option'); o0.value = ''; o0.textContent = esPivote ? '(quitar)' : Teoria.nombreCorto(tonAntes); sel.appendChild(o0);
         Teoria.tonalidadesVecinas(tonAntes).forEach(t => {
           const o = document.createElement('option'); o.value = t.tonica + '/' + t.modo; o.textContent = '→ ' + Teoria.nombreCorto(t);

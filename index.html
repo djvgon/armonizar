@@ -22,13 +22,13 @@
   </header>
 
   <section class="repertorio-caja" aria-label="Cifras y grados del ejercicio">
-    <div class="repertorio-fila">
-      <span class="repertorio-etiqueta">Cifras en este ejercicio</span>
-      <div id="repertorio" class="repertorio"></div>
-    </div>
     <div class="repertorio-fila" id="grados-fila">
       <span class="repertorio-etiqueta">Grados en este ejercicio</span>
       <div id="grados" class="repertorio"></div>
+    </div>
+    <div class="repertorio-fila">
+      <span class="repertorio-etiqueta">Cifrados en este ejercicio</span>
+      <div id="repertorio" class="repertorio"></div>
     </div>
   </section>
 
@@ -57,13 +57,13 @@
     </div>
     <div id="partitura" class="partitura-caja"></div>
 
-    <div id="paleta-caja" class="paleta-caja">
-      <span class="paleta-etiqueta">Cifra</span>
-      <div id="paleta" class="paleta" role="group" aria-label="Paleta de cifras"></div>
-    </div>
     <div id="paleta-romanos-caja" class="paleta-caja">
       <span class="paleta-etiqueta">Grado de la fundamental</span>
       <div id="paleta-romanos" class="paleta" role="group" aria-label="Paleta de grados"></div>
+    </div>
+    <div id="paleta-caja" class="paleta-caja">
+      <span class="paleta-etiqueta">Cifrados</span>
+      <div id="paleta" class="paleta" role="group" aria-label="Paleta de cifrados"></div>
     </div>
     <div id="paleta-tonalidades-caja" class="paleta-caja" hidden>
       <span class="paleta-etiqueta">Tonalidad nueva desde la nota activa</span>
@@ -85,7 +85,7 @@
 
   <footer class="pie">
     <p>Regla de la octava (Furno) · Prototipo · Se abre directamente desde el disco, sin conexión. <a href="configurar.html">Configurador para el profesor</a></p>
-    <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre cifra y grado · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
+    <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre cifrado y grado · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
   </footer>
 
   <script src="js/teoria.js"></script>

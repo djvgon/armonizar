@@ -135,8 +135,8 @@ svg.partitura .casilla.mal .romano { fill: var(--mal); }
 svg.partitura .modelo-romano { fill: var(--bien); font-size: 19px; }
 svg.partitura .cifra-raya { stroke: var(--tinta); }
 /* Modulación: casilla de grado partida (pivote), fila «Tonalidad» y rótulos */
-svg.partitura .igual { font-family: Georgia, serif; font-size: 16px; fill: var(--tinta-suave); pointer-events: none; }
-svg.partitura .casilla-romano.mitad .romano { font-size: 17px; letter-spacing: 0; }
+svg.partitura .pivote-barra { stroke: var(--acento); stroke-width: 2.2; stroke-linecap: round; pointer-events: none; }
+svg.partitura .renglon-ton { font-family: Georgia, "Times New Roman", serif; font-size: 12px; fill: var(--tinta-suave); pointer-events: none; }
 svg.partitura .casilla-ton .fondo { fill: var(--fondo); stroke: var(--linea); stroke-dasharray: 3 2; }
 svg.partitura .casilla-ton.llena .fondo, svg.partitura .casilla-ton.fija .fondo { stroke-dasharray: none; }
 svg.partitura .casilla-ton .ton { font-family: Georgia, "Times New Roman", serif; font-size: 13px; fill: var(--tinta); pointer-events: none; }
@@ -149,7 +149,7 @@ svg.partitura .etiqueta-ton rect { fill: var(--acento-suave); stroke: var(--acen
 svg.partitura .etiqueta-ton text { font-family: Georgia, "Times New Roman", serif; font-size: 13px; fill: var(--acento); pointer-events: none; }
 svg.partitura .etiqueta-ton.solucion rect { fill: var(--bien-suave); stroke: var(--bien); }
 svg.partitura .etiqueta-ton.solucion text { fill: var(--bien); }
-.tecla-ton { min-width: 40px; min-height: 38px; font-size: .75rem; }
+.tecla-ton { min-width: 44px; min-height: 42px; font-size: .8rem; }
 .tecla.elegida { border-color: var(--acento); background: var(--acento-suave); }
 
 /* ---- Paletas ---- */
@@ -161,11 +161,11 @@ svg.partitura .etiqueta-ton.solucion text { fill: var(--bien); }
 .paleta-caja.destacada { border-color: var(--acento); background: rgba(122, 74, 31, .05); }
 .paleta-etiqueta { display: block; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave); margin-bottom: 8px; }
 .paleta { display: flex; flex-wrap: wrap; gap: 6px; }
-.tecla-romano { min-width: 36px; min-height: 38px; font-size: .8rem; letter-spacing: .03em; }
+.tecla-romano { min-width: 40px; min-height: 42px; font-size: .88rem; letter-spacing: .03em; }
 .tecla {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  min-width: 44px; min-height: 42px; padding: 3px 6px;
-  font: inherit; font-size: .85rem; color: var(--tinta);
+  min-width: 48px; min-height: 46px; padding: 3px 7px;
+  font: inherit; font-size: .93rem; color: var(--tinta);
   background: var(--papel); border: 1px solid var(--linea); border-radius: 10px;
   box-shadow: var(--sombra); cursor: pointer;
   transition: transform .06s, border-color .12s, background .12s;
@@ -175,14 +175,14 @@ svg.partitura .etiqueta-ton.solucion text { fill: var(--bien); }
 .tecla:disabled { opacity: .45; cursor: default; }
 .tecla-nombre { font-size: .72rem; color: var(--tinta-suave); }
 .tecla-num {
-  display: inline-block; min-width: 13px; height: 13px; line-height: 11px; padding: 0 3px;
-  font-size: .58rem; font-family: ui-monospace, Menlo, Consolas, monospace;
+  display: inline-block; min-width: 14px; height: 14px; line-height: 12px; padding: 0 3px;
+  font-size: .62rem; font-family: ui-monospace, Menlo, Consolas, monospace;
   color: var(--tinta-suave); background: var(--fondo); border: 1px solid var(--linea); border-radius: 5px;
 }
 .tecla-num:empty { visibility: hidden; }
 .tecla-romano .tecla-num { margin-top: 1px; }
 .tecla-romano-texto { line-height: 1.1; }
-.tecla-borrar { min-width: 52px; font-size: .8rem; color: var(--tinta-suave); }
+.tecla-borrar { min-width: 57px; font-size: .85rem; color: var(--tinta-suave); }
 .icono-cifra { display: block; }
 .icono-cifra text { fill: var(--tinta); }
 .icono-cifra .cifra-raya { stroke: var(--tinta); }
@@ -302,7 +302,9 @@ textarea#direccion, textarea#direcciones-todos { font-family: Menlo, Consolas, m
 .tabla-revision tr.sin-propuesta td { background: var(--mal-suave); }
 .tabla-revision .num-fila { font-weight: bold; color: var(--acento); }
 .tabla-revision .celda-ton { white-space: nowrap; color: var(--tinta-suave); }
-.tabla-revision .sel-ton { font: inherit; font-size: .85rem; padding: 3px 4px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta-suave); max-width: 110px; }
+.tabla-revision .th-ayuda { display: block; font-weight: normal; font-size: .72rem; color: var(--tinta-suave); }
+.tabla-revision .sel-ton { font: inherit; font-size: .85rem; padding: 3px 6px; border: 1px solid var(--acento); border-radius: 6px; background: var(--papel); color: var(--tinta); max-width: 120px; cursor: pointer; }
+.tabla-revision .sel-ton:hover { background: var(--acento-suave); }
 .tabla-revision .sel-ton.pivote { border-color: var(--acento); color: var(--acento); font-weight: bold; background: var(--acento-suave); }
 .tabla-revision tr.pivote td { background: rgba(122, 74, 31, .05); }
 .tabla-revision .chip.no-comun { opacity: .45; }

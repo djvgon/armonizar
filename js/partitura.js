@@ -163,11 +163,20 @@ const Partitura = (() => {
     const ALTO_CASILLA = 5.2 * SP, ANCHO_CASILLA = 4.6 * SP;
     const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;  // borde superior de las casillas de grado
     const ALTO_ROMANO = 3.4 * SP;
-    const Y_FIN_ROMANO = pedirRomano ? Y_ROMANO + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
+    /* Modulación: cada tonalidad escribe sus grados en un renglón nuevo, un poco más
+       abajo; el pivote (dobles[i]) lleva dos grados apilados —el de la tonalidad anterior
+       en su renglón y el de la nueva en el siguiente— unidos por dos líneas verticales.
+       renglon[i] = renglón de la nota i (el pivote ocupa renglon[i]-1 y renglon[i]). */
+    const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];
+    const renglon = [];
+    { let r = 0; for (let i = 0; i < notas.length; i++) { if (dobles[i] && i > 0) r++; renglon.push(r); } }
+    const NUM_RENGLONES = (renglon[notas.length - 1] || 0) + 1;
+    const PASO_RENGLON = ALTO_ROMANO + 0.5 * SP;
+    const yRenglon = r => Y_ROMANO + r * PASO_RENGLON;
+    const Y_FIN_ROMANO = pedirRomano ? yRenglon(NUM_RENGLONES - 1) + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
     const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
     const Y_TON = Y_FIN_ROMANO + 0.8 * SP, ALTO_TON = 2.7 * SP;
     const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_ROMANO;
-    const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];          // notas cuya casilla de grado se parte en dos (pivote)
     const conSonar = typeof estado.alSonar === 'function' && !soloLectura;   // botón ▶ bajo cada acorde
     const Y_SONAR = Y_FIN_CASILLAS + 1.1 * SP, R_SONAR = 1.25 * SP;         // centro vertical del botón = Y_SONAR + R_SONAR
     const Y_FIN_SONAR = conSonar ? Y_SONAR + 2 * R_SONAR : Y_FIN_CASILLAS;
@@ -392,19 +401,22 @@ const Partitura = (() => {
         svg.appendChild(g);
       }
 
-      // Casilla del grado (número romano), debajo de la cifra. En un pivote (dobles[i])
-      // se parte en dos: grado en la tonalidad anterior = grado en la nueva.
+      // Casilla del grado (número romano), debajo de la cifra, en el renglón de su
+      // tonalidad. En un pivote (dobles[i]) hay dos apiladas: grado en la tonalidad
+      // anterior (renglón de arriba) y en la nueva (renglón de abajo), unidas por dos
+      // líneas verticales continuas.
       if (pedirRomano) {
-        const partes = dobles[i] ? ['romano', 'romano2'] : ['romano'];
-        const ANCHO_DOBLE = 6.6 * SP;                          // la casilla partida es más ancha que la normal
-        const anchoParte = dobles[i] ? (ANCHO_DOBLE - 0.9 * SP) / 2 : ANCHO_CASILLA;
+        const esPivote = !!dobles[i] && i > 0;
+        const partes = esPivote ? ['romano', 'romano2'] : ['romano'];
+        const x0 = cx - ANCHO_CASILLA / 2;
         partes.forEach((campo, k) => {
-          const x0 = dobles[i] ? cx - ANCHO_DOBLE / 2 + k * (anchoParte + 0.9 * SP) : cx - ANCHO_CASILLA / 2;
-          const xc = x0 + anchoParte / 2;
+          const r = esPivote ? renglon[i] - 1 + k : renglon[i];
+          const y0 = yRenglon(r);
+          const alto = esPivote && k === 0 ? PASO_RENGLON : ALTO_ROMANO;    // la de arriba llega hasta la de abajo
           const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: 0, role: 'button',
-            'aria-label': 'Grado de la nota ' + (i + 1) + ' (' + Teoria.nombreEs(n) + ')' + (dobles[i] ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
+            'aria-label': 'Grado de la nota ' + (i + 1) + ' (' + Teoria.nombreEs(n) + ')' + (esPivote ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
           const clases = ['casilla', 'casilla-romano'];
-          if (dobles[i]) clases.push('mitad');
+          if (esPivote) clases.push(k ? 'pivote-abajo' : 'pivote-arriba');
           const bloqueadaAqui = !!bloq[campo];
           if (activa && !bloqueadaAqui && estado.campo === campo) clases.push('activa');
           else if (activa && !bloqueadaAqui) clases.push('activa-nota');
@@ -415,15 +427,27 @@ const Partitura = (() => {
           else if (bloqueadaAqui) clases.push('bien', 'fija');
           else if (rom) clases.push('llena');
           g.setAttribute('class', clases.join(' '));
-          g.appendChild(el('rect', { x: x0, y: Y_ROMANO, width: anchoParte, height: ALTO_ROMANO, rx: 0.7 * SP, class: 'fondo' }));
-          g.appendChild(el('text', { x: xc, y: Y_ROMANO + ALTO_ROMANO / 2 + 0.75 * SP, 'text-anchor': 'middle', class: rom ? 'romano' : 'interrogante' }, rom || (estado.corregido ? '' : '?')));
+          g.appendChild(el('rect', { x: x0, y: y0, width: ANCHO_CASILLA, height: alto, rx: esPivote ? 0 : 0.7 * SP, class: 'fondo' }));
+          g.appendChild(el('text', { x: cx, y: y0 + ALTO_ROMANO / 2 + 0.75 * SP, 'text-anchor': 'middle', class: rom ? 'romano' : 'interrogante' }, rom || (estado.corregido ? '' : '?')));
           if (!soloLectura) {
             g.addEventListener('click', () => alPulsar(i, campo));
             g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, campo); } });
           }
           svg.appendChild(g);
         });
-        if (dobles[i]) svg.appendChild(el('text', { x: cx, y: Y_ROMANO + ALTO_ROMANO / 2 + 0.7 * SP, 'text-anchor': 'middle', class: 'igual' }, '='));
+        if (esPivote) {
+          // Las dos líneas verticales que unen los dos grados del pivote: | I | sobre | V |
+          const yA = yRenglon(renglon[i] - 1), yB = yRenglon(renglon[i]) + ALTO_ROMANO;
+          [x0, x0 + ANCHO_CASILLA].forEach(x => svg.appendChild(el('line', { x1: x, x2: x, y1: yA - 0.3 * SP, y2: yB + 0.3 * SP, class: 'pivote-barra' })));
+        }
+        // Nombre de la tonalidad al principio de cada renglón (si hay modulación)
+        if (filaTon && filaTon.celdas) {
+          const celda = filaTon.celdas[i] || {};
+          if ((i === 0 || esPivote) && celda.texto && celda.texto !== '¿?') {
+            const r = esPivote ? renglon[i] : 0;
+            svg.appendChild(el('text', { x: x0 - 0.7 * SP, y: yRenglon(r) + ALTO_ROMANO / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, celda.texto + ':'));
+          }
+        }
       }
 
       // Fila «Tonalidad»: desde qué nota rige cada tonalidad (modulación)

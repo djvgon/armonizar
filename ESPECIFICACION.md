@@ -78,8 +78,13 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
    - **Tras el cambio, la tonalidad nueva es la referencia**: el V de Sol
      sobre re se cifra «—», igual que en la menor el V sobre mi. No se
      marcan en la cifra las alteraciones respecto a la armadura inicial.
-   - **El pivote se cifra en las dos tonalidades** (II = V): su casilla de
-     grado se parte en dos (anterior = nueva).
+   - **El pivote se cifra en las dos tonalidades** (II = V). Como en el
+     análisis tradicional, cada tonalidad escribe sus grados en un renglón
+     propio, con su nombre al principio («Do M:», «Sol M:»); en el pivote,
+     los dos grados van apilados —el de la tonalidad anterior en su renglón
+     y el de la nueva en el siguiente— y unidos por dos líneas verticales
+     continuas (| VI | sobre | II |). Diego pidió esta disposición el
+     20/9/2026 en lugar de la casilla partida en horizontal.
    - **Tonalidades permitidas**: las cinco vecinas (misma armadura o una
      alteración de diferencia): desde mayor, V, IV, relativo menor, II y
      III; desde menor, relativo mayor, v, VII, iv y VI.
@@ -225,6 +230,12 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     reintentos, permite acertar probando, así que conviene reservarla a la
     práctica inicial). Decidido tras valorar que limitar la paleta facilita
     demasiado si es la única forma de trabajar.
+18. **Orden de respuesta** (20/9/2026): primero el grado de la fundamental
+    y después el cifrado. La paleta «Grado de la fundamental» va encima de la
+    de «Cifrados» (antes «Cifra»), la casilla activa inicial es la del grado
+    y, al responder, se pasa del grado al cifrado de la misma nota (en un
+    pivote: grado anterior, grado nuevo, cifrado). Las flechas ↑ ↓ siguen el
+    orden visual de las casillas (cifrado arriba, grado debajo).
 15. **Atajos de teclado.** Cada tecla de las paletas lleva un número
     pequeño: en los grados, el del grado (I = 1 … VII = 7); en las cifras,
     su posición en la paleta (1 … 9, 0 para la décima). Pulsar ese número en
@@ -232,10 +243,11 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     de cifras o la de grados, que se cambia con ↑ ↓; ← → mueven de nota).
     Sustituye a los nombres pequeños que había bajo cada cifra.
 16. **Tamaño en pantalla** (20/9/2026): la partitura (bajo, realización y
-    casillas de cifra y grado) y las teclas de las paletas de cifra y grado
-    van un 40 % más pequeñas que en la primera versión: un espacio de
-    pentagrama mide 10 px (`ESCALA_PX` en `partitura.js`) y, si no cabe, la
-    partitura se reduce proporcionalmente.
+    casillas de cifra y grado) va un 40 % más pequeña que en la primera
+    versión: un espacio de pentagrama mide 10 px (`ESCALA_PX` en
+    `partitura.js`) y, si no cabe, la partitura se reduce proporcionalmente.
+    Las teclas de las paletas de cifra y grado se redujeron un 40 % y
+    después se ampliaron un 10 % (≈ 66 % del tamaño original).
 17. **Compases y figuras.** Cualquier compás (4/4, 3/4, 2/4, 2/2, 3/2) y
     figuras de redonda, blanca, negra y corchea, con puntillo. En el texto
     del bajo: sin sufijo = blanca, `r` redonda, `n` negra, `c` corchea, y un

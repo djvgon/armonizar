@@ -85,7 +85,7 @@
     estado.romanos2 = new Array(n).fill(null);
     estado.pedirRomano = Ejercicios.pideRomano(ej);
     estado.activa = 0;
-    estado.campo = 'cifra';
+    estado.campo = Ejercicios.pideRomano(ej) ? 'romano' : 'cifra';
     estado.corregido = false;
     estado.resultados = null;
     estado.resultadoMod = null;
@@ -125,18 +125,19 @@
     const ej = estado.ejercicio;
     $('#titulo').textContent = (ej.coleccion ? ej.coleccion + ' · ' : '') + (ej.titulo || '');
     const ton = '<b>' + Teoria.nombreTonalidad(ej.tonalidad) + '</b>';
-    const grado = estado.pedirRomano ? ' y el grado sobre el que se construye la fundamental del acorde' : '';
+    // Primero el grado de la fundamental, después el cifrado (orden en que se rellenan)
+    const que = estado.pedirRomano ? 'el grado sobre el que se construye la fundamental del acorde y después el cifrado' : 'el cifrado';
     const b = t => '<span class="ref-boton">' + t + '</span>';
     let html;
     if (estado.modoEj === 'cifrar') {
-      html = '<b>Análisis.</b> Observa la realización a cuatro voces y, para cada acorde, elige la cifra' + grado + '. Tonalidad: ' + ton + '. '
+      html = '<b>Análisis.</b> Observa la realización a cuatro voces y, para cada acorde, indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Cadencia') + ' sitúa la tonalidad; ' + b('▶ Propuesta') + ' y el ' + b('▶') + ' de cada nota hacen sonar la realización.';
     } else if (estado.modoEj === 'audicion') {
       html = '<b>Audición.</b> Pulsa ' + b('▶ Cadencia') + ' para situarte en la tonalidad (' + ton + ') y ' + b('▶ Propuesta') + ' para escuchar el fragmento, '
-        + 'o el ' + b('▶') + ' de cada nota para oírlo acorde a acorde. Para cada nota del bajo elige la cifra de lo que suena' + grado + '. '
+        + 'o el ' + b('▶') + ' de cada nota para oírlo acorde a acorde. Para cada nota del bajo indica, de lo que suena, ' + que + '. '
         + 'Con ' + b('▶ Mi cifrado') + ' oirás lo que has escrito, para compararlo.';
     } else {
-      html = '<b>Armonización.</b> Para cada nota del bajo elige la cifra' + grado + '. Tonalidad: ' + ton + '. '
+      html = '<b>Armonización.</b> Para cada nota del bajo indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Cadencia') + ' sitúa la tonalidad; ' + b('▶ Mi cifrado') + ' y el ' + b('▶') + ' de cada nota hacen sonar lo que vas escribiendo.';
     }
     if (estado.avisoMod === 'completo') {
@@ -213,7 +214,7 @@
     estado.ejercicio.repertorio.forEach((id, k) => {
       const c = Teoria.CIFRADOS[id];
       const cont = document.createDocumentFragment();
-      cont.appendChild(Partitura.iconoCifra(id, 24));
+      cont.appendChild(Partitura.iconoCifra(id, 26));
       const num = document.createElement('span');
       num.className = 'tecla-num';
       num.textContent = atajo(k);
@@ -393,15 +394,20 @@
 
   /* ---------- Interacción ---------- */
 
-  // Casillas de respuesta de la nota j, en orden (sin la fila «Tonalidad», que es opcional)
-  const camposDe = j => (estado.pedirRomano ? (esDoble(j) ? ['cifra', 'romano', 'romano2'] : ['cifra', 'romano']) : ['cifra']);
+  // Casillas de respuesta de la nota j en el ORDEN en que se rellenan: primero el grado
+  // de la fundamental (los dos, en un pivote) y después el cifrado (así lo pidió Diego).
+  // La fila «Tonalidad» no entra: es opcional.
+  const camposDe = j => (estado.pedirRomano ? (esDoble(j) ? ['romano', 'romano2', 'cifra'] : ['romano', 'cifra']) : ['cifra']);
+  // Las mismas casillas en su orden VISUAL, de arriba abajo (para las flechas ↑ ↓)
+  const camposVisuales = j => (estado.pedirRomano ? (esDoble(j) ? ['cifra', 'romano', 'romano2'] : ['cifra', 'romano']) : ['cifra']);
+  const campoInicial = () => (estado.pedirRomano ? 'romano' : 'cifra');
   const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : estado.romanos[j]);
 
   function seleccionar(i, campo) {
     if (estado.corregido) return;
-    campo = campo || 'cifra';
+    campo = campo || campoInicial();
     if (campo === 'tonalidad') { if (!tonalidadEditable() || i === 0) return; }
-    else if (!camposDe(i).includes(campo)) campo = 'cifra';
+    else if (!camposDe(i).includes(campo)) campo = campoInicial();
     if (campo !== 'tonalidad' && bloqueada(i, campo)) {
       // Si la casilla pulsada está bloqueada, ir a otra editable de la misma nota
       const otra = camposDe(i).find(c => !bloqueada(i, c));
@@ -647,7 +653,7 @@
     estado.corregido = false;
     estado.resultados = null;
     // Primera casilla editable
-    estado.activa = 0; estado.campo = 'cifra';
+    estado.activa = 0; estado.campo = campoInicial();
     busqueda: for (let j = 0; j < estado.respuestas.length; j++)
       for (const c of camposDe(j)) if (!bloqueada(j, c)) { estado.activa = j; estado.campo = c; break busqueda; }
     $('#resultado').hidden = true;
@@ -673,7 +679,7 @@
     const caja = $('#resultado');
     const pct = Math.round(100 * aciertos / n);
     let html = '<h2>' + aciertos + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
-    if (estado.pedirRomano) html += '<p class="desglose">Cifras: ' + aciertosCifra + ' de ' + n + ' · Grados: ' + aciertosRomano + ' de ' + n
+    if (estado.pedirRomano) html += '<p class="desglose">Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
       + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
     else if (estado.intento > 1 && estado.primerIntento !== null) html += '<p class="desglose">Al primer intento: ' + estado.primerIntento + ' de ' + n + '</p>';
     // Modulación
@@ -760,10 +766,10 @@
     if (estado.corregido || ev.ctrlKey || ev.metaKey || ev.altKey) return;
     const n = estado.respuestas.length;
     // Filas de casillas de la nota activa, de arriba abajo (la de tonalidad solo si se edita)
-    const filas = camposDe(estado.activa).concat(tonalidadEditable() && estado.activa > 0 ? ['tonalidad'] : []);
+    const filas = camposVisuales(estado.activa).concat(tonalidadEditable() && estado.activa > 0 ? ['tonalidad'] : []);
     const pos = Math.max(0, filas.indexOf(estado.campo));
-    if (ev.key === 'ArrowRight') { estado.activa = (estado.activa + 1) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = 'cifra'; pintar(); }
-    else if (ev.key === 'ArrowLeft') { estado.activa = (estado.activa - 1 + n) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = 'cifra'; pintar(); }
+    if (ev.key === 'ArrowRight') { estado.activa = (estado.activa + 1) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = campoInicial(); pintar(); }
+    else if (ev.key === 'ArrowLeft') { estado.activa = (estado.activa - 1 + n) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = campoInicial(); pintar(); }
     else if (ev.key === 'ArrowDown') { if (pos < filas.length - 1) { estado.campo = filas[pos + 1]; pintar(); } }
     else if (ev.key === 'ArrowUp') { if (pos > 0) { estado.campo = filas[pos - 1]; pintar(); } }
     else if (/^[0-9]$/.test(ev.key)) {
