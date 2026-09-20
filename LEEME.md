@@ -19,7 +19,8 @@ doble clic**: no necesita servidor, conexión ni instalación.
   arreglan solo las rojas (sin ver la solución hasta pulsar «Ver la
   solución»). Sobre el bajo, un pentagrama de sol muestra la realización a
   cuatro voces (posición inicial de Furno a elegir). Sonido, siempre con el
-  bajo doblado a la octava grave: «▶ Tono inicial» sitúa la tonalidad,
+  bajo doblado a la octava grave y con el instrumento elegido en el desplegable
+  (piano, clave, órgano o sintético): «▶ Tono inicial» sitúa la tonalidad,
   «▶ Escuchar propuesta» reproduce lo que propone el ejercicio (la
   armonización en Análisis y Audición; solo el bajo en Armonización),
   «▶ Mi cifrado» la realización de lo cifrado hasta el momento, el ▶ encima
@@ -59,7 +60,8 @@ Direcciones:
 | `js/partitura.js` | Dibuja el pentagrama en SVG con la fuente Bravura y las casillas pulsables. |
 | `js/app.js` | La interfaz del alumno: paletas, estado del ejercicio, corrección, barra de realización. |
 | `js/realizacion.js` | Realización a cuatro voces: tres posiciones de Furno, conducción automática (séptimas que bajan, sensible sin doblar, tónica en la soprano final), detector de paralelas, cadencia de referencia. |
-| `js/sonido.js` | Reproducción sencilla de acordes y secuencias (Web Audio), con parada y avisos de progreso. |
+| `js/sonido.js` | Reproducción de acordes y secuencias (Web Audio) con instrumentos reales (muestras) o sintético, parada y avisos de progreso. |
+| `sonidos/piano.js`, `clave.js`, `organo.js` | Muestras mp3 en base64 (FluidR3_GM, CC BY 3.0; licencia en `sonidos/LICENCIA-muestras.txt`); se cargan solo cuando se usan. |
 | `js/configurador.js` | La interfaz del profesor: entrada del bajo, opciones, revisión, generación de direcciones, borrador. |
 | `js/musicxml.js` | Importador de MusicXML: pentagrama del bajo, fragmentos, tonalidad. |
 | `css/estilo.css` | Aspecto (colores en variables al principio del archivo). |

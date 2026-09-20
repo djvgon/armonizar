@@ -37,7 +37,7 @@ arrastres; la aplicación no los necesita.
    `3. RECURSOS - DOCENTE › Recursos de Claude › APLICACIÓN WEB PARA ARMONIZAR MELODÍAS`).
 3. Selecciona **todo el contenido de la carpeta** (no la carpeta en sí):
    `index.html`, `configurar.html`, `pruebas.html`, `LEEME.md` y las carpetas
-   `css`, `js`, `fuentes` y `ejemplos`. Arrástralo a la zona punteada del
+   `css`, `js`, `sonidos`, `fuentes` y `ejemplos`. Arrástralo a la zona punteada del
    navegador que dice *Drag files here*. Las carpetas se suben con su
    estructura; espera a que aparezcan todos los archivos en la lista (unos 20).
 4. Baja hasta **Commit changes**, deja el texto que propone y pulsa el botón

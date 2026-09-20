@@ -81,6 +81,8 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .realizacion-barra.audicion #btn-cadencia, .realizacion-barra.audicion #btn-propuesta { background: var(--acento); color: #fff; border-color: var(--acento); font-size: 1rem; padding: 7px 16px; }
 .realizacion-barra.audicion .control-sonido { gap: 14px; }
 .boton-pequeno.parar { color: var(--mal); border-color: var(--mal); }
+.selector-pequeno { font: inherit; font-size: .88rem; padding: 3px 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); }
+.instrumento-estado { font-size: .8rem; color: var(--tinta-suave); font-style: italic; }
 .instruccion .ref-boton { display: inline-block; font-size: .82em; padding: 0 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); white-space: nowrap; }
 svg.partitura .boton-sonar { cursor: pointer; }
 svg.partitura .boton-sonar .fondo { fill: var(--papel); stroke: var(--linea); stroke-width: 1.2; transition: fill .12s, stroke .12s; }

@@ -489,6 +489,20 @@
     document.querySelectorAll('#partitura .boton-sonar').forEach(b => b.classList.toggle('sonando', Number(b.dataset.indice) === i));
   }
 
+  // Si medio segundo después de pedir sonido el navegador no ha arrancado el audio, se avisa
+  // (bloqueo del navegador, pestaña silenciada, iPad en modo silencio…).
+  function vigilarAudio() {
+    clearTimeout(vigilarAudio.t);
+    vigilarAudio.t = setTimeout(() => {
+      const st = Sonido.estado();
+      if (st === 'running') return;
+      const causa = st === 'sin web audio' ? 'este navegador no tiene Web Audio'
+        : st === 'interrupted' ? 'otra aplicación está usando el audio'
+        : 'el navegador mantiene el audio bloqueado (estado: ' + st + '). Vuelve a pulsar el botón; si sigue sin sonar, comprueba el volumen, que la pestaña no esté silenciada y, en un iPad, el interruptor de silencio';
+      aviso('No suena: ' + causa + '.', 7000);
+    }, 500);
+  }
+
   function reproducir(acordes) {
     const notas = Reglas.notasDe(estado.ejercicio);
     const dur = duraciones();
@@ -496,7 +510,8 @@
     try {
       Sonido.secuencia(items, () => { marcarSonando(null); $('#btn-parar').hidden = true; });
       $('#btn-parar').hidden = false;
-    } catch (e) { aviso('No se ha podido reproducir el sonido en este navegador.'); }
+      vigilarAudio();
+    } catch (e) { aviso('No se ha podido reproducir el sonido en este navegador: ' + e.message); }
   }
 
   function escucharPropuesta() { if (propuestaAudible()) reproducir(acordesPropuesta()); }
@@ -513,7 +528,8 @@
       const items = cad.map(a => ({ notas: conBajoDoblado(a.bajo, a.voces), segundos: SEG_POR_NEGRA * a.duracion }));
       Sonido.secuencia(items, () => { marcarSonando(null); $('#btn-parar').hidden = true; });
       $('#btn-parar').hidden = false;
-    } catch (e) { aviso('No se ha podido reproducir el sonido en este navegador.'); }
+      vigilarAudio();
+    } catch (e) { aviso('No se ha podido reproducir el sonido en este navegador: ' + e.message); }
   }
 
   // Botón ▶ sobre la nota i: suena ese acorde de la propuesta (en Armonización, la nota del bajo)
@@ -523,8 +539,9 @@
     try {
       Sonido.acorde(conBajoDoblado(notas[i], ac || []), 1.4);
       marcarSonando(i);
+      vigilarAudio();
       setTimeout(() => { if (estado.sonando === i && !Sonido.enCurso()) marcarSonando(null); }, 1400);
-    } catch (e) { /* sin audio */ }
+    } catch (e) { aviso('No se ha podido reproducir el sonido: ' + e.message); }
   }
 
   function parar() { Sonido.parar(); marcarSonando(null); $('#btn-parar').hidden = true; }
@@ -754,12 +771,12 @@
     else prompt('Copia este enlace:', url);
   }
 
-  function aviso(txt) {
+  function aviso(txt, ms = 4000) {
     const a = $('#aviso');
     a.textContent = txt;
     a.hidden = false;
     clearTimeout(aviso.t);
-    aviso.t = setTimeout(() => { a.hidden = true; }, 4000);
+    aviso.t = setTimeout(() => { a.hidden = true; }, ms);
   }
 
   /* ---------- Teclado: flechas para moverse, números para elegir en la paleta activa,
@@ -812,6 +829,24 @@
     $('#rigida').addEventListener('change', ev => { estado.rigida = ev.target.checked; pintar(); });
     $('#sonar').addEventListener('change', ev => { estado.sonar = ev.target.checked; });
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.addEventListener('click', () => { estado.rotacion = Number(b.dataset.pos); pintar(); }));
+    // Instrumento: lista, elección guardada y aviso de carga
+    const selInst = $('#instrumento');
+    Sonido.INSTRUMENTOS.forEach(x => { const o = document.createElement('option'); o.value = x.id; o.textContent = x.nombre; selInst.appendChild(o); });
+    try { const g = localStorage.getItem('armonizar.instrumento'); if (g && Sonido.INSTRUMENTOS.some(x => x.id === g)) Sonido.elegirInstrumento(g); } catch (e) { /* sin almacenamiento */ }
+    selInst.value = Sonido.instrumentoActual();
+    selInst.addEventListener('change', () => {
+      Sonido.parar(); marcarSonando(null); $('#btn-parar').hidden = true;
+      Sonido.elegirInstrumento(selInst.value);
+      try { localStorage.setItem('armonizar.instrumento', selInst.value); } catch (e) { /* nada */ }
+    });
+    Sonido.alCargar = (id, listo) => {
+      const e = $('#instrumento-estado');
+      if (!listo) { e.textContent = 'cargando…'; e.hidden = false; }
+      else if (id === Sonido.instrumentoActual()) e.hidden = true;
+    };
+    // El audio del navegador solo arranca tras un gesto del usuario: se prepara en el primero
+    // (y se precarga el instrumento elegido)
+    ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => Sonido.desbloquear(), { once: true, passive: true }));
     $('#btn-cadencia').addEventListener('click', escucharCadencia);
     $('#btn-propuesta').addEventListener('click', escucharPropuesta);
     $('#btn-mio').addEventListener('click', escucharMio);

@@ -160,7 +160,19 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
      interviene en las notas): si el alumno pone un grado incoherente con
      la cifra, verá el acorde de la cifra.
    - Tras corregir, los acordes de las cifras erróneas se dibujan en rojo.
-   - Sonido (`js/sonido.js`, Web Audio, osciladores). Tres botones, con
+   - **Instrumentos reales** (20/9/2026): piano, clave y órgano con
+     muestras del banco FluidR3_GM (renderizadas a mp3 por midi-js-soundfonts,
+     licencia CC BY 3.0; `sonidos/LICENCIA-muestras.txt`), una muestra cada
+     tercera menor entre do1 y do6 incrustada en base64 en
+     `sonidos/piano.js`, `clave.js` y `organo.js` (≈ 0,6–0,7 MB cada uno);
+     las notas intermedias se transportan desde la muestra más cercana. El
+     archivo del instrumento se carga solo cuando hace falta (se precarga
+     en el primer clic o tecla) y funciona también desde `file://`. Un
+     desplegable «Instrumento» en la barra de sonido (Piano por defecto,
+     Clave, Órgano, Sintético) recuerda la elección en el navegador. Un
+     compresor suave evita la saturación de los acordes de cinco notas; el
+     órgano repite su tramo estable si la nota es más larga que la muestra.
+   - Sonido (`js/sonido.js`, Web Audio). Tres botones, con
      **el bajo doblado a la octava grave** en toda reproducción (para que
      destaque y ayude a reconocer las inversiones); nombres y comportamiento
      fijados por Diego el 20/9/2026:
@@ -447,7 +459,7 @@ la dirección generada, para que no se distribuya una versión desfasada.
 | 1 | Prototipo del alumno: partitura, paletas de cifra y de grado, corrección, URL | Hecha (20/9/2026) |
 | 2 | Configurador del profesor: escribir o importar el bajo, elegir repertorio, revisar las cifras propuestas por el motor, generar la dirección | Hecha (20/9/2026) |
 | 3 | Importación de MusicXML (arrastrar el archivo de MuseScore), con partición en fragmentos y deducción de tonalidad | Hecha (20/9/2026) |
-| 4 | Realización a cuatro voces (tres posiciones de Furno + conducción automática), contador de paralelas, sonido con el bajo doblado a la octava grave; tres tipos de ejercicio (Análisis, Armonización, Audición) | Hecha (20/9/2026) |
+| 4 | Realización a cuatro voces (tres posiciones de Furno + conducción automática), contador de paralelas, sonido con el bajo doblado a la octava grave e instrumentos reales (piano, clave, órgano); tres tipos de ejercicio (Análisis, Armonización, Audición) | Hecha (20/9/2026) |
 | 5a | Modulación en ejercicios propios: tramos, pivote común, dos avisos, corrección, configurador y MusicXML (decisión 6) | Hecha (20/9/2026) |
 | 5b | Generador de bajos por combinación de fragmentos válidos de la RO, con modulación por acorde pivote | Pendiente |
 | 6 | *Schemata* de IJzerman (marchas progresivas, Romanesca, Quiescenza); respuestas por combinación | Pendiente |
