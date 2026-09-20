@@ -148,8 +148,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
      con la misma disposición mantenida rígidamente en todos
      los acordes, 166 / 168 / 226 paralelas en total (en los saltos del
      bajo, sobre todo en la cadencia V–I). El interruptor «misma
-     disposición en todos los acordes» existe precisamente para mostrarlo
-     en clase; el contador de paralelas lo acompaña.
+     disposición en todos los acordes» y el contador de paralelas se
+     quitaron de la página del alumno el 20/9/2026 a petición de Diego
+     (confundían); siguen en `pruebas.html` y en el motor (`modo:
+     'rigida'`) por si se quieren mostrar en clase.
    - Grabado: las dos notas de una segunda van pegadas a la plica, la
      inferior a la izquierda y la superior a la derecha (con plica arriba se
      desplaza la superior; con plica abajo, la inferior; en un racimo de tres
@@ -251,12 +253,6 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     reintentos, permite acertar probando, así que conviene reservarla a la
     práctica inicial). Decidido tras valorar que limitar la paleta facilita
     demasiado si es la única forma de trabajar.
-18. **Orden de respuesta** (20/9/2026): primero el grado de la fundamental
-    y después el cifrado. La paleta «Grado de la fundamental» va encima de la
-    de «Cifrados» (antes «Cifra»), la casilla activa inicial es la del grado
-    y, al responder, se pasa del grado al cifrado de la misma nota (en un
-    pivote: grado anterior, grado nuevo, cifrado). Las flechas ↑ ↓ siguen el
-    orden visual de las casillas (cifrado arriba, grado debajo).
 15. **Atajos de teclado.** Cada tecla de las paletas lleva un número
     pequeño: en los grados, el del grado (I = 1 … VII = 7); en las cifras,
     su posición en la paleta (1 … 9, 0 para la décima). Pulsar ese número en
@@ -278,6 +274,21 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     anacrusas y compases finales incompletos. Las duraciones se guardan en
     negras (3 = blanca con puntillo, 0.5 = corchea).
 
+18. **Orden de respuesta** (20/9/2026): primero el grado de la fundamental
+    y después el cifrado. La paleta «Grado de la fundamental» va encima de la
+    de «Cifrados» (antes «Cifra»), la casilla activa inicial es la del grado
+    y, al responder, se pasa del grado al cifrado de la misma nota (en un
+    pivote: grado anterior, grado nuevo, cifrado). Las flechas ↑ ↓ siguen el
+    orden visual de las casillas (cifrado arriba, grado debajo).
+19. **Tamaños y móvil** (20/9/2026). Las cifras de las casillas y las de
+    la paleta tienen el mismo tamaño (numerales de unos 11 px). En
+    pantallas de menos de 720 px de ancho (móvil): las paletas de grado y
+    cifrado se fijan en la parte baja de la pantalla como un teclado (sin
+    los números de atajo), la partitura no se encoge sino que se desplaza
+    en horizontal y la casilla activa se mantiene a la vista al avanzar; el
+    enunciado va recortado a dos líneas (se despliega al pulsarlo) y la
+    cabecera, las listas de grados y cifrados y la barra de sonido son más
+    compactas.
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

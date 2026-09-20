@@ -82,7 +82,9 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .realizacion-barra.audicion .control-sonido { gap: 14px; }
 .boton-pequeno.parar { color: var(--mal); border-color: var(--mal); }
 .selector-pequeno { font: inherit; font-size: .88rem; padding: 3px 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); }
-.instrumento-estado { font-size: .8rem; color: var(--tinta-suave); font-style: italic; }
+/* El indicador de carga no ocupa sitio (absoluto), para que no desplace nada mientras el alumno pulsa */
+.control-instrumento { position: relative; }
+.instrumento-estado { position: absolute; left: 0; top: 100%; font-size: .7rem; color: var(--acento); font-style: italic; white-space: nowrap; pointer-events: none; }
 .instruccion .ref-boton { display: inline-block; font-size: .82em; padding: 0 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); white-space: nowrap; }
 svg.partitura .boton-sonar { cursor: pointer; }
 svg.partitura .boton-sonar .fondo { fill: var(--papel); stroke: var(--linea); stroke-width: 1.2; transition: fill .12s, stroke .12s; }
@@ -95,8 +97,6 @@ svg.partitura .boton-sonar.sonando .triangulo { fill: #fff; }
 .segmentos button { font: inherit; padding: 4px 10px; border: none; background: var(--papel); color: var(--tinta); cursor: pointer; border-right: 1px solid var(--linea); }
 .segmentos button:last-child { border-right: none; }
 .segmentos button.activo { background: var(--acento); color: #fff; }
-.paralelas { font-size: .85rem; }
-.paralelas.hay { color: var(--mal); }
 .boton-pequeno { font: inherit; font-size: .9rem; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); cursor: pointer; }
 .boton-pequeno:hover { border-color: var(--acento); }
 svg.partitura .acorde.mal text { fill: var(--mal); }
@@ -131,8 +131,8 @@ svg.partitura .casilla.activa-nota .fondo { stroke: var(--acento); stroke-dashar
 svg.partitura .casilla.fija { cursor: default; }
 svg.partitura .casilla.fija:hover .fondo { stroke: var(--bien); }
 .botonera-resultado { margin-top: 10px; }
-svg.partitura .interrogante { font-family: Georgia, serif; font-size: 22px; fill: var(--tinta-suave); pointer-events: none; }
-svg.partitura .romano { font-family: Georgia, "Times New Roman", serif; font-size: 21px; letter-spacing: .5px; fill: var(--tinta); pointer-events: none; }
+svg.partitura .interrogante { font-family: Georgia, serif; font-size: 18px; fill: var(--tinta-suave); pointer-events: none; }
+svg.partitura .romano { font-family: Georgia, "Times New Roman", serif; font-size: 18px; letter-spacing: .5px; fill: var(--tinta); pointer-events: none; }
 svg.partitura .casilla.mal .romano { fill: var(--mal); }
 svg.partitura .modelo-romano { fill: var(--bien); font-size: 19px; }
 svg.partitura .cifra-raya { stroke: var(--tinta); }
@@ -168,6 +168,7 @@ svg.partitura .etiqueta-ton.solucion text { fill: var(--bien); }
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
   min-width: 48px; min-height: 46px; padding: 3px 7px;
   font: inherit; font-size: .93rem; color: var(--tinta);
+  -webkit-tap-highlight-color: transparent;
   background: var(--papel); border: 1px solid var(--linea); border-radius: 10px;
   box-shadow: var(--sombra); cursor: pointer;
   transition: transform .06s, border-color .12s, background .12s;
@@ -339,3 +340,47 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .configurador .paso .partitura-caja { box-shadow: none; border: 1px solid var(--linea); }
 
 .campo.desactivado { opacity: .45; }
+
+
+/* ---- Pantalla estrecha (móvil): las paletas se fijan abajo como un teclado ---- */
+@media (max-width: 719px) {
+  body { padding: 10px 8px 24px; }
+  h1 { font-size: 1.15rem; margin: 0 0 2px; }
+  .sobretitulo { font-size: .7rem; }
+  .cabecera { gap: 8px 12px; margin-bottom: 8px; }
+  .instruccion { font-size: .85rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+  .instruccion.desplegada { display: block; }
+  .instruccion .ref-boton { padding: 0 4px; }
+  .repertorio-caja { padding: 6px 8px; gap: 4px; margin-bottom: 8px; }
+  .repertorio-fila { gap: 4px 8px; }
+  .repertorio-fila .repertorio-etiqueta { min-width: 0; font-size: .72rem; }
+  .ficha { width: 28px; height: 26px; }
+  .ficha svg { width: 20px; height: 20px; }
+  .ficha-romano { min-width: 28px; font-size: .8rem; padding: 0 5px; }
+  .realizacion-barra { padding: 6px 8px; gap: 6px 10px; font-size: .8rem; margin-bottom: 6px; }
+  .realizacion-barra .control-sonido { gap: 6px; }
+  .boton-pequeno, .realizacion-barra.audicion #btn-cadencia, .realizacion-barra.audicion #btn-propuesta { font-size: .8rem; padding: 4px 8px; }
+  .realizacion-barra .control-etiqueta { display: none; }
+  .selector-pequeno { font-size: .8rem; padding: 2px 4px; }
+  .partitura-caja { padding: 4px 6px; }
+  svg.partitura { min-width: 560px; max-width: none; }   /* no se encoge: se desplaza en horizontal y las casillas siguen siendo pulsables */
+  .paletas {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    padding: 4px 8px 6px; background: var(--papel);
+    border-top: 1px solid var(--linea); box-shadow: 0 -4px 14px rgba(0,0,0,.08);
+  }
+  .paleta-caja { margin-top: 2px; padding: 3px 4px 4px; border-radius: 8px; }
+  .paleta-etiqueta { font-size: .62rem; margin-bottom: 3px; }
+  .paleta { gap: 4px; }
+  .tecla { min-width: 36px; min-height: 40px; padding: 2px 5px; border-radius: 8px; box-shadow: none; }
+  .tecla-num { display: none; }
+  .tecla-cifra svg.icono-cifra { width: 32px; height: 32px; }
+  .tecla-romano { min-width: 38px; min-height: 36px; font-size: .95rem; }
+  .tecla-borrar { min-width: 44px; font-size: .75rem; }
+  .tecla-ton { min-width: 40px; min-height: 36px; font-size: .75rem; }
+  .progreso { font-size: .8rem; }
+  .botonera { gap: 6px; margin-top: 10px; }
+  .botonera button { font-size: .9rem; padding: 8px 12px; }
+  .pie { font-size: .75rem; }
+  .pie .teclas { display: none; }
+}

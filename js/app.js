@@ -45,7 +45,7 @@
     realizacionCuando: 'siempre', // 'siempre' | 'alCorregir' | 'nunca'
     verRealizacion: true,     // interruptor del alumno
     rotacion: 0,              // posición inicial de Furno (0, 1, 2)
-    rigida: false,            // misma disposición en todos los acordes
+    rigida: false,            // misma disposición en todos los acordes (solo en pruebas.html; el alumno ya no lo ve)
     sonar: false,             // sonar el acorde al completar cifra y grado
     sonando: null,            // nota cuyo acorde está sonando (para resaltar su botón ▶)
     alSonar: null,            // función que la partitura llama al pulsar el ▶ de una nota
@@ -216,7 +216,7 @@
     estado.ejercicio.repertorio.forEach((id, k) => {
       const c = Teoria.CIFRADOS[id];
       const cont = document.createDocumentFragment();
-      cont.appendChild(Partitura.iconoCifra(id, 26));
+      cont.appendChild(Partitura.iconoCifra(id, 38));
       const num = document.createElement('span');
       num.className = 'tecla-num';
       num.textContent = atajo(k);
@@ -358,18 +358,12 @@
     const puedeVerse = !(estado.realizacionCuando === 'nunca' || (estado.realizacionCuando === 'alCorregir' && !estado.corregido));
     $('#control-realizacion').hidden = !puedeVerse;
     $('#ver-realizacion').checked = estado.verRealizacion;
-    $('#rigida').checked = estado.rigida;
     $('#sonar').checked = estado.sonar;
     $('#btn-propuesta').hidden = !propuestaAudible();
     $('#btn-parar').hidden = !Sonido.enCurso();
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.classList.toggle('activo', Number(b.dataset.pos) === estado.rotacion));
     $('#posicion-control').hidden = !estado.verRealizacion;
     $('#realizacion-barra').classList.toggle('audicion', estado.modoEj === 'audicion');
-    const par = $('#paralelas');
-    if (!puedeVerse || !estado.verRealizacion || !estado.realizacion) { par.textContent = ''; par.className = 'paralelas'; return; }
-    const n = estado.paralelas.length;
-    par.textContent = n ? (n === 1 ? '1 paralela: ' : n + ' paralelas: ') + estado.paralelas.map(p => p.texto).join('; ') : 'sin quintas ni octavas paralelas';
-    par.className = 'paralelas' + (n ? ' hay' : '');
   }
 
   function pintar() {
@@ -378,6 +372,8 @@
     prepararModulacion();
     Partitura.dibujar($('#partitura'), estado.ejercicio, estado, seleccionar);
     pintarPaletaTonalidades();
+    ajustarCompacto();
+    enfocarActiva();
     const n = estado.respuestas.length;
     const hechas = estado.respuestas.filter((r, i) => notaCompleta(i)).length;
     // Tras corregir, el número de intento solo tiene sentido si el ejercicio sigue abierto (hay errores que corregir)
@@ -391,6 +387,33 @@
         : (estado.campo === 'romano' || estado.campo === 'romano2') && estado.pedirRomano ? '#paleta-romanos-caja' : '#paleta-caja';
       $(caja).classList.add('destacada');
     }
+  }
+
+  /* ---------- Pantalla estrecha (móvil) ----------
+     Con menos de 720 px de ancho, las paletas se fijan abajo como un teclado y la
+     página deja hueco para ellas; la casilla activa se mantiene a la vista. */
+  const compacto = () => document.body.classList.contains('compacto');
+
+  function ajustarCompacto() {
+    const estrecho = window.innerWidth < 720;
+    document.body.classList.toggle('compacto', estrecho);
+    const panel = $('#paletas');
+    document.body.style.paddingBottom = estrecho ? (panel.offsetHeight + 12) + 'px' : '';
+  }
+
+  // Desplaza lo justo para que la casilla activa se vea (sobre el panel fijo y dentro de la partitura)
+  function enfocarActiva() {
+    if (!compacto() || estado.corregido) return;
+    const g = document.querySelector('#partitura .casilla.activa') || document.querySelector('#partitura .casilla.activa-nota');
+    if (!g) return;
+    const r = g.getBoundingClientRect();
+    const caja = $('#partitura');
+    const cr = caja.getBoundingClientRect();
+    if (r.left < cr.left + 8) caja.scrollLeft -= (cr.left + 8 - r.left);
+    else if (r.right > cr.right - 8) caja.scrollLeft += (r.right - (cr.right - 8));
+    const limite = window.innerHeight - $('#paletas').offsetHeight - 12;
+    if (r.bottom > limite) window.scrollBy({ top: r.bottom - limite + 8, behavior: 'smooth' });
+    else if (r.top < 8) window.scrollBy({ top: r.top - 8, behavior: 'smooth' });
   }
 
   /* ---------- Interacción ---------- */
@@ -826,7 +849,6 @@
     $('#btn-siguiente').addEventListener('click', siguiente);
     $('#btn-enlace').addEventListener('click', copiarEnlace);
     $('#ver-realizacion').addEventListener('change', ev => { estado.verRealizacion = ev.target.checked; pintar(); });
-    $('#rigida').addEventListener('change', ev => { estado.rigida = ev.target.checked; pintar(); });
     $('#sonar').addEventListener('change', ev => { estado.sonar = ev.target.checked; });
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.addEventListener('click', () => { estado.rotacion = Number(b.dataset.pos); pintar(); }));
     // Instrumento: lista, elección guardada y aviso de carga
@@ -839,10 +861,13 @@
       Sonido.elegirInstrumento(selInst.value);
       try { localStorage.setItem('armonizar.instrumento', selInst.value); } catch (e) { /* nada */ }
     });
+    // Indicador de carga del instrumento: solo si tarda más de medio segundo, y sin desplazar nada
+    let avisoCarga = null;
     Sonido.alCargar = (id, listo) => {
       const e = $('#instrumento-estado');
-      if (!listo) { e.textContent = 'cargando…'; e.hidden = false; }
-      else if (id === Sonido.instrumentoActual()) e.hidden = true;
+      clearTimeout(avisoCarga);
+      if (!listo) avisoCarga = setTimeout(() => { e.textContent = 'cargando ' + (Sonido.INSTRUMENTOS.find(x => x.id === id) || {}).nombre + '…'; e.hidden = false; }, 500);
+      else e.hidden = true;
     };
     // El audio del navegador solo arranca tras un gesto del usuario: se prepara en el primero
     // (y se precarga el instrumento elegido)
@@ -853,6 +878,10 @@
     $('#btn-parar').addEventListener('click', parar);
     const inicial = new URLSearchParams(location.hash.replace(/^#/, ''));
     estado.libre = !inicial.has('e') && !inicial.has('ej');
+    ajustarCompacto();
+    window.addEventListener('resize', ajustarCompacto);
+    // En pantalla estrecha el enunciado va recortado; pulsarlo lo despliega
+    $('#instruccion').addEventListener('click', () => { if (compacto()) $('#instruccion').classList.toggle('desplegada'); });
     window.addEventListener('hashchange', () => cargar(ejercicioDesdeURL()));
     cargar(ejercicioDesdeURL());
   });

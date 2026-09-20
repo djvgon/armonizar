@@ -162,9 +162,10 @@ const Partitura = (() => {
     const Y_TOP = conSol ? Y_BOT_SOL + 7.5 * SP : 5.5 * SP + Y0; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
     const Y_CASILLA = Y_BOT + 3.4 * SP;                    // borde superior de las casillas de cifra
-    const ALTO_CASILLA = 5.2 * SP, ANCHO_CASILLA = 4.6 * SP;
+    const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
+    const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
     const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;  // borde superior de las casillas de grado
-    const ALTO_ROMANO = 3.4 * SP;
+    const ALTO_ROMANO = 3.1 * SP;
     /* Modulación: cada tonalidad escribe sus grados en un renglón nuevo, un poco más
        abajo; el pivote (dobles[i]) lleva dos grados apilados —el de la tonalidad anterior
        en su renglón y el de la nueva en el siguiente— unidos por dos líneas verticales.
@@ -392,8 +393,8 @@ const Partitura = (() => {
         else if (resp) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
         g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.8 * SP, class: 'fondo' }));
-        if (resp) dibujarCifra(g, resp, cx, Y_CASILLA + ALTO_CASILLA / 2);
-        else if (!estado.corregido) g.appendChild(el('text', { x: cx, y: Y_CASILLA + ALTO_CASILLA / 2 + 0.6 * SP, 'text-anchor': 'middle', class: 'interrogante' }, '?'));
+        if (resp) dibujarCifra(g, resp, cx, Y_CASILLA + ALTO_CASILLA / 2, ESCALA_CIFRA);
+        else if (!estado.corregido) g.appendChild(el('text', { x: cx, y: Y_CASILLA + ALTO_CASILLA / 2 + 0.55 * SP, 'text-anchor': 'middle', class: 'interrogante' }, '?'));
         if (!soloLectura) {
           g.addEventListener('click', () => alPulsar(i, 'cifra'));
           g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, 'cifra'); } });
