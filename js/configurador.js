@@ -358,7 +358,7 @@
         texto: $('#texto-bajo').value, tonica: $('#tonica').value, modo: $('#modo').value, compas: $('#compas').value,
         titulo: $('#titulo').value, coleccion: $('#coleccion').value, repertorio: repertorio(),
         pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
-        modo: modoElegido(), realizacion: $('#realizacion-cuando').value, preferir: $('#preferir').value, respuestas: estado.respuestas
+        tipo: modoElegido(), realizacion: $('#realizacion-cuando').value, preferir: $('#preferir').value, respuestas: estado.respuestas
       }));
     } catch (e) { /* sin almacenamiento: no pasa nada */ }
   }
@@ -367,11 +367,14 @@
     try {
       const b = JSON.parse(localStorage.getItem(CLAVE_BORRADOR) || 'null');
       if (!b) return false;
-      $('#texto-bajo').value = b.texto || ''; $('#tonica').value = b.tonica || 'C'; $('#modo').value = b.modo || 'mayor';
+      // (En borradores antiguos, 'modo' guardaba el tipo de ejercicio en vez del modo de la tonalidad.)
+      const modoTon = b.modo === 'menor' ? 'menor' : 'mayor';
+      const tipo = b.tipo || (Ejercicios.MODOS[b.modo] ? b.modo : 'armonizar');
+      $('#texto-bajo').value = b.texto || ''; $('#tonica').value = b.tonica || 'C'; $('#modo').value = modoTon;
       $('#compas').value = b.compas || '4/4'; $('#titulo').value = b.titulo || ''; $('#coleccion').value = b.coleccion || '';
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
       $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#ayuda-grados').value = b.ayudaGrados || 'lista';
-      elegirModo(b.modo || 'armonizar'); $('#realizacion-cuando').value = b.realizacion || 'siempre'; $('#preferir').value = b.preferir || '';
+      elegirModo(tipo); $('#realizacion-cuando').value = b.realizacion || 'siempre'; $('#preferir').value = b.preferir || '';
       ajustarCamposModo();
       leerBajo();
       if (b.respuestas && b.respuestas.length === Ejercicios.numNotas({ compases: estado.compases })) {
