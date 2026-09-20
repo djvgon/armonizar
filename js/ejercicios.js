@@ -43,6 +43,14 @@
                    el grado sobre el que se construye la fundamental (I … VII).
                    El grado correcto se deriva de cada cifra admisible
                    (Teoria.romano), así que no hay que escribirlo aquí.
+     modulaciones: (opcional) [{nota: i, tonalidad}, …]: desde la nota i (índice
+                   desde 0; es el acorde pivote, común a las dos tonalidades)
+                   rige la tonalidad nueva. Los grados se leen en la tonalidad
+                   que rige en cada nota; en el pivote, en las dos (II = V).
+     aviso       : (opcional, con modulaciones) 'completo' (por defecto: se
+                   muestra dónde empieza la tonalidad nueva y cuál es) o 'existe'
+                   (solo se avisa de que hay una modulación; el alumno marca dónde
+                   y cuál; vale el pivote o la primera nota ajena a la anterior).
 
    Las respuestas de este corpus están fijadas a mano según las reglas
    acordadas (Regla de la octava de Furno + fórmulas de salto, arpegio y
@@ -426,16 +434,51 @@ const Ejercicios = (() => {
   function grados(ej) {
     if (Array.isArray(ej.grados) && ej.grados.length) return ej.grados.slice();
     const usados = new Set();
-    for (let i = 0; i < ej.respuestas.length; i++) parejas(ej, i).forEach(p => usados.add(p.romano));
+    for (let i = 0; i < ej.respuestas.length; i++) {
+      parejas(ej, i).forEach(p => usados.add(p.romano));
+      if (esPivote(ej, i)) parejasEn(ej, i, tonalidadAntes(ej, i)).forEach(p => usados.add(p.romano));
+    }
     return Teoria.ROMANOS.filter(r => usados.has(r));
   }
 
-  // Parejas admisibles (cifra + grado) de la nota i: [{cifra, romano}, …]; la primera es la modelo.
-  function parejas(ej, i) {
+  /* ---- Modulación ----
+     ej.modulaciones = [{nota: i, tonalidad}, …]: desde la nota i (acorde pivote) rige la
+     tonalidad nueva. ej.aviso: 'completo' (se muestra la tonalidad de llegada y dónde
+     empieza) o 'existe' (solo se dice que hay una modulación). */
+  function modulaciones(ej) {
+    const n = numNotas(ej);
+    return (ej.modulaciones || [])
+      .filter(m => m && m.tonalidad && m.tonalidad.tonica && Number.isInteger(m.nota) && m.nota > 0 && m.nota < n)
+      .slice().sort((a, b) => a.nota - b.nota);
+  }
+  const modula = ej => modulaciones(ej).length > 0;
+  function aviso(ej) { return ej.aviso === 'existe' ? 'existe' : 'completo'; }
+  function tonalidadEn(ej, i) { return Teoria.tonalidadesPorNota(ej)[i] || ej.tonalidad; }
+  // Tonalidad que regía ANTES de la nota i (la anterior al pivote, si i es pivote)
+  function tonalidadAntes(ej, i) { return i > 0 ? tonalidadEn(ej, i - 1) : tonalidadEn(ej, 0); }
+  const esPivote = (ej, i) => modulaciones(ej).some(m => m.nota === i);
+
+  // Primera nota, después del pivote de la modulación m, cuyo acorde modelo tiene
+  // alguna nota ajena a la tonalidad anterior (donde la modulación se hace audible).
+  function primeraAjena(ej, m) {
     const notas = [];
     ej.compases.forEach(c => c.forEach(([n]) => notas.push(n)));
-    return admisibles(ej, i).map(id => ({ cifra: id, romano: Teoria.romano(id, notas[i], ej.tonalidad) }));
+    const antes = tonalidadAntes(ej, m.nota);
+    for (let i = m.nota + 1; i < notas.length; i++) {
+      const id = admisibles(ej, i)[0];
+      if (id && Teoria.acordeAjeno(id, notas[i], tonalidadEn(ej, i), antes)) return i;
+    }
+    return null;
   }
+
+  // Parejas admisibles (cifra + grado) de la nota i leída en la tonalidad ton.
+  function parejasEn(ej, i, ton) {
+    const notas = [];
+    ej.compases.forEach(c => c.forEach(([n]) => notas.push(n)));
+    return admisibles(ej, i).map(id => ({ cifra: id, romano: Teoria.romano(id, notas[i], ton) }));
+  }
+  // Parejas en la tonalidad que rige en la nota (en el pivote, la nueva); la primera es la modelo.
+  function parejas(ej, i) { return parejasEn(ej, i, tonalidadEn(ej, i)); }
 
   /* ---- Codificación en la URL (base64url de JSON en UTF-8) ---- */
   function codificar(ej) {
@@ -462,8 +505,16 @@ const Ejercicios = (() => {
     if (!Array.isArray(ej.respuestas)) errores.push('Faltan las respuestas.');
     else if (ej.compases && numNotas(ej) !== ej.respuestas.length) errores.push('El número de respuestas no coincide con el de notas.');
     if (ej.repertorio) ej.repertorio.forEach(id => { if (!Teoria.CIFRADOS[id]) errores.push('Cifra desconocida en el repertorio: ' + id); });
+    if (ej.modulaciones !== undefined) {
+      if (!Array.isArray(ej.modulaciones)) errores.push('Las modulaciones no son una lista.');
+      else ej.modulaciones.forEach(m => {
+        if (!m || !m.tonalidad || !m.tonalidad.tonica || !m.tonalidad.modo || !Number.isInteger(m.nota)) errores.push('Modulación mal formada.');
+        else if (ej.compases && (m.nota <= 0 || m.nota >= numNotas(ej))) errores.push('Modulación fuera del ejercicio (nota ' + (m.nota + 1) + ').');
+      });
+    }
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, modo, realizacion, admisibles, parejas, grados, codificar, decodificar, validar };
+  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, modo, realizacion, admisibles, parejas, parejasEn, grados,
+    modulaciones, modula, aviso, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

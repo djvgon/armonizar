@@ -6,8 +6,10 @@ doble clic**: no necesita servidor, conexión ni instalación.
 
 ## Cómo se usa
 
-- `index.html` — la página del alumno. Elige un ejercicio en el desplegable y,
-  para cada nota, la cifra (paleta «Cifra») y el grado sobre el que se
+- `index.html` — la página del alumno. Abierta sin más (práctica libre) muestra
+  el desplegable con los 35 ejercicios del corpus; abierta desde un enlace a un
+  ejercicio concreto (`#ej=` o `#e=`) muestra solo ese ejercicio, sin
+  desplegable. Para cada nota, la cifra (paleta «Cifra») y el grado sobre el que se
   construye la fundamental (paleta «Grado»). Cada tecla de las paletas lleva
   un número pequeño: pulsarlo en el teclado elige esa opción en la casilla
   activa (← → cambian de nota, ↑ ↓ de línea). La casilla activa avanza sola;
@@ -23,7 +25,10 @@ doble clic**: no necesita servidor, conexión ni instalación.
   tipos de ejercicio: **Análisis** (se ven bajo y realización; se cifra),
   **Armonización** (solo el bajo; la realización aparece al cifrar) y
   **Audición** (solo el bajo; se escucha la realización y se cifra lo que
-  suena).
+  suena). Un ejercicio puede **modular** (tonalidades vecinas): la fila
+  «Tonalidad» bajo los grados muestra desde qué nota rige cada tonalidad, o
+  la rellena el alumno si el ejercicio solo avisa de que hay modulación; en
+  la nota del cambio (acorde pivote) se dan los dos grados (II = V).
 - `configurar.html` — la página del profesor. Escribe el bajo (`do3 re3 | mi3
   do3 | sol3r`; `n` negra, `c` corchea, `.` puntillo; cualquier compás) o
   arrastra un `.musicxml` de MuseScore (cada barra final es un
@@ -68,7 +73,9 @@ pasa a modelo de cuarto (dominante secundaria sobre el grado 6). El grado de la 
 deriva de cada cifra (`pruebas.html` lo muestra junto a cada respuesta). Para
 no pedir el grado en un ejercicio, añádele `pedirRomano: false`. El tipo de
 ejercicio se guarda como `modo: 'cifrar'` (Análisis) o `modo: 'audicion'`;
-sin `modo`, es Armonización.
+sin `modo`, es Armonización. Una modulación se guarda como
+`modulaciones: [{nota: 2, tonalidad: {tonica: 'G', modo: 'mayor'}}]` (índice de la
+nota pivote desde 0) y `aviso: 'completo'` o `'existe'`.
 
 ## Estado y siguientes etapas
 

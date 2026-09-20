@@ -16,7 +16,12 @@
                       alSonar:función(i) (si existe, un botón ▶ bajo cada nota la llama),
                       sonando:índice (nota cuyo botón ▶ se resalta),
                       numerar:bool (número de cada acorde encima del sistema, como en la
-                      tabla de revisión del configurador), alPulsarNumero:función(i) }
+                      tabla de revisión del configurador), alPulsarNumero:función(i),
+                      etiquetas:[{i, texto, clase}] (rótulos de tonalidad encima del sistema),
+                      dobles:[bool] (la casilla de grado de la nota se parte en dos:
+                      'romano' = tonalidad anterior, 'romano2' = nueva; pivote),
+                      romanos2:[…], filaTonalidad:{visible, editable, celdas:[{texto, clase, fija}]}
+                      (fila «Tonalidad» bajo los grados, campo 'tonalidad') }
        alPulsar   : función(índiceDeNota, campo) que se llama al pulsar una casilla
 
    Duraciones en negras: 4 redonda, 2 blanca, 1 negra, 0.5 corchea; ×1.5 = con puntillo.
@@ -30,6 +35,7 @@
 const Partitura = (() => {
 
   const SP = 10;                         // espacio de pentagrama en unidades del viewBox
+  const ESCALA_PX = 1.0;                 // píxeles por unidad en pantalla (1.0 → un espacio de pentagrama = 10 px)
   const EM = 4 * SP;                     // tamaño de fuente para los signos del pentagrama
   const EM_CIFRA = 7 * SP;               // tamaño de fuente para las cifras (más grandes, para pulsar)
   const NS = 'http://www.w3.org/2000/svg';
@@ -148,7 +154,8 @@ const Partitura = (() => {
     const soloLectura = !!estado.soloLectura;
     const conSol = Array.isArray(estado.realizacion);      // ¿se dibuja el pentagrama de sol con la realización?
     const numerar = !!estado.numerar;                      // ¿número de cada acorde encima del sistema (revisión del profesor)?
-    const Y0 = numerar ? 3 * SP : 0;                       // banda superior para los números
+    const etiquetas = Array.isArray(estado.etiquetas) ? estado.etiquetas : [];   // rótulos de tonalidad encima del sistema
+    const Y0 = (numerar ? 3 * SP : 0) + (etiquetas.length ? 3 * SP : 0);        // banda superior para números y rótulos
     const Y_TOP_SOL = 5 * SP + Y0, Y_BOT_SOL = Y_TOP_SOL + 4 * SP;
     const Y_TOP = conSol ? Y_BOT_SOL + 7.5 * SP : 5.5 * SP + Y0; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
@@ -156,7 +163,11 @@ const Partitura = (() => {
     const ALTO_CASILLA = 5.2 * SP, ANCHO_CASILLA = 4.6 * SP;
     const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;  // borde superior de las casillas de grado
     const ALTO_ROMANO = 3.4 * SP;
-    const Y_FIN_CASILLAS = pedirRomano ? Y_ROMANO + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
+    const Y_FIN_ROMANO = pedirRomano ? Y_ROMANO + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
+    const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
+    const Y_TON = Y_FIN_ROMANO + 0.8 * SP, ALTO_TON = 2.7 * SP;
+    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_ROMANO;
+    const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];          // notas cuya casilla de grado se parte en dos (pivote)
     const conSonar = typeof estado.alSonar === 'function' && !soloLectura;   // botón ▶ bajo cada acorde
     const Y_SONAR = Y_FIN_CASILLAS + 1.1 * SP, R_SONAR = 1.25 * SP;         // centro vertical del botón = Y_SONAR + R_SONAR
     const Y_FIN_SONAR = conSonar ? Y_SONAR + 2 * R_SONAR : Y_FIN_CASILLAS;
@@ -180,7 +191,9 @@ const Partitura = (() => {
     });
     const ANCHO_TOTAL = x + MARGEN;
 
-    const svg = el('svg', { viewBox: `0 0 ${ANCHO_TOTAL} ${ALTO_TOTAL}`, class: 'partitura', role: 'img',
+    // Tamaño en pantalla: ESCALA_PX píxeles por unidad (SP = 10 unidades → 10 px por espacio);
+    // si no cabe, el CSS lo reduce proporcionalmente (max-width: 100 %)
+    const svg = el('svg', { viewBox: `0 0 ${ANCHO_TOTAL} ${ALTO_TOTAL}`, width: Math.round(ANCHO_TOTAL * ESCALA_PX), class: 'partitura', role: 'img',
       'aria-label': 'Bajo del ejercicio con casillas de cifrado' });
     const yLinea = i => Y_BOT - i * SP;                    // i = 0 (inferior) … 4 (superior)
 
@@ -247,6 +260,19 @@ const Partitura = (() => {
         g.setAttribute('role', 'button');
         g.addEventListener('click', () => estado.alPulsarNumero(i));
       }
+      svg.appendChild(g);
+    });
+
+    // Rótulos de tonalidad encima del sistema ({i, texto, clase}), en la banda superior
+    // (debajo de los números si también los hay)
+    etiquetas.forEach(et => {
+      if (et.i < 0 || et.i >= notas.length) return;
+      const cx = xNotas[et.i] + figura(notas[et.i].dur).ancho * SP / 2;
+      const cy = (numerar ? 3 * SP : 0) + 1.6 * SP;
+      const g = el('g', { class: 'etiqueta-ton ' + (et.clase || '') });
+      const ancho = Math.max(4.6 * SP, 0.62 * SP * et.texto.length + 1.2 * SP);
+      g.appendChild(el('rect', { x: cx - ancho / 2, y: cy - 1.25 * SP, width: ancho, height: 2.5 * SP, rx: 0.7 * SP }));
+      g.appendChild(el('text', { x: cx, y: cy + 0.45 * SP, 'text-anchor': 'middle' }, et.texto));
       svg.appendChild(g);
     });
 
@@ -366,23 +392,58 @@ const Partitura = (() => {
         svg.appendChild(g);
       }
 
-      // Casilla del grado (número romano), debajo de la cifra
+      // Casilla del grado (número romano), debajo de la cifra. En un pivote (dobles[i])
+      // se parte en dos: grado en la tonalidad anterior = grado en la nueva.
       if (pedirRomano) {
-        const g = el('g', { 'data-indice': i, 'data-campo': 'romano', tabindex: 0, role: 'button',
-          'aria-label': 'Grado de la nota ' + (i + 1) + ' (' + Teoria.nombreEs(n) + ')' });
-        const clases = ['casilla', 'casilla-romano'];
-        if (activa && !bloq.romano && estado.campo === 'romano') clases.push('activa');
-        else if (activa && !bloq.romano) clases.push('activa-nota');
-        const rom = estado.romanos ? estado.romanos[i] : null;
-        if (res) clases.push(res.okRomano ? 'bien' : 'mal');
-        else if (bloq.romano) clases.push('bien', 'fija');
-        else if (rom) clases.push('llena');
+        const partes = dobles[i] ? ['romano', 'romano2'] : ['romano'];
+        const ANCHO_DOBLE = 6.6 * SP;                          // la casilla partida es más ancha que la normal
+        const anchoParte = dobles[i] ? (ANCHO_DOBLE - 0.9 * SP) / 2 : ANCHO_CASILLA;
+        partes.forEach((campo, k) => {
+          const x0 = dobles[i] ? cx - ANCHO_DOBLE / 2 + k * (anchoParte + 0.9 * SP) : cx - ANCHO_CASILLA / 2;
+          const xc = x0 + anchoParte / 2;
+          const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: 0, role: 'button',
+            'aria-label': 'Grado de la nota ' + (i + 1) + ' (' + Teoria.nombreEs(n) + ')' + (dobles[i] ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
+          const clases = ['casilla', 'casilla-romano'];
+          if (dobles[i]) clases.push('mitad');
+          const bloqueadaAqui = !!bloq[campo];
+          if (activa && !bloqueadaAqui && estado.campo === campo) clases.push('activa');
+          else if (activa && !bloqueadaAqui) clases.push('activa-nota');
+          const lista = campo === 'romano2' ? estado.romanos2 : estado.romanos;
+          const rom = lista ? lista[i] : null;
+          const okAqui = res ? (campo === 'romano2' ? res.okRomano2 : res.okRomano) : null;
+          if (res) clases.push(okAqui ? 'bien' : 'mal');
+          else if (bloqueadaAqui) clases.push('bien', 'fija');
+          else if (rom) clases.push('llena');
+          g.setAttribute('class', clases.join(' '));
+          g.appendChild(el('rect', { x: x0, y: Y_ROMANO, width: anchoParte, height: ALTO_ROMANO, rx: 0.7 * SP, class: 'fondo' }));
+          g.appendChild(el('text', { x: xc, y: Y_ROMANO + ALTO_ROMANO / 2 + 0.75 * SP, 'text-anchor': 'middle', class: rom ? 'romano' : 'interrogante' }, rom || (estado.corregido ? '' : '?')));
+          if (!soloLectura) {
+            g.addEventListener('click', () => alPulsar(i, campo));
+            g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, campo); } });
+          }
+          svg.appendChild(g);
+        });
+        if (dobles[i]) svg.appendChild(el('text', { x: cx, y: Y_ROMANO + ALTO_ROMANO / 2 + 0.7 * SP, 'text-anchor': 'middle', class: 'igual' }, '='));
+      }
+
+      // Fila «Tonalidad»: desde qué nota rige cada tonalidad (modulación)
+      if (filaTon) {
+        const celda = filaTon.celdas[i] || {};
+        const editable = filaTon.editable && i > 0 && !celda.fija;
+        const g = el('g', { 'data-indice': i, 'data-campo': 'tonalidad', tabindex: editable ? 0 : -1, role: editable ? 'button' : 'note',
+          'aria-label': 'Tonalidad desde la nota ' + (i + 1) });
+        const clases = ['casilla', 'casilla-ton'];
+        if (!editable) clases.push('fija');
+        if (celda.clase) clases.push(celda.clase);
+        if (activa && editable && estado.campo === 'tonalidad') clases.push('activa');
+        else if (activa && editable) clases.push('activa-nota');
+        if (celda.texto) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
-        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_ROMANO, width: ANCHO_CASILLA, height: ALTO_ROMANO, rx: 0.7 * SP, class: 'fondo' }));
-        g.appendChild(el('text', { x: cx, y: Y_ROMANO + ALTO_ROMANO / 2 + 0.75 * SP, 'text-anchor': 'middle', class: rom ? 'romano' : 'interrogante' }, rom || (estado.corregido ? '' : '?')));
-        if (!soloLectura) {
-          g.addEventListener('click', () => alPulsar(i, 'romano'));
-          g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, 'romano'); } });
+        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_TON, width: ANCHO_CASILLA, height: ALTO_TON, rx: 0.6 * SP, class: 'fondo' }));
+        g.appendChild(el('text', { x: cx, y: Y_TON + ALTO_TON / 2 + 0.55 * SP, 'text-anchor': 'middle', class: celda.texto ? 'ton' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '·' : '')));
+        if (editable && !soloLectura) {
+          g.addEventListener('click', () => alPulsar(i, 'tonalidad'));
+          g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, 'tonalidad'); } });
         }
         svg.appendChild(g);
       }

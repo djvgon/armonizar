@@ -3,7 +3,7 @@
 Documento de referencia del proyecto. Se lee al empezar cada sesión de trabajo
 sobre la aplicación y se actualiza al cerrarla.
 
-Última actualización: 20 de septiembre de 2026 (Etapas 0–4 entregadas: prototipo, configurador, importación, realización a cuatro voces con conducción de voces y sonido, tres tipos de ejercicio —Análisis, Armonización y Audición—, atajos de teclado, compases ternarios y negras).
+Última actualización: 20 de septiembre de 2026 (Etapas 0–4 y 5a entregadas y publicadas: prototipo, configurador, importación, realización a cuatro voces con conducción de voces y sonido, tres tipos de ejercicio —Análisis, Armonización y Audición—, atajos de teclado, compases ternarios y negras, modulación en ejercicios propios).
 
 ## 1. Objetivo
 
@@ -28,14 +28,20 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
   sin dependencias; la fuente musical va incrustada).
 - `LEEME.md` en la carpeta describe cada archivo. `ejemplos/` guarda los tres
   MusicXML válidos de Diego para probar la importación.
-- **Publicación (en curso, 20/9/2026):** GitHub Pages, repositorio público
-  `armonizar` en la cuenta de Diego; dirección prevista
-  `https://<usuario>.github.io/armonizar/`. Guía en `PUBLICAR-EN-GITHUB.md`
-  (cuenta, repositorio, subida arrastrando la carpeta, activar Pages,
-  actualizaciones). Las direcciones para los alumnos se generan desde el
-  configurador publicado, no desde el local. Comprobado que la aplicación
-  funciona servida por HTTP igual que desde `file://`. Anotar aquí la
-  dirección definitiva cuando exista.
+- **Publicada (20/9/2026)** en GitHub Pages, repositorio público
+  `armonizar` de la cuenta `djvgon` de Diego:
+  - Alumno: <https://djvgon.github.io/armonizar/>
+  - Profesor: <https://djvgon.github.io/armonizar/configurar.html>
+  Guía en `PUBLICAR-EN-GITHUB.md` (cuenta, repositorio, subida arrastrando la
+  carpeta, activar Pages, actualizaciones). Las direcciones para los alumnos
+  se generan desde el configurador publicado, no desde el local. La
+  dirección sin ejercicio (`…/armonizar/`) es la práctica libre, con el
+  desplegable del corpus; cualquier enlace a un ejercicio (`#ej=` o `#e=`)
+  muestra solo ese ejercicio (decidido 20/9/2026). Comprobado
+  desde fuera el mismo día: fuente, tres tipos de ejercicio, enlace generado
+  con `https://`, ejercicio de Audición resuelto por teclado y corregido, sin
+  errores de consola. Tras cada entrega a Drive, Diego vuelve a subir a
+  GitHub los archivos cambiados.
 
 ## 3. Decisiones acordadas (Diego, 20/9/2026)
 
@@ -61,11 +67,45 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
    usan las inversiones del V o del V7.
 5. **Cadencia.** V (o V7) sobre el grado 5 seguido del grado 1 cierra la
    cadencia auténtica perfecta. Un ejercicio puede acabar en semicadencia.
-6. **Modulación.** Se implementará en el generador mediante acordes pivote
-   (nota válida en ambas tonalidades con cifrados que se cruzan) y
-   confirmación obligatoria con una nota ajena a la tonalidad anterior en las
-   dos o tres notas siguientes. Habrá ejercicios con la modulación anunciada y
-   otros, más difíciles, sin anunciar.
+6. **Modulación.** Hecha en los ejercicios configurados (20/9/2026,
+   Etapa 5a); el generador automático (5b) queda pendiente. Decisiones de
+   Diego:
+   - El ejercicio lleva tramos (`modulaciones: [{nota, tonalidad}]`): desde
+     la nota indicada —el acorde pivote, común a las dos tonalidades— rige la
+     tonalidad nueva. El motor de reglas se ejecuta en cada tonalidad y en el
+     pivote propone solo acordes comunes (si la RO no da ninguno, cualquiera
+     del catálogo que lo sea; si tampoco, avisa para cambiar de pivote).
+   - **Tras el cambio, la tonalidad nueva es la referencia**: el V de Sol
+     sobre re se cifra «—», igual que en la menor el V sobre mi. No se
+     marcan en la cifra las alteraciones respecto a la armadura inicial.
+   - **El pivote se cifra en las dos tonalidades** (II = V): su casilla de
+     grado se parte en dos (anterior = nueva).
+   - **Tonalidades permitidas**: las cinco vecinas (misma armadura o una
+     alteración de diferencia): desde mayor, V, IV, relativo menor, II y
+     III; desde menor, relativo mayor, v, VII, iv y VI.
+   - **Aviso al alumno**, a elegir en el configurador: `completo` (se
+     muestra la tonalidad de llegada y desde qué nota; la fila «Tonalidad»
+     viene rellena) o `existe` (solo se dice que hay una modulación; el
+     alumno marca en la fila «Tonalidad» desde qué nota rige la nueva y
+     cuál, con una paleta de las cinco vecinas). **Vale marcar el pivote o
+     cualquier nota hasta la primera con alguna nota ajena a la tonalidad
+     anterior**; en la nota marcada se piden los dos grados.
+   - Corrección: si las marcas son correctas, los grados se leen según la
+     lectura del alumno; si no, según la del ejercicio, aceptando en el
+     pivote cualquiera de las dos lecturas; la modulación cuenta como un
+     elemento más del resultado. Con reintentos, las marcas acertadas se
+     fijan y las equivocadas se quitan.
+   - La realización, el sonido y las tendencias de las voces (sensible,
+     séptima) usan la tonalidad de cada tramo; la armadura dibujada es la
+     inicial y las notas ajenas llevan su alteración; «Cadencia» suena en
+     la tonalidad inicial.
+   - Configurador: columna «Tonalidad» en la revisión (desplegable con las
+     vecinas en cada nota) y opción de aviso; un cambio de armadura en un
+     MusicXML se importa como modulación desde la primera nota de ese
+     compás (el profesor ajusta el pivote y el modo).
+   - Generador (5b, pendiente): fragmentos válidos de la RO enlazados por
+     un pivote y confirmados con una nota ajena en las dos o tres notas
+     siguientes.
 7. **Realización de las voces.** Solo visualización: a cada cifra se le
    muestra el acorde realizado a cuatro voces en un pentagrama de sol sobre
    el bajo. Se sigue calificando únicamente la cifra y el grado. Hecha
@@ -191,7 +231,12 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     el teclado elige la opción en la casilla activa de la línea activa (la
     de cifras o la de grados, que se cambia con ↑ ↓; ← → mueven de nota).
     Sustituye a los nombres pequeños que había bajo cada cifra.
-16. **Compases y figuras.** Cualquier compás (4/4, 3/4, 2/4, 2/2, 3/2) y
+16. **Tamaño en pantalla** (20/9/2026): la partitura (bajo, realización y
+    casillas de cifra y grado) y las teclas de las paletas de cifra y grado
+    van un 40 % más pequeñas que en la primera versión: un espacio de
+    pentagrama mide 10 px (`ESCALA_PX` en `partitura.js`) y, si no cabe, la
+    partitura se reduce proporcionalmente.
+17. **Compases y figuras.** Cualquier compás (4/4, 3/4, 2/4, 2/2, 3/2) y
     figuras de redonda, blanca, negra y corchea, con puntillo. En el texto
     del bajo: sin sufijo = blanca, `r` redonda, `n` negra, `c` corchea, y un
     punto para el puntillo (`do3.` = blanca con puntillo). En MusicXML se
@@ -243,7 +288,9 @@ Equivalencias de escritura (para el futuro constructor de cifras):
   ayudaGrados: 'lista',                            // opcional: 'ninguna' | 'lista' | 'paleta'
   grados: ['I', 'V', 'VII'],                       // opcional: lista fija de grados en juego
   modo: 'armonizar',                               // opcional: 'armonizar' | 'cifrar' (Análisis) | 'audicion'
-  realizacion: 'siempre'                           // opcional, solo en 'armonizar': 'siempre' | 'alCorregir' | 'nunca'
+  realizacion: 'siempre',                          // opcional, solo en 'armonizar': 'siempre' | 'alCorregir' | 'nunca'
+  modulaciones: [{ nota: 2, tonalidad: { tonica: 'G', modo: 'mayor' } }],   // opcional: desde la nota (pivote) rige la tonalidad nueva
+  aviso: 'completo'                                // opcional, con modulaciones: 'completo' | 'existe'
 }
 ```
 
@@ -351,10 +398,15 @@ Cinco pasos en una página:
 4. **Revisión.** «Analizar el bajo» ejecuta el motor y vuelca una tabla:
    nota, grado del bajo, una ficha por cifra del repertorio con casilla
    (admisible), grado que se derivaría y botón de modelo, más la regla y la
-   explicación del motor. Las notas sin propuesta quedan en rojo. Vista previa
+   explicación del motor. Las notas sin propuesta quedan en rojo. Columna
+   «Tonalidad»: en cada nota, un desplegable con las cinco tonalidades
+   vecinas para empezar ahí una modulación (la fila del pivote se resalta,
+   muestra los dos grados y atenúa las cifras que no dan acorde común); al
+   fijarla aparece en el paso 3 la opción de aviso al alumno. Vista previa
    de la partitura con la solución modelo (con la realización en Análisis y
-   Audición); cada acorde lleva encima su número, el mismo que la columna #
-   de la tabla, y pulsarlo resalta la fila correspondiente.
+   Audición, el rótulo de la tonalidad nueva y la casilla doble del pivote);
+   cada acorde lleva encima su número, el mismo que la columna # de la
+   tabla, y pulsarlo resalta la fila correspondiente.
 5. **Dirección.** «Generar dirección» valida y codifica el ejercicio en la URL
    de `index.html` (unos 450–600 caracteres); botones Copiar, Abrir como
    alumno y Descargar `.json`. Con un MusicXML de varios fragmentos, «Generar
@@ -375,10 +427,11 @@ la dirección generada, para que no se distribuya una versión desfasada.
 | 2 | Configurador del profesor: escribir o importar el bajo, elegir repertorio, revisar las cifras propuestas por el motor, generar la dirección | Hecha (20/9/2026) |
 | 3 | Importación de MusicXML (arrastrar el archivo de MuseScore), con partición en fragmentos y deducción de tonalidad | Hecha (20/9/2026) |
 | 4 | Realización a cuatro voces (tres posiciones de Furno + conducción automática), contador de paralelas, sonido con el bajo doblado a la octava grave; tres tipos de ejercicio (Análisis, Armonización, Audición) | Hecha (20/9/2026) |
-| 5 | Generador de bajos por combinación de fragmentos válidos de la RO; modulación con acordes pivote | Pendiente |
+| 5a | Modulación en ejercicios propios: tramos, pivote común, dos avisos, corrección, configurador y MusicXML (decisión 6) | Hecha (20/9/2026) |
+| 5b | Generador de bajos por combinación de fragmentos válidos de la RO, con modulación por acorde pivote | Pendiente |
 | 6 | *Schemata* de IJzerman (marchas progresivas, Romanesca, Quiescenza); respuestas por combinación | Pendiente |
 | 7 | RO por la soprano (el alumno elige bajo y cifra; varias soluciones) | Pendiente |
-| 8a | Publicación en GitHub Pages (guía `PUBLICAR-EN-GITHUB.md`) | En curso (20/9/2026): Diego crea la cuenta y sube la carpeta |
+| 8a | Publicación en GitHub Pages (guía `PUBLICAR-EN-GITHUB.md`) | Hecha (20/9/2026): <https://djvgon.github.io/armonizar/> |
 | 8b | Recogida de resultados: Apps Script (mismo dominio murciaeduca.es identifica al alumno) → hoja de cálculo, y calificación en Classroom vía API (solo en tareas creadas por el propio script; el alumno sigue pulsando «Entregar»). Opcional: corrección en el servidor para los ejercicios evaluables, de modo que las respuestas no viajen en el enlace. Decidido 20/9/2026: dejarlo para esta etapa | Pendiente |
 | 9 | Análisis sobre partitura real, al estilo de NEO: imagen con puntos marcados por el profesor (en cada punto, cifra y grado) o vídeo con partitura y audio que se detiene en los puntos de cifrado. Misma corrección (parejas admisibles por punto, fijadas a mano en el configurador, con tonalidad por tramo). La imagen puede viajar dentro de un `.json` sin alojamiento; el vídeo (YouTube o archivo) necesita la publicación de la Etapa 8 | Propuesta (20/9/2026), pendiente de decidir |
 

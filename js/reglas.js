@@ -164,8 +164,8 @@ const Reglas = (() => {
 
   /* ---- Bucle principal ---- */
 
-  function proponer(ej) {
-    const ton = ej.tonalidad;
+  // Todas las notas leídas en una sola tonalidad.
+  function proponerEn(ej, ton) {
     const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
     const notas = notasDe(ej);
     const salida = [];
@@ -188,5 +188,53 @@ const Reglas = (() => {
     return salida;
   }
 
-  return { proponer, contexto, notasDe, movimiento };
+  /* Con modulaciones (ej.modulaciones = [{nota, tonalidad}]), cada tramo se lee en su
+     tonalidad: se ejecuta el motor completo en cada tonalidad y se toma de cada
+     ejecución la parte que le corresponde. El pivote (primera nota del tramo nuevo)
+     debe ser un acorde común a las dos tonalidades: se proponen primero las cifras
+     que ambos motores admiten y que dan un acorde común; si no las hay, las cifras
+     del catálogo (del repertorio) que producen un acorde común; y si tampoco, se
+     avisa. La explicación del pivote lleva los dos grados (II = V). */
+  function proponer(ej) {
+    const mods = (ej.modulaciones || []).filter(m => m && m.tonalidad && Number.isInteger(m.nota)).slice().sort((a, b) => a.nota - b.nota);
+    if (!mods.length) return proponerEn(ej, ej.tonalidad);
+    const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
+    const notas = notasDe(ej);
+    const tramos = [{ desde: 0, tonalidad: ej.tonalidad }].concat(mods.map(m => ({ desde: m.nota, tonalidad: m.tonalidad })));
+    const ejecuciones = tramos.map(t => proponerEn(ej, t.tonalidad));
+    const salida = [];
+    for (let i = 0; i < notas.length; i++) {
+      let k = 0;
+      while (k + 1 < tramos.length && tramos[k + 1].desde <= i) k++;
+      const actual = ejecuciones[k][i];
+      const esPivote = k > 0 && tramos[k].desde === i;
+      if (!esPivote) { salida.push(actual); continue; }
+      const tonA = tramos[k - 1].tonalidad, tonB = tramos[k].tonalidad;
+      const anterior = ejecuciones[k - 1][i];
+      const comun = id => Teoria.acordeComun(id, notas[i], tonA, tonB);
+      const romA = id => Teoria.romano(id, notas[i], tonA), romB = id => Teoria.romano(id, notas[i], tonB);
+      let ids = [];
+      [...actual.admisibles, ...anterior.admisibles].forEach(id => { if (comun(id) && !ids.includes(id)) ids.push(id); });
+      let regla = 'Pivote';
+      if (!ids.length) {
+        ids = Object.keys(Teoria.CIFRADOS).filter(id => repertorio.includes(id) && comun(id));
+        regla = 'Pivote (sin RO)';
+      }
+      const dobles = [];
+      ids.forEach(id => { const d = romA(id) + ' de ' + Teoria.nombreCorto(tonA) + ' = ' + romB(id) + ' de ' + Teoria.nombreCorto(tonB); if (!dobles.includes(d)) dobles.push(d); });
+      salida.push({
+        admisibles: ids,
+        modelo: ids[0] || null,
+        explicacion: ids.length
+          ? 'Acorde pivote, común a las dos tonalidades: ' + dobles.join('; ') + '.'
+          : '⚠ Ninguna cifra del repertorio da sobre esta nota un acorde común a ' + Teoria.nombreCorto(tonA) + ' y ' + Teoria.nombreCorto(tonB) + '. Elige otra nota como pivote.',
+        regla,
+        contexto: actual.contexto,
+        pivote: { tonalidadAntes: tonA, tonalidadDespues: tonB }
+      });
+    }
+    return salida;
+  }
+
+  return { proponer, proponerEn, contexto, notasDe, movimiento };
 })();

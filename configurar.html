@@ -138,6 +138,13 @@
             <option value="+6">+6, dominante secundaria del V (cuarto)</option>
           </select>
         </label>
+        <label class="campo" id="campo-aviso-mod" hidden>
+          <span>Modulación: qué se le dice al alumno</span>
+          <select id="aviso-mod">
+            <option value="completo" selected>La tonalidad de llegada y desde qué nota</option>
+            <option value="existe">Solo que hay una modulación (él marca dónde y cuál)</option>
+          </select>
+        </label>
       </div>
       <div class="botonera">
         <button id="btn-analizar" type="button" class="primario">Analizar el bajo</button>
@@ -150,10 +157,10 @@
       <h2><span class="num">4</span> Revisión de las respuestas</h2>
       <div id="vista-previa" class="partitura-caja"></div>
       <label class="campo campo-linea"><input id="ver-solucion" type="checkbox" checked><span>Mostrar la solución modelo en la vista previa</span></label>
-      <p class="ayuda">Marca las cifras admisibles de cada nota y elige cuál es la modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado.</p>
+      <p class="ayuda">Marca las cifras admisibles de cada nota y elige cuál es la modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
       <div class="tabla-caja">
         <table id="tabla-revision" class="tabla-revision">
-          <thead><tr><th>#</th><th>Nota</th><th>Grado</th><th>Cifras admisibles (● modelo)</th><th>Regla</th></tr></thead>
+          <thead><tr><th>#</th><th>Nota</th><th>Tonalidad</th><th>Grado</th><th>Cifras admisibles (● modelo)</th><th>Regla</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>

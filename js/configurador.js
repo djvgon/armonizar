@@ -28,7 +28,8 @@
     respuestas: null,        // respuestas revisadas (lista de ids por nota) o null
     propuesta: null,         // salida del motor para la tabla
     fragmentos: null,        // fragmentos del último MusicXML importado
-    ejercicio: null          // último ejercicio generado
+    ejercicio: null,         // último ejercicio generado
+    modulaciones: []         // [{nota, tonalidad}]: desde la nota (pivote) rige la tonalidad nueva
   };
 
   /* ---------- Lectura del formulario ---------- */
@@ -44,7 +45,16 @@
   function opciones() {
     const pref = $('#preferir').value;
     return { pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
-      modo: modoElegido(), realizacion: $('#realizacion-cuando').value, preferir: pref ? [pref] : [] };
+      modo: modoElegido(), realizacion: $('#realizacion-cuando').value, preferir: pref ? [pref] : [], avisoMod: $('#aviso-mod').value };
+  }
+
+  // Modulaciones válidas para un bajo de n notas (sin la nota 1 ni fuera de rango), ordenadas
+  function modulacionesValidas(n) {
+    return estado.modulaciones.filter(m => m.nota > 0 && m.nota < n).slice().sort((a, b) => a.nota - b.nota);
+  }
+  function ajustarCampoModulacion() {
+    const hay = modulacionesValidas(Ejercicios.numNotas({ compases: estado.compases })).length > 0;
+    $('#campo-aviso-mod').hidden = !hay;
   }
 
   // Compases cuya suma de duraciones no coincide con el compás indicado (aviso, no error:
@@ -90,6 +100,11 @@
     if (op.ayudaGrados !== 'lista') ej.ayudaGrados = op.ayudaGrados;
     if (op.modo !== 'armonizar') ej.modo = op.modo;
     if (op.modo === 'armonizar' && op.realizacion !== 'siempre') ej.realizacion = op.realizacion;
+    const mods = extra.modulaciones !== undefined ? extra.modulaciones : modulacionesValidas(Ejercicios.numNotas({ compases }));
+    if (mods.length) {
+      ej.modulaciones = mods.map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }));
+      if (op.avisoMod === 'existe') ej.aviso = 'existe';
+    }
     return ej;
   }
 
@@ -114,10 +129,12 @@
   }
 
   function pintarRevision() {
-    const ton = tonalidad();
     const rep = repertorio();
     const notas = [];
     estado.compases.forEach(c => c.forEach(([n]) => notas.push(n)));
+    const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(notas.length) };
+    const tons = Teoria.tonalidadesPorNota(ejTon);
+    const pivotes = new Set(ejTon.modulaciones.map(m => m.nota));
     const tbody = $('#tabla-revision tbody');
     tbody.innerHTML = '';
     const sinPropuesta = [];
@@ -125,19 +142,44 @@
       const adm = estado.respuestas[i] || [];
       const prop = estado.propuesta ? estado.propuesta[i] : null;
       if (!adm.length) sinPropuesta.push(i + 1);
+      const ton = tons[i];
+      const tonAntes = i > 0 ? tons[i - 1] : ton;
+      const esPivote = pivotes.has(i);
       const tr = document.createElement('tr');
       tr.id = 'fila-' + (i + 1);
       if (!adm.length) tr.className = 'sin-propuesta';
+      if (esPivote) tr.classList.add('pivote');
       const gradoBajo = Teoria.grado(n, ton);
+      const gradoTxt = g => g.grado + (g.alt > 0 ? '♯' : g.alt < 0 ? '♭' : '');
       tr.innerHTML = '<td class="num-fila">' + (i + 1) + '</td><td>' + Teoria.nombreEs(Teoria.nota(n), true) + '</td>'
-        + '<td>' + gradoBajo.grado + (gradoBajo.alt > 0 ? '♯' : gradoBajo.alt < 0 ? '♭' : '') + '</td>'
+        + '<td class="celda-ton"></td>'
+        + '<td>' + (esPivote ? gradoTxt(Teoria.grado(n, tonAntes)) + ' = ' + gradoTxt(gradoBajo) : gradoTxt(gradoBajo)) + '</td>'
         + '<td class="chips"></td>'
         + '<td class="explicacion">' + (prop ? '<b>' + prop.regla + '</b> · ' + prop.explicacion : '') + '</td>';
+      // Columna «Tonalidad»: la que rige; en las notas 2… un desplegable para empezar aquí una tonalidad vecina
+      const ct = tr.querySelector('.celda-ton');
+      if (i === 0) {
+        ct.textContent = Teoria.nombreCorto(ton);
+      } else {
+        const sel = document.createElement('select');
+        sel.className = 'sel-ton' + (esPivote ? ' pivote' : '');
+        sel.title = 'Tonalidad que rige desde esta nota';
+        const o0 = document.createElement('option'); o0.value = ''; o0.textContent = esPivote ? '(quitar)' : Teoria.nombreCorto(tonAntes); sel.appendChild(o0);
+        Teoria.tonalidadesVecinas(tonAntes).forEach(t => {
+          const o = document.createElement('option'); o.value = t.tonica + '/' + t.modo; o.textContent = '→ ' + Teoria.nombreCorto(t);
+          if (esPivote && Teoria.mismaTonalidad(t, ton)) o.selected = true;
+          sel.appendChild(o);
+        });
+        sel.addEventListener('change', () => { fijarModulacion(i, sel.value); });
+        ct.appendChild(sel);
+      }
       const celda = tr.querySelector('.chips');
       rep.forEach(id => {
         const chip = document.createElement('label');
         chip.className = 'chip' + (adm.includes(id) ? ' marcada' : '') + (adm[0] === id ? ' modelo' : '');
-        chip.title = Teoria.CIFRADOS[id].descripcion + ' → ' + Teoria.romano(id, n, ton);
+        const romTxt = esPivote ? Teoria.romano(id, n, tonAntes) + ' = ' + Teoria.romano(id, n, ton) : Teoria.romano(id, n, ton);
+        chip.title = Teoria.CIFRADOS[id].descripcion + ' → ' + romTxt + (esPivote && !Teoria.acordeComun(id, n, tonAntes, ton) ? ' (no es acorde común)' : '');
+        if (esPivote && !Teoria.acordeComun(id, n, tonAntes, ton)) chip.classList.add('no-comun');
         const cb = document.createElement('input');
         cb.type = 'checkbox'; cb.checked = adm.includes(id);
         cb.addEventListener('change', () => { alternar(i, id, cb.checked); });
@@ -147,17 +189,34 @@
         chip.appendChild(cb);
         chip.appendChild(Partitura.iconoCifra(id, 30));
         const rom = document.createElement('span');
-        rom.className = 'chip-romano'; rom.textContent = Teoria.romano(id, n, ton);
+        rom.className = 'chip-romano'; rom.textContent = romTxt;
         chip.appendChild(rom);
         chip.appendChild(rb);
         celda.appendChild(chip);
       });
       tbody.appendChild(tr);
     });
+    ajustarCampoModulacion();
     const av = $('#avisos-revision');
     if (sinPropuesta.length) { av.textContent = 'Notas sin ninguna cifra admisible: ' + sinPropuesta.join(', ') + '. Márcalas a mano o cambia el repertorio.'; av.hidden = false; }
     else av.hidden = true;
     pintarVistaPrevia();
+  }
+
+  // Empieza (o quita) una tonalidad nueva en la nota i y vuelve a analizar con el motor.
+  function fijarModulacion(i, valor) {
+    limpiarDireccion();
+    estado.modulaciones = estado.modulaciones.filter(m => m.nota !== i);
+    if (valor) {
+      const [tonica, modo] = valor.split('/');
+      estado.modulaciones.push({ nota: i, tonalidad: { tonica, modo } });
+    }
+    // Las modulaciones posteriores parten de una tonalidad distinta: se descartan si ya no son vecinas
+    const n = Ejercicios.numNotas({ compases: estado.compases });
+    const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(n) };
+    const tons = Teoria.tonalidadesPorNota(ejTon);
+    estado.modulaciones = estado.modulaciones.filter(m => m.nota <= i || Teoria.tonalidadesVecinas(tons[m.nota - 1]).some(t => Teoria.mismaTonalidad(t, m.tonalidad)));
+    analizar();
   }
 
   function alternar(i, id, marcado) {
@@ -187,9 +246,15 @@
     const notas = [];
     ej.compases.forEach(c => c.forEach(([x]) => notas.push(x)));
     const modelos = ej.respuestas.map(a => a[0] || null);
+    const mods = Ejercicios.modulaciones(ej);
+    const pivotes = new Set(mods.map(m => m.nota));
     const est = {
       respuestas: ver ? modelos : new Array(n).fill(null),
-      romanos: ver ? ej.respuestas.map((a, i) => (a[0] ? Teoria.romano(a[0], notas[i], ej.tonalidad) : null)) : new Array(n).fill(null),
+      // Grado en la tonalidad que rige; en el pivote, también en la anterior (casilla partida)
+      romanos: ver ? ej.respuestas.map((a, i) => (a[0] ? Teoria.romano(a[0], notas[i], pivotes.has(i) ? Ejercicios.tonalidadAntes(ej, i) : Ejercicios.tonalidadEn(ej, i)) : null)) : new Array(n).fill(null),
+      romanos2: ver ? ej.respuestas.map((a, i) => (a[0] && pivotes.has(i) ? Teoria.romano(a[0], notas[i], Ejercicios.tonalidadEn(ej, i)) : null)) : new Array(n).fill(null),
+      dobles: ej.respuestas.map((_, i) => pivotes.has(i)),
+      etiquetas: mods.map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'dada' })),
       pedirRomano: opciones().pedirRomano, activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
       realizacion: (ver || opciones().modo !== 'armonizar') && (opciones().modo !== 'armonizar' || opciones().realizacion !== 'nunca') ? Realizacion.realizar(ej, modelos, { modo: 'auto', rotacion: 0 }).acordes : null,
       numerar: true,                       // el número de cada acorde es el de su fila en la tabla de revisión
@@ -259,13 +324,14 @@
     const problemas = [];
     const base = $('#coleccion').value.trim() || $('#titulo').value.trim() || 'Ejercicio';
     estado.fragmentos.forEach((f, k) => {
-      const ej = construirEjercicio(f.compases, f.tonalidad, null, { titulo: 'Ejercicio ' + (k + 1), coleccion: base, compas: f.compas, id: 'url-' + Date.now().toString(36) + '-' + (k + 1) });
+      const ej = construirEjercicio(f.compases, f.tonalidad, null, { titulo: 'Ejercicio ' + (k + 1), coleccion: base, compas: f.compas, id: 'url-' + Date.now().toString(36) + '-' + (k + 1), modulaciones: f.modulaciones || [] });
       const prop = Reglas.proponer(ej);
       ej.respuestas = prop.map(p => p.admisibles.slice());
       ej.respuestas = ej.respuestas.map((_, i) => Ejercicios.admisibles(ej, i));
       const vacias = ej.respuestas.map((a, i) => (a.length ? null : i + 1)).filter(Boolean);
       if (vacias.length) problemas.push('Fragmento ' + (k + 1) + ': notas sin propuesta ' + vacias.join(', '));
       if (!f.tonalidadSegura) problemas.push('Fragmento ' + (k + 1) + ': tonalidad deducida con dudas (' + Teoria.nombreTonalidad(f.tonalidad) + ')');
+      (f.modulaciones || []).forEach(m => { if (!m.segura) problemas.push('Fragmento ' + (k + 1) + ': cambio de armadura en la nota ' + (m.nota + 1) + ' leído como modulación a ' + Teoria.nombreTonalidad(m.tonalidad) + ' (revisa el modo y el pivote)'); });
       lineas.push('Ejercicio ' + (k + 1) + ' · ' + Teoria.nombreTonalidad(f.tonalidad) + ' · ' + Teoria.textoDesdeBajo(f.compases) + '\n' + baseAlumno() + '#e=' + Ejercicios.codificar(ej));
     });
     const ta = $('#direcciones-todos');
@@ -316,6 +382,7 @@
     $('#tonica').value = f.tonalidad.tonica;
     $('#modo').value = f.tonalidad.modo;
     $('#compas').value = f.compas.join('/');
+    estado.modulaciones = (f.modulaciones || []).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
     if (!$('#titulo').value || /^Ejercicio \d+$/.test($('#titulo').value)) $('#titulo').value = 'Ejercicio ' + (k + 1);
     document.querySelectorAll('.fragmento').forEach((b, i) => b.classList.toggle('elegido', i === k));
     estado.respuestas = null; estado.propuesta = null;
@@ -340,6 +407,8 @@
     $('#realizacion-cuando').value = ej.realizacion && ['siempre', 'alCorregir', 'nunca'].includes(ej.realizacion) ? ej.realizacion : 'siempre';
     ajustarCamposModo();
     $('#preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
+    estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
+    $('#aviso-mod').value = Ejercicios.aviso(ej);
     estado.compases = ej.compases;
     estado.respuestas = ej.respuestas.map(a => a.slice());
     try { estado.propuesta = Reglas.proponer(ej); } catch (e) { estado.propuesta = null; }
@@ -358,7 +427,8 @@
         texto: $('#texto-bajo').value, tonica: $('#tonica').value, modo: $('#modo').value, compas: $('#compas').value,
         titulo: $('#titulo').value, coleccion: $('#coleccion').value, repertorio: repertorio(),
         pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
-        tipo: modoElegido(), realizacion: $('#realizacion-cuando').value, preferir: $('#preferir').value, respuestas: estado.respuestas
+        tipo: modoElegido(), realizacion: $('#realizacion-cuando').value, preferir: $('#preferir').value, respuestas: estado.respuestas,
+        modulaciones: estado.modulaciones, avisoMod: $('#aviso-mod').value
       }));
     } catch (e) { /* sin almacenamiento: no pasa nada */ }
   }
@@ -375,8 +445,11 @@
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
       $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#ayuda-grados').value = b.ayudaGrados || 'lista';
       elegirModo(tipo); $('#realizacion-cuando').value = b.realizacion || 'siempre'; $('#preferir').value = b.preferir || '';
+      estado.modulaciones = Array.isArray(b.modulaciones) ? b.modulaciones.filter(m => m && m.tonalidad && Number.isInteger(m.nota)) : [];
+      $('#aviso-mod').value = b.avisoMod === 'existe' ? 'existe' : 'completo';
       ajustarCamposModo();
       leerBajo();
+      ajustarCampoModulacion();
       if (b.respuestas && b.respuestas.length === Ejercicios.numNotas({ compases: estado.compases })) {
         estado.respuestas = b.respuestas;
         try { estado.propuesta = Reglas.proponer(construirEjercicio(estado.compases, tonalidad(), null)); } catch (e) { estado.propuesta = null; }
@@ -439,9 +512,11 @@
     }
 
     $('#texto-bajo').addEventListener('input', () => { leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
-    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ayuda-grados', '#realizacion-cuando', '#preferir'].forEach(sel => {
+    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ayuda-grados', '#realizacion-cuando', '#preferir', '#aviso-mod'].forEach(sel => {
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas) pintarRevision(); });
     });
+    // Si cambia la tonalidad inicial, las modulaciones dejan de tener sentido
+    ['#tonica', '#modo'].forEach(sel => $(sel).addEventListener('change', () => { if (estado.modulaciones.length) { estado.modulaciones = []; if (estado.respuestas) analizar(); } }));
     document.querySelectorAll('input[name="modo-ej"]').forEach(r => r.addEventListener('change', () => { ajustarCamposModo(); guardarBorrador(); limpiarDireccion(); if (estado.respuestas) pintarRevision(); }));
     ajustarCamposModo();
     $('#ver-solucion').addEventListener('change', pintarVistaPrevia);

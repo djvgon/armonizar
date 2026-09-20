@@ -20,6 +20,9 @@
      · La tonalidad se deduce de la armadura (<fifths>) y del modo: si el
        archivo lo trae (<mode>), se usa; si no, se mira la última nota del
        fragmento: si es la tónica del relativo menor, se toma menor.
+     · Un cambio de armadura dentro de un fragmento se lee como modulación
+       desde la primera nota de ese compás (r.fragmentos[k].modulaciones =
+       [{nota, tonalidad, segura}]); el profesor ajusta el pivote y el modo.
    ===================================================================== */
 
 const MusicXML = (() => {
@@ -48,7 +51,7 @@ const MusicXML = (() => {
     let divisions = 1, fifths = 0, modo = null, compas = [4, 4], staves = 1;
     let armaduraFijada = false;
     const fragmentos = [];
-    let actual = { compases: [], fifths: 0 };
+    let actual = { compases: [], fifths: 0, modulaciones: [] };
 
     const measures = [...part.querySelectorAll(':scope > measure')];
     measures.forEach((m, mi) => {
@@ -56,17 +59,23 @@ const MusicXML = (() => {
       if (attr) {
         const d = texto(attr, 'divisions'); if (d) divisions = parseInt(d, 10);
         const f = texto(attr, 'key > fifths');
+        const md = texto(attr, 'key > mode');
         if (f !== null) {
           const nf = parseInt(f, 10);
-          if (armaduraFijada && nf !== fifths) avisos.push('Cambio de armadura en el compás ' + (mi + 1) + '; se mantiene la tonalidad inicial del fragmento.');
+          if (armaduraFijada && nf !== fifths && actual.compases.length) {
+            // Cambio de armadura dentro del fragmento: se lee como modulación desde la primera nota del compás
+            const nota = actual.compases.reduce((s, c) => s + c.length, 0);
+            actual.modulaciones.push({ nota, fifths: nf, modo: md || null });
+            avisos.push('Cambio de armadura en el compás ' + (mi + 1) + ': se ha anotado una modulación desde la nota ' + (nota + 1) + ' (revisa el modo y el acorde pivote).');
+          }
           fifths = nf; armaduraFijada = true;
         }
-        const md = texto(attr, 'key > mode'); if (md) modo = md;
+        if (md) modo = md;
         const b = texto(attr, 'time > beats'), bt = texto(attr, 'time > beat-type');
         if (b && bt) compas = [parseInt(b, 10), parseInt(bt, 10)];
         const st = texto(attr, 'staves'); if (st) staves = parseInt(st, 10);
       }
-      if (actual.compases.length === 0) actual.fifths = fifths;
+      if (actual.compases.length === 0) { actual.fifths = fifths; actual.modo = modo; }
 
       const notas = [];
       let ultimaNota = null;
@@ -102,8 +111,8 @@ const MusicXML = (() => {
       const estilo = texto(m, 'barline[location="right"] > bar-style');
       const esFinal = estilo === 'light-heavy' || estilo === 'heavy-light' || estilo === 'heavy-heavy' || mi === measures.length - 1;
       if (esFinal && actual.compases.length) {
-        fragmentos.push(cerrar(actual, modo, compas));
-        actual = { compases: [], fifths };
+        fragmentos.push(cerrar(actual, actual.modo, compas));
+        actual = { compases: [], fifths, modulaciones: [] };
       }
     });
 
@@ -122,12 +131,24 @@ const MusicXML = (() => {
     else if (sinOctava === MENORES[f]) modo = 'menor';
     else { modo = 'mayor'; seguro = false; }
     const tonica = modo === 'menor' ? MENORES[f] : MAYORES[f];
+    // Modulaciones por cambio de armadura: el modo, si el archivo no lo dice, se supone
+    // el mismo (V o IV) o, con la misma armadura, el relativo.
+    let modoPrevio = modo, fPrevio = frag.fifths;
+    const modulaciones = (frag.modulaciones || []).filter(m => m.nota > 0).map(m => {
+      let md, segura = true;
+      if (m.modo === 'minor') md = 'menor'; else if (m.modo === 'major') md = 'mayor';
+      else { md = m.fifths === fPrevio ? (modoPrevio === 'menor' ? 'mayor' : 'menor') : modoPrevio; segura = false; }
+      const t = (md === 'menor' ? MENORES : MAYORES)[String(m.fifths)];
+      modoPrevio = md; fPrevio = m.fifths;
+      return t ? { nota: m.nota, tonalidad: { tonica: t, modo: md }, segura } : null;
+    }).filter(Boolean);
     return {
       compases: frag.compases,
       tonalidad: { tonica, modo },
       tonalidadSegura: seguro,
       compas: compas.slice(),
-      numCompases: frag.compases.length
+      numCompases: frag.compases.length,
+      modulaciones
     };
   }
 

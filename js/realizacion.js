@@ -21,6 +21,8 @@
                               para mostrar por qué aparecen paralelas.
      Realizacion.cadencia(ton, bajoRef)         → acordes de I–IV–V7–I para situar
                                                   la tonalidad: [{bajo, voces}]
+     Con ej.modulaciones, cada acorde se realiza en la tonalidad que rige en su
+     nota (sensible, séptima y tónica final son las de cada tramo).
 
    Reglas de realización:
      · Las voces superiores son los intervalos de la cifra sobre el bajo;
@@ -263,7 +265,7 @@ const Realizacion = (() => {
   function realizar(ej, cifras, opciones = {}) {
     const modo = opciones.modo || 'auto';
     const rot = opciones.rotacion || 0;
-    const ton = ej.tonalidad;
+    const tons = Teoria.tonalidadesPorNota(ej);          // tonalidad que rige en cada nota (modulaciones)
     const notas = [];
     ej.compases.forEach(c => c.forEach(([n]) => notas.push(Teoria.nota(n))));
     const n = notas.length;
@@ -272,7 +274,7 @@ const Realizacion = (() => {
     if (modo !== 'auto') {
       notas.forEach((bajo, i) => {
         const id = cifras[i];
-        if (id && Teoria.CIFRADOS[id]) acordes[i] = posicion(trio(id, bajo, ton), rot);
+        if (id && Teoria.CIFRADOS[id]) acordes[i] = posicion(trio(id, bajo, tons[i]), rot);
       });
     } else {
       // Tramos de notas cifradas consecutivas; cada tramo empieza en la posición elegida
@@ -282,9 +284,9 @@ const Realizacion = (() => {
         let j = i;
         while (j < n && cifras[j] && Teoria.CIFRADOS[cifras[j]]) j++;
         const tramo = [];
-        for (let k = i; k < j; k++) tramo.push(describir(cifras[k], notas[k], ton));
+        for (let k = i; k < j; k++) tramo.push(describir(cifras[k], notas[k], tons[k]));
         // Programación dinámica: mejor serie de disposiciones del tramo
-        const primera = posicion(trio(cifras[i], notas[i], ton), rot);
+        const primera = posicion(trio(cifras[i], notas[i], tons[i]), rot);
         let capa = [{ c: { voces: primera, incompleta: false, doblaBajo: true, unisono: false }, coste: 0, ant: null }];
         const capas = [capa];
         for (let k = 1; k < tramo.length; k++) {
@@ -292,7 +294,7 @@ const Realizacion = (() => {
           const cands = candidatas(dc);
           const esFinal = i + k === n - 1;
           const nueva = cands.map(c => {
-            const local = costeLocal(c, dc, esFinal, ton);
+            const local = costeLocal(c, dc, esFinal, tons[i + k]);
             let mejor = null;
             capa.forEach((prev, idx) => {
               const total = prev.coste + costeTransicion(prev.c, dp, c, dc) + local;
@@ -300,7 +302,7 @@ const Realizacion = (() => {
             });
             return { c, coste: mejor.coste, ant: mejor.ant };
           });
-          capa = nueva.length ? nueva : [{ c: { voces: posicion(trio(cifras[i + k], notas[i + k], ton), rot) }, coste: 0, ant: 0 }];
+          capa = nueva.length ? nueva : [{ c: { voces: posicion(trio(cifras[i + k], notas[i + k], tons[i + k]), rot) }, coste: 0, ant: 0 }];
           capas.push(capa);
         }
         // Recorrido hacia atrás desde la mejor disposición final

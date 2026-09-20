@@ -159,6 +159,72 @@ const Teoria = (() => {
     const nombre = nombreEs(t);
     return ton.modo === 'menor' ? nombre + ' menor' : nombre.charAt(0).toUpperCase() + nombre.slice(1) + ' mayor';
   }
+  // 'Sol M' / 'mi m' (para casillas y etiquetas)
+  function nombreCorto(ton) {
+    const nombre = nombreEs(nota(ton.tonica + '4'));
+    return ton.modo === 'menor' ? nombre + ' m' : nombre.charAt(0).toUpperCase() + nombre.slice(1) + ' M';
+  }
+  const mismaTonalidad = (a, b) => !!a && !!b && a.tonica === b.tonica && a.modo === b.modo;
+
+  /* ---------- Tonalidades por armadura y tonalidades vecinas ---------- */
+
+  // Tónica de la tonalidad mayor / menor con n alteraciones (+ sostenidos, − bemoles)
+  const TONICAS_MAYOR = { '-7': 'Cb', '-6': 'Gb', '-5': 'Db', '-4': 'Ab', '-3': 'Eb', '-2': 'Bb', '-1': 'F', '0': 'C', '1': 'G', '2': 'D', '3': 'A', '4': 'E', '5': 'B', '6': 'F#', '7': 'C#' };
+  const TONICAS_MENOR = { '-7': 'Ab', '-6': 'Eb', '-5': 'Bb', '-4': 'F', '-3': 'C', '-2': 'G', '-1': 'D', '0': 'A', '1': 'E', '2': 'B', '3': 'F#', '4': 'C#', '5': 'G#', '6': 'D#', '7': 'A#' };
+  function tonalidadPorArmadura(n, modo) {
+    const t = (modo === 'menor' ? TONICAS_MENOR : TONICAS_MAYOR)[String(n)];
+    return t ? { tonica: t, modo: modo === 'menor' ? 'menor' : 'mayor' } : null;
+  }
+
+  // Las cinco tonalidades vecinas (misma armadura o una alteración de diferencia),
+  // en orden pedagógico: desde mayor, V, IV, relativo menor, II, III; desde menor,
+  // relativo mayor, v (dominante menor), VII, iv, VI.
+  function tonalidadesVecinas(ton) {
+    const n = armadura(ton);
+    const orden = ton.modo === 'menor'
+      ? [[n, 'mayor'], [n + 1, 'menor'], [n + 1, 'mayor'], [n - 1, 'menor'], [n - 1, 'mayor']]
+      : [[n + 1, 'mayor'], [n - 1, 'mayor'], [n, 'menor'], [n - 1, 'menor'], [n + 1, 'menor']];
+    return orden.map(([k, m]) => tonalidadPorArmadura(k, m)).filter(Boolean);
+  }
+
+  /* ---------- Modulación ----------
+     Un ejercicio puede llevar ej.modulaciones = [{nota: i, tonalidad}, …]: desde la
+     nota i (el acorde pivote, que pertenece a las dos tonalidades) rige la tonalidad
+     nueva. Sin modulaciones, rige ej.tonalidad en todas las notas. */
+
+  function tonalidadesPorNota(ej) {
+    let n = 0;
+    ej.compases.forEach(c => { n += c.length; });
+    const out = new Array(n).fill(ej.tonalidad);
+    (ej.modulaciones || []).slice().sort((a, b) => a.nota - b.nota).forEach(m => {
+      for (let i = Math.max(0, m.nota); i < n; i++) out[i] = m.tonalidad;
+    });
+    return out;
+  }
+
+  // Clases de altura «propias» de una tonalidad: escala natural más, en menor,
+  // la sensible elevada (armónica).
+  function clasesPropias(ton) {
+    const cl = new Set();
+    escalaNatural(ton).forEach(e => cl.add(((SEMITONOS[e.letra] + e.alt) % 12 + 12) % 12));
+    escalaVoces(ton).forEach(e => cl.add(((SEMITONOS[e.letra] + e.alt) % 12 + 12) % 12));
+    return cl;
+  }
+
+  // ¿El acorde (cifra sobre el bajo, construido en tonA) es común a tonA y tonB?
+  function acordeComun(id, bajo, tonA, tonB) {
+    bajo = nota(bajo);
+    const clases = [clase(bajo), ...vocesSuperiores(id, bajo, tonA).map(clase)];
+    const a = clasesPropias(tonA), b = clasesPropias(tonB);
+    return clases.every(c => a.has(c) && b.has(c));
+  }
+
+  // ¿Tiene el acorde alguna nota ajena a la tonalidad ton?
+  function acordeAjeno(id, bajo, tonAcorde, ton) {
+    bajo = nota(bajo);
+    const propias = clasesPropias(ton);
+    return [clase(bajo), ...vocesSuperiores(id, bajo, tonAcorde).map(clase)].some(c => !propias.has(c));
+  }
 
   /* ---------- Cifrados ----------
      Cada cifrado tiene:
@@ -346,7 +412,8 @@ const Teoria = (() => {
 
   return {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, texto, nombreEs, midi, clase, indice, transportar,
-    escalaNatural, escalaVoces, armadura, grado, nombreTonalidad,
+    escalaNatural, escalaVoces, armadura, grado, nombreTonalidad, nombreCorto, mismaTonalidad,
+    tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, vocesSuperiores, fundamental, gradoFundamental, romano, claveAcorde, canonizar
   };
 })();
