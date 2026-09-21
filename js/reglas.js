@@ -406,8 +406,9 @@ const Reglas = (() => {
        prolonga sobre la fuerte suena sincopado. (En los compases ternarios el 2.º y el
        3.er tiempo pesan igual, así que del 2.º al 3.º no hay síncopa.) No cuenta el
        ARPEGIO —el mismo acorde con el bajo en otra nota, como V4/3 → V6/5—, que es la
-       marcha normal de la regla de la octava. */
-    if (reglas.pideCambio && mismoAcorde && p.claseBajo === q.claseBajo) return false;
+       marcha normal de la regla de la octava—, ni añadir la séptima al mismo acorde
+       (V → V7 sobre el mismo bajo), que sí es un cambio de armonía. */
+    if (reglas.pideCambio && mismoAcorde && p.claseBajo === q.claseBajo && p.cifra === q.cifra) return false;
     // Funciones: no se retrocede D → S
     const fsP = fp ? [fp] : p.funciones, fsQ = fq ? [fq] : q.funciones;
     if (!mismoAcorde && fsP.every(f => f === 'D') && fsQ.every(f => f === 'S')) return false;
@@ -624,7 +625,7 @@ const Reglas = (() => {
     if (enlaceValido(p, q, notas[i - 1], notas[i], null, null, reglas)) return { ok: true, motivo: '' };
     const mismoAcorde = p.claseFund === q.claseFund;
     let motivo = 'el enlace con el acorde anterior no es correcto';
-    if (mismoAcorde && reglas.pideCambio && p.claseBajo === q.claseBajo && p.cifra !== '64' && q.cifra !== '64') {
+    if (mismoAcorde && reglas.pideCambio && p.claseBajo === q.claseBajo && p.cifra === q.cifra && p.cifra !== '64' && q.cifra !== '64') {
       return { ok: false, motivo: 'síncopa armónica: el acorde entra en parte débil y se prolonga sobre la fuerte; en el tiempo fuerte la armonía ha de cambiar' };
     }
     const esS = x => x.funciones.every(f => f === 'S'), esT = x => x.funciones.every(f => f === 'T');

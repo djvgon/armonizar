@@ -928,17 +928,40 @@
 
     const filtro = filtroFicha();
     const lista = Banco.filtrar(banco, filtro);
+    const conAvisos = Banco.filtrar(banco, Object.assign({}, filtro, { conAvisos: true }));
     $('#ficha-cuenta').textContent = lista.length
       ? lista.length + ' fragmentos cumplen el filtro; cada ficha tomará ' + Math.min(lista.length, filtro.n) + ' al azar.'
       : 'Ningún fragmento cumple el filtro. Prueba con otro tipo de ejercicio o menos restricciones (recuerda que la armonización de soprano necesita fragmentos con la melodía escrita).';
+    if (conAvisos.length > lista.length) $('#ficha-cuenta').textContent += ' ' + (conAvisos.length - lista.length) + ' quedan fuera por tener alguna nota sin cifra posible (marcados con ⚠ abajo): revísalos o quítalos.';
     $('#btn-ficha').disabled = !lista.length;
+
+    /* Repertorio de la lección elegida: es lo que verá el alumno y lo que hace posible
+       mezclar lecciones en una ficha. Se puede rehacer con el del paso 3. */
+    const pRep = $('#leccion-repertorio'), bRep = $('#btn-leccion-repertorio');
+    if (filtro.leccion) {
+      const r = Banco.repertorioDeLeccion(banco, filtro.leccion);
+      const cifras = (r && r.cifras.length ? r.cifras : []).map(id => (Teoria.CIFRADOS[id] ? Teoria.CIFRADOS[id].nombre.split(' ')[0] : id));
+      const acs = (r && r.acordes.length ? r.acordes : []).map(id => { const p = Ejercicios.par(id); return p.romano + (p.cifra === '53' ? '' : ' ' + Teoria.CIFRADOS[p.cifra].etiqueta); });
+      pRep.innerHTML = '<b>Repertorio de ' + etiqueta(filtro.leccion) + '</b> — cifrados: '
+        + (cifras.length ? cifras.join(', ') : '(todos)')
+        + (acs.length ? '. Acordes para la armonización de soprano: ' + acs.join(', ') : '')
+        + '. Es lo que se le muestra al alumno en cada fragmento de esta lección.';
+      bRep.disabled = false;
+      bRep.textContent = 'Dar a ' + filtro.leccion + ' el repertorio del paso 3';
+    } else {
+      pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —las cifras y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección arriba para verlo o rehacerlo.';
+      bRep.disabled = true;
+      bRep.textContent = 'Dar a esta lección el repertorio del paso 3';
+    }
 
     const cuerpo = $('#tabla-banco').querySelector('tbody');
     cuerpo.innerHTML = '';
-    lista.forEach(e => {
+    conAvisos.forEach(e => {
       const et = e.etiquetas || {};
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td title="' + (nombres[e.leccion] || '').replace(/"/g, '') + '">' + etiqueta(e.leccion || '—') + '</td>'
+      const mal = !!(e.avisos && e.avisos.length);
+      if (mal) tr.className = 'con-aviso';
+      tr.innerHTML = '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '') + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
         + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'
@@ -1064,6 +1087,15 @@
       if (!banco.length) return;
       if (!confirm('¿Vaciar el banco? Se borran los ' + banco.length + ' fragmentos guardados en este navegador. Descárgalo antes si quieres conservarlo.')) return;
       banco = []; guardarBanco(); pintarBanco();
+    });
+    $('#btn-leccion-repertorio').addEventListener('click', () => {
+      const lec = $('#ficha-leccion').value;
+      if (!lec) return;
+      const cifras = repertorio(), acs = acordesElegidos();
+      let n = 0;
+      banco.forEach(e => { if (e.leccion === lec) { e.leccionRepertorio = cifras.slice(); e.leccionAcordes = acs.slice(); n++; } });
+      guardarBanco(); pintarBanco();
+      aviso('Repertorio de ' + lec + ' actualizado en ' + n + ' fragmentos. Descarga el banco.json y vuelve a subirlo.', 7000);
     });
     $('#btn-ficha').addEventListener('click', generarFicha);
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));

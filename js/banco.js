@@ -190,6 +190,12 @@ const Banco = (() => {
       id: opciones.id || null,
       leccion: opciones.leccion || '',
       leccionNombre: opciones.leccionNombre || '',
+      /* El repertorio de LA LECCIÓN, tal como estaba al añadir el fragmento. Es lo que se
+         le enseña al alumno: cada lección tiene sus acordes, y al mezclar fragmentos de
+         lecciones distintas en una ficha, sin esto no hay forma de acertar con la
+         armonización esperada. */
+      leccionRepertorio: (opciones.repertorio || []).slice(),
+      leccionAcordes: (opciones.acordes || []).slice(),
       fuente: opciones.fuente || '',
       titulo: opciones.titulo || '',
       tonalidad: { tonica: ton.tonica, modo: ton.modo },
@@ -213,6 +219,8 @@ const Banco = (() => {
     const voz = vozDeModo(f.modo || 'armonizar');
     if (!e[voz]) return false;                                   // no tiene esa voz escrita
     const et = e.etiquetas || {};
+    // Un fragmento con avisos (alguna nota sin cifra posible) no sale en las fichas
+    if (!f.conAvisos && e.avisos && e.avisos.length) return false;
     if (f.leccion && e.leccion !== f.leccion) return false;
     if (f.lecciones && f.lecciones.length && !f.lecciones.includes(e.leccion)) return false;
     if (f.modoTonal && et.modo !== f.modoTonal) return false;
@@ -244,19 +252,24 @@ const Banco = (() => {
     const modo = f.modo || 'armonizar';
     const parte = e[vozDeModo(modo)];
     if (!parte) return null;
+    /* El repertorio y los acordes son los de SU lección, no los del filtro: en una ficha
+       que mezcla lecciones, cada fragmento se juega con los acordes de la suya. */
+    const suyos = (e.leccionRepertorio && e.leccionRepertorio.length) ? e.leccionRepertorio.slice() : repertorioDe(parte, modo);
+    const acordes = (e.leccionAcordes && e.leccionAcordes.length) ? e.leccionAcordes.slice() : (f.acordes || []);
     const ej = {
       id: e.id || ('banco-' + (k || 0)),
       coleccion: f.titulo || (e.leccion ? 'Lección ' + e.leccion : ''),
-      titulo: e.titulo || e.leccion || ('Ejercicio ' + ((k || 0) + 1)),
+      titulo: e.titulo || etiquetaLeccion(e) || ('Ejercicio ' + ((k || 0) + 1)),
+      leccion: etiquetaLeccion(e),
       tonalidad: e.tonalidad,
       compas: e.compas,
       compases: parte.compases,
       respuestas: parte.respuestas,
-      repertorio: f.repertorio || repertorioDe(parte, modo)
+      repertorio: suyos
     };
     if (modo !== 'armonizar') ej.modo = modo;
     if (modo === 'audicion' && f.mostrarBajo) ej.mostrarBajo = true;
-    if (modo === 'soprano' && f.acordes && f.acordes.length) ej.acordes = f.acordes.slice();
+    if (modo === 'soprano' && acordes.length) ej.acordes = acordes;
     if (modo === 'soprano' && f.formulaTST === false) ej.formulaTST = false;
     if (f.pedirRomano === false) ej.pedirRomano = false;
     if (f.reintentos === false) ej.reintentos = false;
@@ -323,6 +336,11 @@ const Banco = (() => {
   }
   // Etiqueta que se enseña: «A3-1 · I, V y V7»
   const etiquetaLeccion = e => (e.leccion || '') + (e.leccionNombre ? ' · ' + e.leccionNombre : '');
+  // El repertorio que tiene guardado una lección (el de su primer fragmento)
+  function repertorioDeLeccion(entradas, leccion) {
+    const e = (entradas || []).find(x => x.leccion === leccion);
+    return e ? { cifras: (e.leccionRepertorio || []).slice(), acordes: (e.leccionAcordes || []).slice() } : null;
+  }
   // Nombre de cada lección del banco, por si alguna entrada vieja no lo trae
   function nombresDeLecciones(entradas) {
     const out = {};
@@ -336,5 +354,5 @@ const Banco = (() => {
 
   return { VERSION, MODOS, modoDe, vozDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones,
-    leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones };
+    leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
 })();

@@ -546,7 +546,9 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - **No cuenta el arpegio**: el mismo acorde con el bajo en otra nota
       (V4/3 → V6/5 cruzando la barra) es la marcha normal de la regla de la
       octava y está en el corpus. La síncopa es repetir el acorde **sobre la
-      misma nota del bajo**.
+      misma nota del bajo y con la misma cifra**; añadir la séptima al mismo
+      acorde (V → V7 sobre el mismo bajo) sí es un cambio de armonía y se
+      admite.
     - **En el bajo dado**, cuando la nota se repite sobre el tiempo fuerte la
       regla R3 ya no mantiene el acorde: si la nota siguiente baja de grado,
       esa nota se vuelve **séptima preparada** y se cifra **4/2** (o +4 si el
@@ -570,6 +572,47 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     resuelve la nota repetida. Entra en el repertorio por defecto y, en la
     armonización de soprano, en el catálogo de acordes como subdominante. Con
     el intervalo de dominante vale el marcado `+4` (`MARCADOS`).
+
+30. **Cada fragmento lleva el repertorio de su lección** (21/9/2026, pedido por
+    Diego: «cuando se mezclan los fragmentos de A3-3 y A3-7 es imposible acertar
+    con la armonización esperada»). Al añadir un fragmento al banco se guarda con
+    él el repertorio marcado en el paso 3 —las cifras y, en la armonización de
+    soprano, los acordes—, que es **el de su lección**. Una ficha ya no impone el
+    repertorio del filtro: cada fragmento se juega con el de la lección a la que
+    pertenece. En la página del alumno aparece, encima del ejercicio, una fila
+    **«Lección»** con su nombre («A3-5 · El 6/4 cadencial») y otra con **los
+    acordes de esa lección** (grado y cifra, no solo las cifras). El panel del
+    banco enseña el repertorio de la lección elegida y tiene un botón para
+    rehacerlo con el del paso 3, sin volver a importar el archivo.
+    Un fragmento con avisos (alguna nota sin cifra posible) se marca con ⚠ en la
+    tabla y **no entra en las fichas**.
+
+31. **La sensible se eleva solo en los acordes de dominante** (21/9/2026).
+    Hasta ahora las voces superiores se construían SIEMPRE sobre la escala
+    armónica, de modo que cualquier acorde que contuviera el 7.º grado lo
+    llevaba elevado. Eso hacía que el **III saliera aumentado** por defecto
+    (do–mi–sol♯ en la menor) y que, al cifrarlo, la aplicación escribiera un
+    `♯5` que el alumno no había puesto: pulsaba «—» y veía «♯5».
+    Ahora la escala armónica se usa en los acordes cuya fundamental es el **5.º
+    o el 7.º grado** (V y VII, y los cifrados de séptima de dominante, que se
+    construyen aparte); en los demás la 7.ª se queda natural. Así el III es
+    mayor —como dice Diego que suele ser—, el I con séptima es menor, y el
+    cifrado del alumno se dibuja tal como lo escribió.
+    **Pendiente** (va con «el III como acorde propio», A4-2): que la 5.ª del III
+    pueda elevarse cuando el sol asciende al sol♯ de la dominante, como el 6.º y
+    el 7.º grados de la menor melódica, que no tienen afinación fija. Hoy el III
+    es siempre mayor.
+
+32. **Un cambio de armadura cierra el fragmento** (21/9/2026). En un archivo de
+    lecciones cada ejercicio va en su tonalidad, así que un cambio de armadura
+    es un ejercicio nuevo aunque se haya olvidado la barra doble: el importador
+    cierra ahí el fragmento y avisa («conviene poner también la barra doble»).
+    La excepción es que el fragmento ya lleve una **etiqueta de tonalidad**: eso
+    significa que la modulación está escrita a conciencia, y entonces el cambio
+    de armadura se sigue leyendo como modulación (decisión 6). Con esto, los dos
+    ejercicios de A3-1 que estaban pegados por las barras que faltan en los
+    compases 17 y 22 entran ya como cuatro fragmentos independientes, y el banco
+    pasa a **130 fragmentos sin ninguna síncopa armónica en el modelo**.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

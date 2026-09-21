@@ -35,9 +35,11 @@
      · Un **texto de pauta con el nombre de una tonalidad** («Sol M», «mi m», «→ Sol M»)
        sobre una nota marca ahí una modulación: es la forma precisa de indicar el acorde
        pivote. Sobre la primera nota del fragmento, fija su tonalidad.
-     · Un cambio de armadura dentro de un fragmento se lee también como modulación,
-       desde la primera nota de ese compás (r.fragmentos[k].modulaciones =
-       [{nota, tonalidad, segura}]); el profesor ajusta el pivote y el modo.
+     · Un cambio de armadura CIERRA el fragmento: en un archivo de lecciones, cada
+       ejercicio va en su tonalidad, y así no hace falta acordarse de la barra doble. Si el
+       fragmento ya lleva una etiqueta de tonalidad —es decir, si la modulación está escrita
+       a conciencia—, entonces el cambio de armadura se lee como modulación desde la primera
+       nota de ese compás (r.fragmentos[k].modulaciones = [{nota, tonalidad, segura}]).
    ===================================================================== */
 
 const MusicXML = (() => {
@@ -77,7 +79,7 @@ const MusicXML = (() => {
     // de unión pueda cruzar la barra y sumarse a la nota anterior.
     const ultima = { soprano: null, bajo: null };
     measures.forEach((m, mi) => {
-      const inicio = Math.max(actual.tiempo.soprano, actual.tiempo.bajo);   // tiempo (en negras) en que empieza este compás
+      let inicio = Math.max(actual.tiempo.soprano, actual.tiempo.bajo);   // tiempo (en negras) en que empieza este compás
       const attr = m.querySelector(':scope > attributes');
       if (attr) {
         const d = texto(attr, 'divisions'); if (d) divisions = parseInt(d, 10);
@@ -86,9 +88,22 @@ const MusicXML = (() => {
         if (f !== null) {
           const nf = parseInt(f, 10);
           if (armaduraFijada && nf !== fifths && hayNotas(actual)) {
-            // Cambio de armadura dentro del fragmento: se lee como modulación desde el comienzo del compás
-            actual.cambios.push({ tiempo: inicio, fifths: nf, modo: md || null });
-            avisos.push('Cambio de armadura en el compás ' + (mi + 1) + ': se ha anotado una modulación ahí (revisa el modo y el acorde pivote).');
+            /* Un cambio de armadura dentro del fragmento se lee de dos maneras:
+               · si el fragmento ya lleva una ETIQUETA de tonalidad, es una modulación
+                 escrita a conciencia y se anota como tal;
+               · si no, es que empieza otro ejercicio: se CIERRA aquí el fragmento, aunque
+                 falte la barra doble. Es lo normal en un archivo de lecciones, donde cada
+                 ejercicio va en su tonalidad. */
+            if ((actual.etiquetas || []).some(e => e.tiempo > 0.01)) {
+              actual.cambios.push({ tiempo: inicio, fifths: nf, modo: md || null });
+              avisos.push('Cambio de armadura en el compás ' + (mi + 1) + ': se ha anotado una modulación ahí (revisa el modo y el acorde pivote).');
+            } else {
+              fragmentos.push(cerrar(actual, actual.modo, compas, vozPedida));
+              actual = nuevo();
+              ultima.soprano = null; ultima.bajo = null;
+              inicio = 0;
+              avisos.push('Cambio de armadura en el compás ' + (mi + 1) + ': se ha cerrado ahí el fragmento, como ejercicio aparte (conviene poner también la barra doble). Si era una modulación, pon sobre el acorde pivote la etiqueta con el nombre de la tonalidad nueva.');
+            }
           }
           fifths = nf; armaduraFijada = true;
         }

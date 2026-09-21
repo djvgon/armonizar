@@ -17,7 +17,9 @@
      · La tonalidad es {tonica: 'C', modo: 'mayor'} o {tonica: 'A', modo: 'menor'}.
      · En modo menor, el grado del bajo se mide respecto a la escala
        NATURAL (sol♯ es «7̂ elevado»); las voces superiores se construyen
-       sobre la escala ARMÓNICA (sensible elevada).
+       sobre la escala ARMÓNICA (sensible elevada), pero **solo en los acordes
+       de dominante** (V y VII): en los demás la 7.ª se queda natural, para que
+       el III no salga aumentado ni el I con séptima mayor.
    ===================================================================== */
 
 const Teoria = (() => {
@@ -201,6 +203,7 @@ const Teoria = (() => {
   }
   function escalaVoces(ton) {               // referencia para construir las VOCES superiores
     if (ton.modo !== 'menor') return escalaCon(ton.tonica, PATRON_MAYOR);
+    if (ton.natural) return escalaCon(ton.tonica, PATRON_MENOR_NAT);
     return escalaCon(ton.tonica, ton.melodica ? PATRON_MENOR_MEL : PATRON_MENOR_ARM);
   }
   // La misma tonalidad con el 6.º grado elevado (menor melódica); en mayor, ella misma.
@@ -444,10 +447,25 @@ const Teoria = (() => {
   // intervalo diatónico ya es el de dominante: entonces vale el marcado.
   const MARCADOS = { '65': '65d', '43': '+6', '7': '7+', '42': '+4' };
 
+  /* En el modo menor la sensible se eleva en los acordes de DOMINANTE (V y VII), no en
+     todos. En el III se queda natural: con la sensible elevada saldría una tríada aumentada
+     (do–mi–sol♯ en la menor), que no es un acorde del lenguaje de estas lecciones y, al
+     cifrarla, obligaría a escribir un ♯5 que el alumno no ha puesto. */
+  function tonDeLasVoces(id, nb, ton) {
+    if (ton.modo !== 'menor' || ton.natural || ton.melodica) return ton;
+    if (DOMINANTES.includes(id)) return ton;              // se construyen como séptima de dominante
+    const pasos = FUNDAMENTAL[id] || 0;
+    const letra = LETRAS[((indice(nb) + pasos) % 7 + 7) % 7];
+    const grado = escalaNatural(ton).findIndex(e => e.letra === letra) + 1;
+    if (grado === 5 || grado === 7) return ton;           // V y VII: la sensible, elevada
+    return { tonica: ton.tonica, modo: 'menor', natural: true };
+  }
+
   function vocesSuperiores(id, bajo, ton) {
     const c = CIFRADOS[id];
     if (!c) throw new Error('Cifrado desconocido: ' + id);
-    return c.voces(nota(bajo), ton);
+    const nb = nota(bajo);
+    return c.voces(nb, tonDeLasVoces(id, nb, ton));
   }
 
   /* ---- Alteraciones accidentales en la cifra ----

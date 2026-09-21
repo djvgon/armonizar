@@ -430,3 +430,9 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .botonera-ficha { margin-top: .9rem; }
 .resumen-ficha { margin: .6rem 0 0; padding-left: 1.4rem; }
 .resumen-ficha li { margin: .18rem 0; }
+.repertorio-texto { font-size: .95rem; font-weight: 600; letter-spacing: .01em; }
+.ficha-acorde { display: inline-flex; align-items: center; gap: .1rem; padding-left: .35rem; }
+.ficha-acorde-romano { font-variant: small-caps; font-size: .95rem; }
+.banco-repertorio { display: flex; align-items: flex-start; gap: .8rem; flex-wrap: wrap; margin: .2rem 0 .6rem; }
+.banco-repertorio .ayuda { flex: 1 1 22rem; margin: 0; }
+.tabla-banco tr.con-aviso td:first-child { color: #9a3b12; font-weight: 600; }

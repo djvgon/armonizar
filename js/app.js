@@ -176,20 +176,48 @@
       html += ' <b>Este fragmento modula.</b> En la fila «Tonalidad», marca desde qué nota rige la tonalidad nueva y cuál es (vale la primera nota que ya no pertenece a la tonalidad anterior, o el acorde común que hace de pivote); en la nota marcada indica el grado en las dos tonalidades.';
     }
     $('#instruccion').innerHTML = html;
+    /* Lección y repertorio de acordes. Cada lección tiene el suyo, y en una ficha que
+       mezcla lecciones hay que decir con qué acordes se espera armonizar cada fragmento:
+       si no, no hay forma de acertar. */
+    const filaLec = $('#leccion-fila');
+    if (ej.leccion) { $('#leccion').textContent = ej.leccion; filaLec.hidden = false; }
+    else filaLec.hidden = true;
+    const deLaLeccion = ej.leccion ? 'de esta lección' : 'en este ejercicio';
     const rep = $('#repertorio');
     rep.innerHTML = '';
-    ej.repertorio.forEach(id => {
-      const c = Teoria.CIFRADOS[id];
-      const s = document.createElement('span');
-      s.className = 'ficha';
-      s.title = c.descripcion;
-      s.appendChild(Partitura.iconoCifra(id, 26));
-      rep.appendChild(s);
-    });
+    const acordes = Array.isArray(ej.acordes) && ej.acordes.length ? ej.acordes : null;
+    if (estado.modoEj === 'soprano' && acordes) {
+      // En la armonización de soprano el repertorio son ACORDES (grado + cifra), no cifras sueltas
+      $('#etiqueta-repertorio').textContent = 'Acordes ' + deLaLeccion;
+      acordes.forEach(id => {
+        const p = Ejercicios.par(id);
+        const c = Teoria.CIFRADOS[p.cifra];
+        if (!c) return;
+        const s = document.createElement('span');
+        s.className = 'ficha ficha-acorde';
+        s.title = p.romano + ' ' + c.nombre + ' — ' + c.descripcion;
+        const r = document.createElement('span');
+        r.className = 'ficha-acorde-romano'; r.textContent = p.romano;
+        s.appendChild(r);
+        s.appendChild(Partitura.iconoCifra(p.cifra, 30));
+        rep.appendChild(s);
+      });
+    } else {
+      $('#etiqueta-repertorio').textContent = 'Cifrados ' + deLaLeccion;
+      ej.repertorio.forEach(id => {
+        const c = Teoria.CIFRADOS[id];
+        const s = document.createElement('span');
+        s.className = 'ficha';
+        s.title = c.descripcion;
+        s.appendChild(Partitura.iconoCifra(id, 26));
+        rep.appendChild(s);
+      });
+    }
     const gr = $('#grados');
     gr.innerHTML = '';
     const ayuda = Ejercicios.ayudaGrados(ej);
-    $('#grados-fila').hidden = !estado.pedirRomano || ayuda === 'ninguna';
+    $('#etiqueta-grados').textContent = 'Grados en este ejercicio';
+    $('#grados-fila').hidden = !estado.pedirRomano || ayuda === 'ninguna' || (estado.modoEj === 'soprano' && !!acordes);
     if (estado.pedirRomano && ayuda !== 'ninguna') Ejercicios.grados(ej).forEach(r => {
       const s = document.createElement('span');
       s.className = 'ficha ficha-romano';
