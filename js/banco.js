@@ -125,6 +125,8 @@ const Banco = (() => {
     // La lista de acordes de la lección vale para las dos maneras: en la melodía limita los
     // candidatos y en el bajo dice si se admiten las dominantes secundarias (II+6).
     if (opciones.acordes && opciones.acordes.length) ej.acordes = opciones.acordes.slice();
+    // La otra voz escrita, nota a nota: el motor la usa para elegir entre las admisibles
+    if (!esSop && opciones.companera) ej.companera = opciones.companera;
     if (esSop && opciones.formulaTST === false) ej.formulaTST = false;
     let prop;
     try { prop = esSop ? Reglas.proponerSoprano(ej) : Reglas.proponer(ej); } catch (e) { return null; }
@@ -167,12 +169,15 @@ const Banco = (() => {
     const partes = {};
     const avisos = [];
     if (hayB) {
-      const r = analizar(f.compasesBajo, ton, f.modulacionesBajo, false, op);
+      const r = analizar(f.compasesBajo, ton, f.modulacionesBajo, false,
+        Object.assign({}, op, { companera: hayS ? companera(f.compasesBajo, f.compasesSoprano) : null }));
       if (r) {
         partes.bajo = {
           compases: f.compasesBajo,
           modulaciones: (f.modulacionesBajo || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } })),
-          respuestas: preferir(r.respuestas, f.compasesBajo, hayS ? companera(f.compasesBajo, f.compasesSoprano) : null, ton, f.modulacionesBajo, false, r.fijados)
+          // El bajo NO pasa por preferir(): la voz compañera ya entra en el motor
+          // (ej.companera), de modo que la eligen las reglas y no un retoque posterior.
+          respuestas: r.respuestas
         };
         if (r.incompleto) avisos.push('alguna nota del bajo se queda sin cifra posible');
         const fin = finalExtrano(partes.bajo, ton, compas);
@@ -192,6 +197,43 @@ const Banco = (() => {
     }
     if (!partes.bajo && !partes.soprano) return null;
 
+    const base = {
+      id: opciones.id || null,
+      leccion: opciones.leccion || '',
+      leccionNombre: opciones.leccionNombre || '',
+      leccionRepertorio: (opciones.repertorio || []).slice(),
+      leccionAcordes: (opciones.acordes || []).slice(),
+      fuente: opciones.fuente || '',
+      titulo: opciones.titulo || '',
+      tonalidad: { tonica: ton.tonica, modo: ton.modo },
+      tonalidadSegura: f.tonalidadSegura !== false,
+      compas: compas.slice(),
+      bajo: partes.bajo || null,
+      soprano: partes.soprano || null,
+      nivelManual: null,
+      avisos
+    };
+    etiquetar(base);
+    return base;
+  }
+
+  /* Recalcula las ETIQUETAS y los avisos de una entrada a partir de lo que tiene dentro
+     (las dos voces y sus respuestas), sin volver a analizar nada. Es lo que hace falta
+     cuando el profesor corrige a mano el cifrado o la tonalidad de un fragmento del banco:
+     la música y las respuestas son las suyas, pero las etiquetas —cifras, grados, nivel,
+     si modula— han de volver a salir de ahí. */
+  function etiquetar(e) {
+    const ton = e.tonalidad;
+    const compas = e.compas || [4, 4];
+    const partes = { bajo: e.bajo || null, soprano: e.soprano || null };
+    const avisos = [];
+    if (partes.bajo) {
+      if ((partes.bajo.respuestas || []).some(r => !r || !r.length)) avisos.push('alguna nota del bajo se queda sin cifra posible');
+      const fin = finalExtrano(partes.bajo, ton, compas);
+      if (fin) avisos.push(fin);
+    }
+    if (partes.soprano && (partes.soprano.respuestas || []).some(r => !r || !r.length)) avisos.push('alguna nota de la melodía se queda sin acorde posible');
+    e.avisos = avisos;
     // Etiquetas: todas salen del análisis
     const principal = partes.bajo || partes.soprano;
     const esSopPrincipal = !partes.bajo;
@@ -214,28 +256,8 @@ const Banco = (() => {
       grados
     };
     et.nivel = nivelBase(et);
-
-    return {
-      id: opciones.id || null,
-      leccion: opciones.leccion || '',
-      leccionNombre: opciones.leccionNombre || '',
-      /* El repertorio de LA LECCIÓN, tal como estaba al añadir el fragmento. Es lo que se
-         le enseña al alumno: cada lección tiene sus acordes, y al mezclar fragmentos de
-         lecciones distintas en una ficha, sin esto no hay forma de acertar con la
-         armonización esperada. */
-      leccionRepertorio: (opciones.repertorio || []).slice(),
-      leccionAcordes: (opciones.acordes || []).slice(),
-      fuente: opciones.fuente || '',
-      titulo: opciones.titulo || '',
-      tonalidad: { tonica: ton.tonica, modo: ton.modo },
-      tonalidadSegura: f.tonalidadSegura !== false,
-      compas: compas.slice(),
-      bajo: partes.bajo || null,
-      soprano: partes.soprano || null,
-      etiquetas: et,
-      nivelManual: null,
-      avisos
-    };
+    e.etiquetas = et;
+    return e;
   }
 
   /* ---------- Filtros ---------- */
@@ -385,6 +407,7 @@ const Banco = (() => {
   }
 
   return { VERSION, MODOS, modoDe, vozDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
-    ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones,
+    ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, etiquetar,
+    analizarVoz: analizar, companeraDe: companera,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
 })();

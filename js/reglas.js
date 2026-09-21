@@ -177,7 +177,11 @@ const Reglas = (() => {
           return R(['+4', '53'], 'Grado 4 que desciende a grado 3 (llegando por salto): +4, o IV.', 'R7 RO');
         }
         return R(['53'], 'Grado 4 que ni asciende a grado 5 ni desciende a grado 3: IV en estado fundamental.', 'R7 RO');
-      case 5: return R(['53', '7+'], 'Grado 5: dominante (sin 7ª, o V7 cifrado 7/+).', 'R7 RO');
+      /* Grado 5: la dominante; y, cuando la nota se repite, también el 6/4 CADENCIAL
+         (I6/4 – V sobre el mismo bajo), que es la fórmula de A3-5. Se ofrece detrás de la
+         dominante: lo elige la melodía cuando trae la tónica o la tercera, que son las
+         notas que el 6/4 tiene y el V no. */
+      case 5: return R(['53', '7+', '64'], 'Grado 5: dominante (sin 7ª, o V7 cifrado 7/+); si la nota se repite, también el 6/4 cadencial.', 'R7 RO');
       case 6:
         if (s === '2asc') return R(['6', '53'], 'Grado 6 que asciende a grado 7: 6 (IV6), o VI.', 'R7 RO');
         if (s === '2desc') return R(['43', '+6', '6', '53'], 'Grado 6 que desciende a grado 5: II4/3; o +6 (dominante secundaria del V); o 6; o VI.', 'R7 RO');
@@ -209,6 +213,21 @@ const Reglas = (() => {
     return acordes.indexOf(rom + '|' + id) >= 0;
   }
 
+  /* El 6/4 de estas lecciones es el CADENCIAL: va sobre el 5.º grado y resuelve en el V
+     sobre ese mismo bajo, de modo que solo se propone cuando la nota siguiente repite la
+     nota. Fuera de ahí —el 6/4 como arpegio de la tónica, do → sol— no se propone: sería
+     un 6/4 que no resuelve, y además la fila de funciones lo daría por dominante. */
+  function seiscuatroCadencial(id, c, notas, cortes, ton) {
+    if (id !== '64') return true;
+    if (c.esUltima) return false;
+    const sig = notas[c.i + 1];
+    if (!sig || (cortes && cortes[c.i + 1])) return false;
+    try {
+      if (Teoria.clase(sig) !== Teoria.clase(c.nota)) return false;
+      return Teoria.grado(c.nota, ton).grado === 5;
+    } catch (e) { return false; }
+  }
+
   function dominanteSecundariaPermitida(id, nota, ton, acordes) {
     if (!Teoria.DOMINANTES.includes(id)) return true;
     let rom;
@@ -232,7 +251,7 @@ const Reglas = (() => {
   }
 
   // Todas las notas leídas en una sola tonalidad.
-  function proponerEn(ej, ton) {
+  function proponerEn(ej, ton, fijos) {
     const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
     const notas = notasDe(ej);
     const cortes = cortesDe(ej);
@@ -248,7 +267,8 @@ const Reglas = (() => {
          tiene I, V y VII6—, se sigue probando con las siguientes, que es lo que haría el
          alumno con los acordes que tiene a mano. */
       const filtra = ids => ids.filter(id => repertorio.includes(id) && cuadraConElBajo(id, c.nota, ton)
-        && dominanteSecundariaPermitida(id, c.nota, ton, ej.acordes) && acordePermitido(id, c.nota, ton, ej.acordes));
+        && dominanteSecundariaPermitida(id, c.nota, ton, ej.acordes) && acordePermitido(id, c.nota, ton, ej.acordes)
+        && seiscuatroCadencial(id, c, notas, cortes, ton));
       const candidatas = [
         () => r1_final(c), () => r2_cadencia(c, notas, ton), () => r3_repeticion(c, previo, ton, repertorio, cambia),
         () => r4_arpegio(c, previo, notas, ton, repertorio), () => r5_funcional(c),
@@ -263,6 +283,25 @@ const Reglas = (() => {
         if (ids.length) { r = x; adm = ids; break; }
       }
       if (!r) { r = primera || R([], 'Sin regla aplicable.', '—'); adm = []; }
+      /* La VOZ COMPAÑERA (la melodía escrita, cuando el archivo trae las dos voces) elige
+         entre las admisibles: se pone delante la que contiene la nota que suena a la vez.
+         Se hace aquí dentro, y no después, para que las reglas de las notas siguientes
+         —el arpegio, la nota repetida— partan del acorde que de verdad se ha elegido. */
+      if (ej.companera && ej.companera[i] && adm.length > 1) {
+        let mejor = null;
+        try {
+          const cl = Teoria.clase(Teoria.nota(ej.companera[i]));
+          mejor = adm.find(id => {
+            const t = Teoria.tonParaBajo(id, c.nota, ton, ej.companera[i]);
+            return [Teoria.clase(c.nota), ...Teoria.vocesSuperiores(id, c.nota, t).map(Teoria.clase)].includes(cl);
+          });
+        } catch (e) { mejor = null; }
+        if (mejor) adm = [mejor, ...adm.filter(x => x !== mejor)];
+      }
+      /* Cifras ya decididas por la sintaxis de la cadencia: se imponen aquí para que las
+         reglas de las notas siguientes —el arpegio, la nota repetida— vean el acorde bueno
+         y no el que había antes de corregirlo. */
+      if (fijos && fijos[i]) adm = [fijos[i], ...adm.filter(x => x !== fijos[i])];
       salida.push({
         admisibles: adm,
         modelo: adm[0] || null,
@@ -446,17 +485,31 @@ const Reglas = (() => {
     return salida;
   }
 
+  /* El motor se pasa DOS VECES: la primera da la lectura de la regla de la octava, la
+     sintaxis de la cadencia corrige lo que haga falta, y la segunda vuelve a leerlo todo
+     con esas correcciones ya puestas, para que las reglas que miran el acorde anterior
+     —el arpegio, la nota repetida— partan del acorde bueno. */
   function proponer(ej) {
-    return evitarSincopas(ej, sintaxisCadencial(ej, proponerBase(ej)));
+    let salida = sintaxisCadencial(ej, proponerBase(ej));
+    for (let vuelta = 0; vuelta < 2; vuelta++) {
+      const fijos = {};
+      salida.forEach((x, i) => { if (x.fijado && x.admisibles && x.admisibles[0]) fijos[i] = x.admisibles[0]; });
+      if (!Object.keys(fijos).length) break;
+      const otra = sintaxisCadencial(ej, proponerBase(ej, fijos));
+      const igual = otra.length === salida.length && otra.every((x, i) => (x.admisibles[0] || null) === (salida[i].admisibles[0] || null));
+      salida = otra;
+      if (igual) break;
+    }
+    return evitarSincopas(ej, salida);
   }
 
-  function proponerBase(ej) {
+  function proponerBase(ej, fijos) {
     const mods = (ej.modulaciones || []).filter(m => m && m.tonalidad && Number.isInteger(m.nota)).slice().sort((a, b) => a.nota - b.nota);
-    if (!mods.length) return proponerEn(ej, ej.tonalidad);
+    if (!mods.length) return proponerEn(ej, ej.tonalidad, fijos);
     const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
     const notas = notasDe(ej);
     const tramos = [{ desde: 0, tonalidad: ej.tonalidad }].concat(mods.map(m => ({ desde: m.nota, tonalidad: m.tonalidad })));
-    const ejecuciones = tramos.map(t => proponerEn(ej, t.tonalidad));
+    const ejecuciones = tramos.map(t => proponerEn(ej, t.tonalidad, fijos));
     const salida = [];
     for (let i = 0; i < notas.length; i++) {
       let k = 0;

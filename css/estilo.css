@@ -436,3 +436,8 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .banco-repertorio { display: flex; align-items: flex-start; gap: .8rem; flex-wrap: wrap; margin: .2rem 0 .6rem; }
 .banco-repertorio .ayuda { flex: 1 1 22rem; margin: 0; }
 .tabla-banco tr.con-aviso td:first-child { color: #9a3b12; font-weight: 600; }
+
+/* Cartel del paso 4 cuando se está revisando un fragmento que viene del banco */
+.banco-origen { margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--borde, #d8d0c4); border-radius: .5rem; background: rgba(160, 120, 60, .07); }
+.banco-origen > .ayuda:first-child { margin-top: 0; font-weight: 600; }
+.banco-origen .botonera { margin: .6rem 0; }

@@ -718,6 +718,47 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     limpios. El banco queda en **131 fragmentos**. Falta la misma barra doble en el
     archivo de bajos de A3-2, donde ese ejercicio sigue entero y sin cifrar del todo.
 
+44. **Sintaxis de la cadencia, segunda vuelta** (22/9/2026). Cuatro arreglos que van
+    juntos, todos nacidos de la misma observación de Diego —el análisis de un ejercicio
+    de A3-8— y de la ortografía armónica (la nota tendencial no se dobla y ha de
+    resolver):
+    - **El 6/4 es el CADENCIAL.** Solo se propone sobre el 5.º grado y solo cuando la
+      nota siguiente repite esa misma nota, para que resuelva en el V sobre ese bajo.
+      Desaparece así el 6/4 como arpegio de la tónica (do → sol), que ni resolvía ni era
+      dominante aunque la fila de funciones lo diera por tal. Y, en cambio, **se ofrece
+      ahora sobre el 5.º grado repetido**, que es justamente la fórmula de A3-5: donde la
+      melodía trae la tónica o la tercera, el modelo es I6/4 – V – I.
+    - **La voz compañera entra en el motor.** Cuando el archivo trae las dos voces, la
+      melodía escrita elegía entre las admisibles DESPUÉS de haber corrido el motor
+      (`Banco.preferir`), de modo que las reglas de las notas siguientes —el arpegio, la
+      nota repetida— habían partido de un acorde que luego cambiaba. Ahora la nota que
+      suena a la vez entra como `ej.companera` y elige dentro del propio motor; el bajo ya
+      no pasa por `preferir`, y así hay una sola fuente de verdad.
+    - **El motor se pasa dos veces.** La sintaxis de la cadencia corrige acordes, y esas
+      correcciones cambian lo que las reglas deben ver en las notas siguientes. Se vuelve
+      a leer todo con las cifras corregidas ya impuestas.
+    - Con esto, los avisos de conducción de voces en la realización modelo de todo el
+      banco bajan de 11 a 4 (dos octavas o quintas por movimiento directo en fragmentos
+      de tres y cinco notas, y dos séptimas de A3-5 que el arpegio del mismo acorde deja
+      en otra voz).
+
+45. **Visor y editor de los fragmentos del banco** (22/9/2026). «Cargar», en la tabla del
+    paso 6, ya no solo traía la música: ahora trae **el análisis que hay guardado** —la
+    tonalidad, las modulaciones y las cifras admisibles de cada nota, con la modelo
+    delante—, de modo que el paso 4 sirve de visor de lo que el alumno va a recibir. Y lo
+    que se corrija allí **se guarda de vuelta en el fragmento** con «Guardar los cambios en
+    el banco»:
+    - se escriben la tonalidad (que queda marcada como segura, la ha fijado el profesor),
+      las modulaciones y las respuestas de esa voz;
+    - si han cambiado la tonalidad o las modulaciones, **la otra voz se vuelve a analizar
+      sola** en la tonalidad nueva, que sus respuestas estaban hechas en la de antes;
+    - las **etiquetas** (cifras, grados, si modula, nivel) y los avisos se recalculan con
+      `Banco.etiquetar`, que se ha separado de `Banco.entrada` justamente para esto;
+    - no se guarda si alguna nota se ha quedado sin ninguna cifra marcada.
+    El fragmento que se está revisando se recuerda en el borrador (por identificador y
+    voz), así que recargar la página no pierde el enlace. Y el banco sigue viviendo en el
+    navegador: al terminar hay que **descargar `banco.json` y subirlo a GitHub**.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

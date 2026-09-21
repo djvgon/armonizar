@@ -56,7 +56,8 @@
     companera: null,         // por nota: la nota de la OTRA voz que suena a la vez (si el archivo traía las dos)
     ejercicio: null,         // último ejercicio generado
     modulaciones: [],        // [{nota, tonalidad}]: desde la nota (pivote) rige la tonalidad nueva
-    funciones: null          // función tonal por nota ('T' | 'S' | 'D') fijada en la revisión, o null (las del modelo)
+    funciones: null,         // función tonal por nota ('T' | 'S' | 'D') fijada en la revisión, o null (las del modelo)
+    banco: null              // {entrada, voz}: el fragmento del banco que se está revisando
   };
   const esSoprano = () => modoElegido() === 'soprano';
 
@@ -559,6 +560,7 @@
   }
 
   function cargarMusicXML(r, nombre) {
+    estado.banco = null; pintarOrigenBanco();
     estado.fragmentos = r.fragmentos;
     estado.nombreArchivo = nombre;
     const cont = $('#lista-fragmentos');
@@ -641,6 +643,7 @@
         titulo: $('#titulo').value, coleccion: $('#coleccion').value, repertorio: repertorio(),
         pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
         tipo: modoElegido(), preferir: $('#preferir').value, respuestas: estado.respuestas,
+        bancoId: estado.banco ? estado.banco.entrada.id : null, bancoVoz: estado.banco ? estado.banco.voz : null,
         modulaciones: estado.modulaciones, avisoMod: $('#aviso-mod').value, bajoAudicion: $('#bajo-audicion').value,
         funciones: $('#funciones').value, funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
@@ -667,6 +670,12 @@
       $('#formula-tst').checked = b.formulaTST !== false;
       ajustarCampoAudicion();
       estado.modulaciones = Array.isArray(b.modulaciones) ? b.modulaciones.filter(m => m && m.tonalidad && Number.isInteger(m.nota)) : [];
+      // Si se estaba revisando un fragmento del banco, se vuelve a enganchar con él
+      estado.banco = null;
+      if (b.bancoId && b.bancoVoz) {
+        const e = banco.find(x => x.id === b.bancoId);
+        if (e && e[b.bancoVoz]) estado.banco = { entrada: e, voz: b.bancoVoz };
+      }
       $('#aviso-mod').value = b.avisoMod === 'existe' ? 'existe' : 'completo';
       leerBajo();
       ajustarCampoModulacion();
@@ -752,7 +761,7 @@
       leerBajo();
     }
 
-    $('#texto-bajo').addEventListener('input', () => { estado.companera = null; leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
+    $('#texto-bajo').addEventListener('input', () => { estado.banco = null; pintarOrigenBanco(); estado.companera = null; leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
     ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ayuda-grados', '#preferir', '#aviso-mod', '#bajo-audicion'].forEach(sel => {
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
@@ -796,6 +805,14 @@
     zona.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f) importarArchivo(f); });
 
     arranqueBanco();
+    /* El banco se lee en arranqueBanco(), después del borrador: aquí se vuelve a enganchar
+       el fragmento que se estaba revisando, si lo había. */
+    const br = (() => { try { return JSON.parse(localStorage.getItem(CLAVE_BORRADOR) || 'null'); } catch (e) { return null; } })();
+    if (br && br.bancoId && br.bancoVoz) {
+      const e = banco.find(x => x.id === br.bancoId);
+      if (e && e[br.bancoVoz]) estado.banco = { entrada: e, voz: br.bancoVoz };
+    }
+    pintarOrigenBanco();
   }
 
 
@@ -1032,11 +1049,86 @@
     $('#titulo').value = e.titulo || (e.leccion ? e.leccion : 'Ejercicio');
     estado.modulaciones = (parte.modulaciones || []).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
     estado.respuestas = null; estado.propuesta = null;
+    estado.funciones = null;
     $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true;
     limpiarDireccion();
     leerBajo();
+    /* Se traen las RESPUESTAS QUE HAY EN EL BANCO, no un análisis nuevo: así se ve
+       exactamente lo que el alumno va a recibir, que es de lo que se trata al revisar.
+       Quien quiera volver a empezar tiene el botón «Analizar». */
+    if (estado.compases.length && Array.isArray(parte.respuestas)
+        && Teoria.numeroDeNotas(estado.compases) === parte.respuestas.length) {
+      estado.respuestas = parte.respuestas.map(a => a.slice());
+      estado.propuesta = null;
+      $('#paso-revision').hidden = false;
+      pintarRevision();
+      $('#paso-direccion').hidden = false;
+    }
+    estado.banco = { entrada: e, voz: Banco.vozDeModo(modo) };
+    pintarOrigenBanco();
     guardarBorrador();
     $('#paso-bajo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ---------- Guardar en el banco lo revisado a mano ---------- */
+
+  // Cartel del paso 4 que dice qué fragmento del banco se está revisando
+  function pintarOrigenBanco() {
+    const caja = $('#banco-origen');
+    if (!caja) return;
+    const b = estado.banco;
+    caja.hidden = !b;
+    if (!b) return;
+    const e = b.entrada;
+    $('#banco-origen-texto').textContent = 'Estás revisando el fragmento ' + (e.id || '(sin identificador)')
+      + (e.leccion ? ' de la lección ' + Banco.etiquetaLeccion(e) : '')
+      + ' · voz: ' + (b.voz === 'bajo' ? 'el bajo' : 'la melodía') + '.';
+  }
+
+  /* Escribe en el fragmento del banco lo que hay ahora en el configurador: la tonalidad,
+     las modulaciones y las cifras admisibles de esta voz, con la modelo delante. Si la
+     tonalidad o las modulaciones han cambiado, la OTRA voz se vuelve a analizar sola, que
+     sus respuestas estaban hechas en la tonalidad de antes. Las etiquetas (cifras, grados,
+     nivel, si modula) se recalculan a partir de lo guardado. */
+  function guardarEnBanco() {
+    const b = estado.banco;
+    if (!b) { aviso('Este fragmento no viene del banco: usa «Añadir los fragmentos del archivo al banco».'); return; }
+    if (!estado.respuestas || !estado.respuestas.length) { aviso('Analiza o revisa antes las respuestas.'); return; }
+    if (estado.respuestas.some(a => !a.length)) { aviso('Hay notas sin ninguna cifra marcada: márcalas antes de guardar.'); return; }
+    const e = b.entrada;
+    if (!banco.includes(e)) { aviso('Ese fragmento ya no está en el banco.'); return; }
+    const ton = tonalidad();
+    const mods = estado.modulaciones.filter(m => m && m.tonalidad && Number.isInteger(m.nota))
+      .map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }))
+      .sort((x, y) => x.nota - y.nota);
+    const cambiaTon = !Teoria.mismaTonalidad(e.tonalidad, ton)
+      || JSON.stringify(mods) !== JSON.stringify((e[b.voz] && e[b.voz].modulaciones) || []);
+
+    e.tonalidad = { tonica: ton.tonica, modo: ton.modo };
+    e.tonalidadSegura = true;                       // la ha fijado el profesor a mano
+    e.compas = compas();
+    e[b.voz] = {
+      compases: estado.compases.map(c => c.map(x => x.slice())),
+      modulaciones: mods,
+      respuestas: estado.respuestas.map(a => a.slice())
+    };
+
+    // La otra voz, si la hay y ha cambiado la tonalidad: se vuelve a analizar en la nueva
+    const otra = b.voz === 'bajo' ? 'soprano' : 'bajo';
+    let rehecha = false;
+    if (cambiaTon && e[otra]) {
+      const r = Banco.analizarVoz(e[otra].compases, ton, mods, otra === 'soprano', {
+        compas: e.compas, repertorio: e.leccionRepertorio, acordes: e.leccionAcordes,
+        companera: Banco.companeraDe(e[otra].compases, e[b.voz].compases)
+      });
+      if (r) { e[otra] = { compases: e[otra].compases, modulaciones: mods.slice(), respuestas: r.respuestas }; rehecha = true; }
+    }
+    Banco.etiquetar(e);
+    guardarBanco();
+    pintarBanco();
+    aviso('Guardado en el fragmento ' + (e.id || '') + ' del banco'
+      + (rehecha ? ' (y se ha rehecho ' + (otra === 'bajo' ? 'el bajo' : 'la melodía') + ' en la tonalidad nueva)' : '')
+      + '. Acuérdate de descargar banco.json y subirlo a GitHub.', 9000);
   }
 
   /* Si el banco de este navegador está vacío y la página está publicada, se lee el
@@ -1105,6 +1197,8 @@
     pintarBanco();
     if (!banco.length) bancoPublicado();
     $('#btn-banco-anadir').addEventListener('click', anadirAlBanco);
+    $('#btn-banco-guardar').addEventListener('click', guardarEnBanco);
+    $('#btn-banco-soltar').addEventListener('click', () => { estado.banco = null; pintarOrigenBanco(); guardarBorrador(); });
     $('#btn-banco-descargar').addEventListener('click', descargarBanco);
     $('#btn-banco-cargar').addEventListener('click', () => $('#banco-archivo').click());
     $('#banco-archivo').addEventListener('change', ev => { if (ev.target.files[0]) cargarBancoArchivo(ev.target.files[0]); ev.target.value = ''; });
