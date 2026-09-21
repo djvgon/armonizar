@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Configurador de ejercicios · Armonizar el bajo</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260921-0020">
-  <link rel="stylesheet" href="css/estilo.css?v=20260921-0020">
+  <link rel="stylesheet" href="css/bravura.css?v=20260921-0130">
+  <link rel="stylesheet" href="css/estilo.css?v=20260921-0130">
 </head>
 <body class="configurador">
 
@@ -109,8 +109,16 @@
     <!-- ===== Paso 3: opciones ===== -->
     <section class="paso" id="paso-opciones">
       <h2><span class="num">3</span> Repertorio y opciones</h2>
-      <p class="ayuda">Las cifras marcadas forman la paleta del alumno y limitan las respuestas admisibles.</p>
+      <p class="ayuda" id="ayuda-repertorio">Las cifras marcadas forman la paleta del alumno y limitan las respuestas admisibles.</p>
       <div id="repertorio-opciones" class="repertorio-opciones"></div>
+      <div id="acordes-funciones" class="acordes-funciones" hidden>
+        <p class="ayuda">Acordes disponibles, por función tonal. Solo estos entran en el análisis de la melodía; la paleta de cifrados del alumno se forma con las cifras de los acordes marcados.</p>
+        <div id="acordes-lista"></div>
+        <label class="campo campo-linea formula-tst">
+          <input id="formula-tst" type="checkbox" checked>
+          <span>Fórmula <b>T S T</b>: se admite la bordadura I – IV – I (el II nunca vuelve a la tónica)</span>
+        </label>
+      </div>
       <div class="fila-campos">
         <label class="campo campo-linea">
           <input id="pedir-romano" type="checkbox" checked>
@@ -207,15 +215,15 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260921-0020</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260921-0130</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260921-0020"></script>
-  <script src="js/reglas.js?v=20260921-0020"></script>
-  <script src="js/ejercicios.js?v=20260921-0020"></script>
-  <script src="js/partitura.js?v=20260921-0020"></script>
-  <script src="js/musicxml.js?v=20260921-0020"></script>
-  <script src="js/realizacion.js?v=20260921-0020"></script>
-  <script src="js/configurador.js?v=20260921-0020"></script>
+  <script src="js/teoria.js?v=20260921-0130"></script>
+  <script src="js/reglas.js?v=20260921-0130"></script>
+  <script src="js/ejercicios.js?v=20260921-0130"></script>
+  <script src="js/partitura.js?v=20260921-0130"></script>
+  <script src="js/musicxml.js?v=20260921-0130"></script>
+  <script src="js/realizacion.js?v=20260921-0130"></script>
+  <script src="js/configurador.js?v=20260921-0130"></script>
 </body>
 </html>

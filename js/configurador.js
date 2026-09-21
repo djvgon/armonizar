@@ -21,6 +21,29 @@
   const $ = sel => document.querySelector(sel);
   const CLAVE_BORRADOR = 'armonizar.configurador.borrador';
   const ORDEN_CIFRAS = ['53', '6', '64', '65', '43', '7', '9', '7+', '+6', '65d', '+4'];
+  // Acordes por función tonal para la armonización de soprano (cuadro verde de Diego).
+  // Los marcados por defecto son el repertorio de tercero; VI, V/V y 6/4 cadencial se activan a mano.
+  const CATALOGO_ACORDES = [
+    { fun: 'T', id: 'I|53', rom: 'I', defecto: true },
+    { fun: 'T', id: 'I|6', rom: 'I', defecto: true },
+    { fun: 'T', id: 'VI|53', rom: 'VI', nota: 'también S ante la dominante', defecto: false },
+    { fun: 'S', id: 'IV|53', rom: 'IV', defecto: true },
+    { fun: 'S', id: 'IV|6', rom: 'IV', defecto: true },
+    { fun: 'S', id: 'II|53', rom: 'II', defecto: true },
+    { fun: 'S', id: 'II|6', rom: 'II', defecto: true },
+    { fun: 'S', id: 'II|7', rom: 'II', defecto: true },
+    { fun: 'S', id: 'II|65', rom: 'II', defecto: true },
+    { fun: 'S', id: 'II|43', rom: 'II', nota: 'sobre el 6.º grado', defecto: true },
+    { fun: 'S', id: 'II|+6', rom: 'II', nota: 'V/V, dominante secundaria (cuarto)', defecto: false },
+    { fun: 'D', id: 'V|53', rom: 'V', defecto: true },
+    { fun: 'D', id: 'V|7+', rom: 'V', defecto: true },
+    { fun: 'D', id: 'V|6', rom: 'V', defecto: true },
+    { fun: 'D', id: 'V|65d', rom: 'V', defecto: true },
+    { fun: 'D', id: 'V|+6', rom: 'V', defecto: true },
+    { fun: 'D', id: 'V|+4', rom: 'V', defecto: true },
+    { fun: 'D', id: 'VII|6', rom: 'VII', defecto: true },
+    { fun: 'D', id: 'I|64', rom: 'I', nota: '6/4 cadencial', defecto: false }
+  ];
   const TONICAS = [['C', 'do'], ['C#', 'do♯'], ['Db', 're♭'], ['D', 're'], ['Eb', 'mi♭'], ['E', 'mi'], ['F', 'fa'], ['F#', 'fa♯'], ['Gb', 'sol♭'], ['G', 'sol'], ['Ab', 'la♭'], ['A', 'la'], ['Bb', 'si♭'], ['B', 'si']];
 
   const estado = {
@@ -38,8 +61,17 @@
 
   function tonalidad() { return { tonica: $('#tonica').value, modo: $('#modo').value }; }
   function compas() { return $('#compas').value.split('/').map(Number); }
+  // Cifras del ejercicio: las marcadas o, en la armonización de soprano, las de los acordes marcados
   function repertorio() {
+    if (esSoprano()) {
+      const cifras = new Set(acordesElegidos().map(id => Ejercicios.cifraDe(id)));
+      return ORDEN_CIFRAS.filter(id => cifras.has(id));
+    }
     return [...document.querySelectorAll('#repertorio-opciones input:checked')].map(i => i.value);
+  }
+  function acordesElegidos() { return [...document.querySelectorAll('#acordes-lista input:checked')].map(i => i.value); }
+  function marcarAcordes(lista) {
+    document.querySelectorAll('#acordes-lista input').forEach(i => { i.checked = lista.includes(i.value); });
   }
   const modoElegido = () => (document.querySelector('input[name="modo-ej"]:checked') || {}).value || 'armonizar';
   const elegirModo = m => { const r = document.querySelector('input[name="modo-ej"][value="' + m + '"]'); if (r) r.checked = true; };
@@ -61,6 +93,9 @@
     $('#ayuda-octava-soprano').hidden = !sop;
     $('#btn-analizar').textContent = sop ? 'Analizar la melodía' : 'Analizar el bajo';
     $('#th-admisibles').textContent = sop ? 'Acordes admisibles (● modelo)' : 'Cifras admisibles (● modelo)';
+    $('#repertorio-opciones').hidden = sop; $('#ayuda-repertorio').hidden = sop;
+    $('#acordes-funciones').hidden = !sop;
+    $('#pedir-romano').closest('label').hidden = sop;   // en la soprano el grado siempre se pide: de él sale el bajo
     document.querySelectorAll('#tabla-revision .col-fun').forEach(e => { e.hidden = !opciones().funciones; });
   }
 
@@ -116,6 +151,10 @@
     if (op.ayudaGrados !== 'lista') ej.ayudaGrados = op.ayudaGrados;
     if (op.modo !== 'armonizar') ej.modo = op.modo;
     if (op.modo === 'audicion' && op.bajoAudicion) ej.mostrarBajo = true;
+    if (op.modo === 'soprano') {
+      ej.acordes = acordesElegidos();
+      if (!$('#formula-tst').checked) ej.formulaTST = false;
+    }
     if (op.funciones) {
       ej.funciones = op.funciones;
       if (extra.funcionesNotas !== undefined) { if (extra.funcionesNotas) ej.funcionesNotas = extra.funcionesNotas; }
@@ -496,6 +535,8 @@
     $('#bajo-audicion').value = ej.mostrarBajo === true ? 'bajo' : '';
     $('#funciones').value = Ejercicios.funciones(ej) || '';
     estado.funciones = Array.isArray(ej.funcionesNotas) ? ej.funcionesNotas.slice() : null;
+    if (Array.isArray(ej.acordes)) marcarAcordes(ej.acordes);
+    $('#formula-tst').checked = ej.formulaTST !== false;
     ajustarCampoAudicion();
     $('#preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
     estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
@@ -520,7 +561,8 @@
         pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
         tipo: modoElegido(), preferir: $('#preferir').value, respuestas: estado.respuestas,
         modulaciones: estado.modulaciones, avisoMod: $('#aviso-mod').value, bajoAudicion: $('#bajo-audicion').value,
-        funciones: $('#funciones').value, funcionesNotas: estado.funciones
+        funciones: $('#funciones').value, funcionesNotas: estado.funciones,
+        acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
     } catch (e) { /* sin almacenamiento: no pasa nada */ }
   }
@@ -540,6 +582,8 @@
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
       $('#funciones').value = b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '';
       estado.funciones = Array.isArray(b.funcionesNotas) ? b.funcionesNotas : null;
+      if (Array.isArray(b.acordes)) marcarAcordes(b.acordes);
+      $('#formula-tst').checked = b.formulaTST !== false;
       ajustarCampoAudicion();
       estado.modulaciones = Array.isArray(b.modulaciones) ? b.modulaciones.filter(m => m && m.tonalidad && Number.isInteger(m.nota)) : [];
       $('#aviso-mod').value = b.avisoMod === 'existe' ? 'existe' : 'completo';
@@ -587,9 +631,38 @@
     });
   }
 
+  // Rejilla de acordes por función (armonización de soprano)
+  function pintarAcordes() {
+    const cont = $('#acordes-lista');
+    const filas = { T: 'Tónica', S: 'Subdominante', D: 'Dominante' };
+    Object.entries(filas).forEach(([fun, nombre]) => {
+      const fila = document.createElement('div');
+      fila.className = 'fila-funcion';
+      const et = document.createElement('span'); et.className = 'fun-etiqueta'; et.innerHTML = '<b>' + fun + '</b> · ' + nombre; fila.appendChild(et);
+      CATALOGO_ACORDES.filter(a => a.fun === fun).forEach(a => {
+        const p = Ejercicios.par(a.id);
+        const c = Teoria.CIFRADOS[p.cifra];
+        const lab = document.createElement('label');
+        lab.className = 'opcion-cifra opcion-acorde';
+        lab.title = a.rom + ' ' + c.nombre + ' — ' + c.descripcion + (a.nota ? ' (' + a.nota + ')' : '');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.value = a.id; cb.checked = a.defecto;
+        cb.addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true); });
+        lab.appendChild(cb);
+        const r = document.createElement('span'); r.className = 'acorde-rom'; r.textContent = a.rom; lab.appendChild(r);
+        lab.appendChild(Partitura.iconoCifra(p.cifra, 30));
+        if (a.nota) { const s = document.createElement('span'); s.className = 'acorde-nota'; s.textContent = a.nota; lab.appendChild(s); }
+        fila.appendChild(lab);
+      });
+      cont.appendChild(fila);
+    });
+    $('#formula-tst').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true); });
+  }
+
   function arranque() {
     TONICAS.forEach(([v, n]) => { const o = document.createElement('option'); o.value = v; o.textContent = n; $('#tonica').appendChild(o); });
     pintarRepertorio();
+    pintarAcordes();
 
     // Ejemplo por defecto si no hay borrador
     if (!cargarBorrador()) {

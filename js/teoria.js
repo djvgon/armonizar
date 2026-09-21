@@ -409,15 +409,19 @@ const Teoria = (() => {
      4/3, +6 la quinta; +4 la séptima. Devuelve {letra, alt} sin octava, o null si la
      cifra no puede darse sobre esa fundamental en la tonalidad. En menor, el bajo
      sobre el 7.º grado lleva la sensible elevada salvo en el III. */
-  function bajoDe(romano, id, ton) {
+  function bajoDe(romano, id, ton, estricto = true) {
     const k = ROMANOS.indexOf(romano);
     const pasos = FUNDAMENTAL[id];
     if (k < 0 || pasos === undefined) return null;
-    // Convenciones del cifrado: las cifras de dominante (7/+, 6/5̸, +6, +4) son el V7
-    // (y +6 también el II como dominante secundaria del V, decisión 9); sobre el V la
-    // séptima se escribe siempre marcada, nunca 7, 6/5 o 4/3 (decisión 11).
-    if (DOMINANTES.includes(id) && !(romano === 'V' || (romano === 'II' && id === '+6'))) return null;
-    if (romano === 'V' && MARCADOS[id]) return null;
+    // Convenciones del cifrado (solo en modo estricto, el del análisis): las cifras de
+    // dominante (7/+, 6/5̸, +6, +4) son el V7 (y +6 también el II como dominante secundaria
+    // del V, decisión 9); sobre el V la séptima se escribe siempre marcada, nunca 7, 6/5 o
+    // 4/3 (decisión 11). En modo no estricto se devuelve el bajo que resulta de lo escrito,
+    // sea lo que sea, para mostrárselo al alumno tal cual.
+    if (estricto) {
+      if (DOMINANTES.includes(id) && !(romano === 'V' || (romano === 'II' && id === '+6'))) return null;
+      if (romano === 'V' && MARCADOS[id]) return null;
+    }
     const gradoBajo = ((k - pasos) % 7 + 7) % 7;               // 0..6
     const esc = escalaNatural(ton), escV = escalaVoces(ton);
     const e = gradoBajo === 6 && romano !== 'III' ? escV[6] : esc[gradoBajo];

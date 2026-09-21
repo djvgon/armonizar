@@ -257,8 +257,13 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       tipos** (decisión de Diego: así responde de la misma forma en los
       cuatro tipos) y el bajo que resulta aparece escrito en el pentagrama
       de fa (la cifra dice qué nota del acorde va en el bajo:
-      `Teoria.bajoDe`). La realización, con la melodía fija en la voz
-      superior, se ve al terminar. Véase la decisión 21.
+      `Teoria.bajoDe`). **El acorde completo se ve en cuanto se responde**
+      (21/9/2026), con la melodía fija en la voz superior, y es exactamente
+      lo que el alumno ha escrito: una combinación incoherente (I con 6/5̸) o
+      un acorde que no contiene la nota se dibujan tal cual, sin arreglos
+      (`bajoDe` en modo no estricto; `Realizacion.disposicionForzada` cuando
+      ninguna disposición correcta lleva la melodía arriba). Véase la
+      decisión 21.
     Nombres de los cuatro tipos (Diego, 20/9/2026): Análisis, Armonización
     de bajo, Audición y Armonización de soprano; las claves internas
     (`cifrar`, `armonizar`, `audicion`, `soprano`) no cambian, para que los
@@ -353,7 +358,19 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     trata como función D (adorno de la dominante). En una semicadencia, la
     penúltima lleva subdominante si puede. Otras exclusiones: VI solo en
     estado fundamental, VII solo como VII6, y ninguna primera inversión de
-    I, IV o V con la tercera doblada en las voces extremas. El profesor
+    I, IV o V con la tercera doblada en las voces extremas. **La
+    subdominante (II, IV o VI) no vuelve a la tónica**: va a la dominante
+    (regla de Diego, 20/9/2026). Única excepción: la bordadura **I – IV – I**
+    (fórmula T S T, un esquema en sí), que se admite salvo que el ejercicio
+    la prohíba (`formulaTST: false`), y la cadencia plagal final.
+    **Repertorio por funciones** (Diego, 20/9/2026): en la armonización de
+    soprano el configurador no ofrece cifras sueltas sino acordes agrupados
+    por función —T: I, I6, VI; S: IV, IV6, II, II6, II7, II6/5, II4/3, V/V
+    (+6 sobre el 6.º); D: V, V7, V6, V6/5̸, V4/3, V4/2, VII6, 6/4
+    cadencial—, más la casilla de la fórmula T S T; por defecto, el
+    repertorio de tercero (sin VI, sin V/V, sin 6/4). Solo los acordes
+    marcados entran en el análisis (`ej.acordes`), y la paleta de cifrados
+    del alumno se forma con sus cifras. El profesor
     revisa y fija el modelo como en los demás tipos; las respuestas se
     guardan como parejas `'V|65d'`. Al corregir, además de las parejas se
     comprueba el **enlace** entre dos respuestas admisibles seguidas
@@ -362,7 +379,11 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     séptimas diatónicas (7, 6/5, 4/3) solo se admiten sobre el II. El
     bajo deducido se escribe en la octava más cercana al anterior, dejando
     sitio a las voces intermedias, y la realización lleva la melodía fija
-    en la soprano (sin posición inicial). Decisión pendiente: las tablas
+    en la soprano (sin posición inicial). **La voz dada —bajo o melodía— no
+    se modifica bajo ningún concepto** (Diego, 21/9/2026): si un acorde no
+    admite ninguna disposición correcta con la melodía arriba, se fuerza
+    (melodía intacta, dos notas del acorde escrito debajo). Decisión
+    pendiente: las tablas
     de la «RO para la soprano» de Diego, si las aporta, pasarían a ser las
     preferencias del modelo.
 22. **Normas de enlace en la conducción automática** (pendiente, pedido el
@@ -415,6 +436,8 @@ Equivalencias de escritura (para el futuro constructor de cifras):
   grados: ['I', 'V', 'VII'],                       // opcional: lista fija de grados en juego
   modo: 'armonizar',                               // opcional: 'armonizar' | 'cifrar' (Análisis) | 'audicion' | 'soprano' (melodía dada)
   mostrarBajo: true,                               // opcional, solo en 'audicion': se ve el bajo mientras se escucha (por defecto, nada)
+  acordes: ['I|53', 'I|6', 'IV|53', 'II|6', 'V|53', 'V|7+', 'V|65d'],   // solo en 'soprano': acordes disponibles (fundamental|cifra), por función
+  formulaTST: false,                               // solo en 'soprano', opcional: false prohíbe la bordadura I – IV – I (por defecto se admite)
   funciones: 'dadas',                              // opcional: 'dadas' | 'pedir' (fila «Función» T · S · D)
   funcionesNotas: ['T', 'D', 'T', 'T', 'D', 'T'],  // opcional, con funciones: la función de cada nota (si falta, la del acorde modelo)
   modulaciones: [{ nota: 2, tonalidad: { tonica: 'G', modo: 'mayor' } }],   // opcional: desde la nota (pivote) rige la tonalidad nueva
@@ -525,7 +548,9 @@ Cinco pasos en una página:
    corregir solo los errores; ayuda con los grados (ninguna / lista /
    paleta limitada); en Audición, qué ve el alumno mientras escucha (nada,
    por defecto, o solo el bajo); funciones tonales (sin fila, dadas o
-   pedidas: decisión 20);
+   pedidas: decisión 20); en la armonización de soprano, en lugar de las
+   cifras sueltas, los acordes disponibles por función tonal y la fórmula
+   T S T (decisión 21);
    modelo sobre el grado 6 descendente (tercero: II4/3; cuarto: `+6`, que se
    guarda como `preferir: ['+6']`).
 4. **Revisión.** «Analizar el bajo» ejecuta el motor y vuelca una tabla:

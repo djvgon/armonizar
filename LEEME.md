@@ -86,7 +86,8 @@ deriva de cada cifra (`pruebas.html` lo muestra junto a cada respuesta). Para
 no pedir el grado en un ejercicio, añádele `pedirRomano: false`. El tipo de
 ejercicio se guarda como `modo: 'cifrar'` (Análisis), `modo: 'audicion'`
 (con `mostrarBajo: true` si en Audición ha de verse el bajo) o `modo: 'soprano'`
-(melodía dada; entonces las respuestas son parejas `'V|65d'`); sin `modo`, es
+(melodía dada; entonces las respuestas son parejas `'V|65d'`, `acordes` lista los
+acordes disponibles por función y `formulaTST: false` prohíbe I – IV – I); sin `modo`, es
 Armonización. La fila de funciones se guarda como `funciones: 'dadas'` o
 `'pedir'` y `funcionesNotas: ['T', 'D', …]`. Una modulación se guarda como
 `modulaciones: [{nota: 2, tonalidad: {tonica: 'G', modo: 'mayor'}}]` (índice de la

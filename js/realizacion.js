@@ -269,12 +269,35 @@ const Realizacion = (() => {
     return coste;
   }
 
-  // Mejor disposición de un acorde suelto con la nota dada en la soprano (o la de Furno si no cabe)
+  /* Disposición con la melodía obligada en la soprano cuando ninguna disposición correcta la
+     tiene arriba (el acorde no contiene la nota, o no cabe): la melodía se respeta siempre y
+     debajo van dos notas del acorde escrito (las que no son la melodía), en posición cerrada
+     bajo ella. Así el alumno ve exactamente lo que ha escrito, sin arreglos. */
+  function disposicionForzada(d, soprano) {
+    const s = Teoria.nota(soprano);
+    const sm = midi(s);
+    let tonos = d.superiores.filter(t => clase(t) !== clase(s));
+    if (tonos.length < 2) tonos = tonos.concat(d.tonos.filter(t => clase(t) !== clase(s) && !tonos.some(x => clase(x) === clase(t))));
+    if (tonos.length < 2) tonos = tonos.concat([d.fund, d.bajo].filter(t => !tonos.some(x => clase(x) === clase(t))));
+    tonos = tonos.slice(0, 2);
+    // La más alta por debajo de 'techo'
+    const bajoDe = (t, techo) => { let n = { letra: t.letra, alt: t.alt, octava: 6 }; while (midi(n) >= techo) n = octavaArriba(n, -1); return n; };
+    let a = bajoDe(tonos[1] || tonos[0], sm);
+    let t = bajoDe(tonos[0], midi(a));
+    if (midi(t) <= midi(d.bajo)) {                 // el tenor no baja del bajo: sube una octava (y, si pasa al contralto, se cambian)
+      t = octavaArriba(t);
+      if (midi(t) > midi(a)) { const x = t; t = a; a = x; }
+      if (midi(a) >= sm) a = octavaArriba(a, -1);
+    }
+    return { voces: [t, a, s], incompleta: false, doblaBajo: false, unisono: midi(t) === midi(a), forzada: true };
+  }
+
+  // Mejor disposición de un acorde suelto con la nota dada en la soprano (si no cabe, forzada)
   function acordeConSoprano(id, bajo, ton, soprano) {
     const d = describir(id, bajo, ton);
     const sm = midi(Teoria.nota(soprano));
     const cands = candidatas(d, sm);
-    if (!cands.length) return posicion(trio(id, bajo, ton), 0);
+    if (!cands.length) return disposicionForzada(d, soprano).voces;
     let mejor = null;
     cands.forEach(c => { const k = costeLocal(c, d, false, ton); if (!mejor || k < mejor.k) mejor = { k, c }; });
     return mejor.c.voces;
@@ -312,7 +335,7 @@ const Realizacion = (() => {
         let capa;
         if (fija(i) !== null) {
           const cands0 = candidatas(tramo[0], fija(i));
-          capa = (cands0.length ? cands0 : candidatas(tramo[0])).map(c => ({ c, coste: costeLocal(c, tramo[0], i === n - 1, tons[i]), ant: null }));
+          capa = (cands0.length ? cands0 : [disposicionForzada(tramo[0], opciones.sopranos[i])]).map(c => ({ c, coste: costeLocal(c, tramo[0], i === n - 1, tons[i]), ant: null }));
         } else {
           const primera = posicion(trio(cifras[i], notas[i], tons[i]), rot);
           capa = [{ c: { voces: primera, incompleta: false, doblaBajo: true, unisono: false }, coste: 0, ant: null }];
@@ -321,7 +344,7 @@ const Realizacion = (() => {
         for (let k = 1; k < tramo.length; k++) {
           const dc = tramo[k], dp = tramo[k - 1];
           let cands = candidatas(dc, fija(i + k));
-          if (!cands.length) cands = candidatas(dc);
+          if (!cands.length) cands = fija(i + k) !== null ? [disposicionForzada(dc, opciones.sopranos[i + k])] : candidatas(dc);   // la melodía nunca se cambia
           const esFinal = i + k === n - 1;
           const nueva = cands.map(c => {
             const local = costeLocal(c, dc, esFinal, tons[i + k]);
@@ -368,5 +391,5 @@ const Realizacion = (() => {
     return [tonica, sub, dom, tonica].map((b, i) => ({ bajo: b, voces: r.acordes[i] || [], duracion: i === 3 ? 4 : 2 }));
   }
 
-  return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, paralelasEntre, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
+  return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, disposicionForzada, paralelasEntre, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
 })();

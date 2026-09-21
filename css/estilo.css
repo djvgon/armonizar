@@ -313,6 +313,13 @@ textarea#direccion, textarea#direcciones-todos { font-family: Menlo, Consolas, m
 .opcion-cifra:has(input:checked) { background: var(--papel); border-color: var(--acento); color: var(--tinta); }
 .opcion-cifra input { width: 16px; height: 16px; }
 
+.acordes-funciones { margin-top: 8px; }
+.fila-funcion { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.fila-funcion .fun-etiqueta { min-width: 130px; font-size: .9rem; color: var(--tinta-suave); }
+.fila-funcion .fun-etiqueta b { color: var(--tinta); font-family: Georgia, "Times New Roman", serif; }
+.opcion-acorde .acorde-rom { font-family: Georgia, "Times New Roman", serif; font-weight: bold; font-size: .95rem; }
+.opcion-acorde .acorde-nota { font-size: .75rem; color: var(--tinta-suave); }
+.formula-tst { margin-top: 6px; }
 .tabla-caja { overflow-x: auto; margin-top: 10px; }
 .tabla-revision { border-collapse: collapse; width: 100%; font-size: .9rem; }
 .tabla-revision th, .tabla-revision td { border-bottom: 1px solid var(--linea); padding: 6px 8px; text-align: left; vertical-align: middle; }

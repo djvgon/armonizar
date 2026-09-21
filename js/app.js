@@ -148,9 +148,9 @@
         + 'o el ' + b('▶') + ' de cada acorde para oírlo uno a uno. Para cada acorde indica ' + que + '. '
         + b('▶ Mi cifrado') + ' hace sonar lo que llevas cifrado, para compararlo. Al terminar verás ' + (conBajo ? 'la realización.' : 'el bajo y la realización.');
     } else if (estado.modoEj === 'soprano') {
-      html = '<b>Armonización de soprano.</b> Ves la melodía: para cada nota indica ' + que + '; el bajo que corresponde aparece escrito en el pentagrama de fa. Tonalidad: ' + ton + '. '
+      html = '<b>Armonización de soprano.</b> Ves la melodía: para cada nota indica ' + que + '; el acorde que has escrito aparece completo, con el bajo en el pentagrama de fa y la melodía en la voz superior. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la melodía (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
-        + b('▶ Mi cifrado') + ', tu armonización. Al terminar verás la realización a cuatro voces, con la melodía en la voz superior.';
+        + b('▶ Mi cifrado') + ', tu armonización.';
     } else {
       html = '<b>Armonización de bajo.</b> Ves solo el bajo: para cada nota indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar el bajo (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '

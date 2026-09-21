@@ -443,7 +443,7 @@ const Ejercicios = (() => {
     return romanos.map((r, i) => {
       const id = cifras[i];
       if (!r || !id) return null;
-      const b = Teoria.bajoDe(r, id, tons[i]);
+      const b = Teoria.bajoDe(r, id, tons[i], false);          // lo que el alumno ha escrito, sin arreglarlo
       if (!b) return null;
       // La octava más cercana al bajo anterior, con una ligera preferencia por el centro del
       // registro (do3) y dejando sitio a las dos voces intermedias bajo la melodía (al menos una 5ª)
@@ -464,7 +464,8 @@ const Ejercicios = (() => {
   //   (o solo el bajo, si el profesor marca mostrarBajo: true).
   // Cuando el ejercicio se cierra (solución a la vista) se muestran bajo y realización en los tres.
   // (El campo ej.realizacion de versiones anteriores ya no se usa.)
-  function realizacion(ej) { return modo(ej) === 'cifrar' ? 'siempre' : 'alCerrar'; }
+  // En la armonización de soprano el acorde completo se ve en cuanto se responde (Diego, 21/9/2026).
+  function realizacion(ej) { return modo(ej) === 'cifrar' || modo(ej) === 'soprano' ? 'siempre' : 'alCerrar'; }
   function verBajo(ej) { return modo(ej) !== 'audicion' || ej.mostrarBajo === true; }
   // La realización en la melodía de soprano se ve al cerrar (como en Armonización)
 
@@ -565,6 +566,10 @@ const Ejercicios = (() => {
     if (!Array.isArray(ej.respuestas)) errores.push('Faltan las respuestas.');
     else if (ej.compases && numNotas(ej) !== ej.respuestas.length) errores.push('El número de respuestas no coincide con el de notas.');
     if (ej.repertorio) ej.repertorio.forEach(id => { if (!Teoria.CIFRADOS[id]) errores.push('Cifra desconocida en el repertorio: ' + id); });
+    if (ej.acordes !== undefined) {
+      if (!Array.isArray(ej.acordes)) errores.push('La lista de acordes no es una lista.');
+      else ej.acordes.forEach(x => { const p = par(x); if (!p.romano || !Teoria.ROMANOS.includes(p.romano) || !Teoria.CIFRADOS[p.cifra]) errores.push('Acorde desconocido: ' + x); });
+    }
     if (Array.isArray(ej.respuestas) && esSoprano(ej)) ej.respuestas.forEach((a, i) => {
       if (!Array.isArray(a)) errores.push('Respuestas mal formadas en la nota ' + (i + 1) + '.');
       else a.forEach(x => { const p = par(x); if (!p.romano || !Teoria.ROMANOS.includes(p.romano) || !Teoria.CIFRADOS[p.cifra]) errores.push('Respuesta desconocida en la nota ' + (i + 1) + ': ' + x); });

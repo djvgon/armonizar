@@ -273,18 +273,23 @@ const Reglas = (() => {
 
   function claseDe(n) { return Teoria.clase(Teoria.nota(n)); }
 
-  // Candidatos de la nota i (melodía s, tonalidad ton) dentro del repertorio.
-  function candidatosSoprano(s, ton, repertorio, esUltima) {
+  // Candidatos de la nota i (melodía s, tonalidad ton) dentro del repertorio de cifras o,
+  // si el ejercicio trae una lista de acordes (ej.acordes = ['I|53', 'IV|6', …]), solo entre esos.
+  function candidatosSoprano(s, ton, repertorio, esUltima, acordes) {
     const out = [];
     const cs = claseDe(s);
     const sensibleTon = (Teoria.clase(Teoria.nota(ton.tonica + '4')) + 11) % 12;
+    const lista = Array.isArray(acordes) && acordes.length ? acordes.map(x => { const k = String(x).indexOf('|'); return { romano: x.slice(0, k), id: x.slice(k + 1) }; }) : null;
     Teoria.ROMANOS.forEach(romano => {
       repertorio.forEach(id => {
-        if (romano === 'III') return;                                   // fuera de la sintaxis diatónica del cuadro (T = I, VI; S = II, IV, VI; D = V, VII)
-        if ((id === '65' || id === '43' || id === '7') && romano !== 'II') return;   // séptimas diatónicas: solo el II (II7, II6/5, II4/3)
-        if (id === '9' && romano !== 'V') return;
-        if (romano === 'VI' && id !== '53') return;                     // el VI solo en estado fundamental (sobre el 1.º grado del bajo siempre va I)
-        if (romano === 'VII' && id !== '6') return;                     // el VII solo en primera inversión (VII6), como en la RO
+        if (lista && !lista.some(a => a.romano === romano && a.id === id)) return;
+        if (!lista) {
+          if (romano === 'III') return;                                 // fuera de la sintaxis diatónica del cuadro (T = I, VI; S = II, IV, VI; D = V, VII)
+          if ((id === '65' || id === '43' || id === '7') && romano !== 'II') return;   // séptimas diatónicas: solo el II (II7, II6/5, II4/3)
+          if (id === '9' && romano !== 'V') return;
+          if (romano === 'VI' && id !== '53') return;                   // el VI solo en estado fundamental (sobre el 1.º grado del bajo siempre va I)
+          if (romano === 'VII' && id !== '6') return;                   // el VII solo en primera inversión (VII6), como en la RO
+        }
         const b = Teoria.bajoDe(romano, id, ton);
         if (!b) return;
         const bajo = { letra: b.letra, alt: b.alt, octava: 3 };
@@ -324,12 +329,20 @@ const Reglas = (() => {
     return out;
   }
 
-  // ¿Puede seguir el candidato q (nota i) al candidato p (nota i-1)? sp, sq: notas de la melodía.
-  function enlaceValido(p, q, sp, sq, fp, fq) {
+  // ¿Puede seguir el candidato q (nota i) al candidato p (nota i-1)? sp, sq: notas de la melodía;
+  // fp, fq: funciones fijadas; reglas: {tst: se admite la fórmula T S T (I – IV – I), esFinal: q es el último acorde}.
+  function enlaceValido(p, q, sp, sq, fp, fq, reglas = {}) {
     const mismoAcorde = p.claseFund === q.claseFund && p.cifra !== '64' && q.cifra !== '64';
     // Funciones: no se retrocede D → S
     const fsP = fp ? [fp] : p.funciones, fsQ = fq ? [fq] : q.funciones;
     if (!mismoAcorde && fsP.every(f => f === 'D') && fsQ.every(f => f === 'S')) return false;
+    // Subdominante → tónica: la subdominante (II, IV o VI) no vuelve a la tónica, va a la
+    // dominante (regla de Diego). Única excepción: el IV como fórmula T S T (bordadura
+    // I – IV – I), si está permitida, o como cadencia plagal final.
+    if (!mismoAcorde && (fsP.every(f => f === 'S') || p.romano === 'VI') && fsQ.every(f => f === 'T') && q.romano !== 'VI') {
+      if (p.romano !== 'IV') return false;
+      if (!reglas.tst && !reglas.esFinal) return false;
+    }
     // Sensible en el bajo: sube a la tónica (semitono) o sigue el mismo acorde
     if (p.sensibleBajo && !mismoAcorde && q.claseBajo !== (p.claseBajo + 1) % 12) return false;
     // Séptima en el bajo (+4): baja de grado
@@ -375,9 +388,11 @@ const Reglas = (() => {
     const n = notas.length;
     const tons = Teoria.tonalidadesPorNota(ej);
     const forzadas = Array.isArray(opciones.funciones) ? opciones.funciones : [];
+    const tst = ej.formulaTST !== false;
+    const reglasEn = i => ({ tst, esFinal: i === n - 1 });
     // Candidatos por nota: todos los que contienen la nota (se devuelven para la revisión) y,
     // para las sucesiones, solo los de la función fijada, si la hay
-    const candsTodos = notas.map((s, i) => candidatosSoprano(s, tons[i], repertorio, i === n - 1));
+    const candsTodos = notas.map((s, i) => candidatosSoprano(s, tons[i], repertorio, i === n - 1, ej.acordes));
     const cands = candsTodos.map((cs, i) => (forzadas[i] ? cs.filter(x => x.funciones.includes(forzadas[i])) : cs.slice()));
     /* Comienzo y cadencia final (reglas de Diego, 20/9/2026), salvo en las notas con la
        función fijada por el profesor:
@@ -432,7 +447,7 @@ const Reglas = (() => {
     for (let i = 1; i < n; i++) {
       capas[i].forEach(nd => {
         capas[i - 1].forEach((pv, k) => {
-          if (!pv.alcanzable || !enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i])) return;
+          if (!pv.alcanzable || !enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i], reglasEn(i))) return;
           let extra = nd.x.coste + costeEnlace(pv.x, nd.x, notas[i - 1], notas[i], i === n - 1);
           // Cadencia: mejor V en estado fundamental → I (perfecta); antes, mejor una subdominante (T S D T) o el 6/4 cadencial
           if (i === n - 1) extra += (pv.x.romano === 'V' && (pv.x.cifra === '53' || pv.x.cifra === '7+')) ? 0 : pv.x.funciones.every(f => f === 'D') ? 3 : plagal ? 0 : pv.x.funciones.includes('S') ? 4 : 6;
@@ -449,7 +464,7 @@ const Reglas = (() => {
     for (let i = n - 1; i > 0; i--) {
       capas[i].forEach((nd, k) => {
         if (!util[i][k]) return;
-        capas[i - 1].forEach((pv, j) => { if (pv.alcanzable && enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i])) util[i - 1][j] = true; });
+        capas[i - 1].forEach((pv, j) => { if (pv.alcanzable && enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i], reglasEn(i))) util[i - 1][j] = true; });
       });
     }
     // Camino modelo
@@ -483,7 +498,7 @@ const Reglas = (() => {
     if (!romano || !cifra) return null;
     const notas = notasDe(ej);
     const ton = Teoria.tonalidadesPorNota(ej)[i];
-    return candidatosSoprano(notas[i], ton, [cifra], false).find(x => x.romano === romano) || null;
+    return candidatosSoprano(notas[i], ton, [cifra], false, null).find(x => x.romano === romano) || null;
   }
 
   // Enlace entre las respuestas del alumno en las notas i-1 e i: {ok, motivo}
@@ -491,10 +506,14 @@ const Reglas = (() => {
     const p = candidatoDe(ej, i - 1, parAnt.romano, parAnt.cifra), q = candidatoDe(ej, i, parAct.romano, parAct.cifra);
     if (!p || !q) return { ok: true, motivo: '' };
     const notas = notasDe(ej);
-    if (enlaceValido(p, q, notas[i - 1], notas[i])) return { ok: true, motivo: '' };
+    const reglas = { tst: ej.formulaTST !== false, esFinal: i === notas.length - 1 };
+    if (enlaceValido(p, q, notas[i - 1], notas[i], null, null, reglas)) return { ok: true, motivo: '' };
     const mismoAcorde = p.claseFund === q.claseFund;
     let motivo = 'el enlace con el acorde anterior no es correcto';
-    if (p.sensibleBajo && !mismoAcorde && q.claseBajo !== (p.claseBajo + 1) % 12) motivo = 'la sensible en el bajo (' + Teoria.nombreEs(p.bajo) + ') ha de subir a la tónica';
+    const esS = x => x.funciones.every(f => f === 'S'), esT = x => x.funciones.every(f => f === 'T');
+    if (!mismoAcorde && (esS(p) || p.romano === 'VI') && esT(q) && q.romano !== 'VI' && p.romano !== 'IV') motivo = 'la subdominante (' + p.romano + ') no vuelve a la tónica: va a la dominante';
+    else if (!mismoAcorde && esS(p) && esT(q) && p.romano === 'IV') motivo = 'la fórmula I – IV – I no está admitida en este ejercicio: la subdominante va a la dominante';
+    else if (p.sensibleBajo && !mismoAcorde && q.claseBajo !== (p.claseBajo + 1) % 12) motivo = 'la sensible en el bajo (' + Teoria.nombreEs(p.bajo) + ') ha de subir a la tónica';
     else if (p.septimaBajo && !mismoAcorde) motivo = 'la séptima en el bajo (' + Teoria.nombreEs(p.bajo) + ') ha de bajar de grado';
     else if (p.cifra === '64') motivo = 'el 6/4 cadencial resuelve en V sobre el mismo bajo';
     else if (!mismoAcorde && p.funciones.every(f => f === 'D') && q.funciones.every(f => f === 'S')) motivo = 'no se vuelve de la dominante a la subdominante';
