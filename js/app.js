@@ -55,7 +55,10 @@
     sonando: null,            // nota cuyo acorde está sonando (para resaltar su botón ▶)
     alSonar: null,            // función que la partitura llama al pulsar el ▶ de una nota
     libre: false,             // práctica libre: la página se abrió sin ejercicio en la dirección (se ve el desplegable del corpus)
-    ficha: null               // ficha en curso: {filtro, lista, k, marcador} (varios ejercicios encadenados)
+    ficha: null,              // ficha en curso: {filtro, lista, k, marcador} (varios ejercicios encadenados)
+    avisosRespuesta: [],      // avisos de conducción de voces de lo que el alumno ha escrito (al corregir)
+    notasAviso: null,         // Set con las notas implicadas en esos avisos: quedan editables
+    verEnlaces: false         // una vez han salido avisos, la realización se queda a la vista para poder arreglarlos
   };
 
   /* ---------- Carga ---------- */
@@ -107,6 +110,9 @@
     estado.marcas = estado.avisoMod === 'completo' ? marcasModelo() : {};
     estado.tonalidadBloqueada = estado.avisoMod === 'completo';
     estado.mostrarSolucion = false;
+    estado.avisosRespuesta = [];
+    estado.notasAviso = null;
+    estado.verEnlaces = false;
     estado.reintentos = ej.reintentos !== false;
     estado.modoEj = Ejercicios.modo(ej);
     estado.realizacionCuando = Ejercicios.realizacion(ej);
@@ -389,7 +395,7 @@
 
   // ¿Puede verse ahora el pentagrama de sol? En Análisis, siempre; en Armonización y
   // Audición, cuando el ejercicio está cerrado (solución a la vista).
-  const puedeVerseRealizacion = () => estado.realizacionCuando === 'siempre' || estado.mostrarSolucion;
+  const puedeVerseRealizacion = () => estado.realizacionCuando === 'siempre' || estado.mostrarSolucion || estado.verEnlaces;
   function realizacionVisible() { return puedeVerseRealizacion() && estado.verRealizacion; }
   // ¿Se dibuja el pentagrama del bajo? En Audición, solo al cerrar el ejercicio.
   const bajoVisible = () => Ejercicios.verBajo(estado.ejercicio) || estado.mostrarSolucion;
@@ -434,6 +440,46 @@
     const bajos = estado.modoEj === 'soprano' ? estado.bajos : Reglas.notasDe(estado.ejercicio);
     try { estado.avisosVoces = Realizacion.auditar(estado.ejercicio, bajos, estado.realizacion); } catch (e) { estado.avisosVoces = []; }
   }
+
+  /* ¿Los avisos de conducción de voces cuentan en este tipo de ejercicio? Cuentan donde la
+     realización sale de lo que escribe el alumno y puede enseñársele para que la arregle:
+     Armonización de bajo y Armonización de soprano. En Análisis la realización que se ve es
+     la del modelo —no depende de su respuesta, así que no habría nada que corregir— y en
+     Audición no puede enseñarse sin descubrirle el ejercicio; ahí los avisos se siguen
+     viendo y explicando, pero no impiden terminar. */
+  const ENLACES_CUENTAN = ['armonizar', 'soprano'];
+  const enlacesCuentan = () => ENLACES_CUENTAN.includes(estado.modoEj);
+
+  // Audita la conducción de voces de unas cifras, esté o no dibujada la realización
+  function auditar(cifras, bajos) {
+    try {
+      const r = Realizacion.realizar(estado.ejercicio, cifras, opcionesRealizacion());
+      return Realizacion.auditar(estado.ejercicio, bajos, r.acordes) || [];
+    } catch (e) { return []; }
+  }
+  const firma = av => av.tipo + '@' + (av.notas || []).map(nv => nv.i).join(',');
+  /* Avisos que ha causado el alumno: los de su armonización que NO tiene también la
+     respuesta modelo. Si el choque ya está en el modelo no es cosa suya —puede que ese
+     bajo no admita nada mejor—, así que no se le pide que lo arregle. */
+  function avisosDeLaRespuesta() {
+    if (!enlacesCuentan()) return [];
+    const esSop = estado.modoEj === 'soprano';
+    const notas = Reglas.notasDe(estado.ejercicio);
+    const suyos = auditar(cifrasParaRealizar(), esSop ? estado.bajos : notas);
+    if (!suyos.length) return [];
+    const ids = cifrasModelo();
+    const cifras = esSop ? ids.map(id => (id ? Ejercicios.par(id).cifra : null)) : ids;
+    const bajos = esSop
+      ? Ejercicios.bajosDe(estado.ejercicio, ids.map(id => (id ? Ejercicios.par(id).romano : null)), cifras)
+      : notas;
+    const delModelo = new Set(auditar(cifras, bajos).map(firma));
+    return suyos.filter(av => !delModelo.has(firma(av)));
+  }
+  const notasDeAvisos = avisos => {
+    const s = new Set();
+    (avisos || []).forEach(av => (av.notas || []).forEach(nv => s.add(nv.i)));
+    return s;
+  };
 
   // «Escuchar propuesta» suena siempre: en Armonización propone solo el bajo.
   const propuestaAudible = () => true;
@@ -781,6 +827,16 @@
       if (estado.modoFun === 'pedir') okFuncion = !!fun && (Ejercicios.funcionesAdmisibles(ej, i).includes(fun) || (okRomano && okCifra && Teoria.funcionesDeAcorde(rom, cifra).includes(fun)));
       return { ok: okCifra && okRomano && okRomano2 && okFuncion, okCifra, okRomano, okRomano2, okFuncion, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion: Ejercicios.funcionModelo(ej, i), cifra, romano: rom, romano2: rom2, funcion: fun };
     });
+    /* Síncopa armónica: al pasar a una parte más fuerte la armonía ha de cambiar. Un acorde
+       que entra en parte débil y se prolonga sobre la fuerte es un error de enlace, y se
+       corrige como los demás. Solo donde el alumno construye la armonía. */
+    if (enlacesCuentan() && estado.modoEj !== 'soprano') estado.resultados.forEach((r, i) => {
+      if (i === 0 || !r.okCifra || !estado.resultados[i - 1].okCifra) return;
+      if (!Reglas.sincopaBajo(ej, i, estado.resultados[i - 1].cifra, r.cifra)) return;
+      r.okEnlace = false;
+      r.enlace = 'síncopa armónica: el acorde entra en parte débil y se prolonga sobre la fuerte; en el tiempo fuerte la armonía ha de cambiar';
+      r.ok = false;
+    });
     // Melodía de soprano: el enlace entre dos respuestas correctas también ha de serlo
     // (sensible o séptima en el bajo que no resuelven, octavas con la melodía, D → S)
     if (estado.modoEj === 'soprano') estado.resultados.forEach((r, i) => {
@@ -794,7 +850,13 @@
     const aciertos = estado.resultados.filter(r => r.ok).length;
     if (estado.intento === 1) estado.primerIntento = aciertos;
     estado.corregido = true;
-    const todoBien = aciertos === estado.resultados.length && marcasOk;
+    /* Conducción de voces: los avisos no restan aciertos, pero hay que limpiarlos. Mientras
+       queden, el ejercicio no se cierra y sus notas siguen editables; y la realización se
+       queda a la vista para que el alumno vea lo que ha de arreglar. */
+    estado.avisosRespuesta = avisosDeLaRespuesta();
+    estado.notasAviso = notasDeAvisos(estado.avisosRespuesta);
+    if (estado.notasAviso.size) estado.verEnlaces = true;
+    const todoBien = aciertos === estado.resultados.length && marcasOk && !estado.notasAviso.size;
     // Sin reintentos, o todo correcto: se enseña la solución y se cierra el ejercicio
     estado.mostrarSolucion = todoBien || !estado.reintentos;
     pintar();
@@ -805,10 +867,14 @@
   // Deja editables solo las casillas erróneas; las acertadas quedan fijas y en verde.
   function corregirErrores() {
     if (!estado.corregido || estado.mostrarSolucion) return;
+    estado.avisosRespuesta = [];
+    const conAviso = estado.notasAviso || new Set();
     estado.resultados.forEach((r, i) => {
-      // Con un enlace incorrecto, el acorde sigue editable aunque sus dos casillas estén entre las admisibles
-      if (r.okCifra && r.okEnlace) estado.bloqueadas[i].cifra = true;
-      if (!estado.pedirRomano || (r.okRomano && r.okEnlace)) estado.bloqueadas[i].romano = true;
+      // Con un enlace incorrecto —de sucesión o de conducción de voces— el acorde sigue
+      // editable aunque sus dos casillas estén entre las admisibles
+      const enlaceOk = r.okEnlace && !conAviso.has(i);
+      if (r.okCifra && enlaceOk) estado.bloqueadas[i].cifra = true;
+      if (!estado.pedirRomano || (r.okRomano && enlaceOk)) estado.bloqueadas[i].romano = true;
       if (!estado.pedirRomano || !esDoble(i) || r.okRomano2) estado.bloqueadas[i].romano2 = true;
       if (estado.modoFun !== 'pedir' || r.okFuncion) estado.bloqueadas[i].funcion = true;
     });
@@ -835,6 +901,9 @@
   function verSolucion() {
     if (!estado.corregido) return;
     estado.mostrarSolucion = true;
+    // Al cerrar el ejercicio ya no queda nada «por arreglar»: los avisos solo se muestran
+    estado.avisosRespuesta = [];
+    estado.notasAviso = null;
     pintar();
     pintarResultado();
   }
@@ -852,10 +921,13 @@
     let html = '<h2>' + aciertos + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
     const aciertosFun = res.filter(r => r.okFuncion).length;
     const enlacesMal = res.filter(r => !r.okEnlace).length;
-    const vocesMal = (estado.avisosVoces || []).length;
+    const porArreglar = (estado.avisosRespuesta || []).length;          // los que ha causado el alumno
+    const vocesMal = Math.max((estado.avisosVoces || []).length, porArreglar);   // los que se dibujan en rojo
+    const notasArreglar = [...(estado.notasAviso || new Set())].sort((a, b) => a - b).map(k => k + 1);
+    const hayQueArreglar = notasArreglar.length > 0;
     if (estado.pedirRomano) html += '<p class="desglose">' + (estado.modoFun === 'pedir' ? 'Funciones: ' + aciertosFun + ' de ' + n + ' · ' : '') + 'Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
       + (enlacesMal ? ' · Enlaces incorrectos: ' + enlacesMal : '')
-      + (vocesMal ? ' · Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso') + ' (notas en rojo)' : '')
+      + (vocesMal ? ' · Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso') + (porArreglar ? ' (' + porArreglar + ' por arreglar)' : '') + ' (notas en rojo)' : '')
       + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
     else if (estado.intento > 1 && estado.primerIntento !== null) html += '<p class="desglose">Al primer intento: ' + estado.primerIntento + ' de ' + n + '</p>';
     // Modulación
@@ -872,11 +944,21 @@
       if (rm.sobrantes.length) partes.push('Marca' + (rm.sobrantes.length > 1 ? 's' : '') + ' de tonalidad que sobra' + (rm.sobrantes.length > 1 ? 'n' : '') + ': nota' + (rm.sobrantes.length > 1 ? 's' : '') + ' ' + rm.sobrantes.map(k => k + 1).join(', ') + '.');
       html += '<p class="desglose modulacion">' + partes.join(' ') + '</p>';
     }
-    const todoBien = aciertos === n && (!rm || rm.ok);
+    const respuestasBien = aciertos === n && (!rm || rm.ok);
+    const todoBien = respuestasBien && !hayQueArreglar;
     if (todoBien) {
       html += '<p class="enhorabuena">Todas las respuestas son correctas' + (estado.intento > 1 ? ' (en ' + estado.intento + ' intentos)' : '') + '.</p>';
     } else if (!estado.mostrarSolucion) {
-      html += '<p>Las casillas en rojo tienen algún error. Puedes corregir solo esas, o ver la solución.</p>'
+      /* Un aviso de conducción de voces se corrige como cualquier otro error: el alumno
+         prueba otra de las cifras admisibles en las notas señaladas. */
+      const listaNotas = notasArreglar.length > 1
+        ? 'las notas ' + notasArreglar.slice(0, -1).join(', ') + ' y ' + notasArreglar[notasArreglar.length - 1]
+        : 'la nota ' + notasArreglar[0];
+      const queArreglar = (porArreglar > 1 ? 'hay ' + porArreglar + ' errores de conducción de voces' : 'hay un error de conducción de voces') + ' en ' + listaNotas;
+      html += '<p>' + (respuestasBien
+        ? 'Los grados y los cifrados están bien, pero en la armonización que producen ' + queArreglar + '. Pulsa esas notas en el pentagrama (están en <span class="ref-mal">rojo</span>) para ver por qué, y prueba otra de las cifras admisibles.'
+        : 'Las casillas en rojo tienen algún error' + (hayQueArreglar ? ', y en la armonización ' + queArreglar : '') + '. Puedes corregir solo esas, o ver la solución.')
+        + '</p>'
         + '<div class="botonera botonera-resultado"><button type="button" id="btn-errores" class="primario">Corregir los errores</button>'
         + '<button type="button" id="btn-solucion">Ver la solución</button></div>';
     } else {

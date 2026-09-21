@@ -189,6 +189,7 @@ const Banco = (() => {
     return {
       id: opciones.id || null,
       leccion: opciones.leccion || '',
+      leccionNombre: opciones.leccionNombre || '',
       fuente: opciones.fuente || '',
       titulo: opciones.titulo || '',
       tonalidad: { tonica: ton.tonica, modo: ton.modo },
@@ -269,7 +270,7 @@ const Banco = (() => {
   }
 
   // Paleta del alumno: las cifras que de verdad hacen falta en ese fragmento, en el orden de siempre
-  const ORDEN = ['53', '6', '64', '65', '43', '7', '9', '7+', '+6', '65d', '+4'];
+  const ORDEN = ['53', '6', '64', '65', '43', '42', '7', '9', '7+', '+6', '65d', '+4'];
   function repertorioDe(parte, modo) {
     const usadas = new Set();
     (parte.respuestas || []).forEach(adm => adm.forEach(id => {
@@ -311,7 +312,29 @@ const Banco = (() => {
     const m = /^\s*([AC]?\d\s*-\s*\d+)/i.exec(String(nombre || '').replace(/^([A-Z])(\d)/i, '$1$2'));
     return m ? m[1].replace(/\s+/g, '').toUpperCase() : '';
   }
+  /* …y su NOMBRE: «I, V y V7». Hace falta para saber qué acordes trae cada lección, que es
+     lo que de verdad dice el filtro de una ficha. Se quita el código, la extensión y la
+     coletilla «- Fragmentos …» del nombre del archivo. */
+  function nombreDeLeccion(nombre) {
+    let t = String(nombre || '').replace(/\.(mscz|mscx|musicxml|xml|json)$/i, '');
+    t = t.replace(/^\s*[AC]?\d\s*-\s*\d+\s*[.)\-–]?\s*/i, '');
+    t = t.split(/\s+[-–]\s+/)[0];
+    return t.trim();
+  }
+  // Etiqueta que se enseña: «A3-1 · I, V y V7»
+  const etiquetaLeccion = e => (e.leccion || '') + (e.leccionNombre ? ' · ' + e.leccionNombre : '');
+  // Nombre de cada lección del banco, por si alguna entrada vieja no lo trae
+  function nombresDeLecciones(entradas) {
+    const out = {};
+    (entradas || []).forEach(e => {
+      if (!e.leccion || out[e.leccion]) return;
+      const n = e.leccionNombre || nombreDeLeccion(e.fuente);
+      if (n) out[e.leccion] = n;
+    });
+    return out;
+  }
 
   return { VERSION, MODOS, modoDe, vozDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
-    ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, leccionDeNombre };
+    ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones,
+    leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones };
 })();

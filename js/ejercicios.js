@@ -67,7 +67,7 @@
 const Ejercicios = (() => {
 
   // Repertorio de la Regla de la octava (9 botones): tríadas, séptimas diatónicas y V7 marcado (7/+ e inversiones).
-  const REPERTORIO_RO = ['53', '6', '65', '43', '7', '7+', '+6', '65d', '+4'];
+  const REPERTORIO_RO = ['53', '6', '65', '43', '42', '7', '7+', '+6', '65d', '+4'];
 
   const CORPUS = [
   {

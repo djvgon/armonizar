@@ -20,7 +20,7 @@
 
   const $ = sel => document.querySelector(sel);
   const CLAVE_BORRADOR = 'armonizar.configurador.borrador';
-  const ORDEN_CIFRAS = ['53', '6', '64', '65', '43', '7', '9', '7+', '+6', '65d', '+4'];
+  const ORDEN_CIFRAS = ['53', '6', '64', '65', '43', '42', '7', '9', '7+', '+6', '65d', '+4'];
   // Acordes por función tonal para la armonización de soprano (cuadro verde de Diego).
   // Los marcados por defecto son el repertorio de tercero; VI, V/V y 6/4 cadencial se activan a mano.
   const CATALOGO_ACORDES = [
@@ -34,6 +34,7 @@
     { fun: 'S', id: 'II|7', rom: 'II', defecto: true },
     { fun: 'S', id: 'II|65', rom: 'II', defecto: true },
     { fun: 'S', id: 'II|43', rom: 'II', nota: 'sobre el 6.º grado', defecto: true },
+    { fun: 'S', id: 'II|42', rom: 'II', nota: 'séptima preparada en el bajo, que baja de grado', defecto: true },
     { fun: 'S', id: 'II|+6', rom: 'II', nota: 'V/V, dominante secundaria (cuarto)', defecto: false },
     { fun: 'D', id: 'V|53', rom: 'V', defecto: true },
     { fun: 'D', id: 'V|7+', rom: 'V', defecto: true },
@@ -817,7 +818,9 @@
     if (!estado.fragmentos || !estado.fragmentos.length) { caja.hidden = true; return; }
     caja.hidden = false;
     const lec = Banco.leccionDeNombre(estado.nombreArchivo || '');
-    if (lec && !$('#banco-leccion').value) $('#banco-leccion').value = lec;
+    const nom = Banco.nombreDeLeccion(estado.nombreArchivo || '');
+    if (lec) $('#banco-leccion').value = lec;
+    if (nom) $('#banco-leccion-nombre').value = nom;
     $('#banco-anadir-ayuda').textContent = 'Se analizan los ' + estado.fragmentos.length
       + ' fragmentos del archivo con las opciones actuales (repertorio, acordes y fórmula T S T).';
   }
@@ -853,8 +856,9 @@
   function anadirAlBanco() {
     if (!estado.fragmentos || !estado.fragmentos.length) { aviso('Importa antes un archivo.'); return; }
     const leccion = $('#banco-leccion').value.trim();
+    const leccionNombre = $('#banco-leccion-nombre').value.trim();
     const fuente = estado.nombreArchivo || '';
-    const op = { leccion, fuente, repertorio: repertorio(), acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked };
+    const op = { leccion, leccionNombre, fuente, repertorio: repertorio(), acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked };
     let nuevos = 0, repetidos = 0, fallidos = 0, conAviso = 0, fundidos = 0;
     estado.fragmentos.forEach((f, k) => {
       let e;
@@ -911,12 +915,15 @@
     $('#btn-banco-vaciar').disabled = !hay;
     if (!hay) { $('#banco-resumen').textContent = 'El banco está vacío.'; return; }
     const lecs = Banco.lecciones(banco);
+    const nombres = Banco.nombresDeLecciones(banco);
+    const etiqueta = l => l + (nombres[l] ? ' · ' + nombres[l] : '');
     $('#banco-resumen').textContent = banco.length + ' fragmentos en el banco'
-      + (lecs.length ? ' · lecciones: ' + lecs.join(', ') : '') + '.';
-    // Desplegable de lecciones (conservando la elegida)
+      + (lecs.length ? ' · ' + lecs.length + (lecs.length > 1 ? ' lecciones' : ' lección') : '') + '.';
+    /* Desplegable de lecciones: con el nombre, no solo el código, que es lo que dice qué
+       acordes entran en la lección (conservando la elegida). */
     const selLec = $('#ficha-leccion'), antes = selLec.value;
-    selLec.innerHTML = '<option value="">Todas</option>';
-    lecs.forEach(l => { const o = document.createElement('option'); o.value = l; o.textContent = l; selLec.appendChild(o); });
+    selLec.innerHTML = '<option value="">Todas las lecciones</option>';
+    lecs.forEach(l => { const o = document.createElement('option'); o.value = l; o.textContent = etiqueta(l); selLec.appendChild(o); });
     selLec.value = lecs.includes(antes) ? antes : '';
 
     const filtro = filtroFicha();
@@ -931,7 +938,7 @@
     lista.forEach(e => {
       const et = e.etiquetas || {};
       const tr = document.createElement('tr');
-      tr.innerHTML = '<td>' + (e.leccion || '—') + '</td>'
+      tr.innerHTML = '<td title="' + (nombres[e.leccion] || '').replace(/"/g, '') + '">' + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
         + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'
@@ -984,6 +991,24 @@
     $('#paso-bajo').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  /* Si el banco de este navegador está vacío y la página está publicada, se lee el
+     banco.json que hay junto a la aplicación: así el configurador publicado tiene los
+     ejercicios sin que haya que cargar el archivo a mano. Desde el disco no se puede
+     (el navegador no deja leer archivos vecinos), y entonces está el botón «Cargar». */
+  async function bancoPublicado() {
+    if (location.protocol === 'file:') return;
+    try {
+      const r = await fetch(location.href.split('#')[0].replace(/[^/]*$/, '') + 'banco.json', { cache: 'no-cache' });
+      if (!r.ok) return;
+      const lista = Banco.leerArchivo(await r.json());
+      if (!lista.length || banco.length) return;
+      banco = lista;
+      guardarBanco();
+      pintarBanco();
+      aviso('Banco cargado del archivo banco.json publicado: ' + banco.length + ' fragmentos.', 6000);
+    } catch (e) { /* no hay banco publicado todavía: no es un error */ }
+  }
+
   function generarFicha() {
     const filtro = filtroFicha();
     const lista = Banco.filtrar(banco, filtro);
@@ -993,6 +1018,8 @@
     $('#btn-ficha-copiar').disabled = false;
     const abrir = $('#btn-ficha-abrir');
     abrir.href = url; abrir.setAttribute('aria-disabled', 'false');
+    // Desde el disco el enlace no le sirve a nadie: las fichas necesitan la aplicación publicada
+    if (location.protocol === 'file:') aviso('Ojo: esta dirección es de tu disco. Las fichas hay que generarlas desde el configurador publicado en GitHub, porque necesitan leer banco.json del servidor.', 10000);
   }
 
   function descargarBanco() {
@@ -1028,6 +1055,7 @@
     sel.value = 'armonizar';
     leerBanco();
     pintarBanco();
+    if (!banco.length) bancoPublicado();
     $('#btn-banco-anadir').addEventListener('click', anadirAlBanco);
     $('#btn-banco-descargar').addEventListener('click', descargarBanco);
     $('#btn-banco-cargar').addEventListener('click', () => $('#banco-archivo').click());

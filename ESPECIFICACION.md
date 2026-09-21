@@ -26,6 +26,13 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
 - Se abre con doble clic en `index.html` (alumno) o `configurar.html`
   (profesor). Sin servidor, sin conexión, sin instalación (JavaScript plano,
   sin dependencias; la fuente musical va incrustada).
+- **La aplicación vive en la raíz de esa carpeta**: `index.html`,
+  `configurar.html`, `pruebas.html`, `banco.json` y las carpetas `css/`, `js/`,
+  `fuentes/`, `sonidos/` y `ejemplos/`. Cada entrega sustituye esos archivos en
+  su sitio; **nunca en una subcarpeta**. El 21-09-2026 se entregó por error a una
+  subcarpeta `armonizar/`, que quedó como una copia a medias —sin `css/`, sin
+  `fuentes/` ni `sonidos/`— mientras la aplicación buena se quedaba sin
+  actualizar: se corrigió y se borró la subcarpeta.
 - `LEEME.md` en la carpeta describe cada archivo. `ejemplos/` guarda los tres
   MusicXML válidos de Diego para probar la importación.
 - **Publicada (20/9/2026)** en GitHub Pages, repositorio público
@@ -502,6 +509,68 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       practicar, no para calificar. El enlace es corto (unos 200 caracteres) y
       **no caduca al ampliar el banco**.
 
+27. **Los avisos de conducción de voces se corrigen** (21/9/2026, pedido por
+    Diego: «son errores similares a los de sintaxis»). Antes se señalaban en
+    rojo y se explicaban, pero no había forma de arreglarlos: si los cifrados
+    estaban bien, el ejercicio se cerraba con el choque dentro. Ahora:
+    - **No restan aciertos** —el resultado sigue siendo función, grado y
+      cifrado—, pero **hay que limpiarlos**: mientras queden, el ejercicio no
+      se da por terminado y en vez de «Todas las respuestas son correctas»
+      aparece «Corregir los errores».
+    - Al pulsarlo, **las notas implicadas quedan editables** junto a las
+      equivocadas, para probar otra de las cifras admisibles. El marcador los
+      cuenta aparte: «Conducción de voces: 2 avisos (1 por arreglar)».
+    - **Solo cuenta lo que ha causado el alumno**: se audita su armonización y
+      la de la respuesta modelo, y se le pide arreglar únicamente los avisos
+      que no estén también en el modelo. Si ese bajo no admite nada mejor, no
+      se le exige lo imposible (en el corpus, 2 de las 105 realizaciones
+      modelo tienen una quinta directa).
+    - **En Armonización de bajo y en Armonización de soprano**, que es donde la
+      armonización sale de lo que escribe el alumno. En Análisis la realización
+      que se ve es la del modelo —no depende de su respuesta— y en Audición no
+      puede enseñarse sin descubrirle el ejercicio; ahí los avisos se siguen
+      viendo y explicando, pero no impiden terminar.
+    - En Armonización de bajo la realización no se ve hasta el final; en cuanto
+      sale un aviso **se queda a la vista** para que pueda ver lo que arregla,
+      y las notas rojas se actualizan solas mientras cambia las cifras.
+
+28. **Nada de síncopas armónicas** (21/9/2026, regla de Diego). Un acorde no
+    puede entrar en parte débil y prolongarse sobre la fuerte: **al pasar a una
+    parte más fuerte la armonía ha de cambiar**.
+    - **Fuerza métrica** (`Teoria.fuerzasMetricas`): 3 el primer tiempo del
+      compás; 2 la mitad del compás, solo en los compases binarios (el 3.º de
+      4/4, el 2.º de 2/4); 1 los demás tiempos; 0 a contratiempo. En los
+      compases ternarios no hay mitad, de modo que el 2.º y el 3.er tiempo
+      pesan igual: un acorde que entre en el 2.º de 3/4 y siga en el 3.º **no**
+      es síncopa (lo pidió Diego expresamente).
+    - **No cuenta el arpegio**: el mismo acorde con el bajo en otra nota
+      (V4/3 → V6/5 cruzando la barra) es la marcha normal de la regla de la
+      octava y está en el corpus. La síncopa es repetir el acorde **sobre la
+      misma nota del bajo**.
+    - **En el bajo dado**, cuando la nota se repite sobre el tiempo fuerte la
+      regla R3 ya no mantiene el acorde: si la nota siguiente baja de grado,
+      esa nota se vuelve **séptima preparada** y se cifra **4/2** (o +4 si el
+      intervalo ya es el de dominante); si no, se proponen los acordes del
+      repertorio con otra fundamental. Además `Reglas.proponer` repasa el
+      modelo entero y, donde queda una síncopa, adelanta otra cifra admisible
+      de esa nota o de la anterior.
+    - **En la melodía de soprano** la exigencia entra en `enlaceValido`, de
+      modo que el modelo que elige la programación dinámica nunca sincopa.
+    - **Para el alumno es un error de enlace**, como las octavas seguidas o
+      «la subdominante no vuelve a la tónica»: la casilla sale en rojo, se
+      explica («síncopa armónica: el acorde entra en parte débil y se prolonga
+      sobre la fuerte») y queda editable al pulsar «Corregir los errores». En
+      Armonización de bajo y en Armonización de soprano.
+    - Sobre el banco de Diego, las síncopas del modelo bajaron de 11 a 1 (la
+      que queda está en el fragmento de A3-1 al que aún le falta la barra doble
+      del compás 17), y **el corpus sigue reproduciéndose entero**: 273 de 273.
+29. **Cifrado 4/2** (21/9/2026). Séptima diatónica en tercera inversión (2ª, 4ª
+    y 6ª): la séptima en el bajo, preparada, que baja de grado. Completa la
+    serie 7 – 6/5 – 4/3 – 4/2 y es el cifrado del **II4/2** sobre la tónica que
+    resuelve la nota repetida. Entra en el repertorio por defecto y, en la
+    armonización de soprano, en el catálogo de acordes como subdominante. Con
+    el intervalo de dominante vale el marcado `+4` (`MARCADOS`).
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
@@ -512,6 +581,7 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
 | `+6` | +6 | V7 en segunda inversión (3ª, 4ª, 6ª sensible) | fundamental a la 4ª sobre el bajo; acorde de séptima de dominante |
 | `65` | 6/5 | séptima en primera inversión | 3ª, 5ª y 6ª diatónicas |
 | `43` | 4/3 | séptima en segunda inversión (II4/3 sobre el grado 6) | 3ª, 4ª y 6ª diatónicas |
+| `42` | 4/2 | séptima en tercera inversión (II4/2: la 7ª preparada en el bajo) | 2ª, 4ª y 6ª diatónicas |
 | `65d` | 6/5̸ | V7 en primera inversión (quinta falsa) | fundamental a la 3ª bajo el bajo; séptima de dominante |
 | `+4` | +4 | V7 en tercera inversión (2ª, 4ª aumentada, 6ª) | fundamental a la 2ª sobre el bajo; séptima de dominante |
 | `7` | 7 | séptima diatónica en estado fundamental (II7) | 3ª, 5ª y 7ª diatónicas |

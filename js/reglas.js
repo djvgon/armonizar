@@ -81,8 +81,27 @@ const Reglas = (() => {
     return R(['53', '7+'], 'Cadencia auténtica: V (o V7, cifrado 7/+) → I.', 'R2 cadencia');
   }
 
-  function r3_repeticion(c, previo) {
+  /* Misma nota que la anterior. Normalmente se mantiene el acorde; pero si además se pasa
+     a una parte MÁS FUERTE, mantenerlo sería una síncopa armónica, así que la armonía ha de
+     cambiar: lo natural es que la nota repetida se vuelva SÉPTIMA PREPARADA del acorde
+     siguiente —4/2 (II4/2 sobre la tónica) o +4 si el intervalo ya es el de dominante— y
+     baje de grado. Si la nota siguiente no baja de grado, se dejan los acordes del
+     repertorio que contienen esta nota con otra fundamental. */
+  function r3_repeticion(c, previo, ton, repertorio, cambia) {
     if (c.llegada !== 'unisono' || !previo) return null;
+    if (cambia) {
+      if (c.salida === '2desc') {
+        const ids = ['42', '+4'].filter(id => repertorio.includes(id))
+          .filter(id => { try { return !!Teoria.vocesSuperiores(id, c.nota, ton); } catch (e) { return false; } });
+        // Si el 4/2 y el +4 dan las mismas notas, vale el marcado (el intervalo es de dominante)
+        const iguales = ids.length === 2 && Teoria.claveAcorde('42', c.nota, ton) === Teoria.claveAcorde('+4', c.nota, ton);
+        const fin = iguales ? ['+4'] : ids;
+        if (fin.length) return R(fin, 'Nota repetida sobre el tiempo fuerte: la armonía ha de cambiar (si no, sería una síncopa armónica). La nota se vuelve séptima preparada y baja de grado.', 'R3 séptima preparada');
+      }
+      const otros = Object.keys(Teoria.CIFRADOS).filter(id => repertorio.includes(id) && id !== '64'
+        && !previo.admisibles.some(a => { try { return Teoria.claveAcorde(a, c.nota, ton) === Teoria.claveAcorde(id, c.nota, ton); } catch (e) { return true; } }));
+      if (otros.length) return R(otros, 'Nota repetida sobre el tiempo fuerte: la armonía ha de cambiar (si no, sería una síncopa armónica).', 'R3 cambio en el fuerte');
+    }
     const adm = [...previo.admisibles];
     if (c.grado === 5 && !adm.includes('7+')) adm.push('7+');
     return R(adm, 'Misma nota que la anterior: se mantiene el acorde' + (c.grado === 5 ? ' (o se añade la 7ª).' : '.'), 'R3 repetición');
@@ -170,11 +189,13 @@ const Reglas = (() => {
     const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
     const notas = notasDe(ej);
     const cortes = cortesDe(ej);
+    const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
     const salida = [];
     for (let i = 0; i < notas.length; i++) {
       const c = contexto(notas, i, ton, cortes);
       const previo = cortes[i] ? null : (salida[i - 1] || null);   // tras un silencio no se arrastra el acorde anterior
-      let r = r1_final(c) || r2_cadencia(c, notas, ton) || r3_repeticion(c, previo)
+      const cambia = Teoria.pideCambio(fuerzas, i) && !cortes[i];  // se pasa a una parte más fuerte
+      let r = r1_final(c) || r2_cadencia(c, notas, ton) || r3_repeticion(c, previo, ton, repertorio, cambia)
         || r4_arpegio(c, previo, notas, ton, repertorio) || r5_funcional(c)
         || r6_cuartoSalta(c) || r7_regla_octava(c);
       if (!r) r = R([], 'Sin regla aplicable.', '—');
@@ -197,7 +218,49 @@ const Reglas = (() => {
      que ambos motores admiten y que dan un acorde común; si no las hay, las cifras
      del catálogo (del repertorio) que producen un acorde común; y si tampoco, se
      avisa. La explicación del pivote lleva los dos grados (II = V). */
+  /* ---- Síncopa armónica en un bajo dado ----
+     Dos cifras seguidas que dan el MISMO acorde al pasar a una parte más fuerte. Se compara
+     el acorde entero (sus clases de altura), de modo que I y I6 cuentan como el mismo. */
+  function sincopaBajo(ej, i, cifraAnt, cifraAct) {
+    if (i < 1 || !cifraAnt || !cifraAct) return false;
+    if (cifraAnt === '64' || cifraAct === '64') return false;        // el 6/4 cadencial es otra armonía
+    const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
+    if (!Teoria.pideCambio(fuerzas, i) || cortesDe(ej)[i]) return false;
+    const notas = notasDe(ej), tons = Teoria.tonalidadesPorNota(ej);
+    try {
+      // Arpegio del mismo acorde (el bajo cambia de nota): no es síncopa, es la marcha de la RO
+      if (Teoria.clase(Teoria.nota(notas[i - 1])) !== Teoria.clase(Teoria.nota(notas[i]))) return false;
+      return Teoria.claveAcorde(cifraAnt, notas[i - 1], tons[i - 1]) === Teoria.claveAcorde(cifraAct, notas[i], tons[i]);
+    } catch (e) { return false; }
+  }
+
+  /* La respuesta MODELO no sincopa nunca: donde la haya se busca otra cifra admisible de
+     esa nota (o de la anterior) que cambie de armonía. Las cifras siguen siendo admisibles
+     —el fallo es de la pareja, no de la cifra—, solo cambia cuál es la modelo. */
+  function evitarSincopas(ej, salida) {
+    const modelo = i => (salida[i] && salida[i].admisibles && salida[i].admisibles[0]) || null;
+    const poner = (i, id) => {
+      const adm = salida[i].admisibles;
+      salida[i].admisibles = [id, ...adm.filter(x => x !== id)];
+      salida[i].modelo = id;
+    };
+    for (let i = 1; i < salida.length; i++) {
+      if (!sincopaBajo(ej, i, modelo(i - 1), modelo(i))) continue;
+      const otra = (salida[i].admisibles || []).find(id => !sincopaBajo(ej, i, modelo(i - 1), id));
+      if (otra) { poner(i, otra); continue; }
+      // Si esta nota no tiene alternativa, se prueba a cambiar la anterior
+      const antes = (salida[i - 1].admisibles || []).find(id =>
+        !sincopaBajo(ej, i, id, modelo(i)) && (i < 2 || !sincopaBajo(ej, i - 1, modelo(i - 2), id)));
+      if (antes) poner(i - 1, antes);
+    }
+    return salida;
+  }
+
   function proponer(ej) {
+    return evitarSincopas(ej, proponerBase(ej));
+  }
+
+  function proponerBase(ej) {
     const mods = (ej.modulaciones || []).filter(m => m && m.tonalidad && Number.isInteger(m.nota)).slice().sort((a, b) => a.nota - b.nota);
     if (!mods.length) return proponerEn(ej, ej.tonalidad);
     const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
@@ -338,6 +401,13 @@ const Reglas = (() => {
   // fp, fq: funciones fijadas; reglas: {tst: se admite la fórmula T S T (I – IV – I), esFinal: q es el último acorde}.
   function enlaceValido(p, q, sp, sq, fp, fq, reglas = {}) {
     const mismoAcorde = p.claseFund === q.claseFund && p.cifra !== '64' && q.cifra !== '64';
+    /* Síncopa armónica: al pasar a una parte más fuerte —el primer tiempo del compás, o el
+       3.º de 4/4— la armonía ha de cambiar. Un acorde que entra en parte débil y se
+       prolonga sobre la fuerte suena sincopado. (En los compases ternarios el 2.º y el
+       3.er tiempo pesan igual, así que del 2.º al 3.º no hay síncopa.) No cuenta el
+       ARPEGIO —el mismo acorde con el bajo en otra nota, como V4/3 → V6/5—, que es la
+       marcha normal de la regla de la octava. */
+    if (reglas.pideCambio && mismoAcorde && p.claseBajo === q.claseBajo) return false;
     // Funciones: no se retrocede D → S
     const fsP = fp ? [fp] : p.funciones, fsQ = fq ? [fq] : q.funciones;
     if (!mismoAcorde && fsP.every(f => f === 'D') && fsQ.every(f => f === 'S')) return false;
@@ -402,7 +472,8 @@ const Reglas = (() => {
     const fraseDe = new Array(n);
     frases.forEach((f, q) => { for (let i = f.ini; i <= f.fin; i++) fraseDe[i] = q; });
     const finDeFrase = i => frases[fraseDe[i]].fin === i;
-    const reglasEn = i => ({ tst, esFinal: finDeFrase(i) });
+    const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
+    const reglasEn = i => ({ tst, esFinal: finDeFrase(i), pideCambio: Teoria.pideCambio(fuerzas, i) && !cortes[i] });
     const esFun = (x, f) => x.funciones.includes(f);
     const soloFun = (cs, f) => { const s = cs.filter(x => esFun(x, f)); return s.length ? s : null; };
 
@@ -547,10 +618,15 @@ const Reglas = (() => {
     const p = candidatoDe(ej, i - 1, parAnt.romano, parAnt.cifra), q = candidatoDe(ej, i, parAct.romano, parAct.cifra);
     if (!p || !q) return { ok: true, motivo: '' };
     const notas = notasDe(ej);
-    const reglas = { tst: ej.formulaTST !== false, esFinal: i === notas.length - 1 };
+    const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
+    const reglas = { tst: ej.formulaTST !== false, esFinal: i === notas.length - 1,
+      pideCambio: Teoria.pideCambio(fuerzas, i) && !cortesDe(ej)[i] };
     if (enlaceValido(p, q, notas[i - 1], notas[i], null, null, reglas)) return { ok: true, motivo: '' };
     const mismoAcorde = p.claseFund === q.claseFund;
     let motivo = 'el enlace con el acorde anterior no es correcto';
+    if (mismoAcorde && reglas.pideCambio && p.claseBajo === q.claseBajo && p.cifra !== '64' && q.cifra !== '64') {
+      return { ok: false, motivo: 'síncopa armónica: el acorde entra en parte débil y se prolonga sobre la fuerte; en el tiempo fuerte la armonía ha de cambiar' };
+    }
     const esS = x => x.funciones.every(f => f === 'S'), esT = x => x.funciones.every(f => f === 'T');
     if (!mismoAcorde && (esS(p) || p.romano === 'VI') && esT(q) && q.romano !== 'VI' && p.romano !== 'IV') motivo = 'la subdominante (' + p.romano + ') no vuelve a la tónica: va a la dominante';
     else if (!mismoAcorde && esS(p) && esT(q) && p.romano === 'IV') motivo = 'la fórmula I – IV – I no está admitida en este ejercicio: la subdominante va a la dominante';
@@ -568,5 +644,5 @@ const Reglas = (() => {
     return { ok: false, motivo };
   }
 
-  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, contexto, notasDe, cortesDe, movimiento };
+  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, sincopaBajo, contexto, notasDe, cortesDe, movimiento };
 })();

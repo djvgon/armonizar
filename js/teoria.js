@@ -92,6 +92,33 @@ const Teoria = (() => {
   function textoDesdeBajo(compases) {
     return compases.map(c => c.map(([n, d]) => (n === null ? '_' : nombreEs(nota(n), true)) + sufijoDuracion(d)).join(' ')).join(' | ');
   }
+  /* ---- Fuerza métrica de cada nota ----
+     3 = primer tiempo del compás; 2 = mitad del compás (solo en los compases binarios:
+     el 3.º de 4/4, el 2.º de 2/4); 1 = otro tiempo; 0 = a contratiempo. En los compases
+     ternarios (3/4, 3/2) no hay mitad, así que el 2.º y el 3.er tiempo pesan igual: un
+     acorde que entre en el 2.º y se prolongue al 3.º no es una síncopa armónica.
+     La síncopa armónica es pasar a una parte MÁS FUERTE sin cambiar de acorde. */
+  function fuerzasMetricas(compases, compas) {
+    const c = compas && compas.length === 2 ? compas : [4, 4];
+    const porCompas = (c[0] * 4) / c[1];          // duración del compás, en negras
+    const unidad = 4 / c[1];                      // duración de un tiempo, en negras
+    const mitad = c[0] % 2 === 0 ? porCompas / 2 : null;
+    const out = [];
+    let t = 0;
+    (compases || []).forEach(cp => cp.forEach(([n, d]) => {
+      const p = ((t % porCompas) + porCompas) % porCompas;
+      let f = 0;
+      if (Math.abs(p) < 0.01) f = 3;
+      else if (mitad !== null && Math.abs(p - mitad) < 0.01) f = 2;
+      else if (Math.abs(p % unidad) < 0.01 || Math.abs((p % unidad) - unidad) < 0.01) f = 1;
+      if (n !== null) out.push(f);
+      t += d;
+    }));
+    return out;
+  }
+  // ¿La nota i está en parte más fuerte que la anterior? (entonces el acorde ha de cambiar)
+  const pideCambio = (fuerzas, i) => i > 0 && !!fuerzas && fuerzas[i] > fuerzas[i - 1];
+
   /* ---- Acontecimientos: notas y silencios ----
      Un acontecimiento del bajo o de la melodía es [nombre, duración]; con nombre null es un
      silencio. Las respuestas del alumno van por NOTA, así que cada acontecimiento lleva su
@@ -370,6 +397,12 @@ const Teoria = (() => {
       descripcion: 'Acorde de séptima en segunda inversión (3ª, 4ª y 6ª diatónicas; por ejemplo II4/3 sobre el grado 6).',
       voces: vocesDiatonicas([3, 4, 6])
     },
+    '42': {
+      etiqueta: '4/2', nombre: '4/2',
+      filas: [[{ num: '4' }], [{ num: '2' }]],
+      descripcion: 'Acorde de séptima en tercera inversión (2ª, 4ª y 6ª diatónicas): la séptima en el bajo, preparada, que baja de grado. Por ejemplo II4/2 sobre la tónica.',
+      voces: vocesDiatonicas([2, 4, 6])
+    },
     '65d': {
       etiqueta: '6/5̸', nombre: '6/5 tachado',
       filas: [[{ num: '6' }], [{ num: '5', tachado: true }]],
@@ -405,11 +438,11 @@ const Teoria = (() => {
   // Posición de la fundamental respecto al bajo, en letras (0 = el bajo es la fundamental,
   // 5 = una 6ª por encima = 3ª por debajo, etc.). Sirve para nombrar el acorde y para
   // reconocer inversiones distintas de un mismo acorde.
-  const FUNDAMENTAL = { '53': 0, '6': 5, '64': 3, '+6': 3, '65': 5, '43': 3, '65d': 5, '+4': 1, '7': 0, '7+': 0, '9': 0 };
+  const FUNDAMENTAL = { '53': 0, '6': 5, '64': 3, '+6': 3, '65': 5, '43': 3, '42': 1, '65d': 5, '+4': 1, '7': 0, '7+': 0, '9': 0 };
   const DOMINANTES = ['7+', '+6', '+4', '65d'];   // cifrados que denotan V7 (fundamental e inversiones)
   // Parejas (diatónico, marcado) que producen las mismas notas cuando el
   // intervalo diatónico ya es el de dominante: entonces vale el marcado.
-  const MARCADOS = { '65': '65d', '43': '+6', '7': '7+' };
+  const MARCADOS = { '65': '65d', '43': '+6', '7': '7+', '42': '+4' };
 
   function vocesSuperiores(id, bajo, ton) {
     const c = CIFRADOS[id];
@@ -615,7 +648,7 @@ const Teoria = (() => {
 
   return {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
-    escalaNatural, escalaVoces, armadura, grado, nombreTonalidad, nombreCorto, mismaTonalidad,
+    escalaNatural, escalaVoces, armadura, grado, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
     FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo
