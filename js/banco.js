@@ -80,8 +80,13 @@ const Banco = (() => {
 
   /* La voz escrita que no se usa solo REORDENA las admisibles: pone delante la que
      encaja con ella. No añade ni quita ninguna; las demás armonizaciones correctas
-     siguen siendo válidas. */
-  function preferir(respuestas, compases, comp, ton, mods, esSop) {
+     siguen siendo válidas.
+     Ordena cada lista de admisibles poniendo delante el acorde que contiene la nota que
+     suena a la vez en la OTRA voz, para que el modelo del bajo y el de la melodía hablen
+     del mismo acorde. No toca las notas que fijó la sintaxis de la cadencia (`fijados`):
+     ahí manda la regla de Diego —subdominante antes de la dominante, dominante antes de
+     la tónica— por encima de la coincidencia entre las dos voces. */
+  function preferir(respuestas, compases, comp, ton, mods, esSop, fijados) {
     if (!comp) return respuestas;
     const ej = { compases, tonalidad: ton, modulaciones: mods || [] };
     let tons;
@@ -90,6 +95,7 @@ const Banco = (() => {
     const clase = n => Teoria.clase(Teoria.nota(n));
     return respuestas.map((adm, i) => {
       if (!adm || adm.length < 2 || !comp[i] || !notas[i]) return adm;
+      if (fijados && fijados[i]) return adm;
       let bueno = null;
       try {
         bueno = adm.find(id => {
@@ -116,14 +122,35 @@ const Banco = (() => {
       repertorio: opciones.repertorio || Ejercicios.REPERTORIO_RO,
       modulaciones: (mods || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }))
     };
-    if (esSop && opciones.acordes && opciones.acordes.length) ej.acordes = opciones.acordes.slice();
+    // La lista de acordes de la lección vale para las dos maneras: en la melodía limita los
+    // candidatos y en el bajo dice si se admiten las dominantes secundarias (II+6).
+    if (opciones.acordes && opciones.acordes.length) ej.acordes = opciones.acordes.slice();
     if (esSop && opciones.formulaTST === false) ej.formulaTST = false;
     let prop;
     try { prop = esSop ? Reglas.proponerSoprano(ej) : Reglas.proponer(ej); } catch (e) { return null; }
     if (!prop || !prop.length) return null;
     const respuestas = prop.map(p => (p.admisibles || []).slice());
-    if (respuestas.some(r => !r.length)) return { respuestas, incompleto: true, ej };
-    return { respuestas, incompleto: false, ej };
+    const fijados = prop.map(p => !!(p && p.fijado));
+    if (respuestas.some(r => !r.length)) return { respuestas, fijados, incompleto: true, ej };
+    return { respuestas, fijados, incompleto: false, ej };
+  }
+
+  /* Un fragmento acaba en la tónica (cadencia) o en la dominante (semicadencia). Si el
+     último acorde no es ni lo uno ni lo otro, es que la tonalidad del final no es la que
+     dice el fragmento: falta un rótulo de vuelta a la tonalidad de partida, o sobra la
+     modulación. Se avisa para que el profesor lo arregle en la partitura. */
+  function finalExtrano(parte, ton, compas) {
+    try {
+      const notas = Teoria.notasDeCompases(parte.compases).map(n => Teoria.nota(n));
+      const i = parte.respuestas.length - 1;
+      const id = (parte.respuestas[i] || [])[0];
+      if (!id || !notas[i]) return null;
+      const tons = Teoria.tonalidadesPorNota({ tonalidad: ton, compas, compases: parte.compases, modulaciones: parte.modulaciones || [] });
+      const rom = Teoria.romano(id, notas[i], tons[i]);
+      if (rom === 'I' || rom === 'V') return null;
+      return 'el fragmento acaba en el ' + rom + ' de ' + Teoria.nombreCorto(tons[i])
+        + ', ni cadencia ni semicadencia: revisa la tonalidad del final (quizá falta el rótulo de vuelta a la tonalidad de partida)';
+    } catch (e) { return null; }
   }
 
   /* fragmento: lo que devuelve MusicXML.importar / MuseScore.importar.
@@ -145,9 +172,11 @@ const Banco = (() => {
         partes.bajo = {
           compases: f.compasesBajo,
           modulaciones: (f.modulacionesBajo || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } })),
-          respuestas: preferir(r.respuestas, f.compasesBajo, hayS ? companera(f.compasesBajo, f.compasesSoprano) : null, ton, f.modulacionesBajo, false)
+          respuestas: preferir(r.respuestas, f.compasesBajo, hayS ? companera(f.compasesBajo, f.compasesSoprano) : null, ton, f.modulacionesBajo, false, r.fijados)
         };
         if (r.incompleto) avisos.push('alguna nota del bajo se queda sin cifra posible');
+        const fin = finalExtrano(partes.bajo, ton, compas);
+        if (fin) avisos.push(fin);
       }
     }
     if (hayS) {
@@ -156,7 +185,7 @@ const Banco = (() => {
         partes.soprano = {
           compases: f.compasesSoprano,
           modulaciones: (f.modulacionesSoprano || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } })),
-          respuestas: preferir(r.respuestas, f.compasesSoprano, hayB ? companera(f.compasesSoprano, f.compasesBajo) : null, ton, f.modulacionesSoprano, true)
+          respuestas: preferir(r.respuestas, f.compasesSoprano, hayB ? companera(f.compasesSoprano, f.compasesBajo) : null, ton, f.modulacionesSoprano, true, r.fijados)
         };
         if (r.incompleto) avisos.push('alguna nota de la melodía se queda sin acorde posible');
       }
@@ -259,7 +288,8 @@ const Banco = (() => {
     const ej = {
       id: e.id || ('banco-' + (k || 0)),
       coleccion: f.titulo || (e.leccion ? 'Lección ' + e.leccion : ''),
-      titulo: e.titulo || etiquetaLeccion(e) || ('Ejercicio ' + ((k || 0) + 1)),
+      // El título no repite el código de la lección: la colección ya dice «Lección A3-8»
+      titulo: e.titulo || e.leccionNombre || etiquetaLeccion(e) || ('Ejercicio ' + ((k || 0) + 1)),
       leccion: etiquetaLeccion(e),
       tonalidad: e.tonalidad,
       compas: e.compas,
@@ -269,7 +299,9 @@ const Banco = (() => {
     };
     if (modo !== 'armonizar') ej.modo = modo;
     if (modo === 'audicion' && f.mostrarBajo) ej.mostrarBajo = true;
-    if (modo === 'soprano' && acordes.length) ej.acordes = acordes;
+    // La lista de acordes viaja en los dos casos: en la melodía limita los candidatos y en
+    // el bajo dice si la lección admite las dominantes secundarias (II+6).
+    if (acordes.length) ej.acordes = acordes;
     if (modo === 'soprano' && f.formulaTST === false) ej.formulaTST = false;
     if (f.pedirRomano === false) ej.pedirRomano = false;
     if (f.reintentos === false) ej.reintentos = false;

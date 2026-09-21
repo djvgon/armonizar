@@ -23,7 +23,8 @@
      <Rest>          <durationType> ('measure' = compás entero)
      <KeySig><concertKey>, <TimeSig><sigN><sigD>
      <BarLine><subtype>  'double' (doble fina) y 'end' (barra final)
-     <StaffText><text>   el rótulo de tonalidad del acorde pivote
+     <StaffText>, <SystemText>  el rótulo de tonalidad del acorde pivote
+     <location><fractions>    dónde va ese rótulo dentro del compás
      <Spanner type="Tie"> con <prev>: nota ligada a la anterior
 
    La altura se reconstruye con `pitch` (MIDI) y `tpc` (escritura): el tpc
@@ -170,16 +171,45 @@ const MuseScore = (() => {
         const voz = c.querySelector(':scope > voice') || c;
         let duracionStaff = 0;
         let ligar = false;
+
+        /* Primero, LOS TEXTOS con su sitio exacto dentro del compás. MuseScore los coloca
+           con <location><fractions>, que mueve el cursor hacia atrás o hacia adelante (en
+           partes de redonda): así un rótulo escrito sobre la tercera nota queda anotado en
+           el archivo después del silencio de compás, pero con un location que lo devuelve
+           a su sitio. Como en MusicXML la posición la da el orden en la secuencia —y un
+           silencio de compás entero es una sola nota—, los textos se emiten al principio
+           del pentagrama con su <offset>, que es lo que el importador lee. */
+        let cursor = 0;                       // negras desde el comienzo del compás
+        [...voz.children].forEach(e => {
+          if (e.tagName === 'location') {
+            const fr = texto(e, ':scope > fractions');
+            if (fr && fr.indexOf('/') > 0) {
+              const [n, d] = fr.split('/').map(Number);
+              if (d) cursor += (n / d) * 4;
+            }
+            const ms = parseInt(texto(e, ':scope > measures') || '0', 10);
+            if (ms) cursor += ms * compas[0] * 4 / compas[1];
+            return;
+          }
+          if (e.tagName === 'StaffText' || e.tagName === 'SystemText') {
+            const t = (texto(e, 'text') || '').replace(/<[^>]*>/g, '').trim();
+            if (!t) return;
+            const off = Math.max(0, Math.round(cursor * DIVISIONES));
+            cuerpo += '<direction placement="above"><direction-type><words>' + escapar(t) + '</words></direction-type>'
+              + (off ? '<offset>' + off + '</offset>' : '') + '<staff>' + numStaff + '</staff></direction>';
+            return;
+          }
+          if (e.tagName !== 'Chord' && e.tagName !== 'Rest') return;
+          if (e.querySelector('acciaccatura, appoggiatura, graceNote, grace4, grace8after, grace16, grace32')) return;
+          const negras = negrasDe(texto(e, ':scope > durationType') || 'quarter', parseInt(texto(e, ':scope > dots') || '0', 10), compas);
+          if (negras !== null) cursor += negras;
+        });
+
         [...voz.children].forEach(e => {
           if (e.tagName === 'BarLine') {
             const sub = texto(e, 'subtype') || '';
             if (sub.indexOf('double') === 0) barra = '<barline location="right"><bar-style>light-light</bar-style></barline>';
             else if (sub.indexOf('end') === 0) barra = '<barline location="right"><bar-style>light-heavy</bar-style></barline>';
-            return;
-          }
-          if (e.tagName === 'StaffText' || e.tagName === 'SystemText') {
-            const t = (texto(e, 'text') || '').replace(/<[^>]*>/g, '').trim();
-            if (t) cuerpo += '<direction placement="above"><direction-type><words>' + escapar(t) + '</words></direction-type><staff>' + numStaff + '</staff></direction>';
             return;
           }
           if (e.tagName !== 'Chord' && e.tagName !== 'Rest') return;

@@ -3,7 +3,7 @@
 Documento de referencia del proyecto. Se lee al empezar cada sesión de trabajo
 sobre la aplicación y se actualiza al cerrarla.
 
-Última actualización: 20 de septiembre de 2026 (Etapas 0–4, 5a y 7 entregadas: prototipo, configurador, importación, realización a cuatro voces con conducción de voces y sonido, cuatro tipos de ejercicio —Análisis, Armonización, Audición y Armonización de soprano— con lo que ve el alumno fijado por tipo, fila de funciones tonales, atajos de teclado, compases ternarios y negras, modulación en ejercicios propios).
+Última actualización: 21 de septiembre de 2026 (Etapas 0–4, 5a y 7 entregadas: prototipo, configurador, importación, realización a cuatro voces con conducción de voces y sonido, cuatro tipos de ejercicio —Análisis, Armonización, Audición y Armonización de soprano— con lo que ve el alumno fijado por tipo, fila de funciones tonales, atajos de teclado, compases ternarios y negras, modulación en ejercicios propios).
 
 ## 1. Objetivo
 
@@ -613,6 +613,110 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     ejercicios de A3-1 que estaban pegados por las barras que faltan en los
     compases 17 y 22 entran ya como cuatro fragmentos independientes, y el banco
     pasa a **130 fragmentos sin ninguna síncopa armónica en el modelo**.
+
+33. **La armadura, la tonalidad y el cifrado han de decir lo mismo** (21/9/2026).
+    El fragmento A3-8-03 (`do do si sol | do`, armadura de Do M) se leía en Sol M
+    y se cifraba con acordes de Do M. Tres arreglos en el importador:
+    - **El rótulo va donde está escrito.** MuseScore coloca los textos con
+      `<location><fractions>`, que mueve el cursor dentro del compás; el lector
+      no lo miraba y todos los rótulos caían al final del compás (o al principio
+      del siguiente). Ahora `js/musescore.js` calcula el tiempo exacto de cada
+      rótulo y lo pasa en el `<offset>` del `<direction>` de MusicXML. Con esto
+      los acordes pivote caen donde Diego los escribió: el **do** del fragmento 1,
+      el **la** del 6 y el **mi** anterior al fa♯ del 7 —las tres correcciones que
+      pidió—, sin tocar nada en la partitura.
+    - **Un rótulo al principio ya no manda sobre la armadura.** El «Sol M» que
+      abría A3-8-03 era el final del ejercicio anterior. Ahora un rótulo inicial
+      fija la tonalidad solo si nombra una de las dos tonalidades de la armadura,
+      o si la música NO cabe en ninguna de ellas (entonces la armadura es la
+      equivocada). Si no, manda la armadura y se avisa.
+    - **Coherencia general.** Si un fragmento no modula y alguna nota no cabe en
+      su tonalidad (natural, armónica o melódica), se busca la tonalidad vecina
+      —hasta dos alteraciones— encabezada por la nota final o la inicial en la
+      que sí quepa, y se marca con (?). Así el ejercicio de A3-2 escrito con la
+      armadura del anterior se lee en **la menor** y no en mi menor.
+
+34. **La cifra ha de cuadrar con el bajo escrito** (21/9/2026). El motor descarta
+    toda cifra cuyo bajo teórico (`Teoria.bajoDe`) no sea la nota escrita: un
+    `V6` sobre un sol♮ en la menor pide sol♯, así que no se propone. Lo que antes
+    salía como un «V6 sin sensible» ahora queda sin cifra y el fragmento se marca
+    para revisar: es la señal de que falta un rótulo de modulación.
+
+35. **Las dominantes secundarias son opcionales** (21/9/2026). El `+6` sobre el
+    6.º grado da el `II+6` (V/V, decisión 9). Es recurso de A4, así que en el
+    bajo dado solo se propone si la lección lo trae expresamente en su lista de
+    acordes (`II|+6` está en el catálogo con la casilla sin marcar). Antes se
+    colaba en tres fragmentos de A3-6, donde el alumno no podía acertarlo porque
+    no figuraba en el repertorio que se le muestra.
+
+36. **Modulación cromática** (21/9/2026). Si la nota rotulada lleva una
+    alteración ajena a la tonalidad de partida (el do♯ al pasar de Sol M a Re M),
+    no hay ningún acorde común: no existe pivote. En vez de dejar la nota sin
+    cifra, la tonalidad nueva empieza ahí con sus propios acordes y se explica:
+    «Modulación cromática: la alteración de esta nota es ajena a Sol M, así que
+    no hay acorde pivote; aquí empieza ya Re M».
+
+37. **El 3.er grado como nota final es el I6** (21/9/2026). La regla del final
+    daba estado fundamental a cualquier nota, y un fragmento que acaba en el 3.er
+    grado salía cifrado **III** —que deja sin resolver la sensible y la séptima
+    del acorde anterior—. Ahora propone `I6` (el `53` sigue siendo admisible).
+    Con esto desaparecen los diez «III finales» del banco.
+    Además, si el último acorde no es ni I ni V (ni cadencia ni semicadencia), el
+    fragmento se marca con un aviso: es señal de que falta el rótulo de vuelta a
+    la tonalidad de partida.
+
+38. **Cada fragmento del banco, un identificador propio** (21/9/2026). El número
+    se contaba por archivo, de modo que una lección repartida en varios archivos
+    (bajos, sopranos, melodías) repetía identificadores: 131 fragmentos con solo
+    114 identificadores distintos. Ahora se toma el primero libre de esa lección.
+
+39. **Delante de la tónica solo va la dominante** (21/9/2026). La subdominante no
+    vuelve a la tónica mientras no se haya dado la fórmula T S T, que todavía no
+    tiene fragmentos. Donde el motor ponía `IV – I6` ahora pone la dominante que
+    cabe sobre ese mismo bajo: casi siempre el **V4/2**, con la séptima preparada
+    por el acorde anterior, que baja de grado a la tercera de la tónica. Así, el
+    fragmento `do mi | fa fa | mi` pasa de `I | I6 | IV | IV | I6` a
+    **`I | I6 | IV | V+4 | I6`** (T T S D T).
+
+40. **En la cadencia final, la subdominante antes de la dominante** (21/9/2026),
+    siempre que se pueda. Si el final era una fila de acordes de dominante —el V
+    arpegiado durante dos compases—, los primeros se cambian por subdominante y se
+    deja la dominante pegada a la tónica: el esquema es **S – D – T**. El fragmento
+    `do re mi | fa re | sol | do` pasa de `I | V+6 | I6 | V+4 | V+6 | V | I` a
+    **`I | V+6 | I6 | IV | II | V | I`**.
+    Quedan 13 fragmentos sin subdominante en la cadencia: en todos ellos las notas
+    que preceden a la tónica son el 5.º o el 7.º grado, donde no hay ningún acorde
+    de subdominante posible (y en A3-1 el repertorio son solo I, V y V7). El motor
+    los marca (`sinSubdominante`) en vez de forzar nada.
+
+41. **El modelo se limita a los acordes de la lección** (21/9/2026). Hasta ahora la
+    lista de acordes del paso 3 solo gobernaba la armonización de melodías; en el
+    bajo dado mandaba únicamente la lista de cifras, de modo que salían acordes que
+    el alumno no tenía a mano. Ahora, si el ejercicio trae la lista de acordes de su
+    lección, el modelo y las admisibles se limitan a ella: es lo que deja fuera el
+    **III** (en estas lecciones la tónica es solo I, en estado fundamental o en
+    primera inversión) y el VII en estado fundamental. Como consecuencia, **las
+    reglas se prueban hasta que una deje alguna cifra del repertorio**: que una regla
+    se cumpla ya no basta si lo que propone no está disponible —el arpegio del VII
+    sobre la sensible, cuando la lección solo tiene I, V y VII6, deja paso al V6—.
+
+42. **Un fragmento, un identificador; y la misma música, una sola entrada**
+    (21/9/2026). Dos entradas con la misma música en tonalidades distintas son el
+    mismo ejercicio cuando al juntarlas aparece la voz que a una le faltaba: es lo
+    normal entre el archivo de bajos y el de melodías, y solo la melodía —con su
+    sensible escrita— dice de verdad en qué tonalidad está. Manda entonces la
+    lectura de las dos voces. Con esto, el ejercicio de A3-2 que entraba dos veces
+    —una en mi menor, sin melodía, y otra en la menor— queda en una sola entrada en
+    **la menor**.
+
+43. **Correcciones de Diego en las partituras** (22/9/2026). En *A3-8. Modulación al V*
+    ha puesto el rótulo «Do M» sobre el sol del fragmento 6, que modulaba al V y volvía:
+    ahora sale `I | II | V 6/5̸ | V | I`, y con eso no queda ningún fragmento que acabe
+    en un acorde que no sea tónica ni dominante. En *A3-2 – Fragmentos Sopranos* ha
+    partido con una barra doble el ejercicio cuyo final cadenciaba en el relativo mayor:
+    salen dos fragmentos independientes, uno en la menor y otro en Do mayor, los dos
+    limpios. El banco queda en **131 fragmentos**. Falta la misma barra doble en el
+    archivo de bajos de A3-2, donde ese ejercicio sigue entero y sin cifrar del todo.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

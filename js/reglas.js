@@ -72,6 +72,10 @@ const Reglas = (() => {
     if (!c.esUltima) return null;
     if (c.grado === 1) return R(['53'], 'Tónica final: tríada en estado fundamental.', 'R1 final');
     if (c.grado === 5) return R(['53'], 'Semicadencia: dominante en estado fundamental.', 'R1 final');
+    /* El 3.er grado como nota final es la TÓNICA EN PRIMERA INVERSIÓN: es lo que pide el
+       acorde anterior (la sensible sube a la tónica y la séptima baja a la tercera), y un
+       III en estado fundamental dejaría el fragmento sin acabar. */
+    if (c.grado === 3) return R(['6'], 'Nota final sobre el 3.er grado: tónica en primera inversión (I6).', 'R1 final');
     return R(['53'], 'Nota final: estado fundamental.', 'R1 final');
   }
 
@@ -104,6 +108,9 @@ const Reglas = (() => {
     }
     const adm = [...previo.admisibles];
     if (c.grado === 5 && !adm.includes('7+')) adm.push('7+');
+    // Si el acorde anterior no dio ninguna cifra (pasa al leer un tramo en la tonalidad
+    // de la modulación), no hay nada que mantener: que decidan las reglas siguientes.
+    if (!adm.length) return null;
     return R(adm, 'Misma nota que la anterior: se mantiene el acorde' + (c.grado === 5 ? ' (o se añade la 7ª).' : '.'), 'R3 repetición');
   }
 
@@ -184,6 +191,46 @@ const Reglas = (() => {
 
   /* ---- Bucle principal ---- */
 
+  /* Las cifras de dominante sobre un bajo que no es el V dan una DOMINANTE SECUNDARIA
+     (el +6 sobre el 6.º grado es el II como dominante del V, decisión 9). Es un recurso
+     de más adelante, así que solo se propone cuando el ejercicio lo trae expresamente en
+     su lista de acordes: si no, sobre esa misma nota se toma el acorde propio de la
+     tonalidad (el VI, el IV6…), que es lo que espera la lección. */
+  /* Si el ejercicio trae la lista de acordes de su lección, el modelo y las admisibles se
+     limitan a ella: el alumno solo tiene esos acordes a mano —son los que se le muestran—,
+     así que proponerle cualquier otro es ponerle una trampa. Es lo que deja fuera, por
+     ejemplo, el III: en estas lecciones la tónica es solo I en estado fundamental o en
+     primera inversión. */
+  function acordePermitido(id, nota, ton, acordes) {
+    if (!Array.isArray(acordes) || !acordes.length) return true;
+    let rom;
+    try { rom = Teoria.romano(id, nota, ton); } catch (e) { return true; }
+    if (!rom) return true;
+    return acordes.indexOf(rom + '|' + id) >= 0;
+  }
+
+  function dominanteSecundariaPermitida(id, nota, ton, acordes) {
+    if (!Teoria.DOMINANTES.includes(id)) return true;
+    let rom;
+    try { rom = Teoria.romano(id, nota, ton); } catch (e) { return true; }
+    if (!rom || rom === 'V') return true;
+    return Array.isArray(acordes) && acordes.indexOf(rom + '|' + id) >= 0;
+  }
+
+  /* La cifra ha de cuadrar con el bajo escrito: el bajo teórico del acorde (el grado que
+     esa cifra pone debajo) tiene que ser la nota que hay. Así un V6 sobre un sol♮ en la
+     menor —que pediría sol♯— no se propone, en vez de salir como una dominante sin
+     sensible. */
+  function cuadraConElBajo(id, n, ton) {
+    let rom; try { rom = Teoria.romano(id, n, ton); } catch (e) { return true; }
+    if (!rom) return true;
+    for (const t of Teoria.variantesTon(ton)) {
+      const esp = Teoria.bajoDe(rom, id, t, false);
+      if (esp && esp.letra === n.letra && esp.alt === n.alt) return true;
+    }
+    return false;
+  }
+
   // Todas las notas leídas en una sola tonalidad.
   function proponerEn(ej, ton) {
     const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
@@ -195,11 +242,27 @@ const Reglas = (() => {
       const c = contexto(notas, i, ton, cortes);
       const previo = cortes[i] ? null : (salida[i - 1] || null);   // tras un silencio no se arrastra el acorde anterior
       const cambia = Teoria.pideCambio(fuerzas, i) && !cortes[i];  // se pasa a una parte más fuerte
-      let r = r1_final(c) || r2_cadencia(c, notas, ton) || r3_repeticion(c, previo, ton, repertorio, cambia)
-        || r4_arpegio(c, previo, notas, ton, repertorio) || r5_funcional(c)
-        || r6_cuartoSalta(c) || r7_regla_octava(c);
-      if (!r) r = R([], 'Sin regla aplicable.', '—');
-      const adm = r.admisibles.filter(id => repertorio.includes(id));
+      /* Las reglas se prueban en orden y gana la primera que deja alguna cifra DEL
+         REPERTORIO de la lección. Que una regla se cumpla no basta: si lo que propone no
+         está en el repertorio —el arpegio del VII sobre la sensible cuando la lección solo
+         tiene I, V y VII6—, se sigue probando con las siguientes, que es lo que haría el
+         alumno con los acordes que tiene a mano. */
+      const filtra = ids => ids.filter(id => repertorio.includes(id) && cuadraConElBajo(id, c.nota, ton)
+        && dominanteSecundariaPermitida(id, c.nota, ton, ej.acordes) && acordePermitido(id, c.nota, ton, ej.acordes));
+      const candidatas = [
+        () => r1_final(c), () => r2_cadencia(c, notas, ton), () => r3_repeticion(c, previo, ton, repertorio, cambia),
+        () => r4_arpegio(c, previo, notas, ton, repertorio), () => r5_funcional(c),
+        () => r6_cuartoSalta(c), () => r7_regla_octava(c)
+      ];
+      let r = null, adm = [], primera = null;
+      for (const regla of candidatas) {
+        const x = regla();
+        if (!x) continue;
+        if (!primera) primera = x;
+        const ids = filtra(x.admisibles);
+        if (ids.length) { r = x; adm = ids; break; }
+      }
+      if (!r) { r = primera || R([], 'Sin regla aplicable.', '—'); adm = []; }
       salida.push({
         admisibles: adm,
         modelo: adm[0] || null,
@@ -237,6 +300,133 @@ const Reglas = (() => {
   /* La respuesta MODELO no sincopa nunca: donde la haya se busca otra cifra admisible de
      esa nota (o de la anterior) que cambie de armonía. Las cifras siguen siendo admisibles
      —el fallo es de la pareja, no de la cifra—, solo cambia cuál es la modelo. */
+  /* ---- Sintaxis de la cadencia (reglas de Diego, 21/9/2026) ----
+
+     El motor de la regla de la octava mira cada nota con su contexto inmediato, así que
+     puede acertar en cada acorde y equivocarse en la frase. Dos reglas la enderezan:
+
+     · **Delante de la tónica solo va la dominante.** La subdominante no vuelve a la
+       tónica mientras no se haya dado la fórmula T S T (que hoy no tiene fragmentos).
+       Si el modelo pone una subdominante antes de una tónica, se cambia por la dominante
+       que cabe sobre ese mismo bajo: casi siempre el **V4/2**, con la séptima preparada
+       por el acorde anterior, que baja de grado a la tercera de la tónica (fa–mi sobre
+       IV – V4/2 – I6).
+     · **En la cadencia final, la subdominante antes de la dominante**, siempre que se
+       pueda. Si el final es una fila de acordes de dominante —el V arpegiado durante dos
+       compases—, los primeros se cambian por subdominante (IV, II, II6…) y se deja la
+       dominante pegada a la tónica: el esquema es S – D – T.
+
+     Cuando sobre ese bajo no cabe lo que la regla pide, se deja lo que había y se marca
+     (`sinSubdominante`) para que el profesor lo confirme. */
+
+  // Orden de preferencia al buscar un acorde de cada función (el de la regla de la octava)
+  const ORDEN_S = ['53', '6', '65', '43', '7', '42', '64'];
+  const ORDEN_D = ['+4', '65d', '+6', '53', '7+', '6', '65', '43', '7', '42', '64'];
+
+  function funcionDeId(id, n, ton, idSig, nSig, tonSig) {
+    try {
+      const rom = Teoria.romano(id, n, ton);
+      let romSig = null;
+      if (idSig && nSig && tonSig) { try { romSig = Teoria.romano(idSig, nSig, tonSig); } catch (e) { romSig = null; } }
+      return Teoria.funcionDe(rom, romSig, id);
+    } catch (e) { return null; }
+  }
+
+  // Tríada disminuida en estado fundamental (el II del menor, el VII): no se propone
+  function disminuidaEnFundamental(id, n, ton) {
+    if (id !== '53') return false;
+    try {
+      const b = Teoria.clase(n);
+      return Teoria.vocesSuperiores(id, n, ton).some(x => (Teoria.clase(x) - b + 12) % 12 === 6);
+    } catch (e) { return false; }
+  }
+
+  // Cifras del repertorio que sobre ese bajo dan un acorde de la función pedida
+  function candidatosFuncion(n, ton, repertorio, acordes, fun, idSig, nSig, tonSig) {
+    return (fun === 'S' ? ORDEN_S : ORDEN_D).filter(id => Teoria.CIFRADOS[id] && repertorio.includes(id)
+      && cuadraConElBajo(id, n, ton)
+      && dominanteSecundariaPermitida(id, n, ton, acordes)
+      && acordePermitido(id, n, ton, acordes)
+      && !disminuidaEnFundamental(id, n, ton)
+      && funcionDeId(id, n, ton, idSig, nSig, tonSig) === fun);
+  }
+
+  /* ¿Se puede poner esta cifra en la nota i sin romper nada? Se comprueban las dos
+     obligaciones del bajo: la séptima (+4, 4/2) baja de grado y ha de venir preparada
+     —el acorde anterior contiene ya esa nota—, y no se crea una síncopa armónica. */
+  function cabeAqui(ej, salida, notas, ton, i, id, previo) {
+    const septima = id === '+4' || id === '42';
+    if (septima) {
+      const sig = notas[i + 1];
+      if (!sig) return false;
+      const d = Teoria.indice(notas[i]) - Teoria.indice(sig);
+      if (d !== 1) return false;                                    // la séptima baja de grado
+      if (previo) {
+        try {
+          const clases = [Teoria.clase(notas[i - 1]), ...Teoria.vocesSuperiores(previo, notas[i - 1], ton).map(Teoria.clase)];
+          if (!clases.includes(Teoria.clase(notas[i]))) return false;   // séptima sin preparar
+        } catch (e) { return false; }
+      }
+    }
+    if (previo && sincopaBajo(ej, i, previo, id)) return false;
+    const sig = (salida[i + 1] && salida[i + 1].admisibles && salida[i + 1].admisibles[0]) || null;
+    if (sig && sincopaBajo(ej, i + 1, id, sig)) return false;
+    return true;
+  }
+
+  function sintaxisCadencial(ej, salida) {
+    const notas = notasDe(ej);
+    if (notas.length < 3 || notas.length !== salida.length) return salida;
+    let tons;
+    try { tons = Teoria.tonalidadesPorNota(ej); } catch (e) { return salida; }
+    const cortes = cortesDe(ej);
+    const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
+    const modelo = i => (salida[i] && salida[i].admisibles && salida[i].admisibles[0]) || null;
+    const fun = i => { const id = modelo(i); return id ? funcionDeId(id, notas[i], tons[i], modelo(i + 1), notas[i + 1], tons[i + 1]) : null; };
+    const poner = (i, id, texto) => {
+      salida[i].admisibles = [id, ...salida[i].admisibles.filter(x => x !== id)];
+      salida[i].modelo = id;
+      salida[i].explicacion = texto;
+      salida[i].fijado = true;      // lo eligió la sintaxis de la cadencia: no se reordena después
+    };
+
+    /* 1) Cadencia final: subdominante antes de la dominante. Se recorre hacia atrás la
+          fila de acordes de dominante que preceden a la tónica final; si son dos o más y
+          delante no hay ya una subdominante, los primeros se cambian por subdominante. */
+    const f = salida.length - 1;
+    if (fun(f) === 'T') {
+      let d0 = f - 1;
+      while (d0 > 0 && fun(d0) === 'D' && !cortes[d0 + 1]) d0--;
+      if (fun(d0) !== 'D' || cortes[d0 + 1]) d0++;
+      if (f - d0 >= 2 && (d0 === 0 || cortes[d0] || fun(d0 - 1) !== 'S')) {
+        let puesta = false;
+        for (let i = d0; i <= f - 2; i++) {
+          const id = candidatosFuncion(notas[i], tons[i], repertorio, ej.acordes, 'S', modelo(i + 1), notas[i + 1], tons[i + 1])
+            .find(x => cabeAqui(ej, salida, notas, tons[i], i, x, i > 0 && !cortes[i] ? modelo(i - 1) : null));
+          if (!id) break;
+          poner(i, id, 'Cadencia final: antes de la dominante va la subdominante (S – D – T).');
+          puesta = true;
+        }
+        if (!puesta) salida[f].sinSubdominante = true;
+      }
+    }
+
+    /* 2) Delante de la tónica solo va la dominante. */
+    for (let i = 0; i < f; i++) {
+      const id = modelo(i), sig = modelo(i + 1);
+      if (!id || !sig || cortes[i + 1]) continue;
+      if (fun(i) !== 'S' || fun(i + 1) !== 'T') continue;
+      let rom, romSig;
+      try { rom = Teoria.romano(id, notas[i], tons[i]); romSig = Teoria.romano(sig, notas[i + 1], tons[i + 1]); } catch (e) { continue; }
+      if (rom === romSig) continue;                                   // el mismo acorde, no hay sucesión
+      const otro = candidatosFuncion(notas[i], tons[i], repertorio, ej.acordes, 'D', sig, notas[i + 1], tons[i + 1])
+        .find(x => cabeAqui(ej, salida, notas, tons[i], i, x, i > 0 && !cortes[i] ? modelo(i - 1) : null));
+      if (otro) poner(i, otro, 'Delante de la tónica va la dominante: la subdominante no vuelve a la tónica (no hay aquí fórmula T S T).');
+      else salida[i].sinDominante = true;
+    }
+    return salida;
+  }
+
   function evitarSincopas(ej, salida) {
     const modelo = i => (salida[i] && salida[i].admisibles && salida[i].admisibles[0]) || null;
     const poner = (i, id) => {
@@ -257,7 +447,7 @@ const Reglas = (() => {
   }
 
   function proponer(ej) {
-    return evitarSincopas(ej, proponerBase(ej));
+    return evitarSincopas(ej, sintaxisCadencial(ej, proponerBase(ej)));
   }
 
   function proponerBase(ej) {
@@ -282,20 +472,31 @@ const Reglas = (() => {
       [...actual.admisibles, ...anterior.admisibles].forEach(id => { if (comun(id) && !ids.includes(id)) ids.push(id); });
       let regla = 'Pivote';
       if (!ids.length) {
-        ids = Object.keys(Teoria.CIFRADOS).filter(id => repertorio.includes(id) && comun(id));
+        ids = Object.keys(Teoria.CIFRADOS).filter(id => repertorio.includes(id) && comun(id)
+          && dominanteSecundariaPermitida(id, notas[i], tonA, ej.acordes) && dominanteSecundariaPermitida(id, notas[i], tonB, ej.acordes)
+          && acordePermitido(id, notas[i], tonA, ej.acordes) && acordePermitido(id, notas[i], tonB, ej.acordes));
         regla = 'Pivote (sin RO)';
       }
+      /* Si no hay ningún acorde común, la modulación es CROMÁTICA: la nota rotulada lleva
+         una alteración ajena a la tonalidad de partida (el do♯ al pasar de Sol M a Re M),
+         y entonces no hay acorde pivote que valga. La tonalidad nueva empieza ahí sin más,
+         con sus propios acordes; se dice así en la explicación. */
+      let cromatica = false;
+      if (!ids.length) { ids = actual.admisibles.slice(); regla = 'Modulación cromática'; cromatica = ids.length > 0; }
       const dobles = [];
-      ids.forEach(id => { const d = romA(id) + ' de ' + Teoria.nombreCorto(tonA) + ' = ' + romB(id) + ' de ' + Teoria.nombreCorto(tonB); if (!dobles.includes(d)) dobles.push(d); });
+      if (!cromatica) ids.forEach(id => { const d = romA(id) + ' de ' + Teoria.nombreCorto(tonA) + ' = ' + romB(id) + ' de ' + Teoria.nombreCorto(tonB); if (!dobles.includes(d)) dobles.push(d); });
       salida.push({
         admisibles: ids,
         modelo: ids[0] || null,
-        explicacion: ids.length
-          ? 'Acorde pivote, común a las dos tonalidades: ' + dobles.join('; ') + '.'
-          : '⚠ Ninguna cifra del repertorio da sobre esta nota un acorde común a ' + Teoria.nombreCorto(tonA) + ' y ' + Teoria.nombreCorto(tonB) + '. Elige otra nota como pivote.',
+        explicacion: cromatica
+          ? 'Modulación cromática: la alteración de esta nota es ajena a ' + Teoria.nombreCorto(tonA)
+            + ', así que no hay acorde pivote; aquí empieza ya ' + Teoria.nombreCorto(tonB) + '.'
+          : ids.length
+            ? 'Acorde pivote, común a las dos tonalidades: ' + dobles.join('; ') + '.'
+            : '⚠ Ninguna cifra del repertorio da sobre esta nota un acorde común a ' + Teoria.nombreCorto(tonA) + ' y ' + Teoria.nombreCorto(tonB) + '. Elige otra nota como pivote.',
         regla,
         contexto: actual.contexto,
-        pivote: { tonalidadAntes: tonA, tonalidadDespues: tonB }
+        pivote: { tonalidadAntes: tonA, tonalidadDespues: tonB, cromatica }
       });
     }
     return salida;

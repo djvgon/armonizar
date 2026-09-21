@@ -98,7 +98,7 @@ const MusicXML = (() => {
               actual.cambios.push({ tiempo: inicio, fifths: nf, modo: md || null });
               avisos.push('Cambio de armadura en el compás ' + (mi + 1) + ': se ha anotado una modulación ahí (revisa el modo y el acorde pivote).');
             } else {
-              fragmentos.push(cerrar(actual, actual.modo, compas, vozPedida));
+              fragmentos.push(cerrar(actual, actual.modo, compas, vozPedida, avisos));
               actual = nuevo();
               ultima.soprano = null; ultima.bajo = null;
               inicio = 0;
@@ -138,7 +138,10 @@ const MusicXML = (() => {
           const t = Teoria.tonalidadDesdeTexto(palabras);
           if (!t) return;
           const voz = VOCES.find(v => pentaDe[v] === st) || vozPedida;
-          actual.etiquetas.push({ tiempo: inicio + tiempoLocal[voz], tonalidad: t });
+          // <offset> (en divisiones) corre el texto respecto del sitio en que está escrito:
+          // así un rótulo puesto sobre la tercera nota se anota en esa nota y no al principio.
+          const off = parseFloat(texto(n, 'offset') || '0') / divisions;
+          actual.etiquetas.push({ tiempo: inicio + tiempoLocal[voz] + (isFinite(off) ? off : 0), tonalidad: t });
           return;
         }
         if (n.querySelector('grace')) return;
@@ -185,7 +188,7 @@ const MusicXML = (() => {
       const esFinal = estilo === 'light-heavy' || estilo === 'heavy-light' || estilo === 'heavy-heavy'
         || estilo === 'light-light' || mi === measures.length - 1;
       if (esFinal && hayNotas(actual)) {
-        fragmentos.push(cerrar(actual, actual.modo, compas, vozPedida));
+        fragmentos.push(cerrar(actual, actual.modo, compas, vozPedida, avisos));
         actual = nuevo();
       }
     });
@@ -240,7 +243,60 @@ const MusicXML = (() => {
     })));
   }
 
-  function cerrar(frag, modoXML, compas, vozPedida) {
+  // Todas las notas escritas del fragmento (las dos voces), como objetos nota
+  function todasLasNotas(frag) {
+    const out = [];
+    ['soprano', 'bajo'].forEach(v => frag.voces[v].forEach(c => c.forEach(([n]) => {
+      if (n === null) return;
+      try { out.push(Teoria.nota(n)); } catch (e) { /* nada */ }
+    })));
+    return out;
+  }
+  const CUANTAS = { Cb: -7, Gb: -6, Db: -5, Ab: -4, Eb: -3, Bb: -2, F: -1, C: 0, G: 1, D: 2, A: 3, E: 4, B: 5, 'F#': 6, 'C#': 7 };
+
+  /* ¿Caben todas esas notas en esa tonalidad? Se admiten las tres formas del menor —la
+     natural, la armónica (sensible elevada) y la melódica (6.ª y 7.ª elevadas al subir)—,
+     porque las tres se escriben. Es la prueba que dice si la música concuerda con la
+     armadura o si la contradice. */
+  function cabeEn(notas, t) {
+    if (!t || !t.tonica) return false;
+    let clases;
+    try {
+      clases = new Set();
+      const mete = e => clases.add(Teoria.clase(Object.assign({ octava: 3 }, e)));
+      Teoria.escalaNatural(t).forEach(mete);
+      Teoria.escalaVoces(t).forEach(mete);
+      if (t.modo === 'menor') Teoria.escalaVoces({ tonica: t.tonica, modo: 'menor', melodica: true }).forEach(mete);
+    } catch (e) { return false; }
+    return notas.every(n => clases.has(Teoria.clase(n)));
+  }
+  // ¿Cabe la música en alguna de las dos tonalidades de la armadura?
+  const cabeEnLaArmadura = (notas, f) =>
+    cabeEn(notas, { tonica: MAYORES[f], modo: 'mayor' }) || cabeEn(notas, { tonica: MENORES[f], modo: 'menor' });
+
+  /* Cuando la ARMADURA no corresponde a la música. Pasa cuando un ejercicio se escribe con
+     la armadura del anterior y nadie se acuerda de cambiarla: entonces la tonalidad que
+     saldría de la armadura no contiene las notas que suenan (un sol♯ con la armadura de
+     un sostenido). Se busca una tonalidad vecina —hasta dos alteraciones— encabezada por
+     la nota final (que pesa más) o por la inicial, y en la que quepa toda la música; se
+     toma esa, marcada con (?) para que el profesor lo vea y arregle la armadura. */
+  function tonalidadPorLaMusica(frag, fifths, nombreUltima, nombrePrimera) {
+    const notas = todasLasNotas(frag);
+    const cand = [];
+    const mete = nombre => {
+      const letra = String(nombre || '').replace(/-?\d+$/, '');
+      if (!letra) return;
+      if (CUANTAS[letra] !== undefined && Math.abs(CUANTAS[letra] - fifths) <= 2) cand.push({ tonica: letra, modo: 'mayor' });
+      Object.keys(MENORES).forEach(k => {
+        if (MENORES[k] === letra && Math.abs(parseInt(k, 10) - fifths) <= 2) cand.push({ tonica: letra, modo: 'menor' });
+      });
+    };
+    mete(nombreUltima);                       // acabar en la tónica es el indicio más fuerte
+    mete(nombrePrimera);
+    return cand.find(t => cabeEn(notas, t)) || null;
+  }
+
+  function cerrar(frag, modoXML, compas, vozPedida, avisos) {
     ['soprano', 'bajo'].forEach(v => { frag.voces[v] = sinColaDeSilencios(frag.voces[v]); });
     const f = String(frag.fifths);
     const tiene = v => frag.voces[v].some(c => c.some(([n]) => n !== null));
@@ -274,10 +330,36 @@ const MusicXML = (() => {
     } else if (puntosMayor > puntosMenor) modo = 'mayor';
     else { modo = 'mayor'; seguro = false; }
     let tonica = modo === 'menor' ? MENORES[f] : MAYORES[f];
-    // Un texto de pauta al principio del fragmento fija su tonalidad
+    /* Un texto de pauta al principio del fragmento fija su tonalidad… pero solo si no
+       contradice a la armadura. En un archivo de lecciones, un rótulo pegado al comienzo
+       suele ser el del final del ejercicio anterior (la llegada de su modulación), y
+       tomarlo por la tonalidad del fragmento nuevo deja la armadura, la tonalidad y el
+       cifrado diciendo cosas distintas. Así que la etiqueta manda en dos casos: cuando
+       nombra una de las dos tonalidades de la armadura, o cuando la música NO cabe en
+       ninguna de ellas (entonces es la armadura la que está mal escrita). */
     const etiquetas = (frag.etiquetas || []).slice().sort((a, b) => a.tiempo - b.tiempo);
     const inicial = etiquetas.find(e => e.tiempo <= 0.01);
-    if (inicial) { tonica = inicial.tonalidad.tonica; modo = inicial.tonalidad.modo; seguro = true; }
+    if (inicial) {
+      const et = inicial.tonalidad;
+      const deLaArmadura = (et.modo === 'menor' ? MENORES : MAYORES)[f] === et.tonica;
+      if (deLaArmadura || !cabeEnLaArmadura(todasLasNotas(frag), f)) {
+        tonica = et.tonica; modo = et.modo; seguro = true;
+      } else if (avisos) {
+        const nom = t => { try { return Teoria.nombreCorto(t); } catch (e) { return t.tonica; } };
+        avisos.push('Un rótulo de «' + nom(et) + '» abre un fragmento cuya armadura y cuyas notas son de '
+          + nom({ tonica: MAYORES[f], modo: 'mayor' }) + ' / ' + nom({ tonica: MENORES[f], modo: 'menor' })
+          + ': se ha dejado la tonalidad de la armadura. Si ese rótulo era la llegada del ejercicio anterior, muévelo allí.');
+      }
+    }
+    /* COHERENCIA entre la armadura, la tonalidad y la música. Si el fragmento no modula
+       —ni etiquetas ni cambios de armadura— y alguna de sus notas no cabe en la tonalidad
+       elegida, es que la armadura escrita no es la suya: se busca la tonalidad en la que
+       de verdad está y se marca con (?) para que el profesor arregle la armadura. */
+    if (!(frag.cambios || []).length && !etiquetas.length && !cabeEn(todasLasNotas(frag), { tonica, modo })) {
+      const otra = tonalidadPorLaMusica(frag, parseInt(f, 10), ultima, primera);
+      if (otra) { tonica = otra.tonica; modo = otra.modo; }
+      seguro = false;
+    }
 
     // Cambios de armadura → tonalidad (el modo, si el archivo no lo dice, se supone el mismo o el relativo)
     let modoPrevio = modo, fPrevio = frag.fifths;

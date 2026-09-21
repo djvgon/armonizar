@@ -833,16 +833,31 @@
   const mismaMusica = (a, b) => JSON.stringify(a || null) === JSON.stringify(b || null);
   function mismoQue(e) {
     return banco.find(x => {
-      if (!Teoria.mismaTonalidad(x.tonalidad, e.tonalidad)) return false;
       const bajos = x.bajo && e.bajo, sopranos = x.soprano && e.soprano;
       if (!bajos && !sopranos) return false;                                        // no comparten ninguna voz
       if (bajos && !mismaMusica(x.bajo.compases, e.bajo.compases)) return false;    // el mismo bajo…
       if (sopranos && !mismaMusica(x.soprano.compases, e.soprano.compases)) return false;   // …y la misma melodía
-      return true;
+      if (Teoria.mismaTonalidad(x.tonalidad, e.tonalidad)) return true;
+      /* La misma música leída en dos tonalidades distintas es el mismo ejercicio cuando al
+         juntarlas aparece la voz que a una le faltaba: es normal que el archivo de bajos y
+         el de melodías traigan los mismos ejercicios, y que solo la melodía —con su
+         sensible escrita— diga de verdad en qué tonalidad están. */
+      return (!x.bajo && !!e.bajo) || (!x.soprano && !!e.soprano);
     });
   }
   // Completa la entrada vieja con la voz que le falte; devuelve true si ha añadido algo
   function fundir(viejo, nuevo) {
+    /* Si las dos lecturas no coinciden en la tonalidad, manda la del fragmento que trae
+       LAS DOS VOCES: es el que tiene la prueba. Se sustituye entero —también sus
+       respuestas, leídas ya en la tonalidad buena—, conservando el identificador. */
+    if (!Teoria.mismaTonalidad(viejo.tonalidad, nuevo.tonalidad) && nuevo.bajo && nuevo.soprano) {
+      const id = viejo.id, lec = viejo.leccion, nom = viejo.leccionNombre;
+      Object.keys(viejo).forEach(k => { delete viejo[k]; });
+      Object.assign(viejo, nuevo);
+      viejo.id = id;
+      if (lec) { viejo.leccion = lec; viejo.leccionNombre = nom; }
+      return true;
+    }
     let cambio = false;
     ['bajo', 'soprano'].forEach(v => { if (!viejo[v] && nuevo[v]) { viejo[v] = nuevo[v]; cambio = true; } });
     if (cambio) {
@@ -851,6 +866,13 @@
       if (!viejo.leccion && nuevo.leccion) viejo.leccion = nuevo.leccion;
     }
     return cambio;
+  }
+
+  // Primer identificador libre de esa lección (A3-3-01, A3-3-02…)
+  function identificadorLibre(lec) {
+    let n = 1, id;
+    do { id = lec + '-' + String(n++).padStart(2, '0'); } while (banco.some(x => x.id === id));
+    return id;
   }
 
   function anadirAlBanco() {
@@ -864,9 +886,12 @@
       let e;
       try { e = Banco.entrada(f, Object.assign({ compas: f.compas }, op)); } catch (err) { e = null; }
       if (!e) { fallidos++; return; }
-      e.id = (leccion || 'X') + '-' + String(k + 1).padStart(2, '0');
       const viejo = mismoQue(e);
       if (viejo) { if (fundir(viejo, e)) fundidos++; else repetidos++; return; }
+      /* El número va por LECCIÓN, no por archivo: una misma lección puede repartirse en
+         varios archivos (bajos, sopranos, melodías) y cada fragmento ha de tener su
+         identificador propio. Se toma el primero libre. */
+      e.id = identificadorLibre(leccion || 'X');
       if (e.avisos && e.avisos.length) conAviso++;
       banco.push(e);
       nuevos++;
