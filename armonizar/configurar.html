@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Configurador de ejercicios · Armonizar el bajo</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260921-1230">
-  <link rel="stylesheet" href="css/estilo.css?v=20260921-1230">
+  <link rel="stylesheet" href="css/bravura.css?v=20260921-1800">
+  <link rel="stylesheet" href="css/estilo.css?v=20260921-1800">
 </head>
 <body class="configurador">
 
@@ -35,8 +35,8 @@
         <div class="columna">
           <div id="zona-archivo" class="zona-archivo" tabindex="0" role="button" aria-label="Importar archivo">
             <p><b>Arrastra aquí un archivo</b> o pulsa para elegirlo</p>
-            <p class="ayuda"><code>.musicxml</code> exportado de MuseScore (se toma el pentagrama del bajo —el superior, en una armonización de soprano— y cada barra final cierra un ejercicio) o <code>.json</code> guardado desde este configurador.</p>
-            <input type="file" id="archivo" accept=".musicxml,.xml,.json,application/json,application/xml,text/xml" hidden>
+            <p class="ayuda"><code>.mscz</code> de MuseScore (no hace falta exportarlo a nada), <code>.musicxml</code> o <code>.json</code> guardado desde este configurador. Se toma el pentagrama del bajo —el superior, en una armonización de soprano— y cada barra doble cierra un ejercicio.</p>
+            <input type="file" id="archivo" accept=".mscz,.mscx,.musicxml,.xml,.json,application/json,application/xml,text/xml" hidden>
           </div>
           <div id="fragmentos" class="fragmentos" hidden>
             <p class="ayuda" id="fragmentos-titulo"></p>
@@ -210,20 +210,120 @@
       </div>
     </section>
 
+    <!-- ===== Paso 6: banco de fragmentos y fichas ===== -->
+    <section class="paso" id="paso-banco">
+      <h2><span class="num">6</span> Banco de fragmentos y fichas</h2>
+      <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifras que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Con el banco montas <b>fichas</b>: un enlace que le da al alumno varios ejercicios al azar de los que cumplan un filtro. El banco se guarda en este navegador; para que las fichas funcionen hay que <b>descargarlo como <code>banco.json</code> y subirlo a GitHub</b> junto a la aplicación.</p>
+
+      <div class="banco-anadir" id="banco-anadir" hidden>
+        <label class="campo">
+          <span>Lección</span>
+          <input id="banco-leccion" type="text" placeholder="A3-1" size="8">
+        </label>
+        <button id="btn-banco-anadir" type="button" class="primario">Añadir los fragmentos del archivo al banco</button>
+        <span class="ayuda" id="banco-anadir-ayuda">Se analizan todos los fragmentos del archivo importado con las opciones actuales.</span>
+      </div>
+
+      <div class="botonera">
+        <button id="btn-banco-descargar" type="button" class="secundario">Descargar banco.json</button>
+        <button id="btn-banco-cargar" type="button" class="secundario">Cargar banco.json</button>
+        <button id="btn-banco-vaciar" type="button" class="secundario">Vaciar el banco</button>
+        <input type="file" id="banco-archivo" accept=".json,application/json" hidden>
+        <span class="ayuda" id="banco-resumen">El banco está vacío.</span>
+      </div>
+
+      <div id="banco-cuerpo" hidden>
+        <h3>Filtro</h3>
+        <div class="fila-campos">
+          <label class="campo">
+            <span>Tipo de ejercicio</span>
+            <select id="ficha-modo"></select>
+          </label>
+          <label class="campo">
+            <span>Lección</span>
+            <select id="ficha-leccion"><option value="">Todas</option></select>
+          </label>
+          <label class="campo">
+            <span>Modo</span>
+            <select id="ficha-modotonal">
+              <option value="">Mayor y menor</option>
+              <option value="mayor">Solo mayor</option>
+              <option value="menor">Solo menor</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Alteraciones de la armadura (hasta)</span>
+            <select id="ficha-alteraciones">
+              <option value="7">Las que sea</option>
+              <option value="0">Ninguna</option>
+              <option value="1">Una</option>
+              <option value="2">Dos</option>
+              <option value="3">Tres</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Nivel</span>
+            <select id="ficha-nivel">
+              <option value="1-5">Todos (1 a 5)</option>
+              <option value="1-2">Fácil (1 y 2)</option>
+              <option value="2-3">Medio (2 y 3)</option>
+              <option value="3-5">Difícil (3 a 5)</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Modulación</span>
+            <select id="ficha-modula">
+              <option value="">Con o sin</option>
+              <option value="no">Sin modulación</option>
+              <option value="si">Solo con modulación</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Ejercicios por ficha</span>
+            <input id="ficha-n" type="number" min="1" max="30" value="8">
+          </label>
+          <label class="campo campo-ancho">
+            <span>Título de la ficha</span>
+            <input id="ficha-titulo" type="text" placeholder="Ficha 1 · El 6/4 cadencial">
+          </label>
+        </div>
+        <p class="ayuda" id="ficha-cuenta"></p>
+
+        <div class="botonera">
+          <button id="btn-ficha" type="button" class="primario">Generar la dirección de la ficha</button>
+          <button id="btn-ficha-copiar" type="button" disabled>Copiar</button>
+          <a id="btn-ficha-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
+        </div>
+        <textarea id="ficha-direccion" rows="2" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección de la ficha"></textarea>
+        <p class="ayuda">La ficha no lleva dentro los ejercicios: lleva el filtro. Cada vez que un alumno la abre, la página saca del banco otros ejercicios al azar de entre los que cumplen el filtro. Para ampliar o corregir el banco basta con volver a subir <code>banco.json</code>: <b>los enlaces repartidos siguen valiendo</b>.</p>
+
+        <h3>Fragmentos del banco</h3>
+        <p class="ayuda">Se muestran los que cumplen el filtro. El nivel se puede corregir a mano; «Cargar» lo trae al configurador para revisarlo y «Quitar» lo saca del banco.</p>
+        <div class="tabla-caja">
+          <table id="tabla-banco" class="tabla-revision tabla-banco">
+            <thead><tr><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifras del modelo</th><th>Nivel</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260921-1230</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260921-1800</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260921-1230"></script>
-  <script src="js/reglas.js?v=20260921-1230"></script>
-  <script src="js/ejercicios.js?v=20260921-1230"></script>
-  <script src="js/partitura.js?v=20260921-1230"></script>
-  <script src="js/musicxml.js?v=20260921-1230"></script>
-  <script src="js/realizacion.js?v=20260921-1230"></script>
-  <script src="js/configurador.js?v=20260921-1230"></script>
+  <script src="js/teoria.js?v=20260921-1800"></script>
+  <script src="js/reglas.js?v=20260921-1800"></script>
+  <script src="js/ejercicios.js?v=20260921-1800"></script>
+  <script src="js/partitura.js?v=20260921-1800"></script>
+  <script src="js/musicxml.js?v=20260921-1800"></script>
+  <script src="js/musescore.js?v=20260921-1800"></script>
+  <script src="js/banco.js?v=20260921-1800"></script>
+  <script src="js/realizacion.js?v=20260921-1800"></script>
+  <script src="js/configurador.js?v=20260921-1800"></script>
 </body>
 </html>

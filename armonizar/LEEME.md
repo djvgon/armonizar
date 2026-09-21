@@ -42,11 +42,16 @@ doble clic**: no necesita servidor, conexión ni instalación.
 - `configurar.html` — la página del profesor. Escribe el bajo (`do3 re3 | mi3
   do3 | sol3r`; `n` negra, `c` corchea, `.` puntillo, `_` silencio; cualquier compás) —o la
   melodía, en el tipo Armonización de soprano (`mi4 fa4n mi4n | re4 si3 | do4r`)— o
-  arrastra un `.musicxml` de MuseScore (cada barra final es un
+  arrastra el archivo de MuseScore (`.mscz`, tal cual, sin exportarlo a nada;
+  también vale un `.musicxml`: cada barra doble es un
   ejercicio), elige el tipo de ejercicio, el repertorio y las opciones, pulsa
   «Analizar», revisa las cifras (o acordes) admisibles y la modelo de cada nota, y genera
   la dirección para los alumnos (o las de todos los fragmentos del archivo).
   También guarda y carga ejercicios como `.json`.
+- `banco.json` — el banco de ejercicios: los fragmentos ya analizados con sus
+  etiquetas. Lo genera el configurador (paso 6, «Descargar banco.json») y hay que
+  subirlo a GitHub junto a la aplicación: es lo que leen las **fichas**, el enlace
+  que le da al alumno varios ejercicios al azar de los que cumplan un filtro.
 - `pruebas.html` — comprobación del motor de reglas frente a las respuestas del
   corpus. Si al cambiar reglas o respuestas aparece una discrepancia, aquí se ve.
 - `ejemplos/` — los MusicXML originales, para probar la importación.
@@ -61,7 +66,7 @@ Direcciones:
 
 | Archivo | Qué contiene |
 |---|---|
-| `js/teoria.js` | Notas, tonalidades, grados, catálogo de cifrados y cálculo de las voces de cada acorde. |
+| `js/teoria.js` | Notas, tonalidades, grados, catálogo de cifrados, alteraciones accidentales de la cifra (la sensible del V en menor) y cálculo de las voces de cada acorde. |
 | `js/reglas.js` | Motor de reglas: propone los cifrados admisibles de cada nota (RO de Furno + saltos, arpegios y cadencias) y, para una melodía de soprano, los acordes que contienen cada nota en sucesión válida. |
 | `js/ejercicios.js` | El corpus (35 ejercicios) con sus respuestas fijadas a mano, y la codificación de ejercicios en la URL. |
 | `js/partitura.js` | Dibuja el pentagrama en SVG con la fuente Bravura y las casillas pulsables. |
@@ -70,7 +75,9 @@ Direcciones:
 | `js/sonido.js` | Reproducción de acordes y secuencias (Web Audio) con instrumentos reales (muestras) o sintético, parada y avisos de progreso. |
 | `sonidos/piano.js`, `clave.js`, `organo.js` | Muestras mp3 en base64 (FluidR3_GM, CC BY 3.0; licencia en `sonidos/LICENCIA-muestras.txt`); se cargan solo cuando se usan. |
 | `js/configurador.js` | La interfaz del profesor: entrada del bajo, opciones, revisión, generación de direcciones, borrador. |
-| `js/musicxml.js` | Importador de MusicXML: las dos voces (bajo y melodía) a la vez, fragmentos separados por barra doble, silencios, tonalidad y modulaciones por texto de pauta. |
+| `js/musicxml.js` | Importador de MusicXML: las dos voces (bajo y melodía) a la vez, fragmentos separados por barra doble, silencios, ligaduras de unión, tonalidad y modulaciones por texto de pauta. |
+| `js/musescore.js` | Lee los archivos de MuseScore (`.mscz` y `.mscx`) sin exportarlos: abre el ZIP en el navegador, traduce el `.mscx` y se lo pasa a `js/musicxml.js`. |
+| `js/banco.js` | El banco de fragmentos con etiquetas y las fichas: construye cada entrada con sus etiquetas, filtra, baraja y arma el ejercicio que ve el alumno. |
 | `css/estilo.css` | Aspecto (colores en variables al principio del archivo). |
 | `css/bravura.css` | Subconjunto de la fuente musical Bravura incrustado en base64 (licencia OFL, véase `fuentes/`). |
 

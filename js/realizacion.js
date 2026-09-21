@@ -236,7 +236,7 @@ const Realizacion = (() => {
     const antes = [dp.bajo, ...p.voces], ahora = [dc.bajo, ...c.voces];
     let coste = 0;
     for (let q = 1; q < 4; q++) coste += Math.abs(midi(ahora[q]) - midi(antes[q]));
-    coste += 60 * paralelasEntre(antes, ahora).length;
+    coste += 120 * paralelasEntre(antes, ahora).length;      // las paralelas pesan más que cualquier otro defecto
     const contiene = pc => dc.tonos.some(t => clase(t) === pc);
     // Mismo acorde en otra inversión (arpegio del bajo): las voces se reparten libremente
     const mismoAcorde = clase(dp.fund) === clase(dc.fund) && dp.tonos.every(t => contiene(clase(t)));
@@ -260,11 +260,20 @@ const Realizacion = (() => {
     // Solapamiento de voces con el acorde anterior
     for (let q = 1; q < 3; q++) if (midi(ahora[q]) > midi(antes[q + 1])) coste += 6;
     for (let q = 2; q < 4; q++) if (midi(ahora[q]) < midi(antes[q - 1])) coste += 6;
-    // Quintas y octavas directas entre las voces extremas con salto en la soprano
-    const dirB = Math.sign(midi(ahora[0]) - midi(antes[0])), dirS = Math.sign(midi(ahora[3]) - midi(antes[3]));
-    if (dirB && dirB === dirS && Math.abs(midi(ahora[3]) - midi(antes[3])) > 2) {
-      const iv = ((midi(ahora[3]) - midi(ahora[0])) % 12 + 12) % 12;
-      if (iv === 7 || iv === 0) coste += 20;
+    /* Movimientos directos a la octava o a la quinta (normas XN2 y XN3 de la pauta de
+       corrección): con el bajo solo se admiten si la voz superior va por grados conjuntos;
+       entre las tres voces agudas, si lo hace una cualquiera de las dos. En un cambio de
+       disposición del mismo acorde se admiten (XN4). */
+    if (!mismoAcorde) {
+      const dir = q => Math.sign(midi(ahora[q]) - midi(antes[q]));
+      const conjunto = q => Math.abs(midi(ahora[q]) - midi(antes[q])) <= 2;
+      for (let q = 0; q < 4; q++) for (let r = q + 1; r < 4; r++) {
+        if (!dir(q) || dir(q) !== dir(r)) continue;
+        const iv = ((midi(ahora[r]) - midi(ahora[q])) % 12 + 12) % 12;
+        if (iv !== 0 && iv !== 7) continue;
+        const salvada = q === 0 ? conjunto(r) : (conjunto(q) || conjunto(r));
+        if (!salvada) coste += q === 0 ? 30 : 20;
+      }
     }
     return coste;
   }
@@ -309,17 +318,21 @@ const Realizacion = (() => {
     const tons = Teoria.tonalidadesPorNota(ej);          // tonalidad que rige en cada nota (modulaciones)
     const notas = [];
     if (Array.isArray(opciones.bajos)) opciones.bajos.forEach(b => notas.push(b ? Teoria.nota(b) : null));
-    else ej.compases.forEach(c => c.forEach(([n]) => notas.push(Teoria.nota(n))));
+    else Teoria.notasDeCompases(ej.compases).forEach(n => notas.push(Teoria.nota(n)));
+    const cortes = Teoria.cortes(ej.compases);          // un silencio rompe la frase: no se conduce a través de él
     const sopranos = Array.isArray(opciones.sopranos) ? opciones.sopranos.map(s => (s ? midi(Teoria.nota(s)) : null)) : null;
     const fija = k => (sopranos && sopranos[k] !== null ? sopranos[k] : null);
     const n = notas.length;
     const acordes = new Array(n).fill(null);
     const cifrada = k => !!(cifras[k] && Teoria.CIFRADOS[cifras[k]] && notas[k]);
+    // Tonalidad de cada acorde: con la melodía dada, la inflexión (menor melódica) que la contiene
+    const tonDe = k => (sopranos && opciones.sopranos && opciones.sopranos[k] && cifrada(k)
+      ? Teoria.tonParaBajo(cifras[k], notas[k], tons[k], opciones.sopranos[k]) : tons[k]);
 
     if (modo !== 'auto') {
       notas.forEach((bajo, i) => {
         const id = cifras[i];
-        if (cifrada(i)) acordes[i] = fija(i) !== null ? acordeConSoprano(id, bajo, tons[i], opciones.sopranos[i]) : posicion(trio(id, bajo, tons[i]), rot);
+        if (cifrada(i)) acordes[i] = fija(i) !== null ? acordeConSoprano(id, bajo, tonDe(i), opciones.sopranos[i]) : posicion(trio(id, bajo, tons[i]), rot);
       });
     } else {
       // Tramos de notas cifradas consecutivas; cada tramo empieza en la posición elegida
@@ -327,17 +340,17 @@ const Realizacion = (() => {
       let i = 0;
       while (i < n) {
         if (!cifrada(i)) { i++; continue; }
-        let j = i;
-        while (j < n && cifrada(j)) j++;
+        let j = i + 1;
+        while (j < n && cifrada(j) && !cortes[j]) j++;       // el tramo se corta en un silencio
         const tramo = [];
-        for (let k = i; k < j; k++) tramo.push(describir(cifras[k], notas[k], tons[k]));
+        for (let k = i; k < j; k++) tramo.push(describir(cifras[k], notas[k], tonDe(k)));
         // Programación dinámica: mejor serie de disposiciones del tramo
         let capa;
         if (fija(i) !== null) {
           const cands0 = candidatas(tramo[0], fija(i));
           capa = (cands0.length ? cands0 : [disposicionForzada(tramo[0], opciones.sopranos[i])]).map(c => ({ c, coste: costeLocal(c, tramo[0], i === n - 1, tons[i]), ant: null }));
         } else {
-          const primera = posicion(trio(cifras[i], notas[i], tons[i]), rot);
+          const primera = posicion(trio(cifras[i], notas[i], tonDe(i)), rot);
           capa = [{ c: { voces: primera, incompleta: false, doblaBajo: true, unisono: false }, coste: 0, ant: null }];
         }
         const capas = [capa];
@@ -347,7 +360,7 @@ const Realizacion = (() => {
           if (!cands.length) cands = fija(i + k) !== null ? [disposicionForzada(dc, opciones.sopranos[i + k])] : candidatas(dc);   // la melodía nunca se cambia
           const esFinal = i + k === n - 1;
           const nueva = cands.map(c => {
-            const local = costeLocal(c, dc, esFinal, tons[i + k]);
+            const local = costeLocal(c, dc, esFinal, tonDe(i + k));
             let mejor = null;
             capa.forEach((prev, idx) => {
               const total = prev.coste + costeTransicion(prev.c, dp, c, dc) + local;
@@ -355,7 +368,7 @@ const Realizacion = (() => {
             });
             return { c, coste: mejor.coste, ant: mejor.ant };
           });
-          capa = nueva.length ? nueva : [{ c: { voces: posicion(trio(cifras[i + k], notas[i + k], tons[i + k]), rot) }, coste: 0, ant: 0 }];
+          capa = nueva.length ? nueva : [{ c: { voces: posicion(trio(cifras[i + k], notas[i + k], tonDe(i + k)), rot) }, coste: 0, ant: 0 }];
           capas.push(capa);
         }
         // Recorrido hacia atrás desde la mejor disposición final
@@ -420,11 +433,13 @@ const Realizacion = (() => {
 
   function auditar(ej, bajos, acordes) {
     const tons = Teoria.tonalidadesPorNota(ej);
+    const cortes = Teoria.cortes(ej.compases);
     const avisos = [];
     const voces = i => (acordes[i] && bajos[i] ? [Teoria.nota(bajos[i]), ...acordes[i]] : null);
     const nombre = n => Teoria.nombreEs(n);
     const conjunto = (a, b) => Math.abs(midi(a) - midi(b)) <= 2;
     for (let i = 1; i < acordes.length; i++) {
+      if (cortes[i]) continue;                            // hay un silencio en medio: no hay enlace que juzgar
       const antes = voces(i - 1), ahora = voces(i);
       if (!antes || !ahora) continue;
       const mismaNota = q => midi(antes[q]) === midi(ahora[q]);
@@ -471,7 +486,10 @@ const Realizacion = (() => {
           avisos.push({ i, tipo: 'septima', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
             texto: 'La séptima del acorde (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de bajar de grado; aquí va a ' + nombre(a) + '.' });
         }
-        if (d.sensibles.has(pc) && !mismoAcorde && contiene((pc + 1) % 12) && (q === 0 || q === 3)) {
+        /* La sensible sube a la tónica cuando está en la SOPRANO (norma XN6 de la pauta). En el
+           bajo, la Regla de la octava la hace descender en la escala descendente (7 → 6), que es
+           lo correcto ahí: no se señala. */
+        if (d.sensibles.has(pc) && !mismoAcorde && contiene((pc + 1) % 12) && q === 3) {
           if (delta === 1 || (delta === 0 && contiene(pc))) continue;
           avisos.push({ i, tipo: 'sensible', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
             texto: 'La sensible (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de subir a la tónica; aquí va a ' + nombre(a) + '.' });

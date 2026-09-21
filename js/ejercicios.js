@@ -398,8 +398,8 @@ const Ejercicios = (() => {
     return out;
   }
 
-  // Número total de notas del ejercicio.
-  function numNotas(ej) { return ej.compases.reduce((s, c) => s + c.length, 0); }
+  // Número total de NOTAS del ejercicio (los silencios no llevan respuesta).
+  function numNotas(ej) { return Teoria.numeroDeNotas(ej.compases); }
 
   // ¿Se pide también el grado de la fundamental? (por defecto, sí)
   function pideRomano(ej) { return ej.pedirRomano !== false; }
@@ -437,13 +437,15 @@ const Ejercicios = (() => {
      octava más cercana al bajo anterior (o a do3), dentro de mi2 … mi4. */
   function bajosDe(ej, romanos, cifras) {
     const tons = Teoria.tonalidadesPorNota(ej);
-    const melodia = [];
-    ej.compases.forEach(c => c.forEach(([n]) => melodia.push(Teoria.midi(Teoria.nota(n)))));
+    const notas = Teoria.notasDeCompases(ej.compases);
+    const melodia = notas.map(n => Teoria.midi(Teoria.nota(n)));
     let ref = Teoria.midi(Teoria.nota('C3'));
     return romanos.map((r, i) => {
       const id = cifras[i];
       if (!r || !id) return null;
-      const b = Teoria.bajoDe(r, id, tons[i], false);          // lo que el alumno ha escrito, sin arreglarlo
+      // Menor melódica: la inflexión que hace que el acorde contenga la nota de la melodía
+      const ton = Teoria.tonParaAcorde(r, id, tons[i], notas[i]);
+      const b = Teoria.bajoDe(r, id, ton, false);              // lo que el alumno ha escrito, sin arreglarlo
       if (!b) return null;
       // La octava más cercana al bajo anterior, con una ligera preferencia por el centro del
       // registro (do3) y dejando sitio a las dos voces intermedias bajo la melodía (al menos una 5ª)
@@ -521,8 +523,7 @@ const Ejercicios = (() => {
   // Primera nota, después del pivote de la modulación m, cuyo acorde modelo tiene
   // alguna nota ajena a la tonalidad anterior (donde la modulación se hace audible).
   function primeraAjena(ej, m) {
-    const notas = [];
-    ej.compases.forEach(c => c.forEach(([n]) => notas.push(n)));
+    const notas = Teoria.notasDeCompases(ej.compases);
     const antes = tonalidadAntes(ej, m.nota);
     for (let i = m.nota + 1; i < notas.length; i++) {
       const id = admisibles(ej, i)[0];
@@ -533,9 +534,8 @@ const Ejercicios = (() => {
 
   // Parejas admisibles (cifra + grado) de la nota i leída en la tonalidad ton.
   function parejasEn(ej, i, ton) {
-    const notas = [];
-    ej.compases.forEach(c => c.forEach(([n]) => notas.push(n)));
-    if (esSoprano(ej)) return admisibles(ej, i).map(id => { const p = par(id); return { id, cifra: p.cifra, romano: p.romano, bajo: Teoria.bajoDe(p.romano, p.cifra, ton) }; });
+    const notas = Teoria.notasDeCompases(ej.compases);
+    if (esSoprano(ej)) return admisibles(ej, i).map(id => { const p = par(id); const t = Teoria.tonParaAcorde(p.romano, p.cifra, ton, notas[i]); return { id, cifra: p.cifra, romano: p.romano, bajo: Teoria.bajoDe(p.romano, p.cifra, t) }; });
     return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.romano(id, notas[i], ton) }));
   }
   // Parejas en la tonalidad que rige en la nota (en el pivote, la nueva); la primera es la modelo.

@@ -26,9 +26,12 @@
        con siete ejercicios da siete fragmentos.
      · Se leen LAS DOS VOCES a la vez: un archivo con la melodía arriba y el bajo abajo
        sirve para los dos tipos de ejercicio sin volver a importarlo.
-     · La tonalidad se deduce de la armadura (<fifths>) y del modo: si el
-       archivo lo trae (<mode>), se usa; si no, se mira la última nota del
-       fragmento: si es la tónica del relativo menor, se toma menor.
+     · La tonalidad se deduce de la armadura (<fifths>) y del modo: si el archivo lo
+       trae (<mode>), se usa; si no, se suman indicios —acabar en la tónica, empezar en
+       ella y, sobre todo, que aparezca la SENSIBLE del relativo menor como alteración
+       accidental (sol♯ con la armadura de Do, si♮ con la de Mi♭)—, que es lo que
+       distingue una semicadencia en menor de un fragmento en el relativo mayor. Si los
+       indicios empatan se toma el mayor y se marca con (?) en la lista de fragmentos.
      · Un **texto de pauta con el nombre de una tonalidad** («Sol M», «mi m», «→ Sol M»)
        sobre una nota marca ahí una modulación: es la forma precisa de indicar el acorde
        pivote. Sobre la primera nota del fragmento, fija su tonalidad.
@@ -70,6 +73,9 @@ const MusicXML = (() => {
     const hayNotas = frag => VOCES.some(v => frag.voces[v].some(c => c.some(([n]) => n !== null)));
 
     const measures = [...part.querySelectorAll(':scope > measure')];
+    // La última nota escrita en cada voz; vive fuera del compás para que una ligadura
+    // de unión pueda cruzar la barra y sumarse a la nota anterior.
+    const ultima = { soprano: null, bajo: null };
     measures.forEach((m, mi) => {
       const inicio = Math.max(actual.tiempo.soprano, actual.tiempo.bajo);   // tiempo (en negras) en que empieza este compás
       const attr = m.querySelector(':scope > attributes');
@@ -99,7 +105,6 @@ const MusicXML = (() => {
          para los dos tipos de ejercicio sin volver a importarlo. */
       const pentaDe = { soprano: 1, bajo: staves };
       const enCompas = { soprano: [], bajo: [] };
-      const ultima = { soprano: null, bajo: null };
       const tiempoLocal = { soprano: 0, bajo: 0 };
       function duracion(n) {
         const t = texto(n, 'type');
@@ -134,27 +139,28 @@ const MusicXML = (() => {
         voces.forEach(v => {
           if (enAcorde) {                                     // nota de un acorde: la más aguda para la soprano, la más grave para el bajo
             const u = ultima[v];
-            if (u && u.nota && nombre) {
-              const a = Teoria.midi(Teoria.nota(nombre)), b = Teoria.midi(Teoria.nota(u.nota));
-              if (v === 'soprano' ? a > b : a < b) u.nota = nombre;
+            if (u && u[0] && nombre) {
+              const a = Teoria.midi(Teoria.nota(nombre)), b = Teoria.midi(Teoria.nota(u[0]));
+              if (v === 'soprano' ? a > b : a < b) u[0] = nombre;
             }
             return;
           }
           const dur = duracion(n);
-          if (!esSilencio && tie.includes('stop') && ultima[v] && ultima[v].nota) {
+          // Ligadura de unión: la nota se suma a la anterior (aunque esté en el compás anterior)
+          if (!esSilencio && tie.includes('stop') && ultima[v] && ultima[v][0]) {
             if (v === 'bajo') avisos.push('Ligadura en el compás ' + (mi + 1) + ': la nota ligada se ha sumado a la anterior.');
-            ultima[v].dur += dur;
+            ultima[v][1] += dur;
             tiempoLocal[v] += dur;
             return;
           }
-          ultima[v] = { nota: nombre, dur };
+          ultima[v] = [nombre, dur];
           enCompas[v].push(ultima[v]);
           tiempoLocal[v] += dur;
           if (esSilencio) ultima[v] = null;
         });
       });
       VOCES.forEach(v => {
-        if (enCompas[v].length) actual.voces[v].push(enCompas[v].map(x => [x.nota, x.dur]));
+        if (enCompas[v].length) actual.voces[v].push(enCompas[v]);
         actual.tiempo[v] += tiempoLocal[v];
       });
 
@@ -170,8 +176,11 @@ const MusicXML = (() => {
     });
 
     if (!fragmentos.length) throw new Error('No se ha encontrado ninguna nota en el archivo. Comprueba que el ejercicio está escrito en el pentagrama del bajo o en el de la melodía.');
+    /* Si el archivo solo trae la otra voz, no es un error: se importa igual y cada
+       fragmento dice qué voz tiene. Así un archivo de melodías sirve aunque el tipo de
+       ejercicio elegido sea todavía el de bajo dado. */
     const conVoz = fragmentos.filter(f => f.compases.length && f.compases.some(c => c.some(([n]) => n !== null)));
-    if (!conVoz.length) throw new Error('No se ha encontrado ninguna nota en el pentagrama ' + (vozPedida === 'soprano' ? 'superior (el de la melodía)' : 'inferior (el del bajo)') + '. Cambia el tipo de ejercicio o escribe el ejercicio en ese pentagrama.');
+    if (!conVoz.length) avisos.push('En el pentagrama ' + (vozPedida === 'soprano' ? 'superior (el de la melodía)' : 'inferior (el del bajo)') + ' no hay notas: el archivo trae la otra voz. Cambia el tipo de ejercicio para usarlo.');
     return { fragmentos, avisos };
   }
 
@@ -189,19 +198,65 @@ const MusicXML = (() => {
     return -1;
   }
 
+  /* Quita los silencios del final: los compases vacíos que quedan tras la última nota
+     (el resto de la página en MuseScore) y el silencio final de un fragmento, que no
+     dice nada. Los silencios de en medio —el respiro tras una semicadencia— se quedan. */
+  function sinColaDeSilencios(compases) {
+    const out = compases.map(c => c.slice());
+    while (out.length) {
+      const ultimo = out[out.length - 1];
+      while (ultimo.length && ultimo[ultimo.length - 1][0] === null) ultimo.pop();
+      if (ultimo.length) break;
+      out.pop();
+    }
+    return out;
+  }
+
+  /* ¿Suena en el fragmento la sensible de esa tonalidad menor? (la 7.ª elevada: sol♯ en
+     la menor, si♮ en do menor). Es lo que distingue el menor de su relativo mayor. */
+  function haySensible(frag, tonicaMenor) {
+    if (!tonicaMenor) return false;
+    let sens;
+    try { sens = Teoria.transportar(Teoria.nota(tonicaMenor + '3'), 6, 11); } catch (e) { return false; }
+    return ['soprano', 'bajo'].some(v => frag.voces[v].some(c => c.some(([n]) => {
+      if (n === null) return false;
+      let x; try { x = Teoria.nota(n); } catch (e) { return false; }
+      return x.letra === sens.letra && x.alt === sens.alt;
+    })));
+  }
+
   function cerrar(frag, modoXML, compas, vozPedida) {
+    ['soprano', 'bajo'].forEach(v => { frag.voces[v] = sinColaDeSilencios(frag.voces[v]); });
     const f = String(frag.fifths);
     const tiene = v => frag.voces[v].some(c => c.some(([n]) => n !== null));
-    // Modo: se deduce de la última nota del bajo (o de la melodía, si no hay bajo)
+    /* Modo: una armadura sirve para dos tonalidades, así que hay que elegir. Se suman
+       indicios: acabar en la tónica pesa más que empezar en ella, y **la sensible del
+       relativo menor escrita como alteración accidental** (sol♯ con la armadura de Do,
+       si♮ con la de Mi♭) es el indicio más claro de que el fragmento está en menor —así
+       se reconocen las semicadencias en menor, que no acaban en la tónica—. Si los
+       indicios empatan, se toma el mayor y se avisa con (?) en la lista de fragmentos. */
     const vozRef = tiene('bajo') ? 'bajo' : 'soprano';
     const notasRef = conTiempos(frag.voces[vozRef]);
+    const sinOct = n => String(n).replace(/-?\d+$/, '');
     const ultima = notasRef.length ? notasRef[notasRef.length - 1].nota : 'C3';
-    const sinOctava = ultima.replace(/-?\d+$/, '');
+    const primera = notasRef.length ? notasRef[0].nota : null;
+    let puntosMenor = 0, puntosMayor = 0;
+    if (sinOct(ultima) === MENORES[f]) puntosMenor += 2;
+    if (sinOct(ultima) === MAYORES[f]) puntosMayor += 2;
+    if (primera && sinOct(primera) === MENORES[f]) puntosMenor += 1;
+    if (primera && sinOct(primera) === MAYORES[f]) puntosMayor += 1;
+    const conSensible = haySensible(frag, MENORES[f]);
+    if (conSensible) puntosMenor += 2;
     let modo, seguro = true;
     if (modoXML === 'minor') modo = 'menor';
     else if (modoXML === 'major') modo = 'mayor';
-    else if (sinOctava === MAYORES[f]) modo = 'mayor';
-    else if (sinOctava === MENORES[f]) modo = 'menor';
+    else if (puntosMenor > puntosMayor) {
+      modo = 'menor';
+      /* Para el menor se pide una prueba de verdad —la sensible escrita o el final en la
+         tónica—, porque empezar en la tónica menor es también empezar en el VI del
+         relativo mayor, y eso solo no basta. */
+      seguro = conSensible || sinOct(ultima) === MENORES[f];
+    } else if (puntosMayor > puntosMenor) modo = 'mayor';
     else { modo = 'mayor'; seguro = false; }
     let tonica = modo === 'menor' ? MENORES[f] : MAYORES[f];
     // Un texto de pauta al principio del fragmento fija su tonalidad

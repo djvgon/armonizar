@@ -40,15 +40,16 @@ const Reglas = (() => {
   }
   const esSalto = m => m === 'saltoAsc' || m === 'saltoDesc';
 
-  // Lista plana de notas del ejercicio (objetos nota).
-  function notasDe(ej) {
-    const out = [];
-    ej.compases.forEach(c => c.forEach(([n]) => out.push(Teoria.nota(n))));
-    return out;
-  }
+  // Lista plana de notas del ejercicio (objetos nota; los silencios no cuentan).
+  function notasDe(ej) { return Teoria.notasDeCompases(ej.compases).map(n => Teoria.nota(n)); }
+  // Frases: un silencio corta, de modo que la nota anterior es un final y la siguiente un comienzo
+  const cortesDe = ej => Teoria.cortes(ej.compases);
 
-  function contexto(notas, i, ton) {
-    const n = notas[i], ant = notas[i - 1] || null, sig = notas[i + 1] || null;
+  function contexto(notas, i, ton, cortes) {
+    const cor = cortes || [];
+    const inicioFrase = i === 0 || cor[i];
+    const finFrase = i === notas.length - 1 || cor[i + 1];
+    const n = notas[i], ant = inicioFrase ? null : notas[i - 1], sig = finFrase ? null : notas[i + 1];
     return {
       i, nota: n,
       grado: Teoria.grado(n, ton).grado,
@@ -57,8 +58,8 @@ const Reglas = (() => {
       salida: sig ? movimiento(n, sig) : 'final',
       gradoAnt: ant ? Teoria.grado(ant, ton).grado : null,
       gradoSig: sig ? Teoria.grado(sig, ton).grado : null,
-      esUltima: i === notas.length - 1,
-      esPenultima: i === notas.length - 2,
+      esUltima: finFrase,
+      esPenultima: !finFrase && (i === notas.length - 2 || cor[i + 2]),
       total: notas.length
     };
   }
@@ -168,10 +169,11 @@ const Reglas = (() => {
   function proponerEn(ej, ton) {
     const repertorio = ej.repertorio || Object.keys(Teoria.CIFRADOS);
     const notas = notasDe(ej);
+    const cortes = cortesDe(ej);
     const salida = [];
     for (let i = 0; i < notas.length; i++) {
-      const c = contexto(notas, i, ton);
-      const previo = salida[i - 1] || null;
+      const c = contexto(notas, i, ton, cortes);
+      const previo = cortes[i] ? null : (salida[i - 1] || null);   // tras un silencio no se arrastra el acorde anterior
       let r = r1_final(c) || r2_cadencia(c, notas, ton) || r3_repeticion(c, previo)
         || r4_arpegio(c, previo, notas, ton, repertorio) || r5_funcional(c)
         || r6_cuartoSalta(c) || r7_regla_octava(c);
@@ -275,14 +277,16 @@ const Reglas = (() => {
 
   // Candidatos de la nota i (melodía s, tonalidad ton) dentro del repertorio de cifras o,
   // si el ejercicio trae una lista de acordes (ej.acordes = ['I|53', 'IV|6', …]), solo entre esos.
-  function candidatosSoprano(s, ton, repertorio, esUltima, acordes) {
+  function candidatosSoprano(s, tonBase, repertorio, esUltima, acordes) {
     const out = [];
     const cs = claseDe(s);
-    const sensibleTon = (Teoria.clase(Teoria.nota(ton.tonica + '4')) + 11) % 12;
+    const sensibleTon = (Teoria.clase(Teoria.nota(tonBase.tonica + '4')) + 11) % 12;
     const lista = Array.isArray(acordes) && acordes.length ? acordes.map(x => { const k = String(x).indexOf('|'); return { romano: x.slice(0, k), id: x.slice(k + 1) }; }) : null;
     Teoria.ROMANOS.forEach(romano => {
       repertorio.forEach(id => {
         if (lista && !lista.some(a => a.romano === romano && a.id === id)) return;
+        // Menor melódica: el acorde se construye con la inflexión que contenga la nota de la melodía
+        const ton = Teoria.tonParaAcorde(romano, id, tonBase, s);
         if (!lista) {
           if (romano === 'III') return;                                 // fuera de la sintaxis diatónica del cuadro (T = I, VI; S = II, IV, VI; D = V, VII)
           if ((id === '65' || id === '43' || id === '7') && romano !== 'II') return;   // séptimas diatónicas: solo el II (II7, II6/5, II4/3)
@@ -323,7 +327,8 @@ const Reglas = (() => {
         if (id === '64') coste += 2;
         if (id === '9') coste += 4;
         out.push({ id: romano + '|' + id, romano, cifra: id, bajo: b, gradoBajo, funciones: Teoria.funcionesDeAcorde(romano, id),
-          miembro, sensibleBajo: sensibles.has(cb), septimaBajo: id === '+4', claseBajo: cb, claseFund: Teoria.clase(fund), avisos, coste });
+          miembro, sensibleBajo: sensibles.has(cb), septimaBajo: id === '+4', claseBajo: cb, claseFund: Teoria.clase(fund),
+          melodica: !!ton.melodica, avisos, coste });
       });
     });
     return out;
@@ -389,104 +394,140 @@ const Reglas = (() => {
     const tons = Teoria.tonalidadesPorNota(ej);
     const forzadas = Array.isArray(opciones.funciones) ? opciones.funciones : [];
     const tst = ej.formulaTST !== false;
-    const reglasEn = i => ({ tst, esFinal: i === n - 1 });
-    // Candidatos por nota: todos los que contienen la nota (se devuelven para la revisión) y,
-    // para las sucesiones, solo los de la función fijada, si la hay
-    const candsTodos = notas.map((s, i) => candidatosSoprano(s, tons[i], repertorio, i === n - 1, ej.acordes));
-    const cands = candsTodos.map((cs, i) => (forzadas[i] ? cs.filter(x => x.funciones.includes(forzadas[i])) : cs.slice()));
-    /* Comienzo y cadencia final (reglas de Diego, 20/9/2026), salvo en las notas con la
-       función fijada por el profesor:
-         · se empieza por la tónica (I); si la nota no está en I, por la dominante (anacrusa);
-           nunca por el VI;
-         · la frase acaba S – D – T siempre que la melodía lo permita: penúltima nota,
-           dominante; antepenúltima, subdominante (solo subdominantes, si la nota admite
-           alguna); y, si se puede, 6/4 cadencial: cuando la nota anterior a la dominante
-           es de la tónica y la dominante va en estado fundamental, el I6/4 es el modelo
-           (con las subdominantes también admitidas) y la subdominante pasa a la nota anterior;
-         · en una semicadencia (final en V), la penúltima nota lleva subdominante si puede. */
+    const cortes = cortesDe(ej);
+    /* Frases: un silencio corta el fragmento. Cada frase tiene su comienzo (tónica) y su
+       cadencia (S – D – T), y no hay enlace entre el final de una y el principio de la siguiente. */
+    const frases = [];
+    for (let i = 0; i < n; i++) { if (i === 0 || cortes[i]) frases.push({ ini: i, fin: i }); else frases[frases.length - 1].fin = i; }
+    const fraseDe = new Array(n);
+    frases.forEach((f, q) => { for (let i = f.ini; i <= f.fin; i++) fraseDe[i] = q; });
+    const finDeFrase = i => frases[fraseDe[i]].fin === i;
+    const reglasEn = i => ({ tst, esFinal: finDeFrase(i) });
     const esFun = (x, f) => x.funciones.includes(f);
     const soloFun = (cs, f) => { const s = cs.filter(x => esFun(x, f)); return s.length ? s : null; };
-    if (n > 0 && !forzadas[0]) {
-      const c0 = cands[0].filter(x => x.cifra !== '64');
-      const tonica = c0.filter(x => x.romano === 'I');
-      const dominante = c0.filter(x => x.romano === 'V' || x.romano === 'VII');
-      cands[0] = tonica.length ? tonica : dominante.length ? dominante : c0;
-    }
-    let con64 = false, plagal = false;
-    if (n >= 3 && !forzadas[n - 1]) {
-      const finalEnI = cands[n - 1].some(x => x.romano === 'I');
-      if (finalEnI) {
-        if (!forzadas[n - 2]) {
-          const d = (() => { const x = cands[n - 2].filter(y => esFun(y, 'D') && y.cifra !== '64'); return x.length ? x : null; })();   // dominante de verdad (el 6/4 no cuenta)
-          if (d) cands[n - 2] = d;
-          else { const s = soloFun(cands[n - 2], 'S'); if (s) { cands[n - 2] = s; plagal = true; } }   // sin dominante posible: cadencia plagal
+
+    // Todos los acordes que contienen cada nota (se devuelven para la revisión del profesor)
+    const candsTodos = notas.map((s, i) => candidatosSoprano(s, tons[i], repertorio, finDeFrase(i), ej.acordes));
+    // …y, para las sucesiones, solo los de la función fijada por el profesor, si la hay
+    const base = candsTodos.map((cs, i) => (forzadas[i] ? cs.filter(x => x.funciones.includes(forzadas[i])) : cs.slice()));
+    // Una nota sin ningún acorde posible rompe la cadena, para no invalidar el resto del fragmento
+    const rompe = i => i === 0 || cortes[i] || base[i - 1].length === 0;
+
+    /* Un intento de análisis: aplica (o no, frase por frase) las reglas de comienzo y de
+       cadencia y busca con programación dinámica la mejor sucesión. Si una frase se queda
+       sin salida por culpa de esas reglas —por ejemplo, la única subdominante posible haría
+       quintas con la melodía—, se repite sin ellas en esa frase. */
+    function intentar(conReglas) {
+      const cands = base.map(cs => cs.map(x => Object.assign({}, x)));
+      const pos64 = new Set(), finPlagal = new Set();
+      frases.forEach((fr, q) => {
+        if (!conReglas[q]) return;
+        const ini = fr.ini, fin = fr.fin, largo = fin - ini + 1;
+        if (!forzadas[ini]) {
+          const c0 = cands[ini].filter(x => x.cifra !== '64');
+          const tonica = c0.filter(x => x.romano === 'I');
+          const dominante = c0.filter(x => x.romano === 'V' || x.romano === 'VII');
+          if (tonica.length || dominante.length || c0.length) cands[ini] = tonica.length ? tonica : dominante.length ? dominante : c0;
         }
-        if (n >= 4 && !forzadas[n - 3] && !plagal) {
-          const seisCuatro = cands[n - 3].filter(x => x.romano === 'I' && x.cifra === '64');
-          const vRaiz = cands[n - 2].some(x => x.romano === 'V' && (x.cifra === '53' || x.cifra === '7+'));
-          if (seisCuatro.length && vRaiz) {
-            con64 = true;
-            seisCuatro.forEach(x => { x.coste = -4; });
-            cands[n - 3] = seisCuatro.concat(cands[n - 3].filter(x => x.cifra !== '64' && esFun(x, 'S')));
+        if (largo < 3 || forzadas[fin]) return;
+        let con64 = false, plagal = false;
+        const finalEnI = cands[fin].some(x => x.romano === 'I');
+        if (finalEnI) {
+          if (!forzadas[fin - 1]) {
+            const d = (() => { const x = cands[fin - 1].filter(y => esFun(y, 'D') && y.cifra !== '64'); return x.length ? x : null; })();   // dominante de verdad (el 6/4 no cuenta)
+            if (d) cands[fin - 1] = d;
+            else { const s = soloFun(cands[fin - 1], 'S'); if (s) { cands[fin - 1] = s; plagal = true; } }   // sin dominante posible: cadencia plagal
           }
+          if (largo >= 4 && !forzadas[fin - 2] && !plagal) {
+            const seisCuatro = cands[fin - 2].filter(x => x.romano === 'I' && x.cifra === '64');
+            const vRaiz = cands[fin - 1].some(x => x.romano === 'V' && (x.cifra === '53' || x.cifra === '7+'));
+            if (seisCuatro.length && vRaiz) {
+              con64 = true;
+              pos64.add(fin - 2);
+              seisCuatro.forEach(x => { x.coste = -4; });
+              cands[fin - 2] = seisCuatro.concat(cands[fin - 2].filter(x => x.cifra !== '64' && esFun(x, 'S')));
+            }
+          }
+          // Subdominante antes de la dominante (o antes del 6/4 cadencial), siempre que la nota lo permita
+          const posS = con64 ? fin - 3 : fin - 2;
+          if (!plagal && posS > ini && !forzadas[posS]) { const s = soloFun(cands[posS], 'S'); if (s) cands[posS] = s; }
+        } else if (cands[fin].some(x => x.romano === 'V') && !forzadas[fin - 1]) {
+          const s = soloFun(cands[fin - 1], 'S');
+          if (s) cands[fin - 1] = s;
+          else { const noD = cands[fin - 1].filter(x => !x.funciones.every(f => f === 'D')); if (noD.length) cands[fin - 1] = noD; }
         }
-        // Subdominante antes de la dominante (o antes del 6/4 cadencial), siempre que la nota lo permita
-        const posS = con64 ? n - 4 : n - 3;
-        if (!plagal && posS >= 1 && !forzadas[posS]) { const s = soloFun(cands[posS], 'S'); if (s) cands[posS] = s; }
-      } else if (cands[n - 1].some(x => x.romano === 'V') && !forzadas[n - 2]) {
-        const s = soloFun(cands[n - 2], 'S');
-        if (s) cands[n - 2] = s;
-        else { const noD = cands[n - 2].filter(x => !x.funciones.every(f => f === 'D')); if (noD.length) cands[n - 2] = noD; }
-      }
-    }
-    // El 6/4 solo como cadencial, en su sitio (la nota anterior a la dominante final)
-    for (let i = 0; i < n; i++) if (!(con64 && i === n - 3)) cands[i] = cands[i].filter(x => x.cifra !== '64' || forzadas[i]);
-    // Programación dinámica hacia delante: mejor coste de llegar a cada candidato
-    const capas = cands.map((cs, i) => cs.map(x => ({ x, coste: Infinity, ant: null, alcanzable: false })));
-    capas[0].forEach(nd => { nd.coste = nd.x.coste + (nd.x.romano === 'I' ? 0 : 4) + (nd.x.cifra === '53' ? 0 : 2); nd.alcanzable = true; });   // empezar en I, mejor en estado fundamental
-    for (let i = 1; i < n; i++) {
-      capas[i].forEach(nd => {
-        capas[i - 1].forEach((pv, k) => {
-          if (!pv.alcanzable || !enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i], reglasEn(i))) return;
-          let extra = nd.x.coste + costeEnlace(pv.x, nd.x, notas[i - 1], notas[i], i === n - 1);
-          // Cadencia: mejor V en estado fundamental → I (perfecta); antes, mejor una subdominante (T S D T) o el 6/4 cadencial
-          if (i === n - 1) extra += (pv.x.romano === 'V' && (pv.x.cifra === '53' || pv.x.cifra === '7+')) ? 0 : pv.x.funciones.every(f => f === 'D') ? 3 : plagal ? 0 : pv.x.funciones.includes('S') ? 4 : 6;
-          if (i === n - 2 && n > 3) extra += (pv.x.cifra === '64' || pv.x.funciones.includes('S')) ? 0 : 4;
-          const total = pv.coste + extra;
-          if (total < nd.coste) { nd.coste = total; nd.ant = k; }
-        });
-        nd.alcanzable = nd.coste < Infinity;
+        if (plagal) finPlagal.add(fin);
       });
+      // El 6/4 solo como cadencial, en su sitio
+      for (let i = 0; i < n; i++) if (!pos64.has(i)) cands[i] = cands[i].filter(x => x.cifra !== '64' || forzadas[i]);
+
+      // Programación dinámica hacia delante: mejor coste de llegar a cada candidato
+      const capas = cands.map(cs => cs.map(x => ({ x, coste: Infinity, ant: null, alcanzable: false })));
+      const costeInicio = nd => nd.x.coste + (nd.x.romano === 'I' ? 0 : 4) + (nd.x.cifra === '53' ? 0 : 2);   // empezar en I, mejor en estado fundamental
+      for (let i = 0; i < n; i++) {
+        if (rompe(i)) { capas[i].forEach(nd => { nd.coste = costeInicio(nd); nd.ant = null; nd.alcanzable = true; }); continue; }
+        const fin = frases[fraseDe[i]].fin, largo = fin - frases[fraseDe[i]].ini + 1;
+        capas[i].forEach(nd => {
+          capas[i - 1].forEach((pv, k) => {
+            if (!pv.alcanzable || !enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i], reglasEn(i))) return;
+            let extra = nd.x.coste + costeEnlace(pv.x, nd.x, notas[i - 1], notas[i], i === fin);
+            // Cadencia: mejor V en estado fundamental → I (perfecta); antes, mejor una subdominante (T S D T) o el 6/4 cadencial
+            if (i === fin) extra += (pv.x.romano === 'V' && (pv.x.cifra === '53' || pv.x.cifra === '7+')) ? 0 : pv.x.funciones.every(f => f === 'D') ? 3 : finPlagal.has(fin) ? 0 : pv.x.funciones.includes('S') ? 4 : 6;
+            if (i === fin - 1 && largo > 3) extra += (pv.x.cifra === '64' || pv.x.funciones.includes('S')) ? 0 : 4;
+            const total = pv.coste + extra;
+            if (total < nd.coste) { nd.coste = total; nd.ant = k; }
+          });
+          nd.alcanzable = nd.coste < Infinity;
+        });
+      }
+      return { cands, capas };
     }
-    // Hacia atrás: qué candidatos llegan al final por un camino válido
+
+    let r = intentar(frases.map(() => true));
+    const fallan = frases.map(fr => base[fr.fin].length > 0 && !r.capas[fr.fin].some(nd => nd.alcanzable));
+    if (fallan.some(Boolean)) r = intentar(fallan.map(x => !x));      // sin las reglas de cadencia en las frases que se quedaban sin salida
+    const cands = r.cands, capas = r.capas;
+
+    // Hacia atrás: qué candidatos llegan al final de su frase por un camino válido
     const util = capas.map(capa => capa.map(() => false));
-    capas[n - 1].forEach((nd, k) => { util[n - 1][k] = nd.alcanzable; });
+    // Final de cadena: fin de frase, o la nota anterior a una que no tiene ningún acorde posible
+    for (let i = 0; i < n; i++) if (finDeFrase(i) || (i + 1 < n && base[i + 1].length === 0))
+      capas[i].forEach((nd, k) => { util[i][k] = nd.alcanzable; });
     for (let i = n - 1; i > 0; i--) {
+      if (rompe(i)) { capas[i - 1].forEach((pv, j) => { if (pv.alcanzable) util[i - 1][j] = true; }); continue; }
       capas[i].forEach((nd, k) => {
         if (!util[i][k]) return;
         capas[i - 1].forEach((pv, j) => { if (pv.alcanzable && enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i], reglasEn(i))) util[i - 1][j] = true; });
       });
     }
-    // Camino modelo
+
+    // Camino modelo (en cada frase, el de menor coste)
     const modeloIdx = new Array(n).fill(null);
-    let mejor = null;
-    capas[n - 1].forEach((nd, k) => { if (nd.alcanzable && (mejor === null || nd.coste < capas[n - 1][mejor].coste)) mejor = k; });
-    if (mejor !== null) { let k = mejor; for (let i = n - 1; i >= 0; i--) { modeloIdx[i] = k; k = capas[i][k].ant; } }
+    const mejorDe = i => { let m = null; capas[i].forEach((nd, k) => { if (nd.alcanzable && util[i][k] && (m === null || nd.coste < capas[i][m].coste)) m = k; }); return m; };
+    { let k = mejorDe(n - 1);
+      for (let i = n - 1; i >= 0; i--) {
+        if (k === null || k === undefined) k = mejorDe(i);
+        modeloIdx[i] = k;
+        k = (k === null || k === undefined) ? null : capas[i][k].ant;   // al comienzo de una frase, ant es null: se toma el mejor de la anterior
+      } }
+
     return notas.map((s, i) => {
       const cs = cands[i];
       const admIdx = cs.map((_, k) => k).filter(k => util[i][k]);
       const orden = k => (modeloIdx[i] === k ? -1 : cs[k].coste);
       admIdx.sort((a, b) => orden(a) - orden(b));
       const admisibles = admIdx.map(k => cs[k].id);
-      const modelo = modeloIdx[i] !== null ? cs[modeloIdx[i]] : (admIdx.length ? cs[admIdx[0]] : null);
+      const modelo = modeloIdx[i] !== null && modeloIdx[i] !== undefined ? cs[modeloIdx[i]] : (admIdx.length ? cs[admIdx[0]] : null);
       let explicacion;
-      if (!cs.length) explicacion = '⚠ Ningún acorde del repertorio contiene esta nota' + (forzadas[i] ? ' con la función ' + forzadas[i] : '') + '.';
+      if (!candsTodos[i].length) explicacion = '⚠ Ningún acorde del repertorio contiene esta nota' + (forzadas[i] ? ' con la función ' + forzadas[i] : '') + '.';
+      else if (!base[i].length) explicacion = '⚠ Ningún acorde con la función ' + forzadas[i] + ' contiene esta nota.';
       else if (!modelo) explicacion = '⚠ Ninguno de los acordes que contienen esta nota encaja en una sucesión válida (revisa las funciones o el repertorio).';
       else {
         const cif = Teoria.CIFRADOS[modelo.cifra].etiqueta;
-        const f = forzadas[i] || Teoria.funcionDe(modelo.romano, i + 1 < n && modeloIdx[i + 1] !== null ? cands[i + 1][modeloIdx[i + 1]].romano : null);
+        const sig = i + 1 < n && modeloIdx[i + 1] !== null && modeloIdx[i + 1] !== undefined && cands[i + 1][modeloIdx[i + 1]] ? cands[i + 1][modeloIdx[i + 1]].romano : null;
+        const f = forzadas[i] || Teoria.funcionDe(modelo.romano, sig, modelo.cifra);
         explicacion = Teoria.nombreEs(Teoria.nota(s)) + ' es la ' + MIEMBRO_TXT[modelo.miembro] + ' de ' + modelo.romano + (cif === '—' ? '' : ' ' + cif)
-          + ' (bajo ' + Teoria.nombreEs(modelo.bajo) + '; función ' + f + ', ' + Teoria.NOMBRE_FUNCION[f] + ')' + (modelo.avisos.length ? '; ' + modelo.avisos.join(', ') : '') + '.';
+          + ' (bajo ' + Teoria.nombreEs(modelo.bajo) + (modelo.melodica ? ', menor melódica' : '') + '; función ' + f + ', ' + Teoria.NOMBRE_FUNCION[f] + ')' + (modelo.avisos.length ? '; ' + modelo.avisos.join(', ') : '') + '.';
       }
       return { candidatos: candsTodos[i], admisibles, modelo: modelo ? modelo.id : null, explicacion, regla: 'Melodía', contexto: { i, nota: Teoria.nota(s), grado: Teoria.grado(s, tons[i]).grado } };
     });
@@ -527,5 +568,5 @@ const Reglas = (() => {
     return { ok: false, motivo };
   }
 
-  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, contexto, notasDe, movimiento };
+  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, contexto, notasDe, cortesDe, movimiento };
 })();

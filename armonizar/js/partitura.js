@@ -63,7 +63,7 @@ const Partitura = (() => {
       '0': '', '1': '', '2': '', '3': '', '4': '', '5': '',
       '6': '', '7': '', '8': '', '9': '',
       '4t': '', '5t': '', '6t': '', '7t': '',   // numerales tachados
-      '+': '', '#': '', 'b': '', 'n': ''
+      '+': '', '#': '', 'b': '', 'n': '', 'x': '', 'bb': ''
     }
   };
   // Anchuras de avance (en espacios) de los glifos que necesitamos alinear.
@@ -113,14 +113,16 @@ const Partitura = (() => {
      Cada signo se coloca por separado para poder tachar los numerales con
      una barra diagonal (tradición española: barra = intervalo disminuido).
      Anchuras de avance en fracciones de em (medidas en Bravura). */
-  const AVANCE = { num: 0.236, '+': 0.135, '#': 0.19, 'b': 0.177, 'n': 0.134 };
+  const AVANCE = { num: 0.236, '+': 0.135, '#': 0.19, 'b': 0.177, 'n': 0.134, x: 0.22, bb: 0.3 };
 
-  function dibujarCifra(g, id, cx, cyCentro, escala = 1, color = null) {
+  /* 'ctx' = {bajo, ton}: con él se escriben las alteraciones accidentales de la cifra
+     (la sensible del V en menor, etc.). Sin ctx —la paleta— se dibuja la cifra escueta. */
+  function dibujarCifra(g, id, cx, cyCentro, escala = 1, color = null, ctx = null) {
     const c = Teoria.CIFRADOS[id];
     if (!c) return;
     const em = EM_CIFRA * escala;
     const altoFila = 2.1 * SP * escala;                     // los numerales miden 1/4 de em; se deja aire
-    const filas = c.filas;
+    const filas = ctx && ctx.bajo && ctx.ton ? Teoria.filasCifra(id, ctx.bajo, ctx.ton) : c.filas;
     const totalAlto = filas.length * altoFila;
     filas.forEach((fila, k) => {
       const yBase = cyCentro - totalAlto / 2 + (k + 1) * altoFila - 0.25 * altoFila;
@@ -211,6 +213,15 @@ const Partitura = (() => {
       if (!marcasVoz.has(clave)) marcasVoz.set(clave, []);
       if (!marcasVoz.get(clave).includes(k)) marcasVoz.get(clave).push(k);
     }));
+    /* Contexto para escribir las alteraciones de la cifra (la sensible del V en menor,
+       etc.): el bajo de cada nota y la tonalidad que rige en ella. */
+    const tonsNota = (() => { try { return Teoria.tonalidadesPorNota(ej); } catch (e) { return null; } })();
+    const ctxCifra = (i, nb) => (nb ? { bajo: nb, ton: (tonsNota && tonsNota[i]) || ton } : null);
+    // Bajo de la respuesta MODELO: el escrito o, en una melodía de soprano, el que deduce su acorde
+    const modeloBajo = (it, res) => {
+      if (!sopranoDada) return it.nota;
+      try { return Teoria.bajoDe(res.modeloRomano, res.modelo, (tonsNota && tonsNota[it.k]) || ton); } catch (e) { return null; }
+    };
     const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];
     const renglon = [];
     { let r = 0; for (let i = 0; i < numNotas; i++) { if (dobles[i] && i > 0) r++; renglon.push(r); } }
@@ -572,7 +583,7 @@ const Partitura = (() => {
         else if (resp) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
         g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.8 * SP, class: 'fondo' }));
-        if (resp) dibujarCifra(g, resp, cx, Y_CASILLA + ALTO_CASILLA / 2, ESCALA_CIFRA);
+        if (resp) dibujarCifra(g, resp, cx, Y_CASILLA + ALTO_CASILLA / 2, ESCALA_CIFRA, null, ctxCifra(i, nb));
         else if (!estado.corregido) g.appendChild(el('text', { x: cx, y: Y_CASILLA + ALTO_CASILLA / 2 + 0.55 * SP, 'text-anchor': 'middle', class: 'interrogante' }, '?'));
         if (!soloLectura) {
           g.addEventListener('click', () => alPulsar(i, 'cifra'));
@@ -692,10 +703,10 @@ const Partitura = (() => {
       if (res && !res.ok && estado.mostrarSolucion) {
         const gm = el('g', { class: 'modelo' });
         if (pedirRomano) {
-          dibujarCifra(gm, res.modelo, cx - 0.9 * SP, Y_MODELO, 0.75);
+          dibujarCifra(gm, res.modelo, cx - 0.9 * SP, Y_MODELO, 0.75, null, ctxCifra(i, modeloBajo(it, res)));
           gm.appendChild(el('text', { x: cx + 1.1 * SP, y: Y_MODELO + 0.75 * SP, 'text-anchor': 'start', class: 'romano modelo-romano' }, res.modeloRomano));
         } else {
-          dibujarCifra(gm, res.modelo, cx, Y_MODELO, 0.8);
+          dibujarCifra(gm, res.modelo, cx, Y_MODELO, 0.8, null, ctxCifra(i, modeloBajo(it, res)));
         }
         svg.appendChild(gm);
       }
@@ -707,11 +718,13 @@ const Partitura = (() => {
     return svg;
   }
 
-  // Dibuja una cifra suelta como SVG pequeño (para los botones de la paleta).
-  function iconoCifra(id, alto = 44) {
+  /* Dibuja una cifra suelta como SVG pequeño (para los botones de la paleta).
+     Con ctx = {bajo, ton} escribe además sus alteraciones (la revisión del profesor,
+     donde cada chip corresponde a una nota concreta). */
+  function iconoCifra(id, alto = 44, ctx = null) {
     const svg = el('svg', { viewBox: `0 0 ${5 * SP} ${5 * SP}`, width: alto, height: alto, class: 'icono-cifra', 'aria-hidden': 'true' });
     const g = el('g');
-    dibujarCifra(g, id, 2.5 * SP, 2.5 * SP, 0.85);
+    dibujarCifra(g, id, 2.5 * SP, 2.5 * SP, 0.85, null, ctx);
     svg.appendChild(g);
     return svg;
   }

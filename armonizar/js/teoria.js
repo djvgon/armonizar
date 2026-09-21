@@ -417,6 +417,78 @@ const Teoria = (() => {
     return c.voces(nota(bajo), ton);
   }
 
+  /* ---- Alteraciones accidentales en la cifra ----
+     Regla del bajo cifrado: toda voz superior alterada RESPECTO DE LA ARMADURA lleva su
+     alteración escrita junto al número de su intervalo. Si la alterada es la TERCERA, la
+     alteración va sola (sin número): es el caso del V en el modo menor, cuya tercera es
+     la sensible —♯ en la menor (sol♯), ♮ en do menor (si♮, porque la armadura lleva si♭)—.
+     Los cifrados que ya marcan la sensible con el + de Furno (7/+, +6, +4) no se tocan.
+     Esto solo afecta a cómo se DIBUJA la cifra: la paleta y las respuestas no cambian. */
+  const SIGNO_ALTERACION = { '2': 'x', '1': '#', '0': 'n', '-1': 'b', '-2': 'bb' };
+  const CON_MAS = ['7+', '+6', '+4'];               // ya llevan el + de la sensible
+
+  // { númeroDeIntervalo: signo } de las voces superiores alteradas respecto de la armadura
+  function alteracionesCifra(id, bajo, ton) {
+    if (!CIFRADOS[id] || !bajo || !ton || CON_MAS.includes(id)) return {};
+    let voces;
+    try { voces = vocesSuperiores(id, bajo, ton); } catch (e) { return {}; }
+    const armad = {};
+    escalaNatural(ton).forEach(e => { armad[e.letra] = e.alt; });
+    const iBajo = indice(nota(bajo));
+    const out = {};
+    voces.forEach(v => {
+      if (armad[v.letra] === undefined || v.alt === armad[v.letra]) return;
+      const num = ((indice(v) - iBajo) % 7 + 7) % 7 + 1;        // intervalo reducido a la octava
+      out[num] = SIGNO_ALTERACION[String(v.alt)] || '#';
+    });
+    return out;
+  }
+
+  /* Filas que se dibujan para una cifra sobre un bajo concreto: las de CIFRADOS[id],
+     con las alteraciones puestas donde toca. Sin bajo ni tonalidad, las de siempre. */
+  function filasCifra(id, bajo, ton) {
+    const c = CIFRADOS[id];
+    if (!c) return [];
+    const filas = c.filas.map(f => f.map(s => Object.assign({}, s)));
+    const alt = alteracionesCifra(id, bajo, ton);
+    const numeros = Object.keys(alt).map(Number);
+    if (!numeros.length) return filas;
+    const puestos = {};
+    // 1) La alteración se pega delante del número que ya aparece en la cifra
+    const conNumeros = filas.map(fila => {
+      const nueva = [];
+      fila.forEach(s => {
+        const n = s.num ? parseInt(s.num, 10) : 0;
+        const reducido = n > 7 ? n - 7 : n;
+        if (n && alt[reducido] && !puestos[reducido]) { puestos[reducido] = true; nueva.push({ signo: alt[reducido] }); }
+        nueva.push(s);
+      });
+      return nueva;
+    });
+    // 2) La tercera alterada no se escribe con número: va sola, en su propia fila
+    //    (sustituye a la raya del 5/3 y, si no, se añade debajo, como el + de 7/+)
+    let out = conNumeros;
+    if (alt[3] && !puestos[3]) {
+      puestos[3] = true;
+      out = out.filter(f => !(f.length === 1 && f[0].signo === '—'));
+      out.push([{ signo: alt[3] }]);
+    }
+    /* 3) Un intervalo alterado que la cifra no escribe (ni es la tercera) también ha de
+       aparecer: se añade su fila, de mayor a menor. No se hace en las cifras que tienen
+       equivalente marcado (6/5, 4/3, 7 → 6/5̸, +6, 7/+): ahí la alteración ya la lleva
+       ese otro cifrado, que es el que se ofrece en el repertorio. */
+    const pendientes = MARCADOS[id] ? [] : numeros.filter(n => !puestos[n]);
+    if (pendientes.length) {
+      out = out.filter(f => !(f.length === 1 && f[0].signo === '—'));
+      pendientes.forEach(n => out.push([{ signo: alt[n] }, { num: String(n) }]));
+      out.sort((a, b) => {
+        const v = f => { const s = f.find(x => x.num); return s ? parseInt(s.num, 10) : -1; };
+        return v(b) - v(a);
+      });
+    }
+    return out;
+  }
+
   // Fundamental del acorde (objeto nota) para un cifrado sobre un bajo.
   function fundamental(id, bajo, ton) {
     bajo = nota(bajo);
@@ -545,7 +617,7 @@ const Teoria = (() => {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
     escalaNatural, escalaVoces, armadura, grado, nombreTonalidad, nombreCorto, mismaTonalidad,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
-    CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
+    CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
     FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo
   };
 })();
