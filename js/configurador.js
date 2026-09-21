@@ -178,7 +178,11 @@
   // Funciones que se deducen de los acordes modelo (para rellenar la columna «Función»)
   function funcionesDeModelo(ej) { return ej.respuestas.map((_, i) => Ejercicios.funcionModelo(ej, i)); }
 
-  function analizar(conservarFunciones = false) {
+  /* conservarFunciones: mantiene las funciones fijadas (al cambiar una en la tabla).
+     reajustar: además, si con esas funciones alguna nota se queda sin ningún acorde posible
+     (por ejemplo al reducir el repertorio), se vuelven a deducir del modelo, para no dejar
+     el ejercicio bloqueado por una función que ya no puede cumplirse. */
+  function analizar(conservarFunciones = false, reajustar = false) {
     const r = leerBajo();
     if (r.errores.length || !r.compases.length) { aviso('Corrige ' + (esSoprano() ? 'la melodía' : 'el bajo') + ' antes de analizar.'); return; }
     const rep = repertorio();
@@ -198,6 +202,11 @@
     if (!Array.isArray(estado.funciones) || estado.funciones.length !== estado.respuestas.length) {
       estado.funciones = funcionesDeModelo(ej);
       if (forzar) aplicar(proponerPara(ej, estado.funciones));
+    } else if (forzar && reajustar && estado.respuestas.some(a => !a.length)) {
+      aplicar(proponerPara(ej, null));                 // con las funciones fijadas no hay salida: se deducen otra vez
+      estado.funciones = funcionesDeModelo(ej);
+      aplicar(proponerPara(ej, estado.funciones));
+      aviso('Con las funciones anteriores algún acorde se quedaba sin opciones: se han recalculado.');
     }
     pintarRevision();
     $('#paso-revision').hidden = false;
@@ -647,7 +656,7 @@
         lab.title = a.rom + ' ' + c.nombre + ' — ' + c.descripcion + (a.nota ? ' (' + a.nota + ')' : '');
         const cb = document.createElement('input');
         cb.type = 'checkbox'; cb.value = a.id; cb.checked = a.defecto;
-        cb.addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true); });
+        cb.addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true, true); });
         lab.appendChild(cb);
         const r = document.createElement('span'); r.className = 'acorde-rom'; r.textContent = a.rom; lab.appendChild(r);
         lab.appendChild(Partitura.iconoCifra(p.cifra, 30));
@@ -656,7 +665,7 @@
       });
       cont.appendChild(fila);
     });
-    $('#formula-tst').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true); });
+    $('#formula-tst').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true, true); });
   }
 
   function arranque() {
@@ -676,10 +685,12 @@
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
-    $('#funciones').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) { if (esSoprano()) analizar(true); else pintarRevision(); } });
+    $('#funciones').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) { if (esSoprano()) analizar(true, true); else pintarRevision(); } });
     // Si cambia la tonalidad inicial, las modulaciones dejan de tener sentido
     ['#tonica', '#modo'].forEach(sel => $(sel).addEventListener('change', () => { if (estado.modulaciones.length) { estado.modulaciones = []; if (estado.respuestas) analizar(); } }));
     document.querySelectorAll('input[name="modo-ej"]').forEach(r => r.addEventListener('change', () => {
+      // La armonización de soprano parte de la función tonal de cada acorde: si no había fila, se activa
+      if (esSoprano() && !$('#funciones').value) $('#funciones').value = 'dadas';
       ajustarCampoAudicion(); limpiarDireccion();
       // Entre bajo dado y melodía de soprano cambia la voz dada y la forma de las respuestas: se vuelve a leer y analizar
       const eraSoprano = estado.respuestas && estado.respuestas.some(a => a.some(x => String(x).includes('|')));

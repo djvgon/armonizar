@@ -391,5 +391,127 @@ const Realizacion = (() => {
     return [tonica, sub, dom, tonica].map((b, i) => ({ bajo: b, voces: r.acordes[i] || [], duracion: i === 3 ? 4 : 2 }));
   }
 
-  return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, disposicionForzada, paralelasEntre, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
+  /* =====================================================================
+     Auditoría de la conducción de voces (pauta de corrección de Diego)
+
+       Realizacion.auditar(ej, bajos, acordes) → [{ i, texto, notas:[{i, voz}] }]
+
+       bajos   : nota del bajo de cada acorde (o null si la nota no está respondida)
+       acordes : [[tenor, contralto, soprano]|null…]
+       voces   : 0 bajo · 1 tenor · 2 contralto · 3 soprano
+
+     Se comprueban las normas que dependen del enlace entre dos acordes seguidos:
+       · octavas y quintas SEGUIDAS entre dos mismas voces, por movimiento paralelo
+         o contrario (XN1), incluidas las compuestas (XNc); excepción: la segunda
+         quinta disminuida sin el bajo (XN1e);
+       · octavas y quintas por movimiento DIRECTO con el bajo (XN2; excepción: la
+         voz superior va por grados conjuntos) y entre las tres voces superiores
+         (XN3; excepción: una cualquiera de las dos va por grados conjuntos);
+       · notas tendenciales sin resolver (XS4c): la séptima ha de bajar de grado y
+         la sensible subir a la tónica;
+       · voces cruzadas (Y4a).
+     En un cambio de disposición del mismo acorde (XN4) los movimientos directos se
+     admiten; los paralelos, no.
+     Los textos van en lenguaje llano (sin los códigos de la pauta), para el globo
+     que se abre al pulsar una nota señalada. */
+
+  const NOMBRE_VOZ = ['el bajo', 'el tenor', 'la contralto', 'la soprano'];
+  const NOMBRE_VOZ_N = ['bajo', 'tenor', 'contralto', 'soprano'];
+
+  function auditar(ej, bajos, acordes) {
+    const tons = Teoria.tonalidadesPorNota(ej);
+    const avisos = [];
+    const voces = i => (acordes[i] && bajos[i] ? [Teoria.nota(bajos[i]), ...acordes[i]] : null);
+    const nombre = n => Teoria.nombreEs(n);
+    const conjunto = (a, b) => Math.abs(midi(a) - midi(b)) <= 2;
+    for (let i = 1; i < acordes.length; i++) {
+      const antes = voces(i - 1), ahora = voces(i);
+      if (!antes || !ahora) continue;
+      const mismaNota = q => midi(antes[q]) === midi(ahora[q]);
+      // ¿Es un cambio de disposición del mismo acorde? (entonces los directos se admiten)
+      const clasesA = antes.map(clase).sort().join(','), clasesB = ahora.map(clase).sort().join(',');
+      const mismoAcorde = clasesA === clasesB;
+      for (let q = 0; q < 4; q++) for (let r = q + 1; r < 4; r++) {
+        const ia = ((midi(antes[r]) - midi(antes[q])) % 12 + 12) % 12;
+        const ib = ((midi(ahora[r]) - midi(ahora[q])) % 12 + 12) % 12;
+        const mueven = !mismaNota(q) && !mismaNota(r);
+        const notas = [{ i: i - 1, voz: q }, { i: i - 1, voz: r }, { i, voz: q }, { i, voz: r }];
+        // Seguidas (paralelas o por movimiento contrario)
+        if (mueven && ia === ib && (ia === 7 || ia === 0)) {
+          const tipo = ia === 7 ? 'Quintas' : 'Octavas';
+          const paralelo = Math.sign(midi(ahora[q]) - midi(antes[q])) === Math.sign(midi(ahora[r]) - midi(antes[r]));
+          avisos.push({ i, tipo: ia === 7 ? '5as' : '8as', notas,
+            texto: tipo + ' seguidas entre ' + NOMBRE_VOZ[q] + ' y ' + NOMBRE_VOZ[r] + ': '
+              + nombre(antes[q]) + '–' + nombre(antes[r]) + ' pasa a ' + nombre(ahora[q]) + '–' + nombre(ahora[r])
+              + ' (por movimiento ' + (paralelo ? 'paralelo' : 'contrario') + '). Cambia el acorde o su disposición.' });
+          continue;
+        }
+        // Directas: las dos voces en la misma dirección y llegada a 8ª o 5ª
+        if (mismoAcorde || !mueven) continue;
+        const dq = Math.sign(midi(ahora[q]) - midi(antes[q])), dr = Math.sign(midi(ahora[r]) - midi(antes[r]));
+        if (dq !== dr || (ib !== 0 && ib !== 7)) continue;
+        const conBajo = q === 0;
+        // Excepción: con el bajo, la voz superior por grados conjuntos; entre las agudas, una cualquiera
+        const salvada = conBajo ? conjunto(antes[r], ahora[r]) : (conjunto(antes[q], ahora[q]) || conjunto(antes[r], ahora[r]));
+        if (salvada) continue;
+        avisos.push({ i, tipo: 'directa', notas,
+          texto: (ib === 0 ? 'Octava' : 'Quinta') + ' por movimiento directo entre ' + NOMBRE_VOZ[q] + ' y ' + NOMBRE_VOZ[r]
+            + ': las dos voces van en la misma dirección y llegan a ' + (ib === 0 ? 'la octava' : 'la quinta') + ' '
+            + nombre(ahora[q]) + '–' + nombre(ahora[r]) + (conBajo ? ' (con el bajo solo se admite si la voz superior va por grados conjuntos).' : ' (se admite si una de las dos va por grados conjuntos).') });
+      }
+      // Notas tendenciales: la séptima baja, la sensible sube (XS4c)
+      const d = describirDesde(ej, i - 1, bajos, acordes, tons);
+      if (d) for (let q = 0; q < 4; q++) {
+        const de = antes[q], a = ahora[q], pc = clase(de);
+        const delta = midi(a) - midi(de);
+        const contiene = x => ahora.some(n => clase(n) === x);
+        if (d.septima !== null && pc === d.septima && !mismoAcorde) {
+          if (delta === 0 && contiene(pc)) continue;
+          if (delta === -1 || delta === -2) continue;
+          avisos.push({ i, tipo: 'septima', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
+            texto: 'La séptima del acorde (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de bajar de grado; aquí va a ' + nombre(a) + '.' });
+        }
+        if (d.sensibles.has(pc) && !mismoAcorde && contiene((pc + 1) % 12) && (q === 0 || q === 3)) {
+          if (delta === 1 || (delta === 0 && contiene(pc))) continue;
+          avisos.push({ i, tipo: 'sensible', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
+            texto: 'La sensible (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de subir a la tónica; aquí va a ' + nombre(a) + '.' });
+        }
+      }
+    }
+    // Voces cruzadas dentro de un acorde (Y4a)
+    for (let i = 0; i < acordes.length; i++) {
+      const v = voces(i);
+      if (!v) continue;
+      for (let q = 0; q < 3; q++) if (midi(v[q]) > midi(v[q + 1]))
+        avisos.push({ i, tipo: 'cruce', notas: [{ i, voz: q }, { i, voz: q + 1 }],
+          texto: 'Voces cruzadas: ' + NOMBRE_VOZ[q] + ' (' + nombre(v[q]) + ') está por encima de ' + NOMBRE_VOZ[q + 1] + ' (' + nombre(v[q + 1]) + ').' });
+    }
+    return avisos;
+  }
+
+  // Descripción del acorde i (para conocer su séptima y sus sensibles) a partir de lo escrito
+  function describirDesde(ej, i, bajos, acordes, tons) {
+    if (!bajos[i] || !acordes[i]) return null;
+    const bajo = Teoria.nota(bajos[i]);
+    const ton = tons[i] || ej.tonalidad;
+    const todas = [bajo, ...acordes[i]];
+    // Fundamental: la nota del acorde de la que las demás son 3ª, 5ª o 7ª (por letras)
+    const letra = n => Teoria.LETRAS.indexOf(n.letra);
+    let fund = bajo, mejor = -1;
+    todas.forEach(cand => {
+      const pasos = todas.map(n => ((letra(n) - letra(cand)) % 7 + 7) % 7);
+      const ok = pasos.every(p => p === 0 || p === 2 || p === 4 || p === 6);
+      const puntos = ok ? 10 - Math.max(...pasos) : -1;
+      if (puntos > mejor) { mejor = puntos; fund = cand; }
+    });
+    const miembro = (n, k) => ((letra(n) - letra(fund)) % 7 + 7) % 7 === k;
+    const septima = todas.find(n => miembro(n, 6));
+    const tercera = todas.find(n => miembro(n, 2));
+    const sensibles = new Set([claseSensible(ton)]);
+    // Tercera mayor de un acorde con séptima menor: sensible (dominante, también secundaria)
+    if (septima && tercera && ((clase(septima) - clase(fund) + 12) % 12) === 10 && ((clase(tercera) - clase(fund) + 12) % 12) === 4) sensibles.add(clase(tercera));
+    return { septima: septima ? clase(septima) : null, sensibles };
+  }
+
+  return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, disposicionForzada, paralelasEntre, auditar, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
 })();

@@ -30,6 +30,7 @@
     modoFun: null,            // null (sin fila «Función») | 'dadas' (rellena, fija) | 'pedir' (la rellena el alumno)
     bajos: [],                // melodía de soprano: bajo deducido de cada respuesta (nota o null)
     bajosMal: null,           // melodía de soprano: tras corregir, qué bajos van en rojo
+    avisosVoces: [],          // errores de conducción de voces de la realización que se ve (notas en rojo + globo)
     marcas: {},               // modulación según el alumno: índice de nota → tonalidad que rige desde ahí
     avisoMod: null,           // null (sin modulación) | 'completo' (se muestra dónde y a qué tonalidad) | 'existe' (solo se avisa)
     tonalidadBloqueada: false,// la fila «Tonalidad» ya no se edita (modo completo, o marcas acertadas en un reintento)
@@ -150,7 +151,7 @@
     } else if (estado.modoEj === 'soprano') {
       html = '<b>Armonización de soprano.</b> Ves la melodía: para cada nota indica ' + que + '; el acorde que has escrito aparece completo, con el bajo en el pentagrama de fa y la melodía en la voz superior. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la melodía (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
-        + b('▶ Mi cifrado') + ', tu armonización.';
+        + b('▶ Mi cifrado') + ', tu armonización. Si dos acordes seguidos producen un error de conducción de voces (octavas o quintas seguidas, una sensible o una séptima sin resolver), las notas implicadas salen en <span class="ref-mal">rojo</span>: púlsalas para ver por qué.';
     } else {
       html = '<b>Armonización de bajo.</b> Ves solo el bajo: para cada nota indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar el bajo (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
@@ -411,11 +412,24 @@
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];
 
   function calcularRealizacion() {
-    if (!realizacionVisible()) { estado.realizacion = null; estado.realizacionMal = null; estado.paralelas = []; return; }
+    if (!realizacionVisible()) { estado.realizacion = null; estado.realizacionMal = null; estado.paralelas = []; estado.avisosVoces = []; return; }
     const r = Realizacion.realizar(estado.ejercicio, cifrasParaRealizar(), opcionesRealizacion());
     estado.realizacion = r.acordes;
     estado.paralelas = r.paralelas;
     estado.realizacionMal = (estado.modoEj !== 'cifrar' && estado.corregido && estado.resultados) ? estado.resultados.map(x => !x.okCifra) : null;
+    calcularAvisosVoces();
+  }
+
+  /* Errores de conducción de voces de la realización que se está viendo (octavas y quintas
+     seguidas o directas, notas tendenciales sin resolver, cruces). Las notas implicadas se
+     dibujan en rojo y, al pulsarlas, se abre un globo con la explicación. Sirve sobre todo
+     en la armonización de soprano: un acorde puede ser correcto en sí (II6) y no poder
+     usarse ahí porque produce octavas con el bajo. */
+  function calcularAvisosVoces() {
+    estado.avisosVoces = [];
+    if (!Array.isArray(estado.realizacion)) return;
+    const bajos = estado.modoEj === 'soprano' ? estado.bajos : Reglas.notasDe(estado.ejercicio);
+    try { estado.avisosVoces = Realizacion.auditar(estado.ejercicio, bajos, estado.realizacion); } catch (e) { estado.avisosVoces = []; }
   }
 
   // «Escuchar propuesta» suena siempre: en Armonización propone solo el bajo.
@@ -834,8 +848,10 @@
     let html = '<h2>' + aciertos + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
     const aciertosFun = res.filter(r => r.okFuncion).length;
     const enlacesMal = res.filter(r => !r.okEnlace).length;
+    const vocesMal = (estado.avisosVoces || []).length;
     if (estado.pedirRomano) html += '<p class="desglose">' + (estado.modoFun === 'pedir' ? 'Funciones: ' + aciertosFun + ' de ' + n + ' · ' : '') + 'Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
       + (enlacesMal ? ' · Enlaces incorrectos: ' + enlacesMal : '')
+      + (vocesMal ? ' · Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso') + ' (notas en rojo)' : '')
       + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
     else if (estado.intento > 1 && estado.primerIntento !== null) html += '<p class="desglose">Al primer intento: ' + estado.primerIntento + ' de ' + n + '</p>';
     // Modulación

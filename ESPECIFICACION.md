@@ -392,6 +392,25 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     automática para que esos errores no aparezcan, sin mostrar códigos en
     los cuestionarios. Y2 e Y3 (tesituras y distancias corales) no se
     aplican a la disposición de teclado de Furno.
+23. **Aviso de conducción de voces** (21/9/2026, `Realizacion.auditar`).
+    Cuando la realización que se ve tiene un error de enlace, **las notas
+    implicadas se dibujan en rojo** (las cuatro, en unas octavas o quintas
+    seguidas) y, al pulsar cualquiera de ellas, se abre un **globo** con la
+    explicación en lenguaje llano —sin los códigos de la pauta— y con los
+    nombres de las voces y de las notas; el globo se dibuja en una banda
+    reservada al pie de la partitura, unido a la nota por una línea fina,
+    para no tapar nunca la música. Se comprueban: octavas y quintas
+    seguidas entre dos mismas voces, por movimiento paralelo o contrario e
+    incluidas las compuestas (XN1, XNc); octavas y quintas por movimiento
+    directo con el bajo (XN2) y entre las tres voces superiores (XN3), con
+    sus excepciones de grado conjunto y sin contar los cambios de
+    disposición del mismo acorde (XN4); la séptima que no baja y la
+    sensible de las voces extremas que no sube (XS4c); y las voces
+    cruzadas (Y4a). Sirve sobre todo en la armonización de soprano: un
+    acorde puede ser correcto en sí (II6) y no poder usarse ahí porque
+    produce octavas con el bajo. El número de avisos se resume al corregir
+    («Conducción de voces: 2 avisos»), pero no resta aciertos: la
+    calificación sigue siendo la de las parejas grado + cifra.
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
@@ -548,7 +567,9 @@ Cinco pasos en una página:
    corregir solo los errores; ayuda con los grados (ninguna / lista /
    paleta limitada); en Audición, qué ve el alumno mientras escucha (nada,
    por defecto, o solo el bajo); funciones tonales (sin fila, dadas o
-   pedidas: decisión 20); en la armonización de soprano, en lugar de las
+   pedidas: decisión 20; al elegir la armonización de soprano se activa
+   sola como «dadas», porque ese ejercicio parte del plan de funciones);
+   en la armonización de soprano, en lugar de las
    cifras sueltas, los acordes disponibles por función tonal y la fórmula
    T S T (decisión 21);
    modelo sobre el grado 6 descendente (tercero: II4/3; cuarto: `+6`, que se

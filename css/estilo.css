@@ -85,7 +85,8 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 /* El indicador de carga no ocupa sitio (absoluto), para que no desplace nada mientras el alumno pulsa */
 .control-instrumento { position: relative; }
 .instrumento-estado { position: absolute; left: 0; top: 100%; font-size: .7rem; color: var(--acento); font-style: italic; white-space: nowrap; pointer-events: none; }
-.instruccion .ref-boton { display: inline-block; font-size: .82em; padding: 0 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); white-space: nowrap; }
+.instruccion .ref-mal { color: var(--mal); font-weight: bold; }
+.ref-boton { display: inline-block; font-size: .82em; padding: 0 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); white-space: nowrap; }
 svg.partitura .boton-sonar { cursor: pointer; }
 svg.partitura .boton-sonar .fondo { fill: var(--papel); stroke: var(--linea); stroke-width: 1.2; transition: fill .12s, stroke .12s; }
 svg.partitura .boton-sonar .triangulo { fill: var(--tinta-suave); }
@@ -150,6 +151,17 @@ svg.partitura .casilla-ton.mal .ton, svg.partitura .casilla-ton.mal .interrogant
 .chip-fund { font-weight: bold; min-width: 1.6em; text-align: right; }
 .chip.con-aviso .icono-cifra { opacity: .75; }
 .sel-fun { font: inherit; font-size: .85rem; padding: 3px 4px; border-radius: 6px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); }
+/* Errores de conducción de voces: notas señaladas y globo de explicación */
+svg.partitura .voz-mal { fill: var(--mal); }
+/* pointer-events: all → la zona sigue siendo pulsable aunque el relleno pase a «none» al pasar el ratón */
+svg.partitura .voz-zona { fill: transparent; cursor: pointer; pointer-events: all; }
+svg.partitura .voz-zona:focus { outline: none; }
+svg.partitura .voz-zona.activo, svg.partitura .voz-zona:hover, svg.partitura .voz-zona:focus { fill: none; stroke: var(--mal); stroke-width: 1.6; }
+svg.partitura .globo-aviso { cursor: pointer; }
+svg.partitura .globo-fondo { fill: var(--papel); stroke: var(--mal); stroke-width: 1.6; }
+svg.partitura .globo-texto { fill: var(--tinta); font-family: Georgia, "Times New Roman", serif; pointer-events: none; }
+svg.partitura .globo-punta { stroke-dasharray: 0; }
+svg.partitura .globo-guia { stroke: var(--mal); stroke-width: 1; stroke-dasharray: 3 3; }
 /* Fila «Función» (T · S · D) y bajo deducido en la melodía de soprano */
 svg.partitura .casilla-fun .fondo { fill: var(--fondo); stroke: var(--linea); stroke-dasharray: 3 2; }
 svg.partitura .casilla-fun.llena .fondo, svg.partitura .casilla-fun.fija .fondo { stroke-dasharray: none; }

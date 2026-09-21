@@ -28,7 +28,11 @@
                       pentagrama de sol; el bajo lo aporta bajos:[nota|null…], deducido de
                       cada respuesta, y bajosMal:[bool] lo pinta en rojo),
                       filaFunciones:{visible, editable, celdas:[{texto, clase, fija}]}
-                      (fila «Función» T · S · D bajo los grados, campo 'funcion') }
+                      (fila «Función» T · S · D bajo los grados, campo 'funcion'),
+                      avisosVoces:[{texto, notas:[{i, voz}]}] (errores de conducción de voces:
+                      las notas implicadas se dibujan en rojo y, al pulsar cualquiera de
+                      ellas, se abre un globo con la explicación; voz 0 = bajo, 1 tenor,
+                      2 contralto, 3 soprano) }
        alPulsar   : función(índiceDeNota, campo) que se llama al pulsar una casilla
 
    Duraciones en negras: 4 redonda, 2 blanca, 1 negra, 0.5 corchea; ×1.5 = con puntillo.
@@ -181,6 +185,28 @@ const Partitura = (() => {
        abajo; el pivote (dobles[i]) lleva dos grados apilados —el de la tonalidad anterior
        en su renglón y el de la nueva en el siguiente— unidos por dos líneas verticales.
        renglon[i] = renglón de la nota i (el pivote ocupa renglon[i]-1 y renglon[i]). */
+    const avisosVoces = Array.isArray(estado.avisosVoces) ? estado.avisosVoces : [];
+    const ANCHO_LINEA = 46, ALTO_LINEA = 1.45 * SP;
+    const trozos = (txt, ancho) => {
+      const palabras = String(txt).split(' '), lineas = [];
+      let linea = '';
+      palabras.forEach(p => {
+        if ((linea + ' ' + p).trim().length > ancho) { if (linea) lineas.push(linea); linea = p; }
+        else linea = (linea ? linea + ' ' : '') + p;
+      });
+      if (linea) lineas.push(linea);
+      return lineas;
+    };
+    const lineasDe = av => trozos(av.texto, ANCHO_LINEA);
+    /* Notas señaladas por un error de conducción de voces: clave 'nota:voz' → avisos.
+       Al pulsar una de ellas se abre un globo con la explicación (y se resaltan las
+       demás notas del mismo aviso). */
+    const marcasVoz = new Map();
+    avisosVoces.forEach((av, k) => (av.notas || []).forEach(nv => {
+      const clave = nv.i + ':' + nv.voz;
+      if (!marcasVoz.has(clave)) marcasVoz.set(clave, []);
+      if (!marcasVoz.get(clave).includes(k)) marcasVoz.get(clave).push(k);
+    }));
     const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];
     const renglon = [];
     { let r = 0; for (let i = 0; i < notas.length; i++) { if (dobles[i] && i > 0) r++; renglon.push(r); } }
@@ -196,7 +222,13 @@ const Partitura = (() => {
     const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_FUN;
     const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
     const Y_MODELO = Y_FIN_CASILLAS + 2.4 * SP;            // centro de la respuesta modelo (tras corregir)
-    const ALTO_TOTAL = Y_MODELO + 2.6 * SP;
+    /* Si hay errores de conducción de voces, se reserva al pie una banda para el globo de
+       explicación, de modo que nunca tape la música. Se calcula la altura del globo más
+       alto que puede abrirse (el texto se reparte en líneas de 46 caracteres). */
+    const maxLineas = avisosVoces.reduce((m, av) => Math.max(m, lineasDe(av).length), 0);
+    const ALTO_GLOBO = avisosVoces.length ? maxLineas * ALTO_LINEA + 3.2 * SP : 0;
+    const Y_GLOBO = Y_MODELO + 2.6 * SP;                   // borde superior de la banda del globo
+    const ALTO_TOTAL = Y_MODELO + 2.6 * SP + ALTO_GLOBO;
 
     // Cálculo de posiciones x
     let x = sinSistema ? MARGEN + 6 * SP : MARGEN + ANCHO_CLAVE + ANCHO_ARM + ANCHO_COMPAS;   // sin sistema queda sitio para «Do M:»
@@ -305,6 +337,84 @@ const Partitura = (() => {
       svg.appendChild(g);
     });
 
+    /* ---- Globo de explicación de un error de conducción de voces ----
+       Se dibuja encima de todo, apuntando a la nota pulsada; se cierra al volver a
+       pulsarla, al pulsar el globo o al pulsar cualquier otra nota señalada. */
+    let globoAbierto = null;
+    function cerrarGlobo() {
+      if (globoAbierto) { globoAbierto.remove(); globoAbierto = null; }
+      svg.querySelectorAll('.voz-mal.activo').forEach(e => e.classList.remove('activo'));
+    }
+    // El globo se dibuja en la banda reservada al pie, con una línea fina hasta la nota pulsada
+    function abrirGlobo(cx, cy, indices, elementos) {
+      cerrarGlobo();
+      elementos.forEach(e => e.classList.add('activo'));
+      const ANCHO_CAR = 4.6, TAM = 11;
+      const lineas = [];
+      indices.forEach((k, j) => {
+        if (j) lineas.push('');
+        lineasDe(avisosVoces[k]).forEach(l => lineas.push(l));
+      });
+      const anchoTexto = Math.max(...lineas.map(l => l.length)) * ANCHO_CAR + 2.2 * SP;
+      const alto = lineas.length * ALTO_LINEA + 1.6 * SP;
+      const x = Math.min(Math.max(cx - anchoTexto / 2, 0.5 * SP), Math.max(0.5 * SP, ANCHO_TOTAL - anchoTexto - 0.5 * SP));
+      const y = Y_GLOBO + 1.3 * SP;
+      const g = el('g', { class: 'globo-aviso' });
+      const px = Math.min(Math.max(cx, x + 2 * SP), x + anchoTexto - 2 * SP);
+      g.appendChild(el('line', { x1: cx, y1: cy + 1 * SP, x2: px, y2: y, class: 'globo-guia' }));
+      g.appendChild(el('rect', { x, y, width: anchoTexto, height: alto, rx: 0.9 * SP, class: 'globo-fondo' }));
+      g.appendChild(el('path', { d: 'M ' + (px - 0.9 * SP) + ' ' + y + ' L ' + px + ' ' + (y - 1.3 * SP) + ' L ' + (px + 0.9 * SP) + ' ' + y + ' Z', class: 'globo-fondo globo-punta' }));
+      lineas.forEach((l, j) => {
+        if (!l) return;
+        g.appendChild(el('text', { x: x + 1.1 * SP, y: y + 1.2 * SP + (j + 1) * ALTO_LINEA - 0.4 * SP, 'font-size': TAM, class: 'globo-texto' }, l));
+      });
+      g.addEventListener('click', ev => { ev.stopPropagation(); cerrarGlobo(); });
+      svg.appendChild(g);
+      globoAbierto = g;
+    }
+    /* Marca en rojo una cabeza de nota señalada y anota dónde está, para poner encima
+       (al final del dibujo) una zona pulsable del tamaño de la cabeza: las cabezas son
+       glifos de una fuente y su caja invisible es mucho mayor que la nota, así que
+       pulsar directamente sobre ellas sería impreciso. */
+    const marcasPendientes = [];
+    function señalar(elemento, i, voz, cx, cy) {
+      const clave = i + ':' + voz;
+      const indices = marcasVoz.get(clave);
+      if (!indices) return false;
+      elemento.classList.add('voz-mal');
+      elemento.setAttribute('data-voz', clave);
+      marcasPendientes.push({ clave, indices, cx, cy });
+      return true;
+    }
+    function dibujarMarcasVoz() {
+      if (!marcasPendientes.length) return;
+      const capa = el('g', { class: 'marcas-voz' });
+      marcasPendientes.forEach(m => {
+        const z = el('circle', { cx: m.cx, cy: m.cy, r: 0.62 * SP, class: 'voz-zona', 'data-voz': m.clave, tabindex: 0, role: 'button',
+          'aria-label': avisosVoces[m.indices[0]].texto });
+        z.appendChild(el('title', {}, avisosVoces[m.indices[0]].texto + (m.indices.length > 1 ? ' (y ' + (m.indices.length - 1) + ' más)' : '')));
+        const abrir = ev => {
+          ev.stopPropagation();
+          if (globoAbierto && z.classList.contains('activo')) { cerrarGlobo(); return; }
+          const hermanas = [];
+          m.indices.forEach(k => (avisosVoces[k].notas || []).forEach(nv => {
+            svg.querySelectorAll('[data-voz="' + nv.i + ':' + nv.voz + '"]').forEach(e => hermanas.push(e));
+          }));
+          abrirGlobo(m.cx, m.cy, m.indices, hermanas);
+        };
+        z.addEventListener('click', abrir);
+        z.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(ev); } });
+        capa.appendChild(z);
+      });
+      svg.appendChild(capa);
+    }
+    // Al pulsar fuera de una nota señalada o del propio globo, se cierra
+    svg.addEventListener('click', ev => {
+      const t = ev.target;
+      if (t && typeof t.closest === 'function' && t.closest('.voz-zona, .globo-aviso')) return;
+      cerrarGlobo();
+    });
+
     // Puntillo: a la derecha de la cabeza; si la nota está en una línea, en el espacio superior
     const puntillo = (g, xDer, p, yBase) => g.appendChild(glifo(xDer + 0.45 * SP, yBase - p * SP / 2 - (p % 2 === 0 ? SP / 2 : 0), G.puntillo, EM, { class: 'nota' }));
     // Corchete de corchea en el extremo de la plica
@@ -319,7 +429,8 @@ const Partitura = (() => {
       if (p <= -2) for (let q = -2; q >= p; q -= 2)
         g.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: yBase - q * SP / 2, y2: yBase - q * SP / 2, class: 'linea' }));
       if (n.alt !== altArmadura(n.letra)) g.appendChild(glifo(xN - (anchoAlt(n.alt) + 0.25) * SP, y, glifoAlt(n.alt)));
-      g.appendChild(glifo(xN, y, f.cabeza, EM, { class: 'nota' }));
+      const cabeza = glifo(xN, y, f.cabeza, EM, { class: 'nota' });
+      g.appendChild(cabeza);
       if (f.puntillo) puntillo(g, xN + ancho * SP, p, yBase);
       if (f.plica) {
         const arriba = p < plicaAbajoDesde;
@@ -329,13 +440,16 @@ const Partitura = (() => {
         g.appendChild(el('line', { x1: xP, x2: xP, y1, y2, class: 'plica' }));
         if (f.corchete) corchete(g, xP, y2, arriba);
       }
+      return cabeza;
     }
 
     // Melodía de soprano en el pentagrama de sol (cuando no la lleva ya el acorde de la realización)
     if (sopranoDada) notas.forEach((it, i) => {
       if (Array.isArray(estado.realizacion) && estado.realizacion[i]) return;
       const g = el('g', { class: 'melodia' });
-      notaSuelta(g, it.nota, pasoSol(it.nota), Y_BOT_SOL, xNotas[i], figura(it.dur));
+      const f = figura(it.dur);
+      const cabeza = notaSuelta(g, it.nota, pasoSol(it.nota), Y_BOT_SOL, xNotas[i], f);
+      señalar(cabeza, i, 3, xNotas[i] + f.ancho * SP / 2, Y_BOT_SOL - pasoSol(it.nota) * SP / 2);
       svg.appendChild(g);
     });
 
@@ -369,7 +483,9 @@ const Partitura = (() => {
           g.appendChild(el('line', { x1: xIzq - extra, x2: xDer + extra, y1: Y_BOT_SOL - q * SP / 2, y2: Y_BOT_SOL - q * SP / 2, class: 'linea' }));
         if (p <= -2) for (let q = -2; q >= p; q -= 2)
           g.appendChild(el('line', { x1: xIzq - extra, x2: xDer + extra, y1: Y_BOT_SOL - q * SP / 2, y2: Y_BOT_SOL - q * SP / 2, class: 'linea' }));
-        g.appendChild(glifo(xN + dx[k], y, f.cabeza, EM, { class: 'nota' }));
+        const cabeza = glifo(xN + dx[k], y, f.cabeza, EM, { class: 'nota' });
+        g.appendChild(cabeza);
+        señalar(cabeza, i, k + 1, xN + dx[k] + ancho * SP / 2, y);
         if (f.puntillo) puntillo(g, xDer, p, Y_BOT_SOL);
       });
       // Alteraciones (de arriba abajo, escalonadas hacia la izquierda)
@@ -403,7 +519,8 @@ const Partitura = (() => {
       const nb = bajoDe(i);
       if (!sinBajo && nb) {
         const g = el('g', { class: (sopranoDada ? 'bajo-alumno' : 'bajo') + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') });
-        notaSuelta(g, nb, paso(nb), Y_BOT, xN, f);
+        const cabeza = notaSuelta(g, nb, paso(nb), Y_BOT, xN, f);
+        señalar(cabeza, i, 0, xN + ancho * SP / 2, Y_BOT - paso(nb) * SP / 2);
         svg.appendChild(g);
       }
 
@@ -555,6 +672,7 @@ const Partitura = (() => {
       }
     });
 
+    dibujarMarcasVoz();
     contenedor.innerHTML = '';
     contenedor.appendChild(svg);
     return svg;
