@@ -105,10 +105,14 @@
      ejercicio, y la otra sirve para fijar la respuesta modelo (el bajo escrito en una
      armonización de soprano; la nota de la melodía, en un bajo dado). */
   function vozDe(f) {
-    const propia = esSoprano() ? f.compasesSoprano : f.compasesBajo;
-    const otra = esSoprano() ? f.compasesBajo : f.compasesSoprano;
-    return { compases: (propia && propia.length ? propia : f.compases) || [], otra: otra || [],
-      modulaciones: (esSoprano() ? f.modulacionesSoprano : f.modulacionesBajo) || f.modulaciones || [] };
+    const sop = f.compasesSoprano || [], baj = f.compasesBajo || [];
+    const propia = esSoprano() ? sop : baj;
+    const otra = esSoprano() ? baj : sop;
+    const modP = (esSoprano() ? f.modulacionesSoprano : f.modulacionesBajo) || f.modulaciones || [];
+    const modO = (esSoprano() ? f.modulacionesBajo : f.modulacionesSoprano) || f.modulaciones || [];
+    // Si el fragmento no trae la voz que pide el tipo de ejercicio, se usa la que tenga
+    if (propia.length) return { compases: propia, otra, modulaciones: modP };
+    return { compases: otra.length ? otra : (f.compases || []), otra: [], modulaciones: otra.length ? modO : modP };
   }
   // Por cada nota de la voz propia, la nota de la otra voz que suena en ese momento
   function companera(propios, otros) {
@@ -344,13 +348,13 @@
           const p = Ejercicios.par(id);
           const cand = prop && prop.candidatos ? prop.candidatos.find(x => x.id === id) : null;
           const b = cand ? cand.bajo : Teoria.bajoDe(p.romano, p.cifra, ton);
-          return { id, cifra: p.cifra, romTxt: p.romano, extra: b ? ' (' + Teoria.nombreEs(b) + ')' : '', titulo: Teoria.CIFRADOS[p.cifra].descripcion + (b ? ' · bajo ' + Teoria.nombreEs(b) : '') + (cand && cand.avisos.length ? ' · ' + cand.avisos.join(', ') : ''), aviso: !!(cand && cand.avisos.length) };
+          return { id, cifra: p.cifra, bajo: b, romTxt: p.romano, extra: b ? ' (' + Teoria.nombreEs(b) + ')' : '', titulo: Teoria.CIFRADOS[p.cifra].descripcion + (b ? ' · bajo ' + Teoria.nombreEs(b) : '') + (cand && cand.avisos.length ? ' · ' + cand.avisos.join(', ') : ''), aviso: !!(cand && cand.avisos.length) };
         });
       } else {
         opcionesNota = rep.map(id => {
           const romTxt = esPivote ? Teoria.romano(id, n, tonAntes) + ' = ' + Teoria.romano(id, n, ton) : Teoria.romano(id, n, ton);
           const noComun = esPivote && !Teoria.acordeComun(id, n, tonAntes, ton);
-          return { id, cifra: id, romTxt, extra: '', titulo: Teoria.CIFRADOS[id].descripcion + ' → ' + romTxt + (noComun ? ' (no es acorde común)' : ''), noComun };
+          return { id, cifra: id, bajo: n, romTxt, extra: '', titulo: Teoria.CIFRADOS[id].descripcion + ' → ' + romTxt + (noComun ? ' (no es acorde común)' : ''), noComun };
         });
       }
       opcionesNota.forEach(op => {
@@ -366,7 +370,7 @@
         rb.addEventListener('change', () => { hacerModelo(i, id); });
         chip.appendChild(cb);
         if (sop) { const r = document.createElement('span'); r.className = 'chip-romano chip-fund'; r.textContent = op.romTxt; chip.appendChild(r); }
-        chip.appendChild(Partitura.iconoCifra(op.cifra, 30));
+        chip.appendChild(Partitura.iconoCifra(op.cifra, 30, op.bajo ? { bajo: op.bajo, ton } : null));
         const rom = document.createElement('span');
         rom.className = 'chip-romano'; rom.textContent = sop ? op.extra.trim() : op.romTxt;
         chip.appendChild(rom);
@@ -534,20 +538,28 @@
 
   function importarArchivo(file) {
     const lector = new FileReader();
-    lector.onload = () => {
-      const txt = lector.result;
+    const deMuseScore = typeof MuseScore !== 'undefined' && MuseScore.esMuseScore(file.name);
+    lector.onload = async () => {
       try {
+        // Archivo de MuseScore (.mscz o .mscx): se lee tal cual, sin exportar a MusicXML
+        if (deMuseScore) {
+          const r = await MuseScore.importar(new Uint8Array(lector.result), { voz: esSoprano() ? 'soprano' : 'bajo' });
+          cargarMusicXML(r, file.name);
+          return;
+        }
+        const txt = lector.result;
         if (/\.json$/i.test(file.name) || txt.trim().startsWith('{')) cargarJSON(JSON.parse(txt));
         else cargarMusicXML(MusicXML.importar(txt, { voz: esSoprano() ? 'soprano' : 'bajo' }), file.name);   // se leen las dos voces; esta es la que se carga
       } catch (e) {
         aviso('No se ha podido importar: ' + e.message);
       }
     };
-    lector.readAsText(file);
+    if (deMuseScore) lector.readAsArrayBuffer(file); else lector.readAsText(file);
   }
 
   function cargarMusicXML(r, nombre) {
     estado.fragmentos = r.fragmentos;
+    estado.nombreArchivo = nombre;
     const cont = $('#lista-fragmentos');
     cont.innerHTML = '';
     $('#fragmentos-titulo').textContent = r.fragmentos.length + (r.fragmentos.length === 1 ? ' fragmento encontrado en ' : ' fragmentos encontrados en ') + nombre + '. Pulsa uno para cargarlo:';
@@ -563,7 +575,8 @@
     const av = $('#avisos-importacion');
     if (r.avisos.length) { av.textContent = r.avisos.join(' · '); av.hidden = false; } else av.hidden = true;
     $('#fragmentos').hidden = false;
-    if (!$('#coleccion').value) $('#coleccion').value = nombre.replace(/\.(musicxml|xml)$/i, '');
+    if (!$('#coleccion').value) $('#coleccion').value = nombre.replace(/\.(mscz|mscx|musicxml|xml)$/i, '');
+    prepararAnadirAlBanco();
     cargarFragmento(0);
     $('#todos-fragmentos').hidden = !(r.fragmentos.length > 1) || $('#paso-direccion').hidden;
   }
@@ -780,6 +793,261 @@
     ['dragenter', 'dragover'].forEach(t => zona.addEventListener(t, ev => { ev.preventDefault(); zona.classList.add('sobre'); }));
     ['dragleave', 'drop'].forEach(t => zona.addEventListener(t, ev => { ev.preventDefault(); zona.classList.remove('sobre'); }));
     zona.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f) importarArchivo(f); });
+
+    arranqueBanco();
+  }
+
+
+  /* =================================================================
+     Banco de fragmentos y fichas (paso 6)
+     ================================================================= */
+
+  const CLAVE_BANCO = 'armonizar.banco';
+  let banco = [];
+
+  function leerBanco() {
+    try { banco = Banco.leerArchivo(localStorage.getItem(CLAVE_BANCO) || '[]'); } catch (e) { banco = []; }
+  }
+  function guardarBanco() {
+    try { localStorage.setItem(CLAVE_BANCO, JSON.stringify(Banco.archivo(banco))); } catch (e) { aviso('El banco no cabe en este navegador; descárgalo como banco.json.'); }
+  }
+
+  function prepararAnadirAlBanco() {
+    const caja = $('#banco-anadir');
+    if (!estado.fragmentos || !estado.fragmentos.length) { caja.hidden = true; return; }
+    caja.hidden = false;
+    const lec = Banco.leccionDeNombre(estado.nombreArchivo || '');
+    if (lec && !$('#banco-leccion').value) $('#banco-leccion').value = lec;
+    $('#banco-anadir-ayuda').textContent = 'Se analizan los ' + estado.fragmentos.length
+      + ' fragmentos del archivo con las opciones actuales (repertorio, acordes y fórmula T S T).';
+  }
+
+  /* Dos entradas son el mismo ejercicio cuando, en la misma tonalidad, coincide TODA voz
+     que las dos tengan escrita (y comparten al menos una). Así el archivo «… - Bajo» y el
+     «… - Bajo y soprano» de una misma lección no se duplican —se funden en una entrada con
+     las dos voces—, pero dos melodías distintas sobre el mismo bajo siguen siendo dos
+     ejercicios, porque como armonización de soprano no son el mismo. */
+  const mismaMusica = (a, b) => JSON.stringify(a || null) === JSON.stringify(b || null);
+  function mismoQue(e) {
+    return banco.find(x => {
+      if (!Teoria.mismaTonalidad(x.tonalidad, e.tonalidad)) return false;
+      const bajos = x.bajo && e.bajo, sopranos = x.soprano && e.soprano;
+      if (!bajos && !sopranos) return false;                                        // no comparten ninguna voz
+      if (bajos && !mismaMusica(x.bajo.compases, e.bajo.compases)) return false;    // el mismo bajo…
+      if (sopranos && !mismaMusica(x.soprano.compases, e.soprano.compases)) return false;   // …y la misma melodía
+      return true;
+    });
+  }
+  // Completa la entrada vieja con la voz que le falte; devuelve true si ha añadido algo
+  function fundir(viejo, nuevo) {
+    let cambio = false;
+    ['bajo', 'soprano'].forEach(v => { if (!viejo[v] && nuevo[v]) { viejo[v] = nuevo[v]; cambio = true; } });
+    if (cambio) {
+      const et = viejo.etiquetas || (viejo.etiquetas = {});
+      et.voces = viejo.bajo && viejo.soprano ? 'ambas' : (viejo.bajo ? 'bajo' : 'soprano');
+      if (!viejo.leccion && nuevo.leccion) viejo.leccion = nuevo.leccion;
+    }
+    return cambio;
+  }
+
+  function anadirAlBanco() {
+    if (!estado.fragmentos || !estado.fragmentos.length) { aviso('Importa antes un archivo.'); return; }
+    const leccion = $('#banco-leccion').value.trim();
+    const fuente = estado.nombreArchivo || '';
+    const op = { leccion, fuente, repertorio: repertorio(), acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked };
+    let nuevos = 0, repetidos = 0, fallidos = 0, conAviso = 0, fundidos = 0;
+    estado.fragmentos.forEach((f, k) => {
+      let e;
+      try { e = Banco.entrada(f, Object.assign({ compas: f.compas }, op)); } catch (err) { e = null; }
+      if (!e) { fallidos++; return; }
+      e.id = (leccion || 'X') + '-' + String(k + 1).padStart(2, '0');
+      const viejo = mismoQue(e);
+      if (viejo) { if (fundir(viejo, e)) fundidos++; else repetidos++; return; }
+      if (e.avisos && e.avisos.length) conAviso++;
+      banco.push(e);
+      nuevos++;
+    });
+    guardarBanco();
+    pintarBanco();
+    aviso('Banco: ' + nuevos + ' fragmentos añadidos'
+      + (fundidos ? ', ' + fundidos + ' completados con la otra voz' : '')
+      + (repetidos ? ', ' + repetidos + ' ya estaban' : '')
+      + (fallidos ? ', ' + fallidos + ' sin música aprovechable' : '')
+      + (conAviso ? ' · ' + conAviso + ' con alguna nota sin propuesta (revísalos)' : '') + '.', 7000);
+  }
+
+  function filtroFicha() {
+    const alt = parseInt($('#ficha-alteraciones').value, 10);
+    const niv = $('#ficha-nivel').value.split('-').map(Number);
+    const mod = $('#ficha-modula').value;
+    const f = {
+      n: Math.max(1, parseInt($('#ficha-n').value, 10) || 8),
+      modo: $('#ficha-modo').value,
+      nivel: niv,
+      alteraciones: [0, alt]
+    };
+    if ($('#ficha-leccion').value) f.leccion = $('#ficha-leccion').value;
+    if ($('#ficha-modotonal').value) f.modoTonal = $('#ficha-modotonal').value;
+    if (mod === 'si') f.modula = true; else if (mod === 'no') f.modula = false;
+    if ($('#ficha-titulo').value.trim()) f.titulo = $('#ficha-titulo').value.trim();
+    // Opciones del paso 3 que también rigen en la ficha
+    const op = opciones();
+    if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
+    if (!op.reintentos) f.reintentos = false;
+    if (op.ayudaGrados !== 'lista') f.ayudaGrados = op.ayudaGrados;
+    if (op.funciones) f.funciones = op.funciones;
+    if (f.modo === 'audicion' && op.bajoAudicion) f.mostrarBajo = true;
+    if (f.modo === 'soprano') {
+      f.acordes = acordesElegidos();
+      if (!$('#formula-tst').checked) f.formulaTST = false;
+    }
+    return f;
+  }
+
+  function pintarBanco() {
+    const hay = banco.length > 0;
+    $('#banco-cuerpo').hidden = !hay;
+    $('#btn-banco-descargar').disabled = !hay;
+    $('#btn-banco-vaciar').disabled = !hay;
+    if (!hay) { $('#banco-resumen').textContent = 'El banco está vacío.'; return; }
+    const lecs = Banco.lecciones(banco);
+    $('#banco-resumen').textContent = banco.length + ' fragmentos en el banco'
+      + (lecs.length ? ' · lecciones: ' + lecs.join(', ') : '') + '.';
+    // Desplegable de lecciones (conservando la elegida)
+    const selLec = $('#ficha-leccion'), antes = selLec.value;
+    selLec.innerHTML = '<option value="">Todas</option>';
+    lecs.forEach(l => { const o = document.createElement('option'); o.value = l; o.textContent = l; selLec.appendChild(o); });
+    selLec.value = lecs.includes(antes) ? antes : '';
+
+    const filtro = filtroFicha();
+    const lista = Banco.filtrar(banco, filtro);
+    $('#ficha-cuenta').textContent = lista.length
+      ? lista.length + ' fragmentos cumplen el filtro; cada ficha tomará ' + Math.min(lista.length, filtro.n) + ' al azar.'
+      : 'Ningún fragmento cumple el filtro. Prueba con otro tipo de ejercicio o menos restricciones (recuerda que la armonización de soprano necesita fragmentos con la melodía escrita).';
+    $('#btn-ficha').disabled = !lista.length;
+
+    const cuerpo = $('#tabla-banco').querySelector('tbody');
+    cuerpo.innerHTML = '';
+    lista.forEach(e => {
+      const et = e.etiquetas || {};
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + (e.leccion || '—') + '</td>'
+        + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
+        + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
+        + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'
+        + '<td>' + (et.voces === 'ambas' ? 'bajo y melodía' : et.voces) + '</td>'
+        + '<td>' + (et.cifras || []).map(c => (Teoria.CIFRADOS[c] ? Teoria.CIFRADOS[c].nombre.split(' ')[0] : c)).join(' ') + '</td>'
+        + '<td class="celda-nivel"></td><td class="celda-acciones"></td>';
+      const sel = document.createElement('select');
+      sel.className = 'sel-nivel';
+      sel.title = 'Nivel para este tipo de ejercicio. Cámbialo si no te convence el calculado.';
+      [1, 2, 3, 4, 5].forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+      sel.value = Banco.nivel(e, filtro.modo);
+      sel.addEventListener('change', () => {
+        // El nivel que se guarda es el base: se descuenta el ajuste del tipo
+        const ajuste = Banco.modoDe(filtro.modo).ajuste;
+        e.nivelManual = Math.max(1, Math.min(5, parseInt(sel.value, 10) - ajuste));
+        guardarBanco(); pintarBanco();
+      });
+      tr.querySelector('.celda-nivel').appendChild(sel);
+      const acc = tr.querySelector('.celda-acciones');
+      const bCargar = document.createElement('button');
+      bCargar.type = 'button'; bCargar.className = 'enlace-texto'; bCargar.textContent = 'Cargar';
+      bCargar.addEventListener('click', () => cargarDelBanco(e, filtro.modo));
+      const bQuitar = document.createElement('button');
+      bQuitar.type = 'button'; bQuitar.className = 'enlace-texto'; bQuitar.textContent = 'Quitar';
+      bQuitar.addEventListener('click', () => { banco = banco.filter(x => x !== e); guardarBanco(); pintarBanco(); });
+      acc.appendChild(bCargar); acc.appendChild(document.createTextNode(' · ')); acc.appendChild(bQuitar);
+      cuerpo.appendChild(tr);
+    });
+  }
+
+  // Trae un fragmento del banco al paso 1, para revisarlo o retocarlo
+  function cargarDelBanco(e, modo) {
+    const parte = e[Banco.vozDeModo(modo)];
+    if (!parte) { aviso('Ese fragmento no tiene esa voz escrita.'); return; }
+    elegirModo(modo);
+    ajustarCampoAudicion();
+    estado.fragmentos = null; estado.fragmentoActual = null; estado.companera = null;
+    $('#fragmentos').hidden = true;
+    $('#texto-bajo').value = Teoria.textoDesdeBajo(parte.compases);
+    $('#tonica').value = e.tonalidad.tonica;
+    $('#modo').value = e.tonalidad.modo;
+    $('#compas').value = (e.compas || [4, 4]).join('/');
+    $('#titulo').value = e.titulo || (e.leccion ? e.leccion : 'Ejercicio');
+    estado.modulaciones = (parte.modulaciones || []).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
+    estado.respuestas = null; estado.propuesta = null;
+    $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true;
+    limpiarDireccion();
+    leerBajo();
+    guardarBorrador();
+    $('#paso-bajo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function generarFicha() {
+    const filtro = filtroFicha();
+    const lista = Banco.filtrar(banco, filtro);
+    if (!lista.length) { aviso('Ningún fragmento cumple el filtro.'); return; }
+    const url = baseAlumno() + '#f=' + Banco.codificar(filtro);
+    $('#ficha-direccion').value = url;
+    $('#btn-ficha-copiar').disabled = false;
+    const abrir = $('#btn-ficha-abrir');
+    abrir.href = url; abrir.setAttribute('aria-disabled', 'false');
+  }
+
+  function descargarBanco() {
+    const blob = new Blob([JSON.stringify(Banco.archivo(banco), null, 1)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'banco.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function cargarBancoArchivo(file) {
+    const lector = new FileReader();
+    lector.onload = () => {
+      try {
+        const lista = Banco.leerArchivo(lector.result);
+        let nuevos = 0, fundidos = 0;
+        lista.forEach(e => {
+          const viejo = mismoQue(e);
+          if (viejo) { if (fundir(viejo, e)) fundidos++; return; }
+          banco.push(e); nuevos++;
+        });
+        guardarBanco(); pintarBanco();
+        aviso(nuevos + ' fragmentos añadidos al banco' + (fundidos ? ', ' + fundidos + ' completados' : '') + ' (los repetidos se han omitido).');
+      } catch (err) { aviso('No se ha podido leer el banco: ' + err.message); }
+    };
+    lector.readAsText(file);
+  }
+
+  function arranqueBanco() {
+    const sel = $('#ficha-modo');
+    Banco.MODOS.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.nombre; sel.appendChild(o); });
+    sel.value = 'armonizar';
+    leerBanco();
+    pintarBanco();
+    $('#btn-banco-anadir').addEventListener('click', anadirAlBanco);
+    $('#btn-banco-descargar').addEventListener('click', descargarBanco);
+    $('#btn-banco-cargar').addEventListener('click', () => $('#banco-archivo').click());
+    $('#banco-archivo').addEventListener('change', ev => { if (ev.target.files[0]) cargarBancoArchivo(ev.target.files[0]); ev.target.value = ''; });
+    $('#btn-banco-vaciar').addEventListener('click', () => {
+      if (!banco.length) return;
+      if (!confirm('¿Vaciar el banco? Se borran los ' + banco.length + ' fragmentos guardados en este navegador. Descárgalo antes si quieres conservarlo.')) return;
+      banco = []; guardarBanco(); pintarBanco();
+    });
+    $('#btn-ficha').addEventListener('click', generarFicha);
+    $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
+    $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
+    ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n'].forEach(id => {
+      $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); });
+    });
+  }
+  function limpiarFicha() {
+    $('#ficha-direccion').value = '';
+    $('#btn-ficha-copiar').disabled = true;
+    $('#btn-ficha-abrir').setAttribute('aria-disabled', 'true');
   }
 
   document.addEventListener('DOMContentLoaded', arranque);

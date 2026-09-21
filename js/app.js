@@ -54,7 +54,8 @@
     sonar: false,             // sonar el acorde al completar cifra y grado
     sonando: null,            // nota cuyo acorde está sonando (para resaltar su botón ▶)
     alSonar: null,            // función que la partitura llama al pulsar el ▶ de una nota
-    libre: false              // práctica libre: la página se abrió sin ejercicio en la dirección (se ve el desplegable del corpus)
+    libre: false,             // práctica libre: la página se abrió sin ejercicio en la dirección (se ve el desplegable del corpus)
+    ficha: null               // ficha en curso: {filtro, lista, k, marcador} (varios ejercicios encadenados)
   };
 
   /* ---------- Carga ---------- */
@@ -132,7 +133,9 @@
 
   function pintarCabecera() {
     const ej = estado.ejercicio;
-    $('#titulo').textContent = (ej.coleccion ? ej.coleccion + ' · ' : '') + (ej.titulo || '');
+    const f = estado.ficha;
+    $('#titulo').textContent = (f ? (f.filtro.titulo || 'Ficha') + ' · ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ' · ' : (ej.coleccion ? ej.coleccion + ' · ' : ''))
+      + (ej.titulo || '');
     const ton = '<b>' + Teoria.nombreTonalidad(ej.tonalidad) + '</b>';
     // Primero el grado de la fundamental, después el cifrado (orden en que se rellenan)
     const conFun = estado.modoFun === 'pedir' ? 'la función tonal (T, S o D), ' : '';
@@ -796,6 +799,7 @@
     estado.mostrarSolucion = todoBien || !estado.reintentos;
     pintar();
     pintarResultado();
+    anotarFicha();
   }
 
   // Deja editables solo las casillas erróneas; las acertadas quedan fijas y en verde.
@@ -901,12 +905,107 @@
       });
       html += '</ol>';
     }
+    // En una ficha, el paso al ejercicio siguiente (o al resumen) va siempre a la vista
+    if (estado.ficha) {
+      const f = estado.ficha;
+      const ultimo = f.k + 1 >= f.lista.length;
+      html += '<div class="botonera botonera-resultado botonera-ficha">'
+        + '<button type="button" id="btn-ficha-sig" class="' + (todoBien || estado.mostrarSolucion ? 'primario' : 'secundario') + '">'
+        + (ultimo ? 'Terminar la ficha y ver el resumen' : 'Ejercicio siguiente (' + (f.k + 2) + ' de ' + f.lista.length + ')') + '</button></div>';
+    }
     caja.innerHTML = html;
     caja.hidden = false;
     const be = $('#btn-errores'), bs = $('#btn-solucion');
     if (be) be.addEventListener('click', corregirErrores);
     if (bs) bs.addEventListener('click', verSolucion);
+    const bf = $('#btn-ficha-sig');
+    if (bf) bf.addEventListener('click', siguienteDeFicha);
     caja.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* =================================================================
+     Fichas: varios ejercicios encadenados, sacados al azar del banco
+     ================================================================= */
+
+  // Apunta el resultado del ejercicio en curso (se actualiza en cada intento)
+  function anotarFicha() {
+    const f = estado.ficha;
+    if (!f || !estado.resultados) return;
+    const res = estado.resultados;
+    f.marcador[f.k] = {
+      titulo: estado.ejercicio.titulo || ('Ejercicio ' + (f.k + 1)),
+      tonalidad: Teoria.nombreCorto(estado.ejercicio.tonalidad),
+      n: res.length,
+      aciertos: res.filter(r => r.ok).length,
+      intento: estado.intento,
+      primero: estado.primerIntento
+    };
+  }
+
+  function siguienteDeFicha() {
+    const f = estado.ficha;
+    if (!f) return;
+    if (f.k + 1 >= f.lista.length) { resumenFicha(); return; }
+    f.k++;
+    cargar(Banco.ejercicio(f.lista[f.k], f.filtro, f.k));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resumenFicha() {
+    const f = estado.ficha;
+    const m = f.marcador;
+    const n = m.reduce((a, x) => a + (x ? x.n : 0), 0);
+    const bien = m.reduce((a, x) => a + (x ? x.aciertos : 0), 0);
+    const primero = m.reduce((a, x) => a + (x && x.primero !== null && x.primero !== undefined ? x.primero : (x ? x.aciertos : 0)), 0);
+    const pct = n ? Math.round(100 * bien / n) : 0;
+    let html = '<h2>Ficha terminada: ' + bien + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %)</span></h2>';
+    if (primero !== bien) html += '<p class="desglose">Al primer intento de cada ejercicio: ' + primero + ' de ' + n + '.</p>';
+    html += '<ol class="resumen-ficha">';
+    f.lista.forEach((e, k) => {
+      const x = m[k];
+      const nombre = (e.leccion ? e.leccion + ' · ' : '') + Teoria.nombreCorto(e.tonalidad);
+      html += '<li>' + nombre + ' — ' + (x
+        ? '<span class="cif ' + (x.aciertos === x.n ? 'bien' : 'mal') + '">' + x.aciertos + ' de ' + x.n + '</span>' + (x.intento > 1 ? ' (intento ' + x.intento + ')' : '')
+        : '<span class="cif mal">sin hacer</span>') + '</li>';
+    });
+    html += '</ol>';
+    html += '<div class="botonera botonera-resultado"><button type="button" id="btn-ficha-otra" class="primario">Otra ficha como esta</button></div>';
+    const caja = $('#resultado');
+    caja.innerHTML = html;
+    caja.hidden = false;
+    $('#btn-ficha-otra').addEventListener('click', () => location.reload());
+    // En el resumen se retira todo lo del ejercicio: solo queda el marcador
+    ['#realizacion-barra', '#partitura', '#paletas', '#progreso'].forEach(sel => { const e = document.querySelector(sel); if (e) e.hidden = true; });
+    const bot = document.querySelector('main > .botonera'); if (bot) bot.hidden = true;
+    document.querySelector('.repertorio-caja').hidden = true;
+    $('#titulo').textContent = f.filtro.titulo || 'Ficha';
+    $('#instruccion').textContent = 'Has terminado la ficha. Este es el resultado de cada ejercicio.';
+    caja.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function iniciarFicha(texto) {
+    let filtro;
+    try { filtro = Banco.decodificar(texto); } catch (e) {
+      aviso('No se ha podido leer la ficha de la dirección.'); cargar(Ejercicios.CORPUS[0]); return;
+    }
+    let entradas = null;
+    const base = location.href.split('#')[0].replace(/[^/]*$/, '');
+    try {
+      const r = await fetch(base + 'banco.json', { cache: 'no-cache' });
+      if (!r.ok) throw new Error('el archivo banco.json no está en el servidor');
+      entradas = Banco.leerArchivo(await r.json());
+    } catch (e) {
+      aviso('No se ha podido leer el banco de ejercicios (banco.json): ' + e.message
+        + '. Si has abierto la página desde el disco, las fichas solo funcionan con la aplicación publicada.', 12000);
+      cargar(Ejercicios.CORPUS[0]); return;
+    }
+    const lista = Banco.elegir(entradas, filtro);
+    if (!lista.length) {
+      aviso('En el banco no hay ningún ejercicio que cumpla lo que pide esta ficha.', 10000);
+      cargar(Ejercicios.CORPUS[0]); return;
+    }
+    estado.ficha = { filtro, lista, k: 0, marcador: [] };
+    cargar(Banco.ejercicio(lista[0], filtro, 0));
   }
 
   function reiniciar() { cargar(estado.ejercicio); }
@@ -921,7 +1020,8 @@
   function copiarEnlace() {
     const ej = estado.ejercicio;
     const base = location.href.split('#')[0];
-    const url = Ejercicios.porId(ej.id) ? base + '#ej=' + ej.id : base + '#e=' + Ejercicios.codificar(ej);
+    const url = estado.ficha ? base + '#f=' + Banco.codificar(estado.ficha.filtro)
+      : Ejercicios.porId(ej.id) ? base + '#ej=' + ej.id : base + '#e=' + Ejercicios.codificar(ej);
     const fin = () => aviso('Enlace copiado al portapapeles.');
     if (navigator.clipboard) navigator.clipboard.writeText(url).then(fin, () => prompt('Copia este enlace:', url));
     else prompt('Copia este enlace:', url);
@@ -1011,13 +1111,14 @@
     $('#btn-mio').addEventListener('click', escucharMio);
     $('#btn-parar').addEventListener('click', parar);
     const inicial = new URLSearchParams(location.hash.replace(/^#/, ''));
-    estado.libre = !inicial.has('e') && !inicial.has('ej');
+    estado.libre = !inicial.has('e') && !inicial.has('ej') && !inicial.has('f');
     ajustarCompacto();
     window.addEventListener('resize', ajustarCompacto);
     // En pantalla estrecha el enunciado va recortado; pulsarlo lo despliega
     $('#instruccion').addEventListener('click', () => { if (compacto()) $('#instruccion').classList.toggle('desplegada'); });
-    window.addEventListener('hashchange', () => cargar(ejercicioDesdeURL()));
-    cargar(ejercicioDesdeURL());
+    window.addEventListener('hashchange', () => { if (!estado.ficha) cargar(ejercicioDesdeURL()); });
+    if (inicial.has('f') && typeof Banco !== 'undefined') iniciarFicha(inicial.get('f'));
+    else cargar(ejercicioDesdeURL());
   });
 
 })();

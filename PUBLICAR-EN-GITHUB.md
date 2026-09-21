@@ -36,7 +36,7 @@ arrastres; la aplicación no los necesita.
 2. Abre en el Finder la carpeta de la aplicación (en Drive murciaeduca.es:
    `3. RECURSOS - DOCENTE › Recursos de Claude › APLICACIÓN WEB PARA ARMONIZAR MELODÍAS`).
 3. Selecciona **todo el contenido de la carpeta** (no la carpeta en sí):
-   `index.html`, `configurar.html`, `pruebas.html`, `LEEME.md` y las carpetas
+   `index.html`, `configurar.html`, `pruebas.html`, `banco.json`, `LEEME.md` y las carpetas
    `css`, `js`, `sonidos`, `fuentes` y `ejemplos`. Arrástralo a la zona punteada del
    navegador que dice *Drag files here*. Las carpetas se suben con su
    estructura; espera a que aparezcan todos los archivos en la lista (unos 20).
@@ -65,6 +65,14 @@ arrastres; la aplicación no los necesita.
   puedes, en una tablet.
 
 ## 6. Actualizar la aplicación
+
+**El banco de ejercicios** vive en el archivo `banco.json`, junto a
+`index.html`. Es el que leen las fichas: sin él, un enlace de ficha no
+encuentra ejercicios. Cuando amplíes el banco en el configurador, descárgalo y
+súbelo otra vez con el mismo nombre; **los enlaces de ficha que ya hayas
+repartido siguen valiendo**, porque llevan dentro el filtro, no los ejercicios.
+Las fichas necesitan la aplicación publicada: desde el disco no pueden leer el
+banco.
 
 Cada vez que haya una versión nueva en la carpeta de Drive, repite el paso 3
 arrastrando otra vez todo el contenido: los archivos con el mismo nombre se

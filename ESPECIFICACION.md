@@ -438,11 +438,75 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     produce octavas con el bajo. El número de avisos se resume al corregir
     («Conducción de voces: 2 avisos»), pero no resta aciertos: la
     calificación sigue siendo la de las parejas grado + cifra.
+24. **Alteraciones accidentales en la cifra** (21/9/2026, `Teoria.filasCifra`).
+    Toda voz superior alterada **respecto de la armadura** lleva su alteración
+    escrita junto al número de su intervalo; si la alterada es la **tercera**,
+    la alteración va sola, sin número. El caso de todos los días es el **V del
+    modo menor**, cuya tercera es la sensible: donde antes se veía la raya del
+    5/3 ahora se ve **♯** en la menor (sol♯), **♮** en do menor (si♮, porque la
+    armadura lleva si♭) y el signo que corresponda en cualquier otra tonalidad
+    —el mismo que lleva la nota en el pentagrama—. Con la menor melódica, el
+    6.º grado elevado se marca igual. Los cifrados que ya señalan la sensible
+    con el `+` de Furno (`7/+`, `+6`, `+4`) no se tocan, y tampoco se añaden
+    filas a los que tienen equivalente marcado (`6/5`, `4/3`, `7`): ahí la
+    alteración la lleva ese otro cifrado, que es el que ofrece el repertorio.
+    **La paleta no cambia y no hay respuestas nuevas**: el alumno sigue
+    pulsando «—» y la aplicación escribe el signo al dibujar la cifra. Se ve en
+    la casilla del alumno, en la respuesta modelo y en los chips de la revisión
+    del profesor; los botones de la paleta y la lista «Cifrados en este
+    ejercicio» siguen mostrando la cifra escueta, porque no corresponden a una
+    nota concreta.
+
+25. **Modo de un fragmento importado** (21/9/2026, `MusicXML.cerrar`). Una
+    armadura sirve para dos tonalidades, y muchos fragmentos acaban en
+    semicadencia, así que la última nota no basta. Ahora se suman indicios:
+    acabar en la tónica (2), empezar en ella (1) y —el más claro— **que la
+    sensible del relativo menor aparezca como alteración accidental** (sol♯
+    con la armadura de Do, si♮ con la de Mi♭) (2). Para dar el menor por
+    seguro se exige una prueba de verdad —la sensible escrita o el final en
+    la tónica—, porque empezar en la tónica menor es también empezar en el VI
+    del relativo mayor. Si los indicios empatan se toma el mayor y el
+    fragmento se marca con «(?)» en la lista. Sobre los 196 fragmentos del
+    banco de Diego, los dudosos bajaron de 22 a 7 y se corrigieron cuatro que
+    se leían en el relativo mayor (semicadencias en la menor, mi menor, sol
+    menor y re menor).
+
+26. **Banco de fragmentos y fichas** (Etapa 10, 21/9/2026, `js/banco.js`).
+    - **El banco se llena solo.** Al importar un archivo de MuseScore, el
+      configurador analiza todos sus fragmentos con las opciones del momento y
+      guarda cada uno con sus **etiquetas**, que salen del propio análisis:
+      lección (del nombre del archivo), tonalidad y modo, alteraciones de la
+      armadura, compás, número de notas y de compases, qué voces trae escritas,
+      qué cifras y qué grados usa la respuesta modelo, si modula y un **nivel
+      del 1 al 5**. Lo único que se escribe a mano es la lección, y viene
+      propuesta. Cada entrada guarda las respuestas admisibles de las dos
+      voces, de modo que sirve para los cuatro tipos de ejercicio.
+    - **Nivel**: se calcula con el número de notas, cuántas cifras distintas usa
+      el modelo, las alteraciones de la armadura, si es menor y si modula; al
+      tipo de ejercicio se le suma su ajuste (Análisis −1, Armonización de bajo
+      0, Audición +1, Armonización de soprano +1: armonizar una melodía cuesta
+      más que armonizar un bajo). Se puede corregir a mano y se guarda.
+    - **Sin duplicados.** Dos fragmentos son el mismo ejercicio cuando, en la
+      misma tonalidad, coincide toda voz que los dos tengan escrita. Así los
+      archivos «… - Bajo», «… - Soprano» y «… - Bajo y soprano» de una lección
+      se funden en una sola entrada con las dos voces, pero dos melodías
+      distintas sobre el mismo bajo siguen siendo dos ejercicios.
+    - **Dónde vive**: el banco se guarda en el navegador del profesor y se
+      descarga como `banco.json`, que se sube al repositorio junto a la
+      aplicación. La página del alumno lo lee con `fetch`.
+    - **Ficha**: un enlace `index.html#f=<filtro>` con el filtro y el tipo de
+      ejercicio, no con los ejercicios. Al abrirlo, la página baraja los
+      fragmentos que cumplen el filtro, toma N y los encadena con un contador
+      («ejercicio 3 de 8») y un resumen final con el resultado de cada uno y un
+      botón «Otra ficha como esta». Cada vez que se abre salen otros: sirve para
+      practicar, no para calificar. El enlace es corto (unos 200 caracteres) y
+      **no caduca al ampliar el banco**.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
 |---|---|---|---|
-| `53` | — | tríada en estado fundamental | 3ª y 5ª diatónicas |
+| `53` | — (♯ o ♮ si la 3ª va alterada: el V en menor) | tríada en estado fundamental | 3ª y 5ª diatónicas |
 | `6` | 6 | tríada en primera inversión | 3ª y 6ª diatónicas |
 | `64` | 6/4 | tríada en segunda inversión | 4ª y 6ª diatónicas |
 | `+6` | +6 | V7 en segunda inversión (3ª, 4ª, 6ª sensible) | fundamental a la 4ª sobre el bajo; acorde de séptima de dominante |
@@ -581,9 +645,12 @@ Cinco pasos en una página:
 
 1. **El bajo** (o **la melodía**, en el tipo Armonización de soprano). Por texto (`do3 re3 | mi3 do3 | sol3r | do3.`: nombres en
    español, `|` entre compases, sin sufijo = blanca, `r` redonda, `n` negra,
-   `c` corchea, `.` puntillo, octava 3 por defecto —4 en una melodía—) o arrastrando un archivo: un `.musicxml` de MuseScore
-   (`js/musicxml.js` toma el pentagrama inferior —el superior y la nota más aguda de cada acorde, en una melodía—, omite silencios, suma
-   ligaduras, y cierra un fragmento en cada barra final; la tonalidad se
+   `c` corchea, `.` puntillo, octava 3 por defecto —4 en una melodía—) o arrastrando un archivo: **un `.mscz` de MuseScore tal cual,
+   sin exportarlo a nada** (`js/musescore.js` abre el ZIP en el propio navegador, lee el `.mscx` de dentro
+   y lo traduce al importador de siempre; también vale un `.mscx` suelto), un `.musicxml` exportado
+   (`js/musicxml.js` toma el pentagrama inferior —el superior y la nota más aguda de cada acorde, en una melodía—, importa los silencios, suma
+   las ligaduras de unión aunque crucen la barra de compás, quita los silencios que sobran al final del fragmento,
+   y cierra un fragmento en cada barra doble; la tonalidad se
    deduce de la armadura y de la última nota, y se avisa si hay dudas) o un
    `.json` guardado desde el propio configurador. Tonalidad, compás, título y
    colección. El ejercicio puede escribirse en **pentagrama de piano** (para
@@ -651,12 +718,14 @@ la dirección generada, para que no se distribuya una versión desfasada.
 | 1 | Prototipo del alumno: partitura, paletas de cifra y de grado, corrección, URL | Hecha (20/9/2026) |
 | 2 | Configurador del profesor: escribir o importar el bajo, elegir repertorio, revisar las cifras propuestas por el motor, generar la dirección | Hecha (20/9/2026) |
 | 3 | Importación de MusicXML (arrastrar el archivo de MuseScore), con partición en fragmentos y deducción de tonalidad | Hecha (20/9/2026) |
+| 3b | Lectura directa de los archivos de MuseScore (`.mscz` y `.mscx`), sin exportar a MusicXML (`js/musescore.js`) | Hecha (21/9/2026) |
 | 4 | Realización a cuatro voces (tres posiciones de Furno + conducción automática), contador de paralelas, sonido con el bajo doblado a la octava grave e instrumentos reales (piano, clave, órgano); tres tipos de ejercicio (Análisis, Armonización, Audición) | Hecha (20/9/2026) |
 | 5a | Modulación en ejercicios propios: tramos, pivote común, dos avisos, corrección, configurador y MusicXML (decisión 6) | Hecha (20/9/2026) |
 | 5b | Generador de bajos por combinación de fragmentos válidos de la RO, con modulación por acorde pivote | Pendiente |
 | 6 | *Schemata* de IJzerman (marchas progresivas, Romanesca, Quiescenza); respuestas por combinación | Pendiente |
 | 7 | Armonización de soprano: cuarto tipo de ejercicio (fundamental + cifra, bajo deducido, funciones tonales, motor de sucesiones válidas, enlace comprobado) y fila «Función» en todos los tipos (decisiones 20 y 21) | Hecha (20/9/2026) |
 | 4b | Normas de enlace de la pauta de corrección incorporadas a la conducción automática (decisión 22) | Pendiente (siguiente) |
+| 10 | Banco de fragmentos con etiquetas (se llena solo al importar) y fichas: un enlace da N ejercicios al azar de los que cumplan un filtro, encadenados y con resumen (decisión 26) | Hecha (21/9/2026) |
 | 8a | Publicación en GitHub Pages (guía `PUBLICAR-EN-GITHUB.md`) | Hecha (20/9/2026): <https://djvgon.github.io/armonizar/> |
 | 8b | Recogida de resultados: Apps Script (mismo dominio murciaeduca.es identifica al alumno) → hoja de cálculo, y calificación en Classroom vía API (solo en tareas creadas por el propio script; el alumno sigue pulsando «Entregar»). Opcional: corrección en el servidor para los ejercicios evaluables, de modo que las respuestas no viajen en el enlace. Decidido 20/9/2026: dejarlo para esta etapa | Pendiente |
 | 9 | Análisis sobre partitura real, al estilo de NEO: imagen con puntos marcados por el profesor (en cada punto, cifra y grado) o vídeo con partitura y audio que se detiene en los puntos de cifrado. Misma corrección (parejas admisibles por punto, fijadas a mano en el configurador, con tonalidad por tramo). La imagen puede viajar dentro de un `.json` sin alojamiento; el vídeo (YouTube o archivo) necesita la publicación de la Etapa 8 | Propuesta (20/9/2026), pendiente de decidir |
