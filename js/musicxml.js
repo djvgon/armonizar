@@ -259,16 +259,7 @@ const MusicXML = (() => {
      porque las tres se escriben. Es la prueba que dice si la música concuerda con la
      armadura o si la contradice. */
   function cabeEn(notas, t) {
-    if (!t || !t.tonica) return false;
-    let clases;
-    try {
-      clases = new Set();
-      const mete = e => clases.add(Teoria.clase(Object.assign({ octava: 3 }, e)));
-      Teoria.escalaNatural(t).forEach(mete);
-      Teoria.escalaVoces(t).forEach(mete);
-      if (t.modo === 'menor') Teoria.escalaVoces({ tonica: t.tonica, modo: 'menor', melodica: true }).forEach(mete);
-    } catch (e) { return false; }
-    return notas.every(n => clases.has(Teoria.clase(n)));
+    return Teoria.cabeEnTonalidad(notas, t);      // vive en teoria.js, que lo usa también el banco
   }
   // ¿Cabe la música en alguna de las dos tonalidades de la armadura?
   const cabeEnLaArmadura = (notas, f) =>
@@ -294,6 +285,23 @@ const MusicXML = (() => {
     mete(nombreUltima);                       // acabar en la tónica es el indicio más fuerte
     mete(nombrePrimera);
     return cand.find(t => cabeEn(notas, t)) || null;
+  }
+
+  /* Un rótulo que abre una tonalidad y otro que devuelve a la de partida una o dos notas
+     después no son una modulación: son una TONICIZACIÓN —el do♯ que hace de sensible de la
+     dominante y vuelve—. Ahí no se anota cambio de tonalidad: el pasaje se sigue leyendo en
+     la tonalidad de partida y ese acorde es una dominante secundaria (el V/V). Los rótulos
+     de la partitura no sobran: siguen marcando dónde está el acorde alterado. */
+  function sinTonicizaciones(mods, tonInicial) {
+    const out = [];
+    let previa = tonInicial;
+    for (let i = 0; i < mods.length; i++) {
+      const m = mods[i], sig = mods[i + 1];
+      if (sig && Teoria.mismaTonalidad(sig.tonalidad, previa) && sig.nota - m.nota <= 2) { i++; continue; }
+      out.push(m);
+      previa = m.tonalidad;
+    }
+    return out;
   }
 
   function cerrar(frag, modoXML, compas, vozPedida, avisos) {
@@ -375,10 +383,10 @@ const MusicXML = (() => {
     const porTexto = etiquetas.filter(e => e.tiempo > 0.01).map(e => ({ tiempo: e.tiempo, tonalidad: e.tonalidad, segura: true }));
     const cambios = porTexto.concat(porArmadura.filter(a => !porTexto.some(p => Math.abs(p.tiempo - a.tiempo) < 2))).sort((a, b) => a.tiempo - b.tiempo);
     // …y se traducen a índices de nota en cada voz
-    const modulacionesDe = voz => cambios.map(cb => {
+    const modulacionesDe = voz => sinTonicizaciones(cambios.map(cb => {
       const i = notaEnTiempo(frag.voces[voz], cb.tiempo);
       return i > 0 ? { nota: i, tonalidad: cb.tonalidad, segura: cb.segura } : null;
-    }).filter(Boolean);
+    }).filter(Boolean), { tonica, modo });
 
     const compasesBajo = tiene('bajo') ? frag.voces.bajo : [];
     const compasesSoprano = tiene('soprano') ? frag.voces.soprano : [];

@@ -206,6 +206,65 @@ const Teoria = (() => {
     if (ton.natural) return escalaCon(ton.tonica, PATRON_MENOR_NAT);
     return escalaCon(ton.tonica, ton.melodica ? PATRON_MENOR_MEL : PATRON_MENOR_ARM);
   }
+  /* ¿Caben todas estas notas en esta tonalidad? Se admiten las tres formas del menor
+     (natural, armónica y melódica) y el 4.º grado ELEVADO, que es la sensible de la
+     dominante —la del V/V— y no saca al fragmento de su tonalidad (decisión 46). */
+  function cabeEnTonalidad(notas, t) {
+    if (!t || !t.tonica) return false;
+    let clases;
+    try {
+      clases = new Set();
+      const mete = e => clases.add(clase(Object.assign({ octava: 3 }, e)));
+      escalaNatural(t).forEach(mete);
+      escalaVoces(t).forEach(mete);
+      if (t.modo === 'menor') escalaVoces({ tonica: t.tonica, modo: 'menor', melodica: true }).forEach(mete);
+      const cuarta = escalaNatural(t)[3];
+      if (cuarta) mete({ letra: cuarta.letra, alt: cuarta.alt + 1 });
+    } catch (e) { return false; }
+    return notas.every(n => clases.has(clase(n)));
+  }
+
+  /* Tonalidades en las que puede estar un fragmento cuya armadura no cuadra, en orden de
+     plausibilidad y sin repetir la que ya se probó:
+       1. la RELATIVA (misma armadura, el otro modo);
+       2. la que tiene por tónica la última nota —final en cadencia—;
+       3. la que tiene esa última nota por 5.º grado —final en SEMICADENCIA—, que es el
+          caso que se confunde con el anterior: un fragmento en la menor que acaba en mi
+          se lee como mi menor si la armadura no lo desmiente.
+     Solo salen las que admiten todas las notas del fragmento. */
+  function tonalidadesCandidatas(ton, notas, ultima) {
+    const fuera = [];
+    const mete = t => {
+      if (!t || !t.tonica) return;
+      if (mismaTonalidad(t, ton)) return;
+      if (fuera.some(x => mismaTonalidad(x, t))) return;
+      if (!cabeEnTonalidad(notas, t)) return;
+      fuera.push(t);
+    };
+    // Nombre de tónica ('Bb', 'F#') a partir de una nota
+    const nombreTonica = n => n.letra + (n.alt > 0 ? '#'.repeat(n.alt) : n.alt < 0 ? 'b'.repeat(-n.alt) : '');
+    // 1. la relativa: 3.ª menor abajo si es mayor, 3.ª menor arriba si es menor
+    try {
+      const t0 = { letra: nota(ton.tonica + '4').letra, alt: nota(ton.tonica + '4').alt, octava: 4 };
+      const rel = ton.modo === 'mayor' ? transportar(t0, -2, -3) : transportar(t0, 2, 3);
+      mete({ tonica: nombreTonica(rel), modo: ton.modo === 'mayor' ? 'menor' : 'mayor' });
+    } catch (e) { /* nada */ }
+    let u = null;
+    try { u = ultima ? nota(ultima) : null; } catch (e) { u = null; }
+    if (u) {
+      // 2. cadencia: la última nota es la tónica
+      mete({ tonica: nombreTonica(u), modo: 'mayor' });
+      mete({ tonica: nombreTonica(u), modo: 'menor' });
+      // 3. semicadencia: la última nota es el 5.º grado (la tónica está una 5.ª justa abajo)
+      try {
+        const q = transportar({ letra: u.letra, alt: u.alt, octava: 4 }, -4, -7);
+        mete({ tonica: nombreTonica(q), modo: 'menor' });
+        mete({ tonica: nombreTonica(q), modo: 'mayor' });
+      } catch (e) { /* nada */ }
+    }
+    return fuera;
+  }
+
   // La misma tonalidad con el 6.º grado elevado (menor melódica); en mayor, ella misma.
   const menorMelodica = ton => (ton.modo === 'menor' && !ton.melodica ? { tonica: ton.tonica, modo: 'menor', melodica: true } : ton);
   const variantesTon = ton => (ton.modo === 'menor' && !ton.melodica ? [ton, menorMelodica(ton)] : [ton]);
@@ -569,18 +628,49 @@ const Teoria = (() => {
   /* ---- Funciones tonales (cuadro verde de Diego) ----
      T = I y VI · S = II, IV y VI · D = V, VII y V7. El VI es T o S según el contexto:
      S si va hacia la dominante, T en los demás casos (cadencia rota incluida). */
-  const FUNCIONES = ['T', 'S', 'D'];
-  const FUNCION_DE = { I: ['T'], II: ['S'], III: ['T'], IV: ['S'], V: ['D'], VI: ['T', 'S'], VII: ['D'] };
-  const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante' };
+  /* ---- Grados cromáticos: las dominantes secundarias ----
+     T, S y D son las funciones tonales DIATÓNICAS: no llevan alteraciones (salvo la del
+     modo menor que toma la dominante mayor del homónimo). Un acorde alterado no es ni S ni
+     D, porque escribirlo así induce a confusión: lleva su propio signo. La dominante de la
+     dominante se escribe **V/V** —la barra dice «dominante secundaria de»— y su función es
+     **DD**, la doble dominante de Diether de la Motte.
+     Por dentro el acorde sigue siendo la séptima de dominante levantada sobre el 2.º grado
+     (II con cifra marcada); lo que cambia es cómo se escribe y cómo se llama. */
+  const SECUNDARIAS = { II: { grado: 'V/V', funcion: 'DD', nombre: 'dominante de la dominante' } };
+  const GRADOS_CROMATICOS = Object.keys(SECUNDARIAS).map(k => SECUNDARIAS[k].grado);
+  // ¿Este acorde es una dominante secundaria? (cifra de dominante sobre un grado que no es el V)
+  const esSecundaria = (romano, cifra) => !!(DOMINANTES.includes(cifra) && romano !== 'V' && SECUNDARIAS[romano]);
+  // El grado tal como se ESCRIBE (V/V) y el que se usa por dentro (II)
+  const gradoEscrito = (romano, cifra) => (esSecundaria(romano, cifra) ? SECUNDARIAS[romano].grado : romano);
+  const gradoInterno = txt => (Object.keys(SECUNDARIAS).find(k => SECUNDARIAS[k].grado === txt) || txt);
+  const secundariaDe = txt => SECUNDARIAS[gradoInterno(txt)] || null;
+  // Igual que romano(), pero devuelve el grado tal como se ESCRIBE (V/V en vez de II)
+  function romanoEscrito(id, bajo, ton) { return gradoEscrito(romano(id, bajo, ton), id); }
+
+  const FUNCIONES = ['T', 'S', 'D'];                 // las diatónicas (cuadro verde)
+  const FUNCIONES_CROMATICAS = Object.keys(SECUNDARIAS).map(k => SECUNDARIAS[k].funcion);   // DD (cuadro azul)
+  const TODAS_FUNCIONES = FUNCIONES.concat(FUNCIONES_CROMATICAS);
+  const FUNCION_DE ={ I: ['T'], II: ['S'], III: ['T'], IV: ['S'], V: ['D'], VI: ['T', 'S'], VII: ['D'] };
+  const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante', DD: 'dominante de la dominante' };
   // Funciones posibles de un grado (la primera es la habitual)
-  function funcionesDe(romano) { return (FUNCION_DE[romano] || ['T']).slice(); }
+  function funcionesDe(romano) {
+    const sec = SECUNDARIAS[gradoInterno(romano)];
+    if (sec && GRADOS_CROMATICOS.includes(romano)) return [sec.funcion];
+    return (FUNCION_DE[romano] || ['T']).slice();
+  }
   // …y de un acorde concreto: el 6/4 cadencial (I6/4 sobre el 5.º grado) es un adorno de la dominante
-  function funcionesDeAcorde(romano, cifra) { return cifra === '64' && romano === 'I' ? ['D'] : funcionesDe(romano); }
+  function funcionesDeAcorde(romano, cifra) {
+    if (esSecundaria(romano, cifra)) return [SECUNDARIAS[romano].funcion];
+    return cifra === '64' && romano === 'I' ? ['D'] : funcionesDe(romano);
+  }
   // Función habitual, dado el grado siguiente (para el VI: S si sigue una dominante)
   function funcionDe(romano, romanoSiguiente, cifra) {
+    if (esSecundaria(romano, cifra)) return SECUNDARIAS[romano].funcion;
     if (cifra === '64' && romano === 'I') return 'D';
     const f = funcionesDe(romano);
-    if (romano === 'VI' && romanoSiguiente && funcionesDe(romanoSiguiente)[0] === 'D') return 'S';
+    // El VI hace de subdominante cuando va hacia una dominante, sea la de la tonalidad
+    // (D) o la dominante secundaria (DD)
+    if (romano === 'VI' && romanoSiguiente && ['D', 'DD'].includes(funcionesDe(romanoSiguiente)[0])) return 'S';
     return f[0];
   }
 
@@ -623,18 +713,34 @@ const Teoria = (() => {
     // 4/3 (decisión 11). En modo no estricto se devuelve el bajo que resulta de lo escrito,
     // sea lo que sea, para mostrárselo al alumno tal cual.
     if (estricto) {
-      if (DOMINANTES.includes(id) && !(romano === 'V' || (romano === 'II' && id === '+6'))) return null;
+      /* Las cifras de dominante son el V7… o el V7 DE LA DOMINANTE (V/V), cuya fundamental
+         es el 2.º grado: es el acorde del 4.º grado elevado (do♯ en Sol M), decisión 46. */
+      if (DOMINANTES.includes(id) && !(romano === 'V' || romano === 'II')) return null;
       if (romano === 'V' && MARCADOS[id]) return null;
     }
     const gradoBajo = ((k - pasos) % 7 + 7) % 7;               // 0..6
     const esc = escalaNatural(ton), escV = escalaVoces(ton);
-    // El 7.º grado del bajo lleva la sensible (salvo en el III); con la menor melódica,
-    // el 6.º grado también se eleva.
-    const e = (gradoBajo === 6 && romano !== 'III') || (ton.melodica && gradoBajo === 5) ? escV[gradoBajo] : esc[gradoBajo];
-    const bajo = { letra: e.letra, alt: e.alt, octava: 3 };
+    let bajo;
+    if (DOMINANTES.includes(id)) {
+      /* El acorde de séptima de dominante se construye ENTERO sobre su fundamental (3ª
+         mayor, 5ª justa y 7ª menor), sea la del V o la del V/V; el bajo es el miembro que
+         la cifra pone debajo. Así el 6/5̸ del V/V cae sobre el 4.º grado ELEVADO, que es
+         la sensible de la dominante, y no sobre el diatónico. */
+      const ef = (k === 6 && romano !== 'III') || (ton.melodica && k === 5) ? escV[k] : esc[k];
+      const fund = { letra: ef.letra, alt: ef.alt, octava: 3 };
+      const miembro = { 0: [0, 0], 5: [2, 4], 3: [4, 7], 1: [6, 10] }[pasos];
+      if (!miembro) return null;
+      const b = transportar(fund, miembro[0], miembro[1]);
+      bajo = { letra: b.letra, alt: b.alt, octava: 3 };
+    } else {
+      // El 7.º grado del bajo lleva la sensible (salvo en el III); con la menor melódica,
+      // el 6.º grado también se eleva.
+      const e = (gradoBajo === 6 && romano !== 'III') || (ton.melodica && gradoBajo === 5) ? escV[gradoBajo] : esc[gradoBajo];
+      bajo = { letra: e.letra, alt: e.alt, octava: 3 };
+    }
     // Comprobación: la cifra sobre ese bajo ha de dar de verdad ese grado como fundamental
     try { if (romano_(id, bajo, ton) !== romano) return null; } catch (err) { return null; }
-    return { letra: e.letra, alt: e.alt };
+    return { letra: bajo.letra, alt: bajo.alt };
   }
   function romano_(id, bajo, ton) { return ROMANOS[grado(fundamental(id, bajo, ton), ton).grado - 1]; }
 
@@ -666,9 +772,10 @@ const Teoria = (() => {
 
   return {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
-    escalaNatural, escalaVoces, armadura, grado, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio,
+    escalaNatural, escalaVoces, armadura, grado, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
-    FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo
+    FUNCIONES, FUNCIONES_CROMATICAS, TODAS_FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,
+    SECUNDARIAS, GRADOS_CROMATICOS, esSecundaria, gradoEscrito, gradoInterno, secundariaDe, romanoEscrito
   };
 })();

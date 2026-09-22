@@ -759,6 +759,150 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     voz), así que recargar la página no pierde el enlace. Y el banco sigue viviendo en el
     navegador: al terminar hay que **descargar `banco.json` y subirlo a GitHub**.
 
+46. **La dominante de la dominante (V/V)** (22/9/2026). Entra en A3-8, que es donde están
+    los fragmentos con el giro `do do♯ re` —los grados IV, ♯IV, V—.
+    - **Cómo se escribe.** Se escribe **V/V** (corregido el 22/9/2026: véase la decisión
+      48; por dentro el acorde sigue siendo el II con cifra marcada). La cifra es la misma familia marcada del V7,
+      porque la sonoridad es la misma —séptima de dominante— y solo cambia sobre qué grado
+      se construye: `7/+` en estado fundamental, **`6/5̸` sobre el ♯IV** (que es donde cae
+      casi siempre), `+6` sobre el 6.º grado y `+4` sobre la tónica. El `+` y la 5.ª
+      tachada ya dicen «esto es una dominante»; la alteración la lleva el propio bajo
+      escrito, así que la cifra no necesita ningún signo más.
+    - **Cómo se construye.** `Teoria.bajoDe` levanta ahora el acorde de séptima de
+      dominante ENTERO sobre su fundamental (3.ª mayor, 5.ª justa y 7.ª menor) y deduce el
+      bajo del miembro que la cifra pone debajo, en vez de sacarlo de la escala. Así el
+      6/5̸ del V/V cae sobre el 4.º grado **elevado** y no sobre el diatónico. Las cuatro
+      cifras de dominante se admiten ya sobre el II (antes solo el `+6`).
+    - **Cuándo lo propone el motor.** Regla nueva **R0**, la primera que se prueba después
+      de la nota final: *4.º grado elevado → V/V en primera inversión (6/5̸)*, con su
+      explicación en lenguaje llano. Las demás inversiones quedan para la melodía dada y
+      para cuando el profesor las marque a mano.
+    - **Función tonal: DD.** Corregido el 22/9/2026 (decisión 48): el V/V **no** es
+      subdominante, porque es un acorde de dominante. Su función es **DD**, y el giro sale
+      **S – DD – D – T** (`IV · V/V 6/5̸ · V · I`).
+    - **Repertorio.** `II|65d`, `II|7+`, `II|+6` y `II|+4` están en el catálogo del paso 3,
+      sin marcar por defecto, y forman parte del repertorio de A3-8.
+
+47. **Ida y vuelta = tonicización, no modulación** (22/9/2026). Un rótulo que abre una
+    tonalidad y otro que devuelve a la de partida una o dos notas después no son una
+    modulación: el importador no anota ahí ningún cambio de tonalidad y el pasaje se sigue
+    leyendo en la tonalidad de partida, con ese acorde como dominante secundaria. Los
+    rótulos de la partitura no sobran —siguen marcando dónde está el acorde alterado—, así
+    que no hay que tocar los archivos de MuseScore. Con esto, tres fragmentos de A3-8 que
+    modulaban y volvían en un solo acorde pasan a leerse enteros en su tonalidad:
+    `I · IV · II6/5̸ · V · I` en vez de `I · IV · V6/5̸ (de Re M) · V (de Sol M) · I`.
+    El 4.º grado elevado cuenta además como nota propia de la tonalidad en la comprobación
+    de coherencia entre armadura, tonalidad y música.
+
+48. **Funciones diatónicas y funciones cromáticas: el V/V se escribe V/V y su función es
+    DD** (22/9/2026, corrección de Diego). Es la decisión que ordena los dos cuadros —el
+    verde (sintaxis diatónica) y el azul (sintaxis cromática)—, y reemplaza lo que decía la
+    decisión 46.
+    - **El razonamiento.** T, S y D son las funciones tonales **diatónicas**: en ellas no
+      hay alteraciones, salvo la del intercambio modal por el que en el modo menor se
+      emplea la dominante mayor del homónimo (para reforzar el efecto conclusivo). Un
+      acorde alterado no puede llevar una de esas tres letras sin inducir a confusión: `II
+      6/5̸` **no** es una subdominante, porque es un acorde de dominante. De ahí que las
+      funciones **secundarias** lleven signo propio.
+    - **Cómo se escribe el grado.** **`V/V`**: la barra dice «dominante secundaria de», lo
+      mismo que `/IV` en `IV/IV` diría «subdominante secundaria de». Es la forma más fácil
+      de teclear. La alternativa de Diether de la Motte —dos **DD** superpuestas— queda
+      anotada por si algún día se dibuja el cifrado funcional.
+    - **Cómo se llama la función.** **`DD`**, «dominante de la dominante», la doble
+      dominante. Aparece en la fila «Función», en la paleta del alumno (tecla 8) y en el
+      desplegable del configurador, y **solo** cuando el ejercicio la usa: los ejercicios
+      sin dominantes secundarias siguen viendo T, S y D a secas.
+    - **Sintaxis.** El V/V resuelve en la dominante —es su tónica momentánea—: `DD → D` es
+      el único enlace admitido, y no se vuelve de D a DD. El VI que precede a un V/V hace
+      de subdominante, igual que cuando precede a un V. Así el giro completo es
+      **T – S – DD – D – T**.
+    - **Por dentro no cambia nada.** El acorde sigue siendo la séptima de dominante
+      levantada sobre el 2.º grado (`II|65d`, `II|7+`, `II|+6`, `II|+4`). `Teoria.gradoEscrito`
+      traduce al escribir y `Teoria.gradoInterno` al leer; `Teoria.romanoEscrito` hace lo
+      propio con el grado deducido del bajo. Lo que se guarda en el banco, en el corpus y
+      en las direcciones no cambia: solo cambia lo que se ve y lo que se corrige.
+
+49. **El plan del cuadro azul** (22/9/2026). Lo que queda de sintaxis cromática, para
+    cuando toque:
+    - **Dominantes secundarias**: hechas (decisión 48), de momento solo el V/V.
+    - **Préstamos modales del homónimo menor en el mayor**: grado diatónico más
+      **apóstrofo** (`II'`). Es una convención propia de la asignatura; véase el informe
+      `PRESTAMOS-MODALES-NOTACION.md` con lo que se usa en los conservatorios.
+    - **Modulación diatónica**: como hasta ahora, superponiendo las dos lecturas del
+      acorde pivote —tono antiguo y tono nuevo— unidas por una doble línea vertical. Ya
+      está implementado (casilla partida en la fila de grados).
+
+50. **Soprano y tenor, dentro de la octava** (22/9/2026, Diego). En la realización a cuatro
+    voces, la distancia entre la soprano y el tenor no puede pasar de la **8ª**, para que las
+    tres voces superiores se toquen de una vez con la mano derecha en el piano. Es la regla
+    clásica de disposición (las tres voces agudas dentro de la octava; solo el salto del bajo
+    al tenor queda libre), y aquí tiene además esa razón práctica.
+    - `Realizacion.ABERTURA_MAX` pasa de 14 semitonos (novena) a **12**. Antes era un tope
+      blando heredado; ahora es la regla.
+    - **Red de seguridad.** Si con la octava no queda ninguna disposición posible —puede
+      pasar con una melodía dada muy aguda sobre un bajo muy grave—, se admite hasta la
+      novena, pero la disposición queda marcada `abierta` y paga 30 de coste, así que solo
+      sale cuando no hay otra. Nunca se queda un acorde sin realizar.
+    - La disposición **forzada** (melodía obligada que ningún acorde correcto admite arriba)
+      sube también el tenor hasta entrar en la octava, siempre que quede por encima del bajo.
+    - **Efecto medido.** En el corpus, 4 acordes de 819 pasaban de la octava; en el banco, 1
+      de 3297; en una batería de 1100 combinaciones extremas de cifra, bajo y soprano, 98.
+      Ahora: **0** en los tres casos, con la abertura máxima en 12 semitonos exactos. Las
+      paralelas, las séptimas, las sensibles dobladas y los avisos de realización no cambian
+      (32 antes y 32 después en el banco entero, los mismos). La realización **rígida** (las
+      tres posiciones de Furno) ya cumplía la regla: 0 casos antes y después.
+
+51. **La realización se ve mientras se cifra, también en la armonización de bajo**
+    (22/9/2026, Diego). Hasta ahora, en la Armonización de bajo el alumno veía la
+    realización de su cifrado **al terminar**. Ahora se escribe en el pentagrama a la vez
+    que señala el grado y la cifra, nota a nota, como ya ocurría en la Armonización de
+    soprano. Lo que se dibuja es **su** cifrado, no el modelo, así que no descubre nada:
+    es ver escrito lo que uno acaba de decidir. Los avisos de conducción de voces
+    (octavas, quintas, sensibles y séptimas sin resolver) salen desde el primer momento, en
+    rojo y con su explicación al pulsarlos. La **Audición** sigue esperando al final: allí
+    dibujar el acorde enseñaría el bajo que hay que reconocer de oído
+    (`Ejercicios.realizacion` → `'alCerrar'` solo en `audicion`).
+
+52. **Grados de la escala sobre el bajo, al modo de Gjerdingen** (22/9/2026, Diego). Encima
+    de cada nota del bajo, dentro de un **circulito negro sin relleno**, la cifra arábiga
+    del grado que esa nota ocupa en la escala del tono. Sirve para que la relación entre el
+    bajo dado y la **regla de la octava** se vea de un golpe, sobre todo al principio del
+    curso.
+    - **Alteraciones.** Si el grado va alterado, la alteración se escribe dentro con la
+      cifra (**♯4**) y el óvalo se ensancha. Es justo lo que hace falta en las dominantes
+      secundarias —el ♯4 del V/V— y en la monte cromática.
+    - **Modulación.** El grado se mide en la tonalidad que rige en esa nota, así que cada
+      tramo cuenta desde su propia tónica; en el pivote se usa ya la nueva, que es la
+      lectura que se le pide al alumno.
+    - **Dónde y cuándo.** Van puestos por defecto. El profesor puede quitarlos en el paso 3
+      del configurador (*Grados de la escala sobre el bajo*, que escribe `gradosBajo: false`
+      en el ejercicio) y el alumno puede ocultarlos con el interruptor **Grados del bajo**.
+      En la Audición no aparecen, porque allí el bajo no se ve.
+    - En la armonización de soprano el circulito va sobre el **bajo deducido**, que es el
+      que se dibuja en el pentagrama de fa.
+
+53. **La tonalidad que de verdad cuadra** (22/9/2026, a raíz de una corrección de Diego).
+    Una armadura sirve para dos tonalidades, y el importador elegía entre ellas por cómo
+    empieza y cómo acaba el fragmento, porque acabar en la tónica es el indicio más fuerte.
+    Eso falla en las **semicadencias**: un fragmento en la menor que acaba en mi se leía
+    como mi menor. La prueba definitiva la da el repertorio de la lección: **si con la
+    tonalidad deducida hay notas del bajo que no admiten ningún acorde, esa tonalidad es la
+    equivocada**.
+    - `Banco.entrada` prueba primero la tonalidad que trae el fragmento; si el bajo sale
+      incompleto, recorre las candidatas de `Teoria.tonalidadesCandidatas` —la relativa, la
+      última nota como tónica y **la última nota como 5.º grado (la semicadencia)**, siempre
+      que admitan todas las notas— y se queda con la primera en la que **todas** las notas
+      del bajo tienen cifra.
+    - Solo se aplica cuando hay bajo y el fragmento no modula: en el bajo dado cada nota ha
+      de llevar acorde, de modo que quedarse sin cifra es prueba de verdad; en una melodía
+      de soprano no lo es.
+    - **Cuándo se avisa.** Si la tonalidad corregida lleva las mismas alteraciones, solo se
+      había equivocado el modo y no hay nada que arreglar en la partitura: se corrige en
+      silencio. Si lleva otras, la armadura está mal escrita y la entrada queda marcada con
+      (?) y con un aviso que nombra las dos tonalidades.
+    - `Teoria.cabeEnTonalidad` (antes `cabeEn`, privada de `musicxml.js`) pasa a `teoria.js`,
+      que es de donde la usan los dos.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
@@ -988,10 +1132,9 @@ la dirección generada, para que no se distribuya una versión desfasada.
 | 8b | Recogida de resultados: Apps Script (mismo dominio murciaeduca.es identifica al alumno) → hoja de cálculo, y calificación en Classroom vía API (solo en tareas creadas por el propio script; el alumno sigue pulsando «Entregar»). Opcional: corrección en el servidor para los ejercicios evaluables, de modo que las respuestas no viajen en el enlace. Decidido 20/9/2026: dejarlo para esta etapa | Pendiente |
 | 9 | Análisis sobre partitura real, al estilo de NEO: imagen con puntos marcados por el profesor (en cada punto, cifra y grado) o vídeo con partitura y audio que se detiene en los puntos de cifrado. Misma corrección (parejas admisibles por punto, fijadas a mano en el configurador, con tonalidad por tramo). La imagen puede viajar dentro de un `.json` sin alojamiento; el vídeo (YouTube o archivo) necesita la publicación de la Etapa 8 | Propuesta (20/9/2026), pendiente de decidir |
 
-Decisiones pendientes: notación de las dominantes secundarias en el grado
-(II frente a V/V para `+6` sobre el grado 6; la sexta aumentada en menor).
-Con el modelo `+6` en cuarto, la respuesta V/V se vuelve más pertinente:
-bastaría un botón «V/V» y una tabla de excepciones en `Teoria.romano`.
+Decisiones pendientes: el resto del cuadro azul (decisión 49) —préstamos
+modales con apóstrofo (`II'`) y las demás dominantes secundarias (V/IV,
+V/VI…), que hoy solo contemplan el V/V—; la sexta aumentada en menor.
 
 Mejoras pequeñas anotadas: dibujar el bajo pinchando en un pentagrama como
 alternativa al texto; partir en dos sistemas los ejercicios largos;

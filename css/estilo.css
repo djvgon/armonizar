@@ -179,6 +179,11 @@ svg.partitura .etiqueta-ton rect { fill: var(--acento-suave); stroke: var(--acen
 svg.partitura .etiqueta-ton text { font-family: Georgia, "Times New Roman", serif; font-size: 13px; fill: var(--acento); pointer-events: none; }
 svg.partitura .etiqueta-ton.solucion rect { fill: var(--bien-suave); stroke: var(--bien); }
 svg.partitura .etiqueta-ton.solucion text { fill: var(--bien); }
+/* Grados de la escala sobre el bajo (al modo de Gjerdingen): circulito negro sin relleno
+   con la cifra arábiga dentro; se ensancha en óvalo cuando el grado lleva alteración (♯4) */
+svg.partitura .grado-bajo { pointer-events: none; }
+svg.partitura .grado-circulo { fill: var(--papel, #fff); stroke: var(--tinta); stroke-width: 1.2; }
+svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; font-size: 13px; fill: var(--tinta); text-anchor: middle; }
 .tecla-ton { min-width: 44px; min-height: 42px; font-size: .8rem; }
 .tecla.elegida { border-color: var(--acento); background: var(--acento-suave); }
 

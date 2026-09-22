@@ -49,6 +49,8 @@
     modoEj: 'armonizar',      // 'armonizar' | 'cifrar' (Análisis: se muestra la realización modelo) | 'audicion' | 'soprano' (melodía dada; el bajo se deduce)
     realizacionCuando: 'siempre', // 'siempre' (Análisis) | 'alCerrar' (Armonización y Audición: al mostrar la solución)
     verRealizacion: true,     // interruptor del alumno
+    verGrados: true,          // grados de la escala en circulito sobre el bajo (Gjerdingen)
+    gradosPermitidos: true,   // el profesor puede quitarlos en el ejercicio
     rotacion: 0,              // posición inicial de Furno (0, 1, 2)
     rigida: false,            // misma disposición en todos los acordes (solo en pruebas.html; el alumno ya no lo ve)
     sonar: false,             // sonar el acorde al completar cifra y grado
@@ -116,6 +118,8 @@
     estado.reintentos = ej.reintentos !== false;
     estado.modoEj = Ejercicios.modo(ej);
     estado.realizacionCuando = Ejercicios.realizacion(ej);
+    estado.gradosPermitidos = Ejercicios.gradosBajo(ej);
+    estado.verGrados = estado.gradosPermitidos;
     estado.sonando = null;
     estado.alSonar = sonarAcorde;
     Sonido.parar();
@@ -143,8 +147,11 @@
     $('#titulo').textContent = (f ? (f.filtro.titulo || 'Ficha') + ' · ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ' · ' : (ej.coleccion ? ej.coleccion + ' · ' : ''))
       + (ej.titulo || '');
     const ton = '<b>' + Teoria.nombreTonalidad(ej.tonalidad) + '</b>';
-    // Primero el grado de la fundamental, después el cifrado (orden en que se rellenan)
-    const conFun = estado.modoFun === 'pedir' ? 'la función tonal (T, S o D), ' : '';
+    // Primero el grado de la fundamental, después el cifrado (orden en que se rellenan).
+    // Las funciones que hacen falta aquí: las tres diatónicas y, si el ejercicio lleva
+    // alguna dominante secundaria, también la DD (decisión 48)
+    const fun = Ejercicios.funcionesDelEjercicio(ej);
+    const conFun = estado.modoFun === 'pedir' ? 'la función tonal (' + fun.join(', ') + '), ' : '';
     const que = conFun + (estado.pedirRomano ? 'el grado sobre el que se construye la fundamental del acorde y después el cifrado' : 'el cifrado');
     const b = t => '<span class="ref-boton">' + t + '</span>';
     let html;
@@ -164,10 +171,14 @@
     } else {
       html = '<b>Armonización de bajo.</b> Ves solo el bajo: para cada nota indica ' + que + '. Tonalidad: ' + ton + '. '
         + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar el bajo (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
-        + b('▶ Mi cifrado') + ', lo que llevas cifrado. Al terminar verás la realización a cuatro voces de tu cifrado.';
+        + b('▶ Mi cifrado') + ', lo que llevas cifrado. A medida que señalas el grado y la cifra, las notas del acorde se escriben en el pentagrama, de modo que ves a cuatro voces lo que llevas hecho. '
+        + 'Si dos acordes seguidos producen un error de conducción de voces (octavas o quintas seguidas, una sensible o una séptima sin resolver), las notas implicadas salen en <span class="ref-mal">rojo</span>: púlsalas para ver por qué.';
     }
-    if (estado.modoFun === 'dadas') html += ' La fila <b>Función</b> te da la función tonal de cada acorde (T tónica, S subdominante, D dominante): elige acordes que la cumplan.';
-    else if (estado.modoFun === 'pedir') html += ' En la fila <b>Función</b> indica primero la función tonal de cada acorde (T tónica, S subdominante, D dominante).';
+    // Las funciones que hacen falta aquí: las tres diatónicas y, si hay dominantes
+    // secundarias, también la DD
+    const fs = fun.map(f => f + ' ' + Teoria.NOMBRE_FUNCION[f]).join(', ');
+    if (estado.modoFun === 'dadas') html += ' La fila <b>Función</b> te da la función tonal de cada acorde (' + fs + '): elige acordes que la cumplan.';
+    else if (estado.modoFun === 'pedir') html += ' En la fila <b>Función</b> indica primero la función tonal de cada acorde (' + fs + ').';
     if (estado.avisoMod === 'completo') {
       const mods = Ejercicios.modulaciones(ej);
       html += ' <b>Modula</b> ' + mods.map(m => 'a <b>' + Teoria.nombreTonalidad(m.tonalidad) + '</b> desde la nota ' + (m.nota + 1)).join(' y ')
@@ -195,9 +206,10 @@
         if (!c) return;
         const s = document.createElement('span');
         s.className = 'ficha ficha-acorde';
-        s.title = p.romano + ' ' + c.nombre + ' — ' + c.descripcion;
+        const rom = Teoria.gradoEscrito(p.romano, p.cifra);
+        s.title = rom + ' ' + c.nombre + ' — ' + c.descripcion;
         const r = document.createElement('span');
-        r.className = 'ficha-acorde-romano'; r.textContent = p.romano;
+        r.className = 'ficha-acorde-romano'; r.textContent = rom;
         s.appendChild(r);
         s.appendChild(Partitura.iconoCifra(p.cifra, 30));
         rep.appendChild(s);
@@ -240,12 +252,13 @@
   const atajo = k => (k < 9 ? String(k + 1) : k === 9 ? '0' : '');
 
   function pintarPaletas() {
-    // Paleta de funciones tonales (solo si se piden): T = 1, S = 2, D = 3
+    // Paleta de funciones tonales (solo si se piden): T = 1, S = 2, D = 3 y, si el
+    // ejercicio lleva alguna dominante secundaria, DD = 4
     const pf = $('#paleta-funciones');
     pf.innerHTML = '';
     $('#paleta-funciones-caja').hidden = estado.modoFun !== 'pedir';
     if (estado.modoFun === 'pedir') {
-      Teoria.FUNCIONES.forEach((f, k) => {
+      Ejercicios.funcionesDelEjercicio(estado.ejercicio).forEach((f, k) => {
         const cont = document.createDocumentFragment();
         const txt = document.createElement('span'); txt.className = 'tecla-romano-texto'; txt.textContent = f; cont.appendChild(txt);
         const num = document.createElement('span'); num.className = 'tecla-num'; num.textContent = String(k + 1); cont.appendChild(num);
@@ -261,8 +274,15 @@
     pr.innerHTML = '';
     $('#paleta-romanos-caja').hidden = !estado.pedirRomano;
     if (estado.pedirRomano) {
-      const permitidos = Ejercicios.ayudaGrados(estado.ejercicio) === 'paleta' ? Ejercicios.grados(estado.ejercicio) : Teoria.ROMANOS;
-      Teoria.ROMANOS.forEach((r, k) => {
+      /* Los siete grados diatónicos y, detrás, los CROMÁTICOS: la dominante de la
+         dominante (V/V), que no es un grado de la escala sino una dominante secundaria
+         (decisión 48). El V/V solo aparece cuando el ejercicio lo usa o cuando la paleta
+         está completa y la lección lo trae en su repertorio. */
+      const todos = Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS);
+      const usados = Ejercicios.grados(estado.ejercicio);
+      const permitidos = Ejercicios.ayudaGrados(estado.ejercicio) === 'paleta' ? usados
+        : Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS.filter(g => usados.includes(g)));
+      todos.forEach((r, k) => {
         if (!permitidos.includes(r)) return;
         const cont = document.createDocumentFragment();
         const txt = document.createElement('span');
@@ -522,6 +542,11 @@
     $('#btn-parar').hidden = !Sonido.enCurso();
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.classList.toggle('activo', Number(b.dataset.pos) === estado.rotacion));
     $('#posicion-control').hidden = !estado.verRealizacion || estado.modoEj === 'soprano';
+    // Grados del bajo: solo donde hay bajo a la vista (en Audición no se ve)
+    const puedeGrados = estado.gradosPermitidos && estado.modoEj !== 'audicion';
+    $('#control-grados').hidden = !puedeGrados;
+    $('#ver-grados').checked = estado.verGrados;
+    estado.gradosBajo = puedeGrados && estado.verGrados;    // lo que lee la partitura
     $('#realizacion-barra').classList.toggle('audicion', estado.modoEj === 'audicion');
   }
 
@@ -1193,6 +1218,7 @@
     $('#btn-siguiente').addEventListener('click', siguiente);
     $('#btn-enlace').addEventListener('click', copiarEnlace);
     $('#ver-realizacion').addEventListener('change', ev => { estado.verRealizacion = ev.target.checked; pintar(); });
+    $('#ver-grados').addEventListener('change', ev => { estado.verGrados = ev.target.checked; pintar(); });
     $('#sonar').addEventListener('change', ev => { estado.sonar = ev.target.checked; });
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.addEventListener('click', () => { estado.rotacion = Number(b.dataset.pos); pintar(); }));
     // Instrumento: lista, elección guardada y aviso de carga

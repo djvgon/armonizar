@@ -57,7 +57,9 @@ const Reglas = (() => {
       llegada: ant ? movimiento(ant, n) : 'inicio',
       salida: sig ? movimiento(n, sig) : 'final',
       gradoAnt: ant ? Teoria.grado(ant, ton).grado : null,
+      altAnt: ant ? Teoria.grado(ant, ton).alt : null,
       gradoSig: sig ? Teoria.grado(sig, ton).grado : null,
+      altSig: sig ? Teoria.grado(sig, ton).alt : null,
       esUltima: finFrase,
       esPenultima: !finFrase && (i === notas.length - 2 || cor[i + 2]),
       total: notas.length
@@ -77,6 +79,24 @@ const Reglas = (() => {
        III en estado fundamental dejaría el fragmento sin acabar. */
     if (c.grado === 3) return R(['6'], 'Nota final sobre el 3.er grado: tónica en primera inversión (I6).', 'R1 final');
     return R(['53'], 'Nota final: estado fundamental.', 'R1 final');
+  }
+
+  /* CUARTO GRADO ELEVADO (do♯ en Sol M, fa♯ en Do M): no es una nota diatónica, así que el
+     acorde tampoco lo es. Esa nota es la SENSIBLE DE LA DOMINANTE, y el acorde, la
+     DOMINANTE DE LA DOMINANTE: el V7 del V, cuya fundamental está en el 2.º grado (la en
+     Sol M). Sobre este bajo va en primera inversión, de modo que el cifrado es el mismo
+     6/5̸ del V7 —el + y la 5.ª tachada dicen «esto es dominante»— y la alteración la lleva
+     el propio bajo escrito. El grado que se pide es el de la fundamental: II. */
+  /* Cuarto grado ELEVADO. Es la sensible de la dominante, así que el acorde es la
+     dominante de la dominante: V/V, con la fundamental en el 2.º grado, y sobre este bajo
+     la cifra marcada 6/5̸. El caso típico —el que describen Aldwell y Schachter y el que
+     practican en sus ejercicios— es el paso cromático 4 – ♯4 – 5 en el bajo. */
+  function r0_dominanteDeLaDominante(c) {
+    if (c.grado !== 4 || c.alt !== 1) return null;
+    const tipico = c.gradoAnt === 4 && !c.altAnt && c.gradoSig === 5 && !c.altSig;
+    return R(['65d'], tipico
+      ? 'Cuarto grado elevado entre el cuarto natural y el quinto (do – do♯ – re): es el paso que Aldwell y Schachter describen como dominante de la dominante. El do♯ es la sensible de la dominante, la fundamental está en el 2.º grado y sobre este bajo se cifra 6/5̸: V/V, función DD.'
+      : 'Cuarto grado elevado: es la sensible de la dominante, así que el acorde es la dominante de la dominante (V/V), cuya fundamental está en el 2.º grado; sobre este bajo, 6/5̸. Su función no es S ni D, sino DD.', 'R0 V/V');
   }
 
   function r2_cadencia(c, notas, ton) {
@@ -270,7 +290,8 @@ const Reglas = (() => {
         && dominanteSecundariaPermitida(id, c.nota, ton, ej.acordes) && acordePermitido(id, c.nota, ton, ej.acordes)
         && seiscuatroCadencial(id, c, notas, cortes, ton));
       const candidatas = [
-        () => r1_final(c), () => r2_cadencia(c, notas, ton), () => r3_repeticion(c, previo, ton, repertorio, cambia),
+        () => r1_final(c), () => r0_dominanteDeLaDominante(c), () => r2_cadencia(c, notas, ton),
+        () => r3_repeticion(c, previo, ton, repertorio, cambia),
         () => r4_arpegio(c, previo, notas, ton, repertorio), () => r5_funcional(c),
         () => r6_cuartoSalta(c), () => r7_regla_octava(c)
       ];
@@ -666,6 +687,9 @@ const Reglas = (() => {
     // Funciones: no se retrocede D → S
     const fsP = fp ? [fp] : p.funciones, fsQ = fq ? [fq] : q.funciones;
     if (!mismoAcorde && fsP.every(f => f === 'D') && fsQ.every(f => f === 'S')) return false;
+    // La dominante secundaria (V/V, función DD) va a la dominante, y a nada más
+    if (!mismoAcorde && fsP.every(f => f === 'DD') && !fsQ.every(f => f === 'D')) return false;
+    if (!mismoAcorde && fsQ.every(f => f === 'DD') && fsP.every(f => f === 'D')) return false;
     // Subdominante → tónica: la subdominante (II, IV o VI) no vuelve a la tónica, va a la
     // dominante (regla de Diego). Única excepción: el IV como fórmula T S T (bordadura
     // I – IV – I), si está permitida, o como cadencia plagal final.
@@ -852,7 +876,7 @@ const Reglas = (() => {
         const cif = Teoria.CIFRADOS[modelo.cifra].etiqueta;
         const sig = i + 1 < n && modeloIdx[i + 1] !== null && modeloIdx[i + 1] !== undefined && cands[i + 1][modeloIdx[i + 1]] ? cands[i + 1][modeloIdx[i + 1]].romano : null;
         const f = forzadas[i] || Teoria.funcionDe(modelo.romano, sig, modelo.cifra);
-        explicacion = Teoria.nombreEs(Teoria.nota(s)) + ' es la ' + MIEMBRO_TXT[modelo.miembro] + ' de ' + modelo.romano + (cif === '—' ? '' : ' ' + cif)
+        explicacion = Teoria.nombreEs(Teoria.nota(s)) + ' es la ' + MIEMBRO_TXT[modelo.miembro] + ' de ' + Teoria.gradoEscrito(modelo.romano, modelo.cifra) + (cif === '—' ? '' : ' ' + cif)
           + ' (bajo ' + Teoria.nombreEs(modelo.bajo) + (modelo.melodica ? ', menor melódica' : '') + '; función ' + f + ', ' + Teoria.NOMBRE_FUNCION[f] + ')' + (modelo.avisos.length ? '; ' + modelo.avisos.join(', ') : '') + '.';
       }
       return { candidatos: candsTodos[i], admisibles, modelo: modelo ? modelo.id : null, explicacion, regla: 'Melodía', contexto: { i, nota: Teoria.nota(s), grado: Teoria.grado(s, tons[i]).grado } };
@@ -865,7 +889,8 @@ const Reglas = (() => {
     if (!romano || !cifra) return null;
     const notas = notasDe(ej);
     const ton = Teoria.tonalidadesPorNota(ej)[i];
-    return candidatosSoprano(notas[i], ton, [cifra], false, null).find(x => x.romano === romano) || null;
+    const rom = Teoria.gradoInterno(romano);   // el alumno escribe V/V; por dentro es el II
+    return candidatosSoprano(notas[i], ton, [cifra], false, null).find(x => x.romano === rom) || null;
   }
 
   // Enlace entre las respuestas del alumno en las notas i-1 e i: {ok, motivo}
@@ -885,6 +910,7 @@ const Reglas = (() => {
     const esS = x => x.funciones.every(f => f === 'S'), esT = x => x.funciones.every(f => f === 'T');
     if (!mismoAcorde && (esS(p) || p.romano === 'VI') && esT(q) && q.romano !== 'VI' && p.romano !== 'IV') motivo = 'la subdominante (' + p.romano + ') no vuelve a la tónica: va a la dominante';
     else if (!mismoAcorde && esS(p) && esT(q) && p.romano === 'IV') motivo = 'la fórmula I – IV – I no está admitida en este ejercicio: la subdominante va a la dominante';
+    else if (!mismoAcorde && p.funciones.every(f => f === 'DD') && !q.funciones.every(f => f === 'D')) motivo = 'la dominante de la dominante (V/V) resuelve en la dominante: es su tónica momentánea';
     else if (p.sensibleBajo && !mismoAcorde && q.claseBajo !== (p.claseBajo + 1) % 12) motivo = 'la sensible en el bajo (' + Teoria.nombreEs(p.bajo) + ') ha de subir a la tónica';
     else if (p.septimaBajo && !mismoAcorde) motivo = 'la séptima en el bajo (' + Teoria.nombreEs(p.bajo) + ') ha de bajar de grado';
     else if (p.cifra === '64') motivo = 'el 6/4 cadencial resuelve en V sobre el mismo bajo';

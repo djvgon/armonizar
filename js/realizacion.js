@@ -63,7 +63,14 @@ const Realizacion = (() => {
 
   const SOP_MIN = 67, SOP_MAX = 81;        // sol4 … la5, registro preferido de la voz superior
   const SOP_MIN_DURO = 62, SOP_MAX_DURO = 86;
-  const ABERTURA_MAX = 14;                 // mano derecha: de la voz más grave a la más aguda, como mucho una novena
+  /* Abertura de las tres voces superiores: de la soprano al tenor, como mucho una OCTAVA,
+     para que la mano derecha las toque de una vez en el piano (decisión 50). Es la regla
+     clásica de disposición —las tres voces agudas dentro de la octava— y solo el salto del
+     bajo al tenor queda libre. Si con la octava no hay ninguna disposición posible, se
+     admite hasta la novena (ABERTURA_TOPE) marcándola como «abierta», para no dejar el
+     acorde sin realizar; el coste la relega al último lugar. */
+  const ABERTURA_MAX = 12;
+  const ABERTURA_TOPE = 14;
 
   const octavaArriba = (n, k = 1) => ({ letra: n.letra, alt: n.alt, octava: n.octava + k });
   const midi = n => Teoria.midi(n);
@@ -155,6 +162,14 @@ const Realizacion = (() => {
   /* ---- Disposiciones candidatas de un acorde ----
      Devuelve [{voces:[t,a,s], incompleta, doblaBajo, unisono}] con las voces de grave a agudo. */
   function candidatas(d, sopranoFija = null) {
+    // Primero con la octava; si no sale nada, se afloja a la novena antes que quedarse
+    // sin acorde (las que salen así van marcadas con `abierta`)
+    const estrictas = candidatasCon(d, sopranoFija, ABERTURA_MAX);
+    if (estrictas.length) return estrictas;
+    return candidatasCon(d, sopranoFija, ABERTURA_TOPE).map(c => Object.assign(c, { abierta: true }));
+  }
+
+  function candidatasCon(d, sopranoFija, aberturaMax) {
     const bajo = d.bajo;
     const conjuntos = [];                  // multiconjuntos de tres clases (como {letra, alt})
     let sup = d.superiores.slice();
@@ -197,7 +212,7 @@ const Realizacion = (() => {
             const s0 = desde(v[2], midi(a), false);
             [s0, octavaArriba(s0)].forEach(s => {
               if (midi(s) - midi(a) > 12) return;
-              if (midi(s) - midi(t) > ABERTURA_MAX) return;        // las tres voces caben en la mano derecha
+              if (midi(s) - midi(t) > aberturaMax) return;         // soprano y tenor, dentro de la octava
               if (sopranoFija !== null) { if (midi(s) !== sopranoFija) return; }
               else if (midi(s) < SOP_MIN_DURO || midi(s) > SOP_MAX_DURO) return;
               const clave = [midi(t), midi(a), midi(s)].join(',');
@@ -221,6 +236,7 @@ const Realizacion = (() => {
     if (midi(t) - midi(d.bajo) < 3) coste += 10;                     // tenor pegado al bajo
     if (c.incompleta) coste += 8;
     if (c.unisono) coste += 5;
+    if (c.abierta) coste += 30;        // soprano y tenor a más de una octava: solo si no hay otra
     if (d.superiores.length < 3 && !c.doblaBajo) coste += 3;         // tríada sin doblar el bajo
     if (esFinal && d.id === '53' && clase(d.bajo) === claseTonica(ton)) {
       const cs = clase(s);
@@ -297,6 +313,11 @@ const Realizacion = (() => {
       t = octavaArriba(t);
       if (midi(t) > midi(a)) { const x = t; t = a; a = x; }
       if (midi(a) >= sm) a = octavaArriba(a, -1);
+    }
+    // Soprano y tenor dentro de la octava (decisión 50), siempre que el tenor quede sobre el bajo
+    while (sm - midi(t) > ABERTURA_MAX && midi(octavaArriba(t)) < sm) {
+      t = octavaArriba(t);
+      if (midi(t) > midi(a)) { const x = t; t = a; a = x; }
     }
     return { voces: [t, a, s], incompleta: false, doblaBajo: false, unisono: midi(t) === midi(a), forzada: true };
   }

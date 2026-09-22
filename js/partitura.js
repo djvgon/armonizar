@@ -177,10 +177,17 @@ const Partitura = (() => {
     const conSonar = typeof estado.alSonar === 'function' && !soloLectura;   // botón ▶ ENCIMA de cada acorde (suena ese acorde)
     const sinBajo = !!estado.ocultarBajo;                  // Audición: no se ve el bajo (solo casillas y botones ▶)
     const sinSistema = sinBajo && !conSol;                 // no hay ningún pentagrama que dibujar
+    /* Grados de la escala sobre el bajo, al modo de Gjerdingen: encima de cada nota del
+       bajo, la cifra arábiga del grado que esa nota ocupa en la escala del tono, dentro de
+       un circulito negro sin relleno; si el grado va alterado (el ♯4 del V/V, o el de la
+       monte cromática), la alteración va dentro con la cifra y el óvalo se ensancha. Sirve
+       para enlazar de un vistazo el bajo con la regla de la octava (decisión 52). */
+    const conGrados = !!estado.gradosBajo && !sinBajo;
+    const ALTO_GRADOS = conGrados ? 2.6 * SP : 0;
     // Banda superior, de arriba abajo: números (configurador), rótulos de tonalidad, botones ▶
     const Y0 = (numerar ? 3 * SP : 0) + (etiquetas.length ? 3 * SP : 0) + (conSonar ? 3 * SP : 0);
     const Y_TOP_SOL = 5 * SP + Y0, Y_BOT_SOL = Y_TOP_SOL + 4 * SP;
-    const Y_TOP = conSol ? Y_BOT_SOL + 7.5 * SP : 5.5 * SP + Y0; // línea superior del pentagrama del bajo
+    const Y_TOP = conSol ? Y_BOT_SOL + 7.5 * SP + ALTO_GRADOS : 5.5 * SP + Y0 + ALTO_GRADOS; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
     const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // borde superior de las casillas de cifra
     const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
@@ -357,6 +364,33 @@ const Partitura = (() => {
       g.appendChild(el('text', { x: cx, y: cy + 0.45 * SP, 'text-anchor': 'middle' }, et.texto));
       svg.appendChild(g);
     });
+
+    /* ---- Grados de la escala sobre el bajo (Gjerdingen) ----
+       Un circulito por nota del bajo, centrado sobre ella y justo encima del pentagrama,
+       con la cifra arábiga del grado. El grado se mide en la tonalidad que rige en esa
+       nota, así que en un fragmento que modula cada tramo cuenta desde su tónica; y en el
+       pivote se usa ya la nueva, que es la lectura que se le pide al alumno. */
+    if (conGrados) {
+      let tonsNota = null;
+      try { tonsNota = Teoria.tonalidadesPorNota(ej); } catch (e) { tonsNota = null; }
+      const cyG = Y_TOP - 1.35 * SP;
+      notas.forEach(it => {
+        if (it.k < 0 || xDeNota[it.k] === undefined) return;
+        const n = bajoDe(it);            // en la melodía de soprano, el bajo deducido
+        if (!n) return;
+        let gr;
+        try { gr = Teoria.grado(n, (tonsNota && tonsNota[it.k]) || ton); } catch (e) { return; }
+        if (!gr) return;
+        const alt = gr.alt > 0 ? '♯' : gr.alt < 0 ? '♭' : '';
+        const texto = alt + gr.grado;
+        const cx = xDeNota[it.k] + figura(it.dur).ancho * SP / 2;
+        const g = el('g', { class: 'grado-bajo' });
+        const rx = alt ? 1.45 * SP : 1.05 * SP;
+        g.appendChild(el('ellipse', { cx, cy: cyG, rx, ry: 1.05 * SP, class: 'grado-circulo' }));
+        g.appendChild(el('text', { x: cx, y: cyG + 0.42 * SP, 'text-anchor': 'middle', class: 'grado-cifra' }, texto));
+        svg.appendChild(g);
+      });
+    }
 
     /* ---- Globo de explicación de un error de conducción de voces ----
        Se dibuja encima de todo, apuntando a la nota pulsada; se cierra al volver a

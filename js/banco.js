@@ -155,19 +155,73 @@ const Banco = (() => {
     } catch (e) { return null; }
   }
 
+  /* ---- La tonalidad que de verdad cuadra ----
+     Una armadura sirve para dos tonalidades, y la app elige entre ellas por cómo empieza y
+     cómo acaba el fragmento. Eso falla en las SEMICADENCIAS: un fragmento en la menor que
+     acaba en mi se lee como mi menor si la armadura no lo desmiente, porque acabar en la
+     tónica es el indicio más fuerte. La prueba definitiva la da el repertorio de la
+     lección: si con la tonalidad deducida hay notas del bajo que no admiten ningún acorde,
+     esa tonalidad es la equivocada. Entonces se prueban las candidatas
+     (Teoria.tonalidadesCandidatas: la relativa, la última nota como tónica y la última nota
+     como 5.º grado) y se toma la primera en la que TODAS las notas del bajo tienen cifra.
+     Solo se aplica cuando hay bajo y el fragmento no modula: en el bajo dado cada nota ha
+     de llevar acorde, así que quedarse sin cifra es prueba de verdad; en una melodía de
+     soprano no lo es. */
+  /* ¿La armadura escrita es de verdad la del fragmento? Si la tonalidad corregida lleva
+     las mismas alteraciones, solo se había equivocado el MODO (una armadura vale para dos
+     tonalidades) y no hay nada que arreglar en la partitura: se corrige en silencio. Si
+     lleva otras, la armadura está mal escrita y hay que decírselo al profesor. */
+  const armaduraMal = (escrita, real) => {
+    try { return Teoria.armadura(escrita) !== Teoria.armadura(real); } catch (e) { return false; }
+  };
+  const avisoDeArmadura = (escrita, real, ultimaBajo) => {
+    let semi = false;
+    try { semi = !!ultimaBajo && Teoria.grado(Teoria.nota(ultimaBajo), real).grado === 5; } catch (e) { semi = false; }
+    return 'la armadura escrita es la de ' + Teoria.nombreCorto(escrita)
+      + ', pero con ella hay notas del bajo que se quedan sin cifra: el fragmento está en '
+      + Teoria.nombreCorto(real) + (semi ? ' y acaba en semicadencia sobre la dominante' : '')
+      + '. Corrige la armadura en la partitura.';
+  };
+
+  function tonalidadQueCuadra(f, op, hayB, hayS) {
+    const ton = f.tonalidad;
+    if (!hayB) return ton;
+    if ((f.modulacionesBajo || []).length || (f.modulacionesSoprano || []).length) return ton;
+    const prueba = t => {
+      try {
+        const r = analizar(f.compasesBajo, t, null, false, Object.assign({}, op, { companera: null }));
+        return !!r && !r.incompleto;
+      } catch (e) { return false; }
+    };
+    if (prueba(ton)) return ton;
+    let notas;
+    try {
+      notas = Teoria.notasDeCompases(f.compasesBajo).map(n => Teoria.nota(n));
+      if (hayS) Teoria.notasDeCompases(f.compasesSoprano).forEach(n => notas.push(Teoria.nota(n)));
+    } catch (e) { return ton; }
+    const ultima = notas.length ? Teoria.notasDeCompases(f.compasesBajo).slice(-1)[0] : null;
+    const cands = Teoria.tonalidadesCandidatas(ton, notas, ultima);
+    return cands.find(prueba) || ton;
+  }
+
   /* fragmento: lo que devuelve MusicXML.importar / MuseScore.importar.
      opciones: {leccion, fuente, repertorio, acordes, formulaTST}. */
   function entrada(fragmento, opciones = {}) {
     const f = fragmento;
-    const ton = f.tonalidad;
     const compas = f.compas || [4, 4];
     const hayB = Teoria.numeroDeNotas(f.compasesBajo || []) > 0;
     const hayS = Teoria.numeroDeNotas(f.compasesSoprano || []) > 0;
     if (!hayB && !hayS) return null;
     const op = Object.assign({ compas }, opciones);
+    const ton = tonalidadQueCuadra(f, op, hayB, hayS);
+    // Solo se avisa (y se marca con ?) si la ARMADURA está mal; si solo se había
+    // equivocado el modo dentro de la misma armadura, la corrección es firme y silenciosa
+    const cambiada = !Teoria.mismaTonalidad(ton, f.tonalidad) && armaduraMal(f.tonalidad, ton);
+    const ultimaBajo = hayB ? (Teoria.notasDeCompases(f.compasesBajo).slice(-1)[0] || null) : null;
 
     const partes = {};
     const avisos = [];
+    if (cambiada) avisos.push(avisoDeArmadura(f.tonalidad, ton, ultimaBajo));
     if (hayB) {
       const r = analizar(f.compasesBajo, ton, f.modulacionesBajo, false,
         Object.assign({}, op, { companera: hayS ? companera(f.compasesBajo, f.compasesSoprano) : null }));
@@ -206,7 +260,10 @@ const Banco = (() => {
       fuente: opciones.fuente || '',
       titulo: opciones.titulo || '',
       tonalidad: { tonica: ton.tonica, modo: ton.modo },
-      tonalidadSegura: f.tonalidadSegura !== false,
+      tonalidadSegura: f.tonalidadSegura !== false && !cambiada,
+      // Si la armadura de la partitura no era la del fragmento, se guarda para poder avisar
+      armaduraEscrita: cambiada ? { tonica: f.tonalidad.tonica, modo: f.tonalidad.modo } : null,
+      ultimaBajo: cambiada ? ultimaBajo : null,      // solo hace falta para redactar ese aviso
       compas: compas.slice(),
       bajo: partes.bajo || null,
       soprano: partes.soprano || null,
@@ -227,6 +284,9 @@ const Banco = (() => {
     const compas = e.compas || [4, 4];
     const partes = { bajo: e.bajo || null, soprano: e.soprano || null };
     const avisos = [];
+    // La armadura escrita no era la del fragmento: el aviso va con la entrada y sobrevive
+    // a que se vuelvan a calcular las etiquetas
+    if (e.armaduraEscrita) avisos.push(avisoDeArmadura(e.armaduraEscrita, ton, e.ultimaBajo));
     if (partes.bajo) {
       if ((partes.bajo.respuestas || []).some(r => !r || !r.length)) avisos.push('alguna nota del bajo se queda sin cifra posible');
       const fin = finalExtrano(partes.bajo, ton, compas);
@@ -243,7 +303,7 @@ const Banco = (() => {
       const cifra = esSopPrincipal ? Ejercicios.cifraDe(id) : id;
       if (cifra && !cifras.includes(cifra)) cifras.push(cifra);
     });
-    if (esSopPrincipal) modelo.forEach(id => { const r = Ejercicios.par(id).romano; if (r && !grados.includes(r)) grados.push(r); });
+    if (esSopPrincipal) modelo.forEach(id => { const p = Ejercicios.par(id); const r = Teoria.gradoEscrito(p.romano, p.cifra); if (r && !grados.includes(r)) grados.push(r); });
 
     const et = {
       voces: partes.bajo && partes.soprano ? 'ambas' : (partes.bajo ? 'bajo' : 'soprano'),

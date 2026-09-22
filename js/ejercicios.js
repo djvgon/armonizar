@@ -40,8 +40,9 @@
                        cifra lo que suena; puede oír lo que lleva cifrado («Mi
                        cifrado»). Al cerrar el ejercicio se muestran bajo y
                        realización.
-                   En 'armonizar' se ve solo el bajo mientras se trabaja; la
-                       realización de lo cifrado aparece al cerrar el ejercicio.
+                   En 'armonizar' la realización de lo que el alumno va
+                       cifrando se escribe en el pentagrama nota a nota
+                       (decisión 51); solo la Audición espera al final.
      pedirRomano : (opcional, por defecto true) si el alumno debe indicar también
                    el grado sobre el que se construye la fundamental (I … VII).
                    El grado correcto se deriva de cada cifra admisible
@@ -419,7 +420,7 @@ const Ejercicios = (() => {
      (si falta, se deduce del acorde modelo). */
   function funciones(ej) { return ej.funciones === 'dadas' || ej.funciones === 'pedir' ? ej.funciones : null; }
   function funcionModelo(ej, i) {
-    if (Array.isArray(ej.funcionesNotas) && Teoria.FUNCIONES.includes(ej.funcionesNotas[i])) return ej.funcionesNotas[i];
+    if (Array.isArray(ej.funcionesNotas) && Teoria.TODAS_FUNCIONES.includes(ej.funcionesNotas[i])) return ej.funcionesNotas[i];
     const p = parejas(ej, i)[0];
     if (!p) return 'T';
     const sig = i + 1 < numNotas(ej) ? (parejas(ej, i + 1)[0] || {}).romano : null;
@@ -429,7 +430,15 @@ const Ejercicios = (() => {
   function funcionesAdmisibles(ej, i) {
     const out = new Set([funcionModelo(ej, i)]);
     parejas(ej, i).forEach(p => Teoria.funcionesDeAcorde(p.romano, p.cifra).forEach(f => out.add(f)));
-    return Teoria.FUNCIONES.filter(f => out.has(f));
+    return Teoria.TODAS_FUNCIONES.filter(f => out.has(f));
+  }
+  /* Funciones que hacen falta en este ejercicio: siempre las tres diatónicas y, además,
+     las cromáticas (DD) si algún acorde admisible las pide. Es lo que se ofrece en la
+     paleta del alumno y en el desplegable del configurador. */
+  function funcionesDelEjercicio(ej) {
+    const usadas = new Set();
+    for (let i = 0; i < ej.respuestas.length; i++) funcionesAdmisibles(ej, i).forEach(f => usadas.add(f));
+    return Teoria.FUNCIONES.concat(Teoria.FUNCIONES_CROMATICAS.filter(f => usadas.has(f)));
   }
 
   /* ---- Bajo deducido (melodía de soprano) ----
@@ -440,9 +449,10 @@ const Ejercicios = (() => {
     const notas = Teoria.notasDeCompases(ej.compases);
     const melodia = notas.map(n => Teoria.midi(Teoria.nota(n)));
     let ref = Teoria.midi(Teoria.nota('C3'));
-    return romanos.map((r, i) => {
+    return romanos.map((rEscrito, i) => {
       const id = cifras[i];
-      if (!r || !id) return null;
+      if (!rEscrito || !id) return null;
+      const r = Teoria.gradoInterno(rEscrito);          // V/V → II (el grado real de la fundamental)
       // Menor melódica: la inflexión que hace que el acorde contenga la nota de la melodía
       const ton = Teoria.tonParaAcorde(r, id, tons[i], notas[i]);
       const b = Teoria.bajoDe(r, id, ton, false);              // lo que el alumno ha escrito, sin arreglarlo
@@ -467,9 +477,16 @@ const Ejercicios = (() => {
   // Cuando el ejercicio se cierra (solución a la vista) se muestran bajo y realización en los tres.
   // (El campo ej.realizacion de versiones anteriores ya no se usa.)
   // En la armonización de soprano el acorde completo se ve en cuanto se responde (Diego, 21/9/2026).
-  function realizacion(ej) { return modo(ej) === 'cifrar' || modo(ej) === 'soprano' ? 'siempre' : 'alCerrar'; }
+  /* Y en la armonización de BAJO, lo mismo (Diego, 22/9/2026, decisión 51): a la vez que el
+     alumno señala la fundamental y la inversión, las notas del acorde se escriben en el
+     pentagrama. Lo que se dibuja es SU cifrado, no el modelo, así que no descubre nada: es
+     ver lo que uno acaba de escribir. Solo la Audición sigue esperando al final, porque allí
+     dibujar el acorde enseñaría el bajo que hay que reconocer de oído. */
+  function realizacion(ej) { return modo(ej) === 'audicion' ? 'alCerrar' : 'siempre'; }
   function verBajo(ej) { return modo(ej) !== 'audicion' || ej.mostrarBajo === true; }
-  // La realización en la melodía de soprano se ve al cerrar (como en Armonización)
+  /* ¿Se dibujan los grados de la escala en circulito sobre el bajo? (decisión 52). Van
+     puestos salvo que el profesor los quite: ej.gradosBajo === false. */
+  function gradosBajo(ej) { return ej.gradosBajo !== false; }
 
   // Nivel de ayuda con los grados: 'ninguna' | 'lista' | 'paleta'
   function ayudaGrados(ej) { return ['ninguna', 'lista', 'paleta'].includes(ej.ayudaGrados) ? ej.ayudaGrados : 'lista'; }
@@ -500,7 +517,8 @@ const Ejercicios = (() => {
       parejas(ej, i).forEach(p => usados.add(p.romano));
       if (esPivote(ej, i)) parejasEn(ej, i, tonalidadAntes(ej, i)).forEach(p => usados.add(p.romano));
     }
-    return Teoria.ROMANOS.filter(r => usados.has(r));
+    // Los siete diatónicos y, detrás, los cromáticos (V/V)
+    return Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS).filter(r => usados.has(r));
   }
 
   /* ---- Modulación ----
@@ -535,8 +553,10 @@ const Ejercicios = (() => {
   // Parejas admisibles (cifra + grado) de la nota i leída en la tonalidad ton.
   function parejasEn(ej, i, ton) {
     const notas = Teoria.notasDeCompases(ej.compases);
-    if (esSoprano(ej)) return admisibles(ej, i).map(id => { const p = par(id); const t = Teoria.tonParaAcorde(p.romano, p.cifra, ton, notas[i]); return { id, cifra: p.cifra, romano: p.romano, bajo: Teoria.bajoDe(p.romano, p.cifra, t) }; });
-    return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.romano(id, notas[i], ton) }));
+    /* El grado que se devuelve es el ESCRITO: la dominante secundaria se escribe V/V, no II
+       (decisión 48). Por dentro, para deducir el bajo, se sigue usando el grado real. */
+    if (esSoprano(ej)) return admisibles(ej, i).map(id => { const p = par(id); const t = Teoria.tonParaAcorde(p.romano, p.cifra, ton, notas[i]); return { id, cifra: p.cifra, romano: Teoria.gradoEscrito(p.romano, p.cifra), bajo: Teoria.bajoDe(p.romano, p.cifra, t) }; });
+    return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.gradoEscrito(Teoria.romano(id, notas[i], ton), id) }));
   }
   // Parejas en la tonalidad que rige en la nota (en el pivote, la nueva); la primera es la modelo.
   function parejas(ej, i) { return parejasEn(ej, i, tonalidadEn(ej, i)); }
@@ -568,11 +588,11 @@ const Ejercicios = (() => {
     if (ej.repertorio) ej.repertorio.forEach(id => { if (!Teoria.CIFRADOS[id]) errores.push('Cifra desconocida en el repertorio: ' + id); });
     if (ej.acordes !== undefined) {
       if (!Array.isArray(ej.acordes)) errores.push('La lista de acordes no es una lista.');
-      else ej.acordes.forEach(x => { const p = par(x); if (!p.romano || !Teoria.ROMANOS.includes(p.romano) || !Teoria.CIFRADOS[p.cifra]) errores.push('Acorde desconocido: ' + x); });
+      else ej.acordes.forEach(x => { const p = par(x); if (!p.romano || !Teoria.ROMANOS.includes(Teoria.gradoInterno(p.romano)) || !Teoria.CIFRADOS[p.cifra]) errores.push('Acorde desconocido: ' + x); });
     }
     if (Array.isArray(ej.respuestas) && esSoprano(ej)) ej.respuestas.forEach((a, i) => {
       if (!Array.isArray(a)) errores.push('Respuestas mal formadas en la nota ' + (i + 1) + '.');
-      else a.forEach(x => { const p = par(x); if (!p.romano || !Teoria.ROMANOS.includes(p.romano) || !Teoria.CIFRADOS[p.cifra]) errores.push('Respuesta desconocida en la nota ' + (i + 1) + ': ' + x); });
+      else a.forEach(x => { const p = par(x); if (!p.romano || !Teoria.ROMANOS.includes(Teoria.gradoInterno(p.romano)) || !Teoria.CIFRADOS[p.cifra]) errores.push('Respuesta desconocida en la nota ' + (i + 1) + ': ' + x); });
     });
     if (ej.modulaciones !== undefined) {
       if (!Array.isArray(ej.modulaciones)) errores.push('Las modulaciones no son una lista.');
@@ -585,6 +605,6 @@ const Ejercicios = (() => {
   }
 
   return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
-    funciones, funcionModelo, funcionesAdmisibles, bajosDe,
+    funciones, funcionModelo, funcionesAdmisibles, funcionesDelEjercicio, gradosBajo, bajosDe,
     modulaciones, modula, aviso, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();
