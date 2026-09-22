@@ -657,6 +657,7 @@
         bancoId: estado.banco ? estado.banco.entrada.id : null, bancoVoz: estado.banco ? estado.banco.voz : null,
         modulaciones: estado.modulaciones, avisoMod: $('#aviso-mod').value, bajoAudicion: $('#bajo-audicion').value,
         gradosBajo: $('#grados-bajo').value,
+        fichaAyudaGrados: $('#ficha-ayuda-grados').value, fichaPreferir: $('#ficha-preferir').value, fichaFunciones: $('#ficha-funciones').value,
         funciones: $('#funciones').value, funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
@@ -674,6 +675,7 @@
       $('#compas').value = b.compas || '4/4'; $('#titulo').value = b.titulo || ''; $('#coleccion').value = b.coleccion || '';
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
       $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#ayuda-grados').value = b.ayudaGrados || 'lista'; $('#grados-bajo').value = b.gradosBajo === '' ? '' : '1';
+      $('#ficha-ayuda-grados').value = b.fichaAyudaGrados || 'lista'; $('#ficha-preferir').value = b.fichaPreferir || ''; $('#ficha-funciones').value = b.fichaFunciones || '';
       elegirModo(tipo); $('#preferir').value = b.preferir || '';
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
       $('#funciones').value = b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '';
@@ -948,13 +950,20 @@
     if ($('#ficha-modotonal').value) f.modoTonal = $('#ficha-modotonal').value;
     if (mod === 'si') f.modula = true; else if (mod === 'no') f.modula = false;
     if ($('#ficha-titulo').value.trim()) f.titulo = $('#ficha-titulo').value.trim();
-    // Opciones del paso 3 que también rigen en la ficha
+    /* Opciones PROPIAS de la ficha (Diego, 22/9/2026): la ayuda con los grados, la
+       respuesta modelo sobre el 6.º descendente y la fila de funciones se eligen aquí, no
+       en el paso 3, porque una ficha se prepara para un grupo y un momento del curso. */
+    const ayuda = $('#ficha-ayuda-grados').value;
+    if (ayuda !== 'lista') f.ayudaGrados = ayuda;
+    const pref = $('#ficha-preferir').value;
+    if (pref) f.preferir = [pref];
+    const fun = $('#ficha-funciones').value;
+    if (fun === 'dadas' || fun === 'pedir') f.funciones = fun;
+    // Las demás siguen viniendo del paso 3
     const op = opciones();
     if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
     if (!op.reintentos) f.reintentos = false;
-    if (op.ayudaGrados !== 'lista') f.ayudaGrados = op.ayudaGrados;
     if (!op.gradosBajo) f.gradosBajo = false;
-    if (op.funciones) f.funciones = op.funciones;
     if (f.modo === 'audicion' && op.bajoAudicion) f.mostrarBajo = true;
     if (f.modo === 'soprano') {
       f.acordes = acordesElegidos();
@@ -1232,8 +1241,9 @@
     $('#btn-ficha').addEventListener('click', generarFicha);
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
-    ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n'].forEach(id => {
-      $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); });
+    ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n',
+     '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones'].forEach(id => {
+      $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); guardarBorrador(); });
     });
   }
   function limpiarFicha() {

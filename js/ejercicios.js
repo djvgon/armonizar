@@ -504,7 +504,38 @@ const Ejercicios = (() => {
       const pref = ids.find(id => ej.preferir.includes(cifraDe(id)));
       if (pref) ids = [pref, ...ids.filter(id => id !== pref)];
     }
+    /* En Análisis y Audición el alumno NO elige la armonización: tiene el acorde delante
+       —escrito a cuatro voces o sonando— y ha de decir qué es. Su respuesta ha de
+       corresponderse exactamente con él, así que sobre un bajo donde suena la tríada de
+       dominante no vale V7, aunque el V7 sea también posible ahí. Se dejan solo las cifras
+       que producen las MISMAS notas que la modelo, que es la que se muestra: quedan más de
+       una cuando dos cifras distintas dan el mismo acorde (7 y 7/+ sobre el mismo bajo,
+       cuando la 7ª diatónica ya es la de dominante). En las dos armonizaciones es al
+       revés: ahí el alumno decide, y toda armonización correcta vale (decisión 54). */
+    if (ids.length > 1 && exigeAcordeExacto(ej)) {
+      const f = ids.filter(id => mismoAcorde(id, ids[0], ej, i));
+      if (f.length) ids = f;
+    }
     return ids;
+  }
+  const exigeAcordeExacto = ej => { const m = modo(ej); return m === 'cifrar' || m === 'audicion'; };
+  // ¿Estas dos cifras dan el mismo acorde sobre el bajo de la nota i? (mismas clases de altura)
+  function mismoAcorde(a, b, ej, i) {
+    if (a === b) return true;
+    try {
+      const nota = Teoria.notasDeCompases(ej.compases)[i];
+      const ton = tonalidadEn(ej, i);
+      const clases = id => {
+        const s = new Set([Teoria.clase(Teoria.nota(nota))]);
+        Teoria.vocesSuperiores(id, nota, ton).forEach(v => s.add(Teoria.clase(v)));
+        return s;
+      };
+      const ca = clases(a), cb = clases(b);
+      if (ca.size !== cb.size) return false;
+      let igual = true;
+      ca.forEach(x => { if (!cb.has(x)) igual = false; });
+      return igual;
+    } catch (e) { return false; }
   }
 
   // Grados de la fundamental que intervienen en el ejercicio (para informar al alumno):

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Configurador de ejercicios · Armonizar el bajo</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260922-2115">
-  <link rel="stylesheet" href="css/estilo.css?v=20260922-2115">
+  <link rel="stylesheet" href="css/bravura.css?v=20260923-0110">
+  <link rel="stylesheet" href="css/estilo.css?v=20260923-0110">
 </head>
 <body class="configurador">
 
@@ -306,6 +306,33 @@
             <input id="ficha-titulo" type="text" placeholder="Ficha 1 · El 6/4 cadencial">
           </label>
         </div>
+        <h3>Opciones de la ficha</h3>
+        <div class="fila-campos">
+          <label class="campo">
+            <span>Ayuda con los grados</span>
+            <select id="ficha-ayuda-grados">
+              <option value="ninguna">Ninguna: paleta completa, sin lista</option>
+              <option value="lista" selected>Mostrar la lista de grados en juego (paleta completa)</option>
+              <option value="paleta">Limitar la paleta a los grados en juego</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Sobre el grado 6 descendente, la respuesta modelo es</span>
+            <select id="ficha-preferir">
+              <option value="">II4/3 (tercero)</option>
+              <option value="+6">+6, dominante secundaria del V (cuarto)</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Funciones tonales (fila T · S · D)</span>
+            <select id="ficha-funciones">
+              <option value="" selected>Sin fila de funciones</option>
+              <option value="dadas">Dadas: el alumno ve la función de cada acorde</option>
+              <option value="pedir">Pedirlas: el alumno indica primero la función de cada acorde</option>
+            </select>
+          </label>
+        </div>
+        <p class="ayuda">Estas tres rigen en toda la ficha y son independientes de las del paso 3. Las demás opciones del paso 3 —pedir el grado, permitir corregir los errores, los grados del bajo y, en la Audición, qué se ve— se aplican también aquí tal como estén arriba.</p>
         <p class="ayuda" id="ficha-cuenta"></p>
         <div class="banco-repertorio">
           <p class="ayuda" id="leccion-repertorio">Cada fragmento guarda el repertorio de su lección —las cifras y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha.</p>
@@ -336,17 +363,17 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260922-2115</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260923-0110</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260922-2115"></script>
-  <script src="js/reglas.js?v=20260922-2115"></script>
-  <script src="js/ejercicios.js?v=20260922-2115"></script>
-  <script src="js/partitura.js?v=20260922-2115"></script>
-  <script src="js/musicxml.js?v=20260922-2115"></script>
-  <script src="js/musescore.js?v=20260922-2115"></script>
-  <script src="js/banco.js?v=20260922-2115"></script>
-  <script src="js/realizacion.js?v=20260922-2115"></script>
-  <script src="js/configurador.js?v=20260922-2115"></script>
+  <script src="js/teoria.js?v=20260923-0110"></script>
+  <script src="js/reglas.js?v=20260923-0110"></script>
+  <script src="js/ejercicios.js?v=20260923-0110"></script>
+  <script src="js/partitura.js?v=20260923-0110"></script>
+  <script src="js/musicxml.js?v=20260923-0110"></script>
+  <script src="js/musescore.js?v=20260923-0110"></script>
+  <script src="js/banco.js?v=20260923-0110"></script>
+  <script src="js/realizacion.js?v=20260923-0110"></script>
+  <script src="js/configurador.js?v=20260923-0110"></script>
 </body>
 </html>

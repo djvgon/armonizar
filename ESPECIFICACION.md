@@ -903,6 +903,34 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - `Teoria.cabeEnTonalidad` (antes `cabeEn`, privada de `musicxml.js`) pasa a `teoria.js`,
       que es de donde la usan los dos.
 
+54. **En Análisis y Audición, la respuesta ha de ser el acorde que se muestra**
+    (22/9/2026, Diego). Los dos tipos de ejercicio en que el alumno **no elige** la
+    armonización —la tiene delante, escrita a cuatro voces o sonando— pedían hasta ahora
+    «una cifra admisible sobre ese bajo», y eso es demasiado: en un `si – fa♯ – si` de si
+    menor se daba por bueno `I · V7 · I` aunque la realización enseñe la tríada de
+    dominante, sin séptima, porque sobre ese fa♯ el V7 también cabe.
+    - **La regla.** En `cifrar` y `audicion`, `Ejercicios.admisibles` deja solo las cifras
+      que producen **las mismas notas** que la modelo, que es la que se dibuja y la que
+      suena. Quedan dos cuando dos cifras distintas dan el mismo acorde; si no, queda una.
+    - En las dos **armonizaciones** no cambia nada: ahí el alumno decide, y toda
+      armonización correcta del bajo (o de la melodía) sigue valiendo. Es la diferencia
+      entre reconocer y componer.
+    - **Efecto medido.** En el banco, 223 alternativas retiradas sobre 555 notas de bajo.
+      Ninguna nota se queda sin respuesta posible: la modelo siempre sobrevive.
+    - El cifrado ya escribía la alteración que hace falta: sobre el 5.º grado del modo
+      menor, el `5/3` se dibuja como un **♯** solo (`Teoria.filasCifra`), que es lo que
+      Diego llama «V♯».
+
+55. **La ficha tiene sus propias opciones** (22/9/2026, Diego). Una ficha se prepara para un
+    grupo y un momento del curso, así que tres opciones se eligen **en el paso 6**, junto al
+    filtro, y no se heredan del paso 3: la **ayuda con los grados**, la **respuesta modelo
+    sobre el 6.º grado descendente** (II4/3 o +6) y la **fila de funciones tonales**. Viajan
+    dentro del `#f=` de la ficha, de modo que los enlaces repartidos las conservan.
+    Las demás opciones del paso 3 —pedir el grado, permitir corregir los errores, los grados
+    del bajo y, en la Audición, qué se ve— se siguen aplicando tal como estén arriba, y la
+    ayuda del panel lo dice. De paso, `Banco.ejercicio` pasa a leer `filtro.preferir` y
+    `filtro.gradosBajo`, que antes se guardaban en el filtro y no llegaban al ejercicio.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

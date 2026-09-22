@@ -388,7 +388,10 @@ const Banco = (() => {
     if (f.pedirRomano === false) ej.pedirRomano = false;
     if (f.reintentos === false) ej.reintentos = false;
     if (f.ayudaGrados && f.ayudaGrados !== 'lista') ej.ayudaGrados = f.ayudaGrados;
+    if (f.gradosBajo === false) ej.gradosBajo = false;
     if (f.funciones) ej.funciones = f.funciones;
+    // La respuesta modelo preferida sobre el 6.º descendente (+6 en cuarto curso)
+    if (Array.isArray(f.preferir) && f.preferir.length) ej.preferir = f.preferir.slice();
     if (parte.modulaciones && parte.modulaciones.length) {
       ej.modulaciones = parte.modulaciones;
       if (f.avisoMod === 'existe') ej.aviso = 'existe';
