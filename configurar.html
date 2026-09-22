@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Configurador de ejercicios · Armonizar el bajo</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260923-0110">
-  <link rel="stylesheet" href="css/estilo.css?v=20260923-0110">
+  <link rel="stylesheet" href="css/bravura.css?v=20260923-1240">
+  <link rel="stylesheet" href="css/estilo.css?v=20260923-1240">
 </head>
 <body class="configurador">
 
@@ -165,11 +165,13 @@
             <option value="bajo">Solo el bajo (la realización, no)</option>
           </select>
         </label>
-        <label class="campo" id="campo-aviso-mod" hidden>
-          <span>Modulación: qué se le dice al alumno</span>
-          <select id="aviso-mod">
-            <option value="completo" selected>La tonalidad de llegada y desde qué nota</option>
-            <option value="existe">Solo que hay una modulación (él marca dónde y cuál)</option>
+        <label class="campo">
+          <span>Tonalidades (fila «Tonalidad»)</span>
+          <select id="tonalidades">
+            <option value="" selected>Automático: dadas si el fragmento modula</option>
+            <option value="dadas">Dadas: el alumno ve el tono y dónde cambia</option>
+            <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
+            <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
           </select>
         </label>
       </div>
@@ -331,8 +333,17 @@
               <option value="pedir">Pedirlas: el alumno indica primero la función de cada acorde</option>
             </select>
           </label>
+          <label class="campo">
+            <span>Tonalidades (fila «Tonalidad»)</span>
+            <select id="ficha-tonalidades">
+              <option value="" selected>Automático: dadas si el fragmento modula</option>
+              <option value="dadas">Dadas: el alumno ve el tono y dónde cambia</option>
+              <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
+              <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
+            </select>
+          </label>
         </div>
-        <p class="ayuda">Estas tres rigen en toda la ficha y son independientes de las del paso 3. Las demás opciones del paso 3 —pedir el grado, permitir corregir los errores, los grados del bajo y, en la Audición, qué se ve— se aplican también aquí tal como estén arriba.</p>
+        <p class="ayuda">Estas cuatro rigen en toda la ficha y son independientes de las del paso 3. Las demás opciones del paso 3 —pedir el grado, permitir corregir los errores, los grados del bajo y, en la Audición, qué se ve— se aplican también aquí tal como estén arriba.</p>
         <p class="ayuda" id="ficha-cuenta"></p>
         <div class="banco-repertorio">
           <p class="ayuda" id="leccion-repertorio">Cada fragmento guarda el repertorio de su lección —las cifras y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha.</p>
@@ -363,17 +374,17 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260923-0110</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260923-1240</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260923-0110"></script>
-  <script src="js/reglas.js?v=20260923-0110"></script>
-  <script src="js/ejercicios.js?v=20260923-0110"></script>
-  <script src="js/partitura.js?v=20260923-0110"></script>
-  <script src="js/musicxml.js?v=20260923-0110"></script>
-  <script src="js/musescore.js?v=20260923-0110"></script>
-  <script src="js/banco.js?v=20260923-0110"></script>
-  <script src="js/realizacion.js?v=20260923-0110"></script>
-  <script src="js/configurador.js?v=20260923-0110"></script>
+  <script src="js/teoria.js?v=20260923-1240"></script>
+  <script src="js/reglas.js?v=20260923-1240"></script>
+  <script src="js/ejercicios.js?v=20260923-1240"></script>
+  <script src="js/partitura.js?v=20260923-1240"></script>
+  <script src="js/musicxml.js?v=20260923-1240"></script>
+  <script src="js/musescore.js?v=20260923-1240"></script>
+  <script src="js/banco.js?v=20260923-1240"></script>
+  <script src="js/realizacion.js?v=20260923-1240"></script>
+  <script src="js/configurador.js?v=20260923-1240"></script>
 </body>
 </html>

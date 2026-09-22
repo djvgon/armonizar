@@ -51,10 +51,14 @@
                    desde 0; es el acorde pivote, común a las dos tonalidades)
                    rige la tonalidad nueva. Los grados se leen en la tonalidad
                    que rige en cada nota; en el pivote, en las dos (II = V).
-     aviso       : (opcional, con modulaciones) 'completo' (por defecto: se
-                   muestra dónde empieza la tonalidad nueva y cuál es) o 'existe'
-                   (solo se avisa de que hay una modulación; el alumno marca dónde
-                   y cuál; vale el pivote o la primera nota ajena a la anterior).
+     tonalidades : (opcional) la fila «Tonalidad»: 'dadas' (se muestra el tono y
+                   dónde cambia), 'pedir' (el alumno marca dónde cambia el tono y
+                   cuál es; vale el pivote o la primera nota ajena a la anterior,
+                   y si el fragmento no modula, no marcar nada) o 'no' (sin fila:
+                   si modula, sin anunciar). Si falta, se da cuando el fragmento
+                   modula y no hay fila cuando no modula.
+     aviso       : (heredado, con modulaciones) 'completo' | 'existe'. Equivale a
+                   tonalidades: 'dadas' | 'pedir'; los enlaces antiguos lo llevan.
 
    Las respuestas de este corpus están fijadas a mano según las reglas
    acordadas (Regla de la octava de Furno + fórmulas de salto, arpegio y
@@ -564,6 +568,23 @@ const Ejercicios = (() => {
   }
   const modula = ej => modulaciones(ej).length > 0;
   function aviso(ej) { return ej.aviso === 'existe' ? 'existe' : 'completo'; }
+
+  /* ---- La fila «Tonalidad» ----
+     ej.tonalidades dice si el alumno ve las tonalidades del fragmento —y, por tanto, los
+     puntos de cambio de tono— y si las pone él. Es una opción aparte de las funciones
+     tonales, para poder combinarlas como se quiera (decisión 56):
+       'dadas' → la fila se muestra rellena: la tonalidad inicial y, en cada pivote, la nueva
+       'pedir' → la rellena el alumno: marca desde qué nota rige la tonalidad nueva y cuál es
+       'no'    → no hay fila. Si el fragmento modula, se cifra igualmente en las tonalidades
+                 verdaderas, pero no se le dicen: es la modulación SIN ANUNCIAR
+       ausente → como siempre: fila dada si el fragmento modula, nada si no modula. Los
+                 enlaces antiguos, que llevan `aviso`, siguen valiendo. */
+  function tonalidades(ej) {
+    if (ej.tonalidades === 'dadas' || ej.tonalidades === 'pedir') return ej.tonalidades;
+    if (ej.tonalidades === 'no') return null;
+    if (!modula(ej)) return null;
+    return aviso(ej) === 'existe' ? 'pedir' : 'dadas';
+  }
   function tonalidadEn(ej, i) { return Teoria.tonalidadesPorNota(ej)[i] || ej.tonalidad; }
   // Tonalidad que regía ANTES de la nota i (la anterior al pivote, si i es pivote)
   function tonalidadAntes(ej, i) { return i > 0 ? tonalidadEn(ej, i - 1) : tonalidadEn(ej, 0); }
@@ -637,5 +658,5 @@ const Ejercicios = (() => {
 
   return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
     funciones, funcionModelo, funcionesAdmisibles, funcionesDelEjercicio, gradosBajo, bajosDe,
-    modulaciones, modula, aviso, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
+    modulaciones, modula, aviso, tonalidades, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

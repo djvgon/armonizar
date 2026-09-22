@@ -183,11 +183,31 @@ const Partitura = (() => {
        monte cromática), la alteración va dentro con la cifra y el óvalo se ensancha. Sirve
        para enlazar de un vistazo el bajo con la regla de la octava (decisión 52). */
     const conGrados = !!estado.gradosBajo && !sinBajo;
-    const ALTO_GRADOS = conGrados ? 2.6 * SP : 0;
+    /* Los circulitos van en una FILA, por encima de todo lo que el bajo ocupe: la nota más
+       aguda y, si su plica va hacia arriba, la punta de la plica. A una altura fija se le
+       montarían encima a los bajos agudos —un re4 sale tres posiciones por encima del
+       pentagrama—, así que la altura de la fila se calcula a partir de la música. Se mide
+       en «pasos» (medios espacios sobre la línea inferior): 8 es la línea superior. */
+    const TOPE_CABEZA = 2.5 * SP;        // del centro del circulito a lo que haya debajo
+    const RADIO_GRADO = 1.05 * SP;
+    let pasoTope = 8;
+    if (conGrados) notas.forEach(it => {
+      const n = bajoDe(it);
+      if (!n) return;
+      const p = paso(n);
+      pasoTope = Math.max(pasoTope, p < 4 ? p + 7 : p);    // plica hacia arriba: 3.5 espacios
+    });
+    // Subida de la fila por encima de la línea superior del pentagrama
+    const SUBIDA_GRADOS = Math.max(1.35 * SP, (pasoTope - 8) * SP / 2 + TOPE_CABEZA);
+    const ALTO_GRADOS = conGrados ? SUBIDA_GRADOS + RADIO_GRADO + 0.4 * SP : 0;
     // Banda superior, de arriba abajo: números (configurador), rótulos de tonalidad, botones ▶
     const Y0 = (numerar ? 3 * SP : 0) + (etiquetas.length ? 3 * SP : 0) + (conSonar ? 3 * SP : 0);
     const Y_TOP_SOL = 5 * SP + Y0, Y_BOT_SOL = Y_TOP_SOL + 4 * SP;
-    const Y_TOP = conSol ? Y_BOT_SOL + 7.5 * SP + ALTO_GRADOS : 5.5 * SP + Y0 + ALTO_GRADOS; // línea superior del pentagrama del bajo
+    /* Hueco entre los dos pentagramas: el de siempre, salvo que los circulitos pidan más.
+       Necesitan ALTO_GRADOS por encima del pentagrama del bajo, y hay que dejar además
+       sitio para las plicas que bajan del pentagrama de sol (3.5 espacios). */
+    const HUECO_SISTEMA = conGrados ? Math.max(7.5 * SP, ALTO_GRADOS + 4 * SP) : 7.5 * SP;
+    const Y_TOP = conSol ? Y_BOT_SOL + HUECO_SISTEMA : 5.5 * SP + Y0 + ALTO_GRADOS; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
     const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // borde superior de las casillas de cifra
     const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
@@ -371,9 +391,11 @@ const Partitura = (() => {
        nota, así que en un fragmento que modula cada tramo cuenta desde su tónica; y en el
        pivote se usa ya la nueva, que es la lectura que se le pide al alumno. */
     if (conGrados) {
-      let tonsNota = null;
-      try { tonsNota = Teoria.tonalidadesPorNota(ej); } catch (e) { tonsNota = null; }
-      const cyG = Y_TOP - 1.35 * SP;
+      /* estado.tonalidadesNota, si viene, manda: es la lectura del alumno, que puede no
+         coincidir con las tonalidades verdaderas mientras no las haya marcado. */
+      let tonsNota = Array.isArray(estado.tonalidadesNota) ? estado.tonalidadesNota : null;
+      if (!tonsNota) { try { tonsNota = Teoria.tonalidadesPorNota(ej); } catch (e) { tonsNota = null; } }
+      const cyG = Y_TOP - SUBIDA_GRADOS;      // la fila, por encima de la nota más aguda del bajo
       notas.forEach(it => {
         if (it.k < 0 || xDeNota[it.k] === undefined) return;
         const n = bajoDe(it);            // en la melodía de soprano, el bajo deducido
@@ -385,8 +407,8 @@ const Partitura = (() => {
         const texto = alt + gr.grado;
         const cx = xDeNota[it.k] + figura(it.dur).ancho * SP / 2;
         const g = el('g', { class: 'grado-bajo' });
-        const rx = alt ? 1.45 * SP : 1.05 * SP;
-        g.appendChild(el('ellipse', { cx, cy: cyG, rx, ry: 1.05 * SP, class: 'grado-circulo' }));
+        const rx = alt ? 1.4 * RADIO_GRADO : RADIO_GRADO;
+        g.appendChild(el('ellipse', { cx, cy: cyG, rx, ry: RADIO_GRADO, class: 'grado-circulo' }));
         g.appendChild(el('text', { x: cx, y: cyG + 0.42 * SP, 'text-anchor': 'middle', class: 'grado-cifra' }, texto));
         svg.appendChild(g);
       });

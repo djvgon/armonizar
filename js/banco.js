@@ -392,10 +392,9 @@ const Banco = (() => {
     if (f.funciones) ej.funciones = f.funciones;
     // La respuesta modelo preferida sobre el 6.º descendente (+6 en cuarto curso)
     if (Array.isArray(f.preferir) && f.preferir.length) ej.preferir = f.preferir.slice();
-    if (parte.modulaciones && parte.modulaciones.length) {
-      ej.modulaciones = parte.modulaciones;
-      if (f.avisoMod === 'existe') ej.aviso = 'existe';
-    }
+    // La fila «Tonalidad»: rige module o no el fragmento (decisión 56)
+    if (['dadas', 'pedir', 'no'].includes(f.tonalidades)) ej.tonalidades = f.tonalidades;
+    if (parte.modulaciones && parte.modulaciones.length) ej.modulaciones = parte.modulaciones;
     return ej;
   }
 

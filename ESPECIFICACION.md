@@ -880,6 +880,14 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       En la Audición no aparecen, porque allí el bajo no se ve.
     - En la armonización de soprano el circulito va sobre el **bajo deducido**, que es el
       que se dibuja en el pentagrama de fa.
+    - **Dónde se colocan** (corregido el 23/9/2026, Diego). Los circulitos van en una FILA,
+      a una altura que sale de la música: por encima de la nota más aguda del bajo y, si su
+      plica va hacia arriba, de la punta de la plica. A una altura fija se le montaban
+      encima a los bajos agudos —un re4 sale tres posiciones por encima del pentagrama—.
+      El hueco entre los dos pentagramas crece solo lo que haga falta, de modo que en un
+      bajo normal la partitura queda igual de compacta que antes. Comprobado sobre los 1662
+      circulitos del banco (las dos voces, con la realización a la vista): **0 solapes**,
+      con un hueco mínimo de 0,85 espacios.
 
 53. **La tonalidad que de verdad cuadra** (22/9/2026, a raíz de una corrección de Diego).
     Una armadura sirve para dos tonalidades, y el importador elegía entre ellas por cómo
@@ -930,6 +938,35 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     del bajo y, en la Audición, qué se ve— se siguen aplicando tal como estén arriba, y la
     ayuda del panel lo dice. De paso, `Banco.ejercicio` pasa a leer `filtro.preferir` y
     `filtro.gradosBajo`, que antes se guardaban en el filtro y no llegaban al ejercicio.
+
+56. **Las tonalidades, opción aparte de las funciones** (23/9/2026, Diego). La fila
+    «Tonalidad» estaba atada a la modulación: aparecía solo si el fragmento modulaba, y su
+    única opción (`aviso`) decía cuánto se le contaba al alumno. Ahora es una opción como la
+    de las funciones tonales, de modo que se pueden combinar las dos como se quiera: ver las
+    funciones y no las tonalidades, verlas todas, pedir unas y dar las otras.
+    - **`ej.tonalidades`**, con los mismos valores que `ej.funciones` más uno:
+      - **`dadas`** — la fila se muestra rellena: la tonalidad inicial y, en cada pivote, la
+        nueva. Es lo que hacía `aviso: 'completo'`.
+      - **`pedir`** — la rellena el alumno: marca desde qué nota rige la tonalidad nueva y
+        cuál es. Es lo que hacía `aviso: 'existe'`, pero ahora **también en los fragmentos
+        que no modulan**: decidir que el fragmento NO cambia de tono pasa a ser parte del
+        ejercicio, y marcar algo donde no lo hay se corrige («este fragmento no cambia de
+        tono»).
+      - **`no`** — no hay fila. Si el fragmento modula, se cifra igualmente en sus
+        tonalidades verdaderas, pero no se le dicen: es la **modulación sin anunciar** que
+        estaba anotada como mejora pendiente. El pivote lleva entonces una sola casilla de
+        grado y se admite leerlo en cualquiera de las dos tonalidades, porque el alumno no
+        sabe que hay un cambio; la modulación se descubre al ver la solución.
+      - **ausente** — como siempre: dada si el fragmento modula, nada si no modula. Los
+        enlaces antiguos, que llevan `aviso`, siguen valiendo tal cual.
+    - **Los circulitos de grado** (decisión 52) cuentan desde la tonalidad que el alumno
+      tiene por buena —la dada, la que él ha marcado o, sin fila, la inicial—, no desde las
+      verdaderas. Si contaran desde estas, la numeración se reiniciaría en el pivote y
+      descubriría la modulación que se le está preguntando. Al ver la solución pasan a las
+      verdaderas. `app.js` pasa esa lectura a la partitura en `estado.tonalidadesNota`; el
+      configurador no la manda, porque al profesor se le enseña todo.
+    - Está en el **paso 3** (module o no el fragmento; el campo ya no se esconde) y también
+      en las **opciones de la ficha**, junto a las otras tres de la decisión 55.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
@@ -1167,8 +1204,7 @@ V/VI…), que hoy solo contemplan el V/V—; la sexta aumentada en menor.
 Mejoras pequeñas anotadas: dibujar el bajo pinchando en un pentagrama como
 alternativa al texto; partir en dos sistemas los ejercicios largos;
 constructor de cifras al estilo teoria.com como alternativa a la paleta;
-corrección inmediata nota a nota como opción; modo con la modulación sin
-anunciar.
+corrección inmediata nota a nota como opción.
 
 ## 9. Procedimiento de trabajo
 

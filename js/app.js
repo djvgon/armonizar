@@ -32,7 +32,7 @@
     bajosMal: null,           // melodía de soprano: tras corregir, qué bajos van en rojo
     avisosVoces: [],          // errores de conducción de voces de la realización que se ve (notas en rojo + globo)
     marcas: {},               // modulación según el alumno: índice de nota → tonalidad que rige desde ahí
-    avisoMod: null,           // null (sin modulación) | 'completo' (se muestra dónde y a qué tonalidad) | 'existe' (solo se avisa)
+    modoTon: null,            // fila «Tonalidad»: null (no hay) | 'dadas' (rellena) | 'pedir' (la pone el alumno)
     tonalidadBloqueada: false,// la fila «Tonalidad» ya no se edita (modo completo, o marcas acertadas en un reintento)
     resultadoMod: null,       // corrección de la modulación: {ok, info:[…], sobrantes:[…]}
     pedirRomano: true,
@@ -108,9 +108,11 @@
     estado.primerIntento = null;
     estado.bloqueadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false }));
     // Modulación: en modo 'completo' las marcas vienen dadas; en 'existe' las pone el alumno
-    estado.avisoMod = Ejercicios.modula(ej) ? Ejercicios.aviso(ej) : null;
-    estado.marcas = estado.avisoMod === 'completo' ? marcasModelo() : {};
-    estado.tonalidadBloqueada = estado.avisoMod === 'completo';
+    estado.modoTon = Ejercicios.tonalidades(ej);
+    /* Sin fila y con modulación, el fragmento se cifra igualmente en sus tonalidades
+       verdaderas: simplemente no se le dicen al alumno (modulación sin anunciar). */
+    estado.marcas = estado.modoTon === 'pedir' ? {} : marcasModelo();
+    estado.tonalidadBloqueada = estado.modoTon !== 'pedir';
     estado.mostrarSolucion = false;
     estado.avisosRespuesta = [];
     estado.notasAviso = null;
@@ -179,12 +181,18 @@
     const fs = fun.map(f => f + ' ' + Teoria.NOMBRE_FUNCION[f]).join(', ');
     if (estado.modoFun === 'dadas') html += ' La fila <b>Función</b> te da la función tonal de cada acorde (' + fs + '): elige acordes que la cumplan.';
     else if (estado.modoFun === 'pedir') html += ' En la fila <b>Función</b> indica primero la función tonal de cada acorde (' + fs + ').';
-    if (estado.avisoMod === 'completo') {
-      const mods = Ejercicios.modulaciones(ej);
+    /* La fila «Tonalidad»: qué se dice de las tonalidades y de los puntos de cambio de
+       tono. Es independiente de la fila de funciones (decisión 56). */
+    const mods = Ejercicios.modulaciones(ej);
+    if (estado.modoTon === 'dadas' && mods.length) {
       html += ' <b>Modula</b> ' + mods.map(m => 'a <b>' + Teoria.nombreTonalidad(m.tonalidad) + '</b> desde la nota ' + (m.nota + 1)).join(' y ')
         + ' (fila «Tonalidad»). En la nota del cambio, el acorde es común a las dos tonalidades: indica su grado en la anterior y en la nueva.';
-    } else if (estado.avisoMod === 'existe') {
+    } else if (estado.modoTon === 'dadas') {
+      html += ' La fila <b>Tonalidad</b> te da el tono en que está el fragmento; no cambia en todo él.';
+    } else if (estado.modoTon === 'pedir' && mods.length) {
       html += ' <b>Este fragmento modula.</b> En la fila «Tonalidad», marca desde qué nota rige la tonalidad nueva y cuál es (vale la primera nota que ya no pertenece a la tonalidad anterior, o el acorde común que hace de pivote); en la nota marcada indica el grado en las dos tonalidades.';
+    } else if (estado.modoTon === 'pedir') {
+      html += ' En la fila <b>Tonalidad</b>, marca desde qué nota rige una tonalidad nueva y cuál es, <b>si es que el fragmento cambia de tono</b>: puede que no lo haga, y entonces no hay nada que marcar.';
     }
     $('#instruccion').innerHTML = html;
     /* Lección y repertorio de acordes. Cada lección tiene el suyo, y en una ficha que
@@ -342,9 +350,11 @@
   }
   const lecturaAlumno = () => lecturaCon(estado.marcas);
   // ¿La casilla de grado de la nota i está partida en dos (nota marcada)?
-  const esDoble = i => !!estado.marcas[i] && i > 0 && estado.pedirRomano;
-  const hayFilaTonalidad = () => estado.avisoMod !== null;
-  const tonalidadEditable = () => estado.avisoMod === 'existe' && !estado.tonalidadBloqueada && !estado.corregido;
+  // La casilla de grado se parte en dos solo si la fila «Tonalidad» está a la vista: sin
+  // ella, el pivote se cifra en la tonalidad que rige, sin desvelar que hay un cambio.
+  const esDoble = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && estado.pedirRomano;
+  const hayFilaTonalidad = () => estado.modoTon !== null;
+  const tonalidadEditable = () => estado.modoTon === 'pedir' && !estado.tonalidadBloqueada && !estado.corregido;
 
   // Paleta de tonalidades: las cinco vecinas de la que rige antes de la nota activa
   function pintarPaletaTonalidades() {
@@ -372,7 +382,15 @@
   // Estado que la partitura necesita para la fila «Tonalidad» y los rótulos
   function prepararModulacion() {
     const ej = estado.ejercicio;
-    if (!hayFilaTonalidad()) { estado.filaTonalidad = null; estado.dobles = []; estado.etiquetas = []; return; }
+    if (!hayFilaTonalidad()) {
+      estado.filaTonalidad = null;
+      estado.dobles = [];
+      // Sin fila, la modulación solo se descubre al ver la solución
+      estado.etiquetas = estado.mostrarSolucion
+        ? Ejercicios.modulaciones(ej).map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'solucion' }))
+        : [];
+      return;
+    }
     const n = estado.respuestas.length;
     estado.dobles = estado.respuestas.map((_, i) => esDoble(i));
     const celdas = [];
@@ -382,17 +400,17 @@
       if (i === 0) { c.texto = Teoria.nombreCorto(ej.tonalidad); c.clase = 'inicial'; c.fija = true; }
       else if (estado.marcas[i]) {
         c.texto = Teoria.nombreCorto(estado.marcas[i]);
-        if (estado.avisoMod === 'completo') { c.clase = 'dada'; c.fija = true; }
+        if (estado.modoTon === 'dadas') { c.clase = 'dada'; c.fija = true; }
         else if (resMarcas) c.clase = resMarcas.correctas.includes(i) ? 'bien' : 'mal';
         else if (estado.tonalidadBloqueada) c.clase = 'bien fija';
       } else if (resMarcas && resMarcas.faltan.includes(i)) { c.clase = 'mal'; c.texto = '¿?'; }
       celdas.push(c);
     }
     estado.filaTonalidad = { visible: true, editable: tonalidadEditable(), celdas };
-    // Rótulos encima del sistema: en modo completo, siempre; en 'existe', al mostrar la solución
+    // Rótulos encima del sistema: con las tonalidades dadas, siempre; si las pone el alumno, al mostrar la solución
     estado.etiquetas = [];
-    if (estado.avisoMod === 'completo' || estado.mostrarSolucion) {
-      Ejercicios.modulaciones(ej).forEach(m => estado.etiquetas.push({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: estado.avisoMod === 'completo' ? 'dada' : 'solucion' }));
+    if (estado.modoTon === 'dadas' || estado.mostrarSolucion) {
+      Ejercicios.modulaciones(ej).forEach(m => estado.etiquetas.push({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: estado.modoTon === 'dadas' ? 'dada' : 'solucion' }));
     }
   }
 
@@ -547,6 +565,15 @@
     $('#control-grados').hidden = !puedeGrados;
     $('#ver-grados').checked = estado.verGrados;
     estado.gradosBajo = puedeGrados && estado.verGrados;    // lo que lee la partitura
+    /* Los circulitos cuentan el grado desde la tonalidad que el ALUMNO tiene por buena: la
+       dada, la que él ha marcado o —si no hay fila de tonalidades— la inicial. Si contaran
+       desde las verdaderas, la numeración se reiniciaría en el pivote y descubriría la
+       modulación que precisamente se le está preguntando (decisión 56). */
+    estado.tonalidadesNota = (estado.mostrarSolucion || estado.modoTon === 'dadas')
+      ? null                                                  // la partitura usa las verdaderas
+      : hayFilaTonalidad()
+        ? lecturaCon(estado.marcas).map(l => l.ton)
+        : estado.respuestas.map(() => estado.ejercicio.tonalidad);
     $('#realizacion-barra').classList.toggle('audicion', estado.modoEj === 'audicion');
   }
 
@@ -822,7 +849,13 @@
   function corregirMarcas() {
     const ej = estado.ejercicio;
     const mods = Ejercicios.modulaciones(ej);
-    if (!mods.length) return null;
+    /* Si no modula, no hay nada que marcar… salvo que el alumno haya marcado algo: con las
+       tonalidades por pedir, decidir que NO cambia de tono es parte del ejercicio. */
+    if (!mods.length) {
+      const sobra = Object.keys(estado.marcas).map(Number);
+      if (!sobra.length) return null;
+      return { ok: false, info: [], correctas: [], faltan: [], sobrantes: sobra };
+    }
     const marcas = estado.marcas;
     const indices = Object.keys(marcas).map(Number).sort((a, b) => a - b);
     const usadas = new Set(), correctas = [], faltan = [], info = [];
@@ -843,7 +876,8 @@
 
   function corregir() {
     const ej = estado.ejercicio;
-    estado.resultadoMod = corregirMarcas();
+    // Sin fila de tonalidades no hay nada que corregir ahí: el alumno no marcó nada
+    estado.resultadoMod = hayFilaTonalidad() ? corregirMarcas() : null;
     const marcasOk = !estado.resultadoMod || estado.resultadoMod.ok;
     const lectura = lecturaCon(marcasOk ? estado.marcas : marcasModelo());
     estado.resultados = ej.respuestas.map((_, i) => {
@@ -857,7 +891,15 @@
       let okRomano = true, okRomano2 = true, modeloRomano = parejas[0].romano;
       if (estado.pedirRomano) {
         const doble = esDoble(i);
-        if (marcasOk && l.antes) {
+        if (l.antes && !hayFilaTonalidad()) {
+          /* Modulación sin anunciar: el pivote tiene una sola casilla, porque el alumno no
+             sabe que hay un cambio de tono. Vale leerlo en cualquiera de las dos
+             tonalidades: en la anterior, que es donde él se cree, o en la nueva. */
+          const antes = Ejercicios.parejasEn(ej, i, l.antes);
+          okRomano = acierta(parejas, rom) || acierta(antes, rom);
+          okRomano2 = true;
+          modeloRomano = antes[0].romano + ' = ' + parejas[0].romano;
+        } else if (marcasOk && l.antes) {
           // Nota marcada (pivote): grado en la tonalidad anterior y en la nueva
           const antes = Ejercicios.parejasEn(ej, i, l.antes);
           okRomano = acierta(antes, rom);
@@ -988,13 +1030,14 @@
     if (rm) {
       const partes = rm.info.map(x => {
         const nombre = Teoria.nombreTonalidad(x.m.tonalidad);
-        if (estado.avisoMod === 'completo') return 'Modulación a ' + nombre + ' desde la nota ' + (x.m.nota + 1) + '.';
+        if (estado.modoTon === 'dadas') return 'Modulación a ' + nombre + ' desde la nota ' + (x.m.nota + 1) + '.';
         const donde = x.rango[0] === x.rango[1] ? 'en la nota ' + (x.rango[0] + 1) : 'entre la nota ' + (x.rango[0] + 1) + ' (acorde pivote) y la ' + (x.rango[1] + 1) + ' (primera nota ajena a la tonalidad anterior)';
         if (x.bien) return 'Modulación a ' + nombre + ': <span class="cif bien">bien marcada</span> (nota ' + (x.idx + 1) + ').';
         if (x.idx === undefined) return 'Modulación a ' + nombre + ': <span class="cif mal">sin marcar</span>' + (estado.mostrarSolucion ? '; empieza ' + donde : '') + '.';
         return 'Modulación: has marcado <span class="cif mal">' + Teoria.nombreCorto(x.tonAlumno) + ' en la nota ' + (x.idx + 1) + '</span>' + (estado.mostrarSolucion ? '; es a ' + nombre + ', ' + donde : ' (la tonalidad no es esa)') + '.';
       });
-      if (rm.sobrantes.length) partes.push('Marca' + (rm.sobrantes.length > 1 ? 's' : '') + ' de tonalidad que sobra' + (rm.sobrantes.length > 1 ? 'n' : '') + ': nota' + (rm.sobrantes.length > 1 ? 's' : '') + ' ' + rm.sobrantes.map(k => k + 1).join(', ') + '.');
+      if (rm.sobrantes.length && !rm.info.length) partes.push('<b>Este fragmento no cambia de tono</b>: la' + (rm.sobrantes.length > 1 ? 's marcas sobran' : ' marca sobra') + ' (nota' + (rm.sobrantes.length > 1 ? 's' : '') + ' ' + rm.sobrantes.map(k => k + 1).join(', ') + ').');
+      else if (rm.sobrantes.length) partes.push('Marca' + (rm.sobrantes.length > 1 ? 's' : '') + ' de tonalidad que sobra' + (rm.sobrantes.length > 1 ? 'n' : '') + ': nota' + (rm.sobrantes.length > 1 ? 's' : '') + ' ' + rm.sobrantes.map(k => k + 1).join(', ') + '.');
       html += '<p class="desglose modulacion">' + partes.join(' ') + '</p>';
     }
     const respuestasBien = aciertos === n && (!rm || rm.ok);

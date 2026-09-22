@@ -86,7 +86,7 @@
   function opciones() {
     const pref = $('#preferir').value;
     return { pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
-      modo: modoElegido(), preferir: pref ? [pref] : [], avisoMod: $('#aviso-mod').value, bajoAudicion: $('#bajo-audicion').value === 'bajo',
+      modo: modoElegido(), preferir: pref ? [pref] : [], tonalidades: $('#tonalidades').value, bajoAudicion: $('#bajo-audicion').value === 'bajo',
       gradosBajo: $('#grados-bajo').value === '1',
       funciones: $('#funciones').value === 'dadas' || $('#funciones').value === 'pedir' ? $('#funciones').value : null };
   }
@@ -163,10 +163,7 @@
   function modulacionesValidas(n) {
     return estado.modulaciones.filter(m => m.nota > 0 && m.nota < n).slice().sort((a, b) => a.nota - b.nota);
   }
-  function ajustarCampoModulacion() {
-    const hay = modulacionesValidas(Ejercicios.numNotas({ compases: estado.compases })).length > 0;
-    $('#campo-aviso-mod').hidden = !hay;
-  }
+  function ajustarCampoModulacion() { /* la fila «Tonalidad» se elige siempre: module o no (decisión 56) */ }
 
   // Compases cuya suma de duraciones no coincide con el compás indicado (aviso, no error:
   // puede haber anacrusa o compás final incompleto).
@@ -221,11 +218,10 @@
       if (extra.funcionesNotas !== undefined) { if (extra.funcionesNotas) ej.funcionesNotas = extra.funcionesNotas; }
       else if (Array.isArray(estado.funciones) && estado.funciones.length === Ejercicios.numNotas({ compases })) ej.funcionesNotas = estado.funciones.slice();
     }
+    // La fila «Tonalidad» se elige module o no el fragmento (decisión 56)
+    if (op.tonalidades) ej.tonalidades = op.tonalidades;
     const mods = extra.modulaciones !== undefined ? extra.modulaciones : modulacionesValidas(Ejercicios.numNotas({ compases }));
-    if (mods.length) {
-      ej.modulaciones = mods.map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }));
-      if (op.avisoMod === 'existe') ej.aviso = 'existe';
-    }
+    if (mods.length) ej.modulaciones = mods.map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }));
     return ej;
   }
 
@@ -634,7 +630,7 @@
     ajustarCampoAudicion();
     $('#preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
     estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
-    $('#aviso-mod').value = Ejercicios.aviso(ej);
+    $('#tonalidades').value = ['dadas', 'pedir', 'no'].includes(ej.tonalidades) ? ej.tonalidades : '';
     estado.compases = ej.compases;
     estado.respuestas = ej.respuestas.map(a => a.slice());
     try { estado.propuesta = proponerPara(ej, estado.funciones); } catch (e) { estado.propuesta = null; }
@@ -655,9 +651,10 @@
         pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
         tipo: modoElegido(), preferir: $('#preferir').value, respuestas: estado.respuestas,
         bancoId: estado.banco ? estado.banco.entrada.id : null, bancoVoz: estado.banco ? estado.banco.voz : null,
-        modulaciones: estado.modulaciones, avisoMod: $('#aviso-mod').value, bajoAudicion: $('#bajo-audicion').value,
+        modulaciones: estado.modulaciones, tonalidades: $('#tonalidades').value, bajoAudicion: $('#bajo-audicion').value,
         gradosBajo: $('#grados-bajo').value,
         fichaAyudaGrados: $('#ficha-ayuda-grados').value, fichaPreferir: $('#ficha-preferir').value, fichaFunciones: $('#ficha-funciones').value,
+        fichaTonalidades: $('#ficha-tonalidades').value,
         funciones: $('#funciones').value, funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
@@ -676,6 +673,7 @@
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
       $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#ayuda-grados').value = b.ayudaGrados || 'lista'; $('#grados-bajo').value = b.gradosBajo === '' ? '' : '1';
       $('#ficha-ayuda-grados').value = b.fichaAyudaGrados || 'lista'; $('#ficha-preferir').value = b.fichaPreferir || ''; $('#ficha-funciones').value = b.fichaFunciones || '';
+      $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(b.fichaTonalidades) ? b.fichaTonalidades : '';
       elegirModo(tipo); $('#preferir').value = b.preferir || '';
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
       $('#funciones').value = b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '';
@@ -690,7 +688,7 @@
         const e = banco.find(x => x.id === b.bancoId);
         if (e && e[b.bancoVoz]) estado.banco = { entrada: e, voz: b.bancoVoz };
       }
-      $('#aviso-mod').value = b.avisoMod === 'existe' ? 'existe' : 'completo';
+      $('#tonalidades').value = ['dadas', 'pedir', 'no'].includes(b.tonalidades) ? b.tonalidades : '';
       leerBajo();
       ajustarCampoModulacion();
       if (b.respuestas && b.respuestas.length === Ejercicios.numNotas({ compases: estado.compases })) {
@@ -776,7 +774,7 @@
     }
 
     $('#texto-bajo').addEventListener('input', () => { estado.banco = null; pintarOrigenBanco(); estado.companera = null; leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
-    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ayuda-grados', '#preferir', '#aviso-mod', '#bajo-audicion', '#grados-bajo'].forEach(sel => {
+    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ayuda-grados', '#preferir', '#tonalidades', '#bajo-audicion', '#grados-bajo'].forEach(sel => {
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
@@ -959,6 +957,8 @@
     if (pref) f.preferir = [pref];
     const fun = $('#ficha-funciones').value;
     if (fun === 'dadas' || fun === 'pedir') f.funciones = fun;
+    const tons = $('#ficha-tonalidades').value;
+    if (['dadas', 'pedir', 'no'].includes(tons)) f.tonalidades = tons;
     // Las demás siguen viniendo del paso 3
     const op = opciones();
     if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
@@ -1242,7 +1242,7 @@
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n',
-     '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones'].forEach(id => {
+     '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades'].forEach(id => {
       $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); guardarBorrador(); });
     });
   }
