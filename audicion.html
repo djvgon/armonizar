@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Portada de un tipo de ejercicio. Solo existe por el TÍTULO: Classroom (y cualquier
+       otro sitio donde se pegue el enlace) pide la página al servidor y pone como etiqueta
+       lo que encuentra aquí. La parte del enlace que lleva el ejercicio (#e=… o #f=…) no
+       viaja al servidor, así que la etiqueta no puede salir de ella: hace falta una
+       dirección distinta por tipo de ejercicio (decisión 58).
+       Al abrirla, el navegador pasa a index.html conservando el ejercicio. -->
+  <title>Práctica armónica · Reconocimiento auditivo</title>
+  <meta name="description" content="Escucha la armonización y reconoce de oído el grado y el cifrado de cada acorde.">
+  <meta property="og:title" content="Práctica armónica · Reconocimiento auditivo">
+  <meta property="og:description" content="Escucha la armonización y reconoce de oído el grado y el cifrado de cada acorde.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/estilo.css?v=20260923-2230">
+  <script>
+    /* El ejercicio viaja en la parte de la dirección posterior a la almohadilla; se conserva
+       tal cual al pasar a index.html. replace() no deja rastro en el historial: el botón
+       «atrás» vuelve a donde estaba el alumno, no a esta portada. */
+    location.replace('index.html' + location.hash);
+  </script>
+</head>
+<body>
+  <p class="instruccion" style="margin:24px 16px">Abriendo <b>Reconocimiento auditivo</b>…
+    <noscript>Esta página necesita JavaScript. <a href="index.html">Entra por aquí</a>.</noscript>
+  </p>
+</body>
+</html>

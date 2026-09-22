@@ -36,7 +36,9 @@ arrastres; la aplicación no los necesita.
 2. Abre en el Finder la carpeta de la aplicación (en Drive murciaeduca.es:
    `3. RECURSOS - DOCENTE › Recursos de Claude › APLICACIÓN WEB PARA ARMONIZAR MELODÍAS`).
 3. Selecciona **todo el contenido de la carpeta** (no la carpeta en sí):
-   `index.html`, `configurar.html`, `pruebas.html`, `banco.json`, `LEEME.md` y las carpetas
+   `index.html`, `configurar.html`, `pruebas.html`, `banco.json`, `LEEME.md`, las cuatro
+   portadas de tipo de ejercicio (`analisis.html`, `armonizacion-bajo.html`,
+   `audicion.html`, `armonizacion-soprano.html`) y las carpetas
    `css`, `js`, `sonidos`, `fuentes` y `ejemplos`. Arrástralo a la zona punteada del
    navegador que dice *Drag files here*. Las carpetas se suben con su
    estructura; espera a que aparezcan todos los archivos en la lista (unos 20).

@@ -148,56 +148,62 @@
     const f = estado.ficha;
     $('#titulo').textContent = (f ? (f.filtro.titulo || 'Ficha') + ' · ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ' · ' : (ej.coleccion ? ej.coleccion + ' · ' : ''))
       + (ej.titulo || '');
-    const ton = '<b>' + Teoria.nombreTonalidad(ej.tonalidad) + '</b>';
-    // Primero el grado de la fundamental, después el cifrado (orden en que se rellenan).
-    // Las funciones que hacen falta aquí: las tres diatónicas y, si el ejercicio lleva
-    // alguna dominante secundaria, también la DD (decisión 48)
-    const fun = Ejercicios.funcionesDelEjercicio(ej);
-    const conFun = estado.modoFun === 'pedir' ? 'la función tonal (' + fun.join(', ') + '), ' : '';
-    const que = conFun + (estado.pedirRomano ? 'el grado sobre el que se construye la fundamental del acorde y después el cifrado' : 'el cifrado');
-    const b = t => '<span class="ref-boton">' + t + '</span>';
-    let html;
+    /* ---- El enunciado ----
+       Una sola cosa clara —qué hay que hacer— y, debajo, cómo responde la aplicación. Los
+       botones de sonido y la tonalidad del fragmento no se explican: están a la vista, se
+       entienden pulsándolos y llenaban el enunciado de letra menuda (decisión 57). Solo se
+       dice lo que el alumno no puede adivinar mirando: qué se le pide en cada casilla, qué
+       filas ha de rellenar y qué significan las notas en rojo. */
+    const señala = [];
+    if (estado.modoFun === 'pedir') señala.push('su <b>función tonal</b>');
+    if (estado.pedirRomano) señala.push('el <b>grado</b> de su fundamental');
+    señala.push('el <b>cifrado</b> (la inversión en que lo escribes)');
+    const que = señala.length > 1
+      ? señala.slice(0, -1).join(', ') + ' y ' + señala[señala.length - 1]
+      : señala[0];
+    const frases = [];
     if (estado.modoEj === 'cifrar') {
-      html = '<b>Análisis.</b> Ves el bajo y su armonización a cuatro voces: para cada acorde indica ' + que + '. Tonalidad: ' + ton + '. '
-        + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la armonización que ves, y el ' + b('▶') + ' sobre cada acorde, solo ese acorde; '
-        + b('▶ Mi cifrado') + ' hace sonar lo que llevas cifrado.';
+      frases.push('<b>Análisis.</b> Tienes este bajo con su armonización a cuatro voces: di qué acorde es cada uno señalando ' + que + '.');
     } else if (estado.modoEj === 'audicion') {
-      const conBajo = Ejercicios.verBajo(ej);
-      html = '<b>Audición.</b> ' + (conBajo ? 'Ves el bajo, pero no la armonización: has de reconocerla de oído.' : 'No ves nada: solo oyes.') + ' Pulsa ' + b('▶ Tono inicial') + ' para situarte en la tonalidad (' + ton + ') y ' + b('▶ Escuchar propuesta') + ' para oír la armonización que has de reconocer, '
-        + 'o el ' + b('▶') + ' de cada acorde para oírlo uno a uno. Para cada acorde indica ' + que + '. '
-        + b('▶ Mi cifrado') + ' hace sonar lo que llevas cifrado, para compararlo. Al terminar verás ' + (conBajo ? 'la realización.' : 'el bajo y la realización.');
+      frases.push('<b>Audición.</b> Escucha la armonización y reconócela: para cada acorde señala ' + que + '.');
     } else if (estado.modoEj === 'soprano') {
-      html = '<b>Armonización de soprano.</b> Ves la melodía: para cada nota indica ' + que + '; el acorde que has escrito aparece completo, con el bajo en el pentagrama de fa y la melodía en la voz superior. Tonalidad: ' + ton + '. '
-        + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar la melodía (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
-        + b('▶ Mi cifrado') + ', tu armonización. Si dos acordes seguidos producen un error de conducción de voces (octavas o quintas seguidas, una sensible o una séptima sin resolver), las notas implicadas salen en <span class="ref-mal">rojo</span>: púlsalas para ver por qué.';
+      frases.push('<b>Armonización de soprano.</b> Armoniza esta melodía: para cada nota elige un acorde y señala ' + que + '.');
     } else {
-      html = '<b>Armonización de bajo.</b> Ves solo el bajo: para cada nota indica ' + que + '. Tonalidad: ' + ton + '. '
-        + b('▶ Tono inicial') + ' sitúa la tonalidad; ' + b('▶ Escuchar propuesta') + ' hace sonar el bajo (el ' + b('▶') + ' sobre cada nota, solo esa nota) y '
-        + b('▶ Mi cifrado') + ', lo que llevas cifrado. A medida que señalas el grado y la cifra, las notas del acorde se escriben en el pentagrama, de modo que ves a cuatro voces lo que llevas hecho. '
-        + 'Si dos acordes seguidos producen un error de conducción de voces (octavas o quintas seguidas, una sensible o una séptima sin resolver), las notas implicadas salen en <span class="ref-mal">rojo</span>: púlsalas para ver por qué.';
+      frases.push('<b>Armonización de bajo.</b> Armoniza este bajo: para cada nota elige un acorde y señala ' + que + '.');
     }
-    // Las funciones que hacen falta aquí: las tres diatónicas y, si hay dominantes
-    // secundarias, también la DD
-    const fs = fun.map(f => f + ' ' + Teoria.NOMBRE_FUNCION[f]).join(', ');
-    if (estado.modoFun === 'dadas') html += ' La fila <b>Función</b> te da la función tonal de cada acorde (' + fs + '): elige acordes que la cumplan.';
-    else if (estado.modoFun === 'pedir') html += ' En la fila <b>Función</b> indica primero la función tonal de cada acorde (' + fs + ').';
-    /* La fila «Tonalidad»: qué se dice de las tonalidades y de los puntos de cambio de
-       tono. Es independiente de la fila de funciones (decisión 56). */
+    /* Marcar las tonalidades es tarea suya, así que va en la primera línea (decisión 56) */
     const mods = Ejercicios.modulaciones(ej);
-    if (estado.modoTon === 'dadas' && mods.length) {
-      html += ' <b>Modula</b> ' + mods.map(m => 'a <b>' + Teoria.nombreTonalidad(m.tonalidad) + '</b> desde la nota ' + (m.nota + 1)).join(' y ')
-        + ' (fila «Tonalidad»). En la nota del cambio, el acorde es común a las dos tonalidades: indica su grado en la anterior y en la nueva.';
-    } else if (estado.modoTon === 'dadas') {
-      html += ' La fila <b>Tonalidad</b> te da el tono en que está el fragmento; no cambia en todo él.';
-    } else if (estado.modoTon === 'pedir' && mods.length) {
-      html += ' <b>Este fragmento modula.</b> En la fila «Tonalidad», marca desde qué nota rige la tonalidad nueva y cuál es (vale la primera nota que ya no pertenece a la tonalidad anterior, o el acorde común que hace de pivote); en la nota marcada indica el grado en las dos tonalidades.';
-    } else if (estado.modoTon === 'pedir') {
-      html += ' En la fila <b>Tonalidad</b>, marca desde qué nota rige una tonalidad nueva y cuál es, <b>si es que el fragmento cambia de tono</b>: puede que no lo haga, y entonces no hay nada que marcar.';
+    if (estado.modoTon === 'pedir') {
+      frases.push('Marca además, en la fila <b>Tonalidad</b>, desde qué nota rige una tonalidad nueva y cuál es'
+        + (mods.length ? ': <b>este fragmento modula</b>.' : ', <b>si es que el fragmento cambia de tono</b>.'));
     }
-    $('#instruccion').innerHTML = html;
+    /* Segunda línea: lo que la aplicación le DA o le enseña por su cuenta, que no es tarea
+       y no debe competir con el enunciado. */
+    const notas = [];
+    if (estado.modoFun === 'dadas') notas.push('La fila <b>Función</b> te da la función tonal de cada acorde: elige acordes que la cumplan.');
+    if (estado.modoTon === 'dadas' && mods.length) {
+      notas.push('<b>Modula</b> ' + mods.map(m => 'a <b>' + Teoria.nombreTonalidad(m.tonalidad) + '</b> desde la nota ' + (m.nota + 1)).join(' y ')
+        + '; ese acorde es común a las dos tonalidades, así que se te piden sus dos grados.');
+    }
+    if (estado.modoEj === 'armonizar' || estado.modoEj === 'soprano') {
+      notas.push('La realización a cuatro voces se va escribiendo a medida que cifras'
+        + (estado.modoEj === 'soprano' ? ', con el bajo debajo y la melodía arriba' : '') + '. '
+        + 'Si dos acordes seguidos producen un error de conducción de voces (octavas o quintas seguidas, una sensible o una séptima sin resolver), '
+        + 'las notas implicadas salen en <span class="ref-mal">rojo</span>: púlsalas para ver de qué error se trata.');
+    } else if (estado.modoEj === 'audicion') {
+      notas.push('Al terminar verás el bajo y la realización a cuatro voces.');
+    }
+    $('#instruccion').innerHTML = frases.join(' ')
+      + (notas.length ? '<span class="instruccion-nota">' + notas.join(' ') + '</span>' : '');
     /* Lección y repertorio de acordes. Cada lección tiene el suyo, y en una ficha que
        mezcla lecciones hay que decir con qué acordes se espera armonizar cada fragmento:
        si no, no hay forma de acertar. */
+    /* La tonalidad del fragmento, en el recuadro de abajo junto a la lección: el enunciado
+       ya no la repite (decisión 57), pero el alumno la necesita para cifrar —una armadura
+       de un bemol vale para Fa M y para re m—. */
+    $('#tonalidad-fragmento').textContent = Teoria.nombreTonalidad(ej.tonalidad);
+    // El título de la pestaña dice qué tipo de ejercicio es (decisión 58)
+    document.title = 'Práctica armónica · ' + Banco.modoDe(estado.modoEj).etiqueta;
     const filaLec = $('#leccion-fila');
     if (ej.leccion) { $('#leccion').textContent = ej.leccion; filaLec.hidden = false; }
     else filaLec.hidden = true;

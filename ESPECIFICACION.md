@@ -968,6 +968,64 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - Está en el **paso 3** (module o no el fragmento; el campo ya no se esconde) y también
       en las **opciones de la ficha**, junto a las otras tres de la decisión 55.
 
+57. **El enunciado, más corto** (23/9/2026, Diego). El enunciado de la página del alumno
+    había ido creciendo hasta volverse ilegible: explicaba los tres botones de sonido, la
+    tonalidad, la fila de funciones, la de tonalidades y lo que hace la realización, todo
+    en un párrafo apretado. Ahora dice **solo lo que el alumno no puede adivinar mirando**,
+    en dos líneas:
+    - **La tarea**, en una frase: qué tipo de ejercicio es y qué hay que señalar en cada
+      nota —la función tonal si se pide, el grado de la fundamental y el cifrado (la
+      inversión)—. Si las tonalidades están por pedir, esa marca también es tarea suya y va
+      en esta línea.
+    - **Lo que hace la aplicación**, en letra algo más suave: que la realización a cuatro
+      voces se escribe a medida que cifra y que las notas en rojo son errores de conducción
+      de voces que se explican al pulsarlas. Aquí van también las ayudas que la aplicación
+      le DA y que no son tarea: la fila «Función» rellena y la modulación anunciada.
+    - **Lo que se quita**: los botones de sonido (están a la vista y se entienden
+      pulsándolos) y la repetición de la tonalidad.
+    - **La tonalidad pasa al recuadro de abajo**, junto a la lección. No podía perderse: es
+      lo único que distingue Fa M de re m con la misma armadura, y hasta ahora solo estaba
+      escrita en el enunciado. Se muestra siempre, incluso con la modulación sin anunciar
+      (es la de partida, que no descubre nada).
+
+58. **Una portada por tipo de ejercicio, para la etiqueta del enlace** (23/9/2026, Diego).
+    Al pegar un enlace en una tarea de Classroom, la etiqueta salía siempre igual
+    —«Armonizar el bajo · Regla de la octava»— aunque el ejercicio fuera de Análisis.
+    - **Por qué.** Classroom pide la página al servidor y pone como etiqueta el `<title>`
+      que encuentra. El ejercicio va en la parte del enlace posterior a la almohadilla
+      (`#e=…`, `#f=…`), y **esa parte no viaja al servidor**: el servidor solo ve
+      `…/index.html`, y devuelve siempre el mismo título. Tampoco sirve una cadena de
+      consulta (`?tipo=…`): GitHub Pages devuelve el mismo archivo. La única salida es una
+      **dirección distinta por tipo**.
+    - **Cómo.** Cuatro portadas diminutas —`analisis.html`, `armonizacion-bajo.html`,
+      `audicion.html`, `armonizacion-soprano.html`— que no duplican la aplicación: solo
+      llevan el `<title>` (y las etiquetas `og:` para los demás sitios donde se pegue un
+      enlace) y una línea que pasa a `index.html` conservando el ejercicio. Como
+      `location.replace` no deja rastro en el historial, el botón «atrás» del alumno sigue
+      funcionando igual.
+    - **Las etiquetas**: *Práctica armónica · Análisis armónico*, *· Armonización de melodía
+      de bajo*, *· Reconocimiento auditivo*, *· Armonización de melodía de soprano*. Viven
+      en `Banco.MODOS`, junto al nombre y la página de cada tipo, y el configurador elige la
+      portada al generar la dirección, tanto de un ejercicio suelto como de una ficha.
+    - El título de la pestaña del alumno también lo dice, porque `app.js` pone
+      `document.title` al cargar el ejercicio. `index.html` pasa a llamarse **Práctica
+      armónica** a secas, y el configurador, *Práctica armónica · Configurador*.
+    - Los enlaces repartidos antes de este cambio siguen valiendo: apuntan a `index.html`,
+      que funciona igual; lo único que no cambia es su etiqueta.
+
+59. **El pie del alumno, solo instrucciones de uso** (23/9/2026, Diego). El pie llevaba la
+    versión, «Regla de la octava (Furno)», una nota sobre abrirlo desde el disco, el enlace
+    al configurador del profesor y el crédito de las muestras de sonido; nada de eso le
+    sirve a un alumno, y el **enlace al configurador** no debería estar a su alcance.
+    Ahora queda la línea de teclas y poco más:
+    - **Teclas**, retocada: «↑ ↓ entre las casillas de una misma nota», que ya no son solo
+      el cifrado y el grado (también la función y la tonalidad).
+    - **Créditos y versión** en una línea diminuta y tenue debajo: el crédito de FluidR3_GM
+      se queda porque su licencia **CC BY obliga a atribuir**, y enlaza al archivo de
+      licencia; la marca de versión va pegada a él, que sirve para comprobar de un vistazo
+      qué versión está publicada.
+    - El configurador conserva su pie tal cual: allí sí hace falta.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
@@ -1224,9 +1282,11 @@ corrección inmediata nota a nota como opción.
 - Cuando la aplicación esté publicada, cada entrega a la carpeta de Drive va
   seguida de la subida a GitHub por parte de Diego (paso 6 de la guía); las
   direcciones para alumnos se generan siempre desde el configurador publicado.
-- **Versión visible y caché.** Los dos HTML llevan en el pie «Versión
-  AAAAMMDD-HHMM» y cargan sus `.js` y `.css` con `?v=` esa misma marca. En
-  cada entrega se actualiza la marca en `index.html` y `configurar.html`
+- **Versión visible y caché.** Los HTML llevan la marca AAAAMMDD-HHMM en el pie
+  —en el del alumno, junto al crédito de los sonidos, en letra pequeña— y
+  cargan sus `.js` y `.css` con `?v=` esa misma marca. En
+  cada entrega se actualiza la marca en `index.html`, `configurar.html` y las
+  cuatro portadas de tipo de ejercicio
   (así el navegador vuelve a pedir los archivos cambiados y Diego puede
   comprobar qué versión tiene delante). Si tras subir a GitHub sigue viéndose
   la anterior, es la caché del navegador: recargar sin caché (Chrome

@@ -475,7 +475,15 @@
 
   /* ---------- Generación de la dirección ---------- */
 
-  function baseAlumno() { return location.href.split('#')[0].replace(/configurar\.html$/, 'index.html'); }
+  /* Cada tipo de ejercicio tiene su portada —analisis.html, armonizacion-bajo.html…— y
+     todas llevan a index.html conservando el ejercicio. No es un capricho: Classroom pide
+     la página al servidor para poner la etiqueta del enlace, y la parte que lleva el
+     ejercicio (#e=… o #f=…) no viaja al servidor. Sin una dirección por tipo, todos los
+     enlaces salen etiquetados igual (decisión 58). */
+  function baseAlumno(modo) {
+    const pagina = Banco.paginaDeModo(modo || modoElegido());
+    return location.href.split('#')[0].replace(/configurar\.html$/, pagina);
+  }
 
   function generar() {
     if (!estado.respuestas) { aviso('Analiza primero el bajo.'); return; }
@@ -485,7 +493,7 @@
     if (vacias.length) errores.push('Faltan respuestas en las notas ' + vacias.join(', ') + '.');
     if (errores.length) { aviso(errores.join(' ')); return; }
     estado.ejercicio = ej;
-    const url = baseAlumno() + '#e=' + Ejercicios.codificar(ej);
+    const url = baseAlumno(Ejercicios.modo(ej)) + '#e=' + Ejercicios.codificar(ej);
     $('#direccion').value = url;
     $('#btn-copiar').disabled = false;
     $('#btn-json').disabled = false;
@@ -534,7 +542,7 @@
       if (vacias.length) problemas.push('Fragmento ' + (k + 1) + ': notas sin propuesta ' + vacias.join(', '));
       if (!f.tonalidadSegura) problemas.push('Fragmento ' + (k + 1) + ': tonalidad deducida con dudas (' + Teoria.nombreTonalidad(f.tonalidad) + ')');
       (f.modulaciones || []).forEach(m => { if (!m.segura) problemas.push('Fragmento ' + (k + 1) + ': cambio de armadura en la nota ' + (m.nota + 1) + ' leído como modulación a ' + Teoria.nombreTonalidad(m.tonalidad) + ' (revisa el modo y el pivote)'); });
-      lineas.push('Ejercicio ' + (k + 1) + ' · ' + Teoria.nombreTonalidad(f.tonalidad) + ' · ' + Teoria.textoDesdeBajo(v.compases) + '\n' + baseAlumno() + '#e=' + Ejercicios.codificar(ej));
+      lineas.push('Ejercicio ' + (k + 1) + ' · ' + Teoria.nombreTonalidad(f.tonalidad) + ' · ' + Teoria.textoDesdeBajo(v.compases) + '\n' + baseAlumno(Ejercicios.modo(ej)) + '#e=' + Ejercicios.codificar(ej));
     });
     const ta = $('#direcciones-todos');
     ta.value = (problemas.length ? 'AVISOS:\n' + problemas.join('\n') + '\n\n' : '') + lineas.join('\n\n');
@@ -1175,7 +1183,7 @@
     const filtro = filtroFicha();
     const lista = Banco.filtrar(banco, filtro);
     if (!lista.length) { aviso('Ningún fragmento cumple el filtro.'); return; }
-    const url = baseAlumno() + '#f=' + Banco.codificar(filtro);
+    const url = baseAlumno(filtro.modo) + '#f=' + Banco.codificar(filtro);
     $('#ficha-direccion').value = url;
     $('#btn-ficha-copiar').disabled = false;
     const abrir = $('#btn-ficha-abrir');

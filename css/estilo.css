@@ -44,6 +44,8 @@ body {
 .sobretitulo { margin: 0; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-suave); }
 h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .instruccion { margin: 0; color: var(--tinta-suave); }
+/* Segunda línea del enunciado: cómo responde la aplicación (más suave que la tarea) */
+.instruccion-nota { display: block; margin-top: 4px; font-size: .92em; opacity: .85; }
 .selector-caja { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--tinta-suave); }
 .selector-caja select {
   font: inherit; font-size: 1rem; color: var(--tinta);
@@ -259,6 +261,9 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 }
 .pie { margin-top: 36px; color: var(--tinta-suave); font-size: .82rem; }
 .pie p { margin: 2px 0; }
+/* Créditos y versión: presentes pero discretos, que no compitan con las instrucciones */
+.pie .creditos { margin-top: 8px; font-size: .7rem; opacity: .55; }
+.pie .creditos a { color: inherit; }
 
 @media (max-width: 600px) {
   body { padding: 12px 12px 32px; }

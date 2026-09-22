@@ -3,9 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Armonizar el bajo · Regla de la octava</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260923-1240">
-  <link rel="stylesheet" href="css/estilo.css?v=20260923-1240">
+  <title>Práctica armónica</title>
+  <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
+  <meta property="og:title" content="Práctica armónica">
+  <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
+  <link rel="stylesheet" href="css/bravura.css?v=20260923-2230">
+  <link rel="stylesheet" href="css/estilo.css?v=20260923-2230">
 </head>
 <body>
 
@@ -25,6 +28,10 @@
     <div class="repertorio-fila" id="leccion-fila" hidden>
       <span class="repertorio-etiqueta">Lección</span>
       <div id="leccion" class="repertorio repertorio-texto"></div>
+    </div>
+    <div class="repertorio-fila">
+      <span class="repertorio-etiqueta">Tonalidad</span>
+      <div id="tonalidad-fragmento" class="repertorio repertorio-texto"></div>
     </div>
     <div class="repertorio-fila" id="grados-fila">
       <span class="repertorio-etiqueta" id="etiqueta-grados">Grados en este ejercicio</span>
@@ -95,18 +102,23 @@
 
   <p id="aviso" class="aviso" hidden></p>
 
+  <!-- El pie del alumno solo lleva instrucciones de uso (decisión 59). Fuera lo que no le
+       dice nada: la regla de la octava, Furno y el enlace al configurador del profesor.
+       Queda, en letra pequeña, el crédito de las muestras de sonido —la licencia CC BY
+       obliga a atribuirlas— con la marca de versión pegada, para poder comprobar de un
+       vistazo qué versión está publicada. -->
   <footer class="pie">
-    <p><span id="version">Versión 20260923-1240</span> · Regla de la octava (Furno) · Se abre directamente desde el disco, sin conexión. <a href="configurar.html">Configurador para el profesor</a> · Sonidos de piano, clave y órgano: FluidR3_GM (CC BY 3.0), véase <code>sonidos/LICENCIA-muestras.txt</code>.</p>
-    <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre cifrado y grado · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
+    <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260923-2230</span></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260923-1240"></script>
-  <script src="js/reglas.js?v=20260923-1240"></script>
-  <script src="js/ejercicios.js?v=20260923-1240"></script>
-  <script src="js/partitura.js?v=20260923-1240"></script>
-  <script src="js/realizacion.js?v=20260923-1240"></script>
-  <script src="js/banco.js?v=20260923-1240"></script>
-  <script src="js/sonido.js?v=20260923-1240"></script>
-  <script src="js/app.js?v=20260923-1240"></script>
+  <script src="js/teoria.js?v=20260923-2230"></script>
+  <script src="js/reglas.js?v=20260923-2230"></script>
+  <script src="js/ejercicios.js?v=20260923-2230"></script>
+  <script src="js/partitura.js?v=20260923-2230"></script>
+  <script src="js/realizacion.js?v=20260923-2230"></script>
+  <script src="js/banco.js?v=20260923-2230"></script>
+  <script src="js/sonido.js?v=20260923-2230"></script>
+  <script src="js/app.js?v=20260923-2230"></script>
 </body>
 </html>

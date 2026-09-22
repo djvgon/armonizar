@@ -30,14 +30,18 @@ const Banco = (() => {
 
   const VERSION = 1;
 
+  /* `pagina` es la portada de cada tipo: una dirección distinta por tipo de ejercicio, para
+     que Classroom etiquete el enlace con el nombre que le corresponde (decisión 58). Todas
+     llevan al mismo index.html conservando el ejercicio. */
   const MODOS = [
-    { id: 'cifrar', nombre: 'Análisis', ajuste: -1, voz: 'bajo' },
-    { id: 'armonizar', nombre: 'Armonización de bajo', ajuste: 0, voz: 'bajo' },
-    { id: 'audicion', nombre: 'Audición', ajuste: 1, voz: 'bajo' },
-    { id: 'soprano', nombre: 'Armonización de soprano', ajuste: 1, voz: 'soprano' }
+    { id: 'cifrar', nombre: 'Análisis', ajuste: -1, voz: 'bajo', pagina: 'analisis.html', etiqueta: 'Análisis armónico' },
+    { id: 'armonizar', nombre: 'Armonización de bajo', ajuste: 0, voz: 'bajo', pagina: 'armonizacion-bajo.html', etiqueta: 'Armonización de melodía de bajo' },
+    { id: 'audicion', nombre: 'Audición', ajuste: 1, voz: 'bajo', pagina: 'audicion.html', etiqueta: 'Reconocimiento auditivo' },
+    { id: 'soprano', nombre: 'Armonización de soprano', ajuste: 1, voz: 'soprano', pagina: 'armonizacion-soprano.html', etiqueta: 'Armonización de melodía de soprano' }
   ];
   const modoDe = id => MODOS.find(m => m.id === id) || MODOS[1];
   const vozDeModo = id => modoDe(id).voz;
+  const paginaDeModo = id => modoDe(id).pagina;
 
   /* ---------- Etiquetas ---------- */
 
@@ -468,7 +472,7 @@ const Banco = (() => {
     return out;
   }
 
-  return { VERSION, MODOS, modoDe, vozDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
+  return { VERSION, MODOS, modoDe, vozDeModo, paginaDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, etiquetar,
     analizarVoz: analizar, companeraDe: companera,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
