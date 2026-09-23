@@ -57,6 +57,10 @@
      · Las paralelas se detectan entre cualquier par de las cuatro voces:
        misma quinta justa u octava en dos acordes seguidos con ambas voces
        en movimiento.
+     · Ninguna de las tres voces superiores canta una SEGUNDA AUMENTADA (dos
+       notas seguidas a una letra de distancia y tres semitonos): es el paso
+       del 6.º grado a la sensible del modo menor, que la escala menor
+       melódica existe para evitar. El bajo queda fuera: lo da el fragmento.
    ===================================================================== */
 
 const Realizacion = (() => {
@@ -78,6 +82,21 @@ const Realizacion = (() => {
   const clase = n => ((Teoria.midi({ letra: n.letra, alt: n.alt, octava: 4 }) % 12) + 12) % 12;
   const claseTonica = ton => clase(Teoria.nota(ton.tonica + '4'));
   const claseSensible = ton => (claseTonica(ton) + 11) % 12;
+
+  /* ---- Segunda aumentada melódica (decisión 71) ----
+     Dos notas seguidas EN LA MISMA VOZ a distancia de segunda por nombre (una sola letra
+     de diferencia) y tres semitonos: sol → la♯, mi♭ → fa♯… Es el tropiezo clásico del modo
+     menor, donde el 6.º grado sin alterar y la sensible quedan a esa distancia (en si menor,
+     sol y la♯). La escala menor melódica existe precisamente para evitarlo: cuando la voz va
+     del 6.º a la sensible, o el 6.º sube alterado, o la voz se va a otra nota del acorde.
+     Vale en los dos sentidos (subiendo y bajando) y no es una «segunda aumentada» la novena
+     aumentada (13 semitonos), de ahí la comparación exacta con 3. */
+  const letraDe = n => Teoria.LETRAS.indexOf(n.letra);
+  function segundaAumentada(a, b) {
+    if (!a || !b) return false;
+    const paso = ((letraDe(b) - letraDe(a)) % 7 + 7) % 7;
+    return (paso === 1 || paso === 6) && Math.abs(midi(b) - midi(a)) === 3;
+  }
 
   /* ---- Descripción de un acorde ----
      tonos      : clases de altura del acorde, como {letra, alt}, con el bajo primero
@@ -273,6 +292,25 @@ const Realizacion = (() => {
         if (!resuelve && !mantiene && contiene((pc + 1) % 12)) coste += (q === 3 ? 40 : (delta === -3 || delta === -4 ? 2 : 6));
       }
     }
+    /* PREPARACIÓN DE LA SÉPTIMA (decisión 68). Una nota tendencial ha de entrar preparada:
+       la misma nota, en la misma voz, ya sonando en el acorde anterior. La séptima MENOR
+       puede entrar sin preparar en el lenguaje tonal del barroco tardío en adelante —el V7
+       lo hace constantemente—, así que solo se penaliza un poco; la séptima MAYOR (la del
+       IV en el modo mayor, por ejemplo) no admite esa excepción y ha de ir siempre
+       preparada. Se mira en las cuatro voces: si la trae el bajo, también está preparada. */
+    if (!mismoAcorde && dc.septima !== null && dc.fund) {
+      const calidad = (dc.septima - clase(dc.fund) + 12) % 12;   // 11 mayor · 10 menor · 9 disminuida
+      let preparada = false;
+      for (let q = 0; q < 4; q++) {
+        if (clase(ahora[q]) === dc.septima && midi(ahora[q]) === midi(antes[q])) { preparada = true; break; }
+      }
+      if (!preparada) coste += calidad === 11 ? 110 : 20;
+    }
+    /* SEGUNDA AUMENTADA MELÓDICA (decisión 71). Prohibición dura en este lenguaje: pesa casi
+       tanto como las paralelas. Solo se mira en las tres voces superiores: el bajo viene dado
+       por el fragmento y no lo escribe el motor. Se aplica también dentro del mismo acorde
+       (un cambio de disposición no salva el intervalo: la voz lo canta igual). */
+    for (let q = 1; q < 4; q++) if (segundaAumentada(antes[q], ahora[q])) coste += 100;
     // Solapamiento de voces con el acorde anterior
     for (let q = 1; q < 3; q++) if (midi(ahora[q]) > midi(antes[q + 1])) coste += 6;
     for (let q = 2; q < 4; q++) if (midi(ahora[q]) < midi(antes[q - 1])) coste += 6;
@@ -495,6 +533,37 @@ const Realizacion = (() => {
             + ': las dos voces van en la misma dirección y llegan a ' + (ib === 0 ? 'la octava' : 'la quinta') + ' '
             + nombre(ahora[q]) + '–' + nombre(ahora[r]) + (conBajo ? ' (con el bajo solo se admite si la voz superior va por grados conjuntos).' : ' (se admite si una de las dos va por grados conjuntos).') });
       }
+      /* Segunda aumentada melódica (decisión 71). En el modo menor aparece sola en cuanto una
+         voz pasa del 6.º grado a la sensible (en si menor, sol → la♯): la escala menor melódica
+         está para evitarlo. Solo se mira en las tres voces superiores: el bajo lo da el
+         fragmento y el alumno no lo escribe. */
+      for (let q = 1; q < 4; q++) {
+        if (!segundaAumentada(antes[q], ahora[q])) continue;
+        const sube = midi(ahora[q]) > midi(antes[q]);
+        avisos.push({ i, tipo: 'segunda-aumentada', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
+          texto: 'Segunda aumentada en ' + NOMBRE_VOZ[q] + ': ' + nombre(antes[q]) + ' pasa a ' + nombre(ahora[q])
+            + '. Ninguna voz canta una segunda aumentada. En el modo menor sale sola al ir del 6.º grado a la sensible'
+            + (sube ? '' : ' (o al revés)')
+            + ': o el 6.º grado sube alterado —la escala menor melódica— o esa voz va a otra nota del acorde.' });
+      }
+      /* Preparación de la séptima mayor (decisión 68): ha de venir de la misma voz. Solo se
+         avisa de la MAYOR: la menor sin preparar es corriente en este lenguaje (el V7). */
+      const dAhora = describirDesde(ej, i, bajos, acordes, tons);
+      if (dAhora && dAhora.septima !== null && dAhora.fund && !mismoAcorde) {
+        const calidad = (dAhora.septima - clase(dAhora.fund) + 12) % 12;
+        if (calidad === 11) {
+          let voz = -1, preparada = false;
+          for (let q = 0; q < 4; q++) {
+            if (clase(ahora[q]) !== dAhora.septima) continue;
+            if (voz < 0) voz = q;
+            if (midi(ahora[q]) === midi(antes[q])) { preparada = true; break; }
+          }
+          if (!preparada && voz >= 0) avisos.push({ i, tipo: 'preparacion', notas: [{ i: i - 1, voz }, { i, voz }],
+            texto: 'La séptima mayor del acorde (' + nombre(ahora[voz]) + ', en ' + NOMBRE_VOZ_N[voz]
+              + ') entra sin preparar: una séptima mayor ha de venir sonando ya en la misma voz en el acorde anterior. '
+              + '(La séptima menor sí puede entrar libremente; la mayor, no.)' });
+        }
+      }
       // Notas tendenciales: la séptima baja, la sensible sube (XS4c)
       const d = describirDesde(ej, i - 1, bajos, acordes, tons);
       if (d) for (let q = 0; q < 4; q++) {
@@ -549,7 +618,7 @@ const Realizacion = (() => {
     const sensibles = new Set([claseSensible(ton)]);
     // Tercera mayor de un acorde con séptima menor: sensible (dominante, también secundaria)
     if (septima && tercera && ((clase(septima) - clase(fund) + 12) % 12) === 10 && ((clase(tercera) - clase(fund) + 12) % 12) === 4) sensibles.add(clase(tercera));
-    return { septima: septima ? clase(septima) : null, sensibles };
+    return { septima: septima ? clase(septima) : null, fund: fund || null, sensibles };
   }
 
   return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, disposicionForzada, paralelasEntre, auditar, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };

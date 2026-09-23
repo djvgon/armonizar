@@ -1063,7 +1063,8 @@
       const tr = document.createElement('tr');
       const mal = !!(e.avisos && e.avisos.length);
       if (mal) tr.className = 'con-aviso';
-      tr.innerHTML = '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '') + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
+      tr.innerHTML = '<td class="celda-id"><code>' + (e.id || '—') + '</code></td>'
+        + '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '') + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
         + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'
@@ -1116,7 +1117,7 @@
     const mal = !!(e.avisos && e.avisos.length);
     $('#recorrido-cuenta').innerHTML = (mal ? '<b class="recorrido-aviso">⚠</b> ' : '')
       + 'Fragmento <b>' + (i + 1) + '</b> de ' + r.lista.length
-      + ' · ' + (e.leccion || '—') + ' · ' + Teoria.nombreCorto(e.tonalidad)
+      + ' · <code>' + (e.id || '—') + '</code> · ' + Teoria.nombreCorto(e.tonalidad)
       + (mal ? ' — ' + e.avisos.join('; ') : '');
   }
 

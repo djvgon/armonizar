@@ -506,6 +506,10 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .configurador .recorrido button:disabled { opacity: .4; cursor: default; }
 .configurador .recorrido button:disabled:hover { border-color: var(--linea); }
 .configurador .recorrido b { color: var(--tinta); }
+.configurador .recorrido code { font-size: .88em; color: var(--tinta); background: var(--papel); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--linea); }
+/* El identificador del fragmento: monoespaciado y sin partir, para buscarlo con Cmd+F */
+.tabla-banco .celda-id { white-space: nowrap; }
+.tabla-banco .celda-id code { font-size: .86rem; color: var(--tinta-suave); }
 .configurador .recorrido .recorrido-aviso { color: #9a3b12; }
 .configurador .sub-paso { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--linea); }
 .configurador .sub-paso > h3:first-child { margin-top: 0; }
