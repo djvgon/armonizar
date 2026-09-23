@@ -261,5 +261,5 @@ const Registro = (() => {
   function olvidar() { try { localStorage.removeItem(CLAVE); } catch (e) { /* nada */ } }
 
   return { iniciarPractica, iniciarEjercicio, cerrarEjercicio, anotarCorreccion, fijarAlumno,
-    resumen, porContenido, informeTexto, detalleCSV, codigo, recuperar, olvidar, mmss };
+    resumen, porContenido, informeTexto, detalleCSV, codigo, recuperar, olvidar, mmss, fechaLocal };
 })();

@@ -1192,6 +1192,43 @@
     if (location.protocol === 'file:') aviso('Ojo: esta dirección es de tu disco. Las fichas hay que generarlas desde el configurador publicado en GitHub, porque necesitan leer banco.json del servidor.', 10000);
   }
 
+  /* ---------- Recogida de resultados (envio.json) ----------
+     Solo hay un dato que configurar: la dirección plantilla del formulario, la que
+     imprime CrearFormularioPractica.gs con sus marcas ZZ…ZZ. Se guarda en el navegador
+     para no tener que pegarla otra vez, y se descarga como envio.json. */
+  const CLAVE_ENVIO = 'armonizar.envio';
+
+  function plantillaValida(t) {
+    t = (t || '').trim();
+    return t.indexOf('docs.google.com/forms/') > 0 && /ZZ[A-Z]+ZZ/.test(t) && t.indexOf('ZZCODIGOZZ') > 0;
+  }
+
+  function conectarEnvio() {
+    const campo = $('#envio-plantilla'), btn = $('#btn-envio-descargar'), est = $('#envio-estado');
+    if (!campo) return;
+    try { campo.value = localStorage.getItem(CLAVE_ENVIO) || ''; } catch (e) { /* sin almacenamiento */ }
+    const revisar = () => {
+      const t = campo.value.trim();
+      const ok = plantillaValida(t);
+      btn.disabled = !ok;
+      est.textContent = !t ? 'Pega aquí la dirección que imprime el script.'
+        : ok ? 'Dirección correcta: ' + (t.match(/ZZ[A-Z]+ZZ/g) || []).length + ' campos reconocidos.'
+          : 'Esto no parece la dirección plantilla: tiene que ser la del formulario y llevar las marcas ZZ…ZZ sin tocar.';
+      if (ok) { try { localStorage.setItem(CLAVE_ENVIO, t); } catch (e) { /* nada */ } }
+    };
+    campo.addEventListener('input', revisar);
+    revisar();
+    btn.addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify({ plantilla: campo.value.trim() }, null, 2) + '\n'], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'envio.json';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      aviso('envio.json descargado. Súbelo a GitHub junto a banco.json.', 8000);
+    });
+  }
+
   function descargarBanco() {
     const blob = new Blob([JSON.stringify(Banco.archivo(banco), null, 1)], { type: 'application/json' });
     const a = document.createElement('a');
@@ -1237,6 +1274,7 @@
       if (!confirm('¿Vaciar el banco? Se borran los ' + banco.length + ' fragmentos guardados en este navegador. Descárgalo antes si quieres conservarlo.')) return;
       banco = []; guardarBanco(); pintarBanco();
     });
+    conectarEnvio();
     $('#btn-leccion-repertorio').addEventListener('click', () => {
       const lec = $('#ficha-leccion').value;
       if (!lec) return;

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260923-2230">
-  <link rel="stylesheet" href="css/estilo.css?v=20260923-2230">
+  <link rel="stylesheet" href="css/bravura.css?v=20260924-0930">
+  <link rel="stylesheet" href="css/estilo.css?v=20260924-0930">
 </head>
 <body class="configurador">
 
@@ -369,22 +369,41 @@
       </div>
     </section>
 
+    <!-- Recogida de resultados (etapa 8b). La aplicación no envía nada por su cuenta:
+         abre un formulario de Google ya relleno y el alumno pulsa Enviar. Aquí se pega
+         la dirección plantilla que imprime CrearFormularioPractica.gs y se descarga el
+         envio.json que hay que subir a GitHub junto a banco.json. -->
+    <section class="paso">
+      <h2>Recogida de resultados</h2>
+      <p class="ayuda">Al terminar una práctica, el alumno ve su informe y puede enviártelo. El envío abre un <b>formulario de Google ya relleno</b>: él solo comprueba su nombre y pulsa Enviar, y Google añade su correo del centro, verificado. Cada envío es una fila de la hoja de respuestas.</p>
+      <p class="ayuda">La dirección plantilla la produce el script <code>CrearFormularioPractica.gs</code>, que crea el formulario y su hoja. Se ejecuta en <a href="https://script.google.com" target="_blank" rel="noopener">script.google.com</a> y se puede volver a ejecutar sin miedo: no duplica nada.</p>
+      <label class="campo">
+        <span>Dirección plantilla del formulario</span>
+        <textarea id="envio-plantilla" rows="3" spellcheck="false" placeholder="https://docs.google.com/forms/d/e/…/viewform?usp=pp_url&amp;entry.123=ZZALUMNOZZ&amp;…"></textarea>
+      </label>
+      <div class="botonera">
+        <button id="btn-envio-descargar" type="button" class="primario" disabled>Descargar envio.json</button>
+        <span class="ayuda" id="envio-estado">Pega aquí la dirección que imprime el script.</span>
+      </div>
+      <p class="ayuda">Sube <code>envio.json</code> a GitHub junto a <code>banco.json</code>. Mientras no esté, la aplicación funciona igual: en vez del botón de enviar, el alumno copia el informe y lo pega en la tarea de Classroom.</p>
+    </section>
+
   </main>
 
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260923-2230</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260924-0930</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260923-2230"></script>
-  <script src="js/reglas.js?v=20260923-2230"></script>
-  <script src="js/ejercicios.js?v=20260923-2230"></script>
-  <script src="js/partitura.js?v=20260923-2230"></script>
-  <script src="js/musicxml.js?v=20260923-2230"></script>
-  <script src="js/musescore.js?v=20260923-2230"></script>
-  <script src="js/banco.js?v=20260923-2230"></script>
-  <script src="js/realizacion.js?v=20260923-2230"></script>
-  <script src="js/configurador.js?v=20260923-2230"></script>
+  <script src="js/teoria.js?v=20260924-0930"></script>
+  <script src="js/reglas.js?v=20260924-0930"></script>
+  <script src="js/ejercicios.js?v=20260924-0930"></script>
+  <script src="js/partitura.js?v=20260924-0930"></script>
+  <script src="js/musicxml.js?v=20260924-0930"></script>
+  <script src="js/musescore.js?v=20260924-0930"></script>
+  <script src="js/banco.js?v=20260924-0930"></script>
+  <script src="js/realizacion.js?v=20260924-0930"></script>
+  <script src="js/configurador.js?v=20260924-0930"></script>
 </body>
 </html>

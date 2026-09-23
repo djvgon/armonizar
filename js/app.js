@@ -1200,10 +1200,17 @@
     }
     h += '<label class="campo-informe"><span>Escribe tu nombre y apellidos para el informe</span>'
       + '<input id="informe-alumno" type="text" autocomplete="name" placeholder="Nombre y apellidos"></label>';
+    /* Si hay formulario configurado (envio.json), enviar es lo principal; si no lo hay,
+       el informe se lleva a Classroom copiándolo. Un caso u otro, nunca los dos en
+       primer plano: dos botones «principales» no dicen al alumno cuál pulsar. */
+    const hayForm = Envio.disponible();
     h += '<div class="botonera botonera-resultado">'
-      + '<button type="button" id="btn-informe-copiar" class="primario">Copiar el informe</button>'
+      + (hayForm ? '<button type="button" id="btn-informe-enviar" class="primario">Enviar al profesor</button>' : '')
+      + '<button type="button" id="btn-informe-copiar"' + (hayForm ? '' : ' class="primario"') + '>Copiar el informe</button>'
       + '<button type="button" id="btn-informe-csv">Descargar el detalle</button></div>';
-    h += '<p class="ayuda-informe">Copia el informe y pégalo en la tarea de Classroom.</p>';
+    h += '<p class="ayuda-informe">' + (hayForm
+      ? 'Al enviar se abre el formulario del centro con tus datos ya puestos: compruébalos y pulsa Enviar. Tendrás que iniciar sesión con tu correo de murciaeduca.es.'
+      : 'Copia el informe y pégalo en la tarea de Classroom.') + '</p>';
     h += '</div>';
     return h;
   }
@@ -1224,6 +1231,19 @@
       const ok = () => aviso('Informe copiado. Pégalo en la tarea de Classroom.', 6000);
       if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok, () => volcar(t));
       else volcar(t);
+    });
+    /* Enviar = abrir el formulario relleno en otra pestaña. La aplicación no manda nada
+       por su cuenta: el envío lo hace el alumno, y la identidad la pone Google. */
+    const be2 = $('#btn-informe-enviar');
+    if (be2) be2.addEventListener('click', () => {
+      const r = Registro.resumen();
+      if (!r) return;
+      const cont = Registro.porContenido().filter(x => x.fallos)
+        .slice(0, 8).map(x => x.acorde + ' (' + x.fallos + '/' + x.veces + ')').join(', ');
+      const url = Envio.direccion(r, cont);
+      if (!url) { aviso('No se ha podido preparar el envío. Copia el informe y pégalo en Classroom.', 8000); return; }
+      window.open(url, '_blank', 'noopener');
+      aviso('Se ha abierto el formulario con tus datos. Revísalos y pulsa Enviar allí.', 9000);
     });
     const bd = $('#btn-informe-csv');
     if (bd) bd.addEventListener('click', () => {
@@ -1344,6 +1364,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    Envio.preparar();            // lee envio.json en segundo plano; si no está, no pasa nada
     rellenarSelector();
     $('#btn-corregir').addEventListener('click', corregir);
     $('#btn-reiniciar').addEventListener('click', reiniciar);
