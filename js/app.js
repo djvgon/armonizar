@@ -90,6 +90,10 @@
 
   function cargar(ej) {
     const n = Ejercicios.numNotas(ej);
+    /* Registro de la práctica (etapa 8b). Si el enlace no es de ficha, la práctica es
+       este único ejercicio. */
+    if (!Registro.resumen()) Registro.iniciarPractica({ tipo: 'ejercicio', titulo: ej.coleccion || ej.titulo || '', modo: Ejercicios.modo(ej), n: 1 });
+    Registro.iniciarEjercicio(ej, estado.ficha ? estado.ficha.k : 0);
     estado.ejercicio = ej;
     estado.respuestas = new Array(n).fill(null);
     estado.romanos = new Array(n).fill(null);
@@ -950,6 +954,7 @@
     estado.intento += 1;
     const aciertos = estado.resultados.filter(r => r.ok).length;
     if (estado.intento === 1) estado.primerIntento = aciertos;
+    Registro.anotarCorreccion(ej, estado);
     estado.corregido = true;
     /* Conducción de voces: los avisos no restan aciertos, pero hay que limpiarlos. Mientras
        queden, el ejercicio no se cierra y sus notas siguen editables; y la realización se
@@ -1097,8 +1102,13 @@
         + '<button type="button" id="btn-ficha-sig" class="' + (todoBien || estado.mostrarSolucion ? 'primario' : 'secundario') + '">'
         + (ultimo ? 'Terminar la ficha y ver el resumen' : 'Ejercicio siguiente (' + (f.k + 2) + ' de ' + f.lista.length + ')') + '</button></div>';
     }
+    /* Ejercicio suelto terminado: aquí acaba la práctica, así que va el informe. En una
+       ficha el informe espera al resumen final, que abarca los N ejercicios. */
+    const cerrado = todoBien || estado.mostrarSolucion;
+    if (!estado.ficha && cerrado) html += bloqueInforme();
     caja.innerHTML = html;
     caja.hidden = false;
+    if (!estado.ficha && cerrado) conectarInforme();
     const be = $('#btn-errores'), bs = $('#btn-solucion');
     if (be) be.addEventListener('click', corregirErrores);
     if (bs) bs.addEventListener('click', verSolucion);
@@ -1153,10 +1163,12 @@
         : '<span class="cif mal">sin hacer</span>') + '</li>';
     });
     html += '</ol>';
+    html += bloqueInforme();
     html += '<div class="botonera botonera-resultado"><button type="button" id="btn-ficha-otra" class="primario">Otra ficha como esta</button></div>';
     const caja = $('#resultado');
     caja.innerHTML = html;
     caja.hidden = false;
+    conectarInforme();
     $('#btn-ficha-otra').addEventListener('click', () => location.reload());
     // En el resumen se retira todo lo del ejercicio: solo queda el marcador
     ['#realizacion-barra', '#partitura', '#paletas', '#progreso'].forEach(sel => { const e = document.querySelector(sel); if (e) e.hidden = true; });
@@ -1165,6 +1177,76 @@
     $('#titulo').textContent = f.filtro.titulo || 'Ficha';
     $('#instruccion').textContent = 'Has terminado la ficha. Este es el resultado de cada ejercicio.';
     caja.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ---------- Informe de la práctica (etapa 8b) ----------
+     Al terminar, el alumno ve su resultado y puede llevárselo: copiarlo para pegarlo en
+     la tarea de Classroom —donde Classroom ya sabe quién es— o descargar el detalle nota
+     a nota. El envío automático al formulario del profesor llegará después; el módulo de
+     registro ya guarda todo lo que hará falta. */
+  function bloqueInforme() {
+    Registro.cerrarEjercicio();
+    const r = Registro.resumen();
+    if (!r) return '';
+    const cont = Registro.porContenido().filter(x => x.fallos);
+    let h = '<div class="informe">';
+    h += '<h3>Tu informe</h3>';
+    h += '<p class="nota-informe">Nota: <b>' + String(r.nota10).replace('.', ',') + '</b> <span>sobre 10</span></p>';
+    h += '<p class="desglose">Al primer intento <b>' + r.pctPrimero + ' %</b> (' + r.aciertosPrimero + ' de ' + r.notas + ')'
+      + ' · tras corregir <b>' + r.pctFinal + ' %</b> · tiempo de trabajo ' + Registro.mmss(r.segundos) + '.</p>';
+    if (cont.length) {
+      h += '<p class="desglose">Lo que más se te ha resistido: '
+        + cont.slice(0, 4).map(x => '<b>' + x.acorde + '</b> (' + x.fallos + ' de ' + x.veces + ')').join(' · ') + '.</p>';
+    }
+    h += '<label class="campo-informe"><span>Escribe tu nombre y apellidos para el informe</span>'
+      + '<input id="informe-alumno" type="text" autocomplete="name" placeholder="Nombre y apellidos"></label>';
+    h += '<div class="botonera botonera-resultado">'
+      + '<button type="button" id="btn-informe-copiar" class="primario">Copiar el informe</button>'
+      + '<button type="button" id="btn-informe-csv">Descargar el detalle</button></div>';
+    h += '<p class="ayuda-informe">Copia el informe y pégalo en la tarea de Classroom.</p>';
+    h += '</div>';
+    return h;
+  }
+
+  function conectarInforme() {
+    const campo = $('#informe-alumno');
+    if (campo) {
+      try { campo.value = localStorage.getItem('armonizar.alumno') || ''; } catch (e) { /* nada */ }
+      Registro.fijarAlumno(campo.value);
+      campo.addEventListener('input', () => {
+        Registro.fijarAlumno(campo.value);
+        try { localStorage.setItem('armonizar.alumno', campo.value.trim()); } catch (e) { /* nada */ }
+      });
+    }
+    const bc = $('#btn-informe-copiar');
+    if (bc) bc.addEventListener('click', () => {
+      const t = Registro.informeTexto();
+      const ok = () => aviso('Informe copiado. Pégalo en la tarea de Classroom.', 6000);
+      if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok, () => volcar(t));
+      else volcar(t);
+    });
+    const bd = $('#btn-informe-csv');
+    if (bd) bd.addEventListener('click', () => {
+      const r = Registro.resumen();
+      const nombre = 'practica-' + (r && r.alumno ? r.alumno.replace(/[^\wáéíóúñÁÉÍÓÚÑ]+/g, '-').toLowerCase() + '-' : '') + new Date().toISOString().slice(0, 10) + '.csv';
+      descargar(nombre, Registro.informeTexto() + '\n\n' + Registro.detalleCSV());
+    });
+  }
+
+  // Si el portapapeles no está disponible (http sin cifrar, navegador antiguo), se enseña el texto
+  function volcar(t) {
+    const caja = $('#resultado');
+    const ta = document.createElement('textarea');
+    ta.className = 'informe-texto'; ta.readOnly = true; ta.rows = 10; ta.value = t;
+    caja.appendChild(ta); ta.select();
+    aviso('Copia este texto y pégalo en la tarea de Classroom.', 8000);
+  }
+  function descargar(nombre, texto) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + texto], { type: 'text/csv;charset=utf-8' }));
+    a.download = nombre;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
 
   async function iniciarFicha(texto) {
@@ -1189,6 +1271,7 @@
       cargar(Ejercicios.CORPUS[0]); return;
     }
     estado.ficha = { filtro, lista, k: 0, marcador: [] };
+    Registro.iniciarPractica({ tipo: 'ficha', titulo: filtro.titulo || 'Ficha', modo: filtro.modo, n: lista.length });
     cargar(Banco.ejercicio(lista[0], filtro, 0));
   }
 

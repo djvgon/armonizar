@@ -259,6 +259,18 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
   background: var(--tinta); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: .9rem;
 }
+/* ---- Informe de fin de práctica ---- */
+.informe { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--linea); }
+.informe h3 { margin: 0 0 6px; font-size: 1.05rem; font-weight: normal; }
+/* La nota sale del acierto al PRIMER intento: es lo que se envía al profesor */
+.nota-informe { margin: 2px 0 8px; font-size: 1.05rem; }
+.nota-informe b { font-size: 1.6rem; color: var(--acento); }
+.nota-informe span { color: var(--tinta-suave); font-size: .85rem; }
+.informe .campo-informe { display: flex; flex-direction: column; gap: 4px; margin: 12px 0 4px; max-width: 420px; font-size: .85rem; color: var(--tinta-suave); }
+.informe .campo-informe input { font: inherit; font-size: 1rem; color: var(--tinta); padding: 8px 10px; border: 1px solid var(--linea); border-radius: 8px; background: var(--papel); }
+.ayuda-informe { margin: 4px 0 0; font-size: .82rem; color: var(--tinta-suave); }
+.informe-texto { width: 100%; margin-top: 10px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; padding: 8px; border: 1px solid var(--linea); border-radius: 8px; background: var(--papel); color: var(--tinta); }
+
 .pie { margin-top: 36px; color: var(--tinta-suave); font-size: .82rem; }
 .pie p { margin: 2px 0; }
 /* Créditos y versión: presentes pero discretos, que no compitan con las instrucciones */

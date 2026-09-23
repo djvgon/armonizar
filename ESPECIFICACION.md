@@ -1026,6 +1026,37 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       qué versión está publicada.
     - El configurador conserva su pie tal cual: allí sí hace falta.
 
+60. **Recogida de resultados: qué se mide y qué cuenta para la nota** (23/9/2026, Diego).
+    La aplicación mide sola la práctica del alumno y, al terminar, le enseña su informe
+    y le permite llevárselo. Lo decidido:
+    - **La nota es el porcentaje de aciertos AL PRIMER INTENTO**, convertido a diez
+      (67 % → 6,7). Es la medida limpia: dice lo que el alumno sabía *antes* de ver dónde
+      fallaba. El porcentaje **tras corregir** se guarda aparte, no como nota, sino como
+      prueba de que revisó y arregló sus errores.
+    - **El detalle se registra solo del primer intento**, por la misma razón.
+    - **Una práctica = una entrega.** No hay promedios automáticos: si un alumno repite,
+      llega una entrega nueva, con su propia nota, junto a la anterior. Promediar, quedarse
+      con la mejor o con la última es una decisión del profesor, que se toma con una fórmula
+      en la hoja de calificaciones, no dentro de la aplicación. La recomendación es
+      **quedarse con la mejor de las notas de primer intento**, porque cada ficha del banco
+      saca fragmentos distintos al azar: repetir es practicar de verdad, no memorizar. Para
+      un ejercicio fijo (`#e=`) sí conviene quedarse con el primero, porque el segundo
+      intento ya sabe la respuesta.
+    - **Los contenidos no se clasifican a mano.** La etiqueta de cada nota es el acorde
+      modelo tal como se escribe —`V/V 6/5̸`, `I 6/4`—, más el grado de la escala del bajo
+      (`♯4`) y el papel de esa nota (`pivote`, `inicio`, `final`). Los contenidos de las
+      lecciones **son** los acordes, así que una tabla dinámica responde sola a «¿en qué
+      falla?»: cuántas veces salió el V/V y cuántas se falló. Contar fallos sin contar
+      apariciones no diría nada.
+    - **El reloj mide tiempo de trabajo**: se para cuando la pestaña queda en segundo
+      plano, para no contar el rato que el móvil estuvo en el bolsillo.
+    - **Nada sale del navegador por su cuenta.** El módulo solo mide y arma el informe;
+      enviarlo es un acto del alumno, al terminar. Mientras tanto queda una copia en el
+      propio navegador (`localStorage`), para que cerrar la pestaña no pierda la práctica.
+    - **La identidad no la maneja la aplicación.** En Classroom la pone Classroom; en el
+      formulario la pone Google, con el correo del centro verificado. El campo de nombre
+      del informe es solo un rótulo legible.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
@@ -1252,15 +1283,68 @@ la dirección generada, para que no se distribuya una versión desfasada.
 | 4b | Normas de enlace de la pauta de corrección incorporadas a la conducción automática (decisión 22) | Pendiente (siguiente) |
 | 10 | Banco de fragmentos con etiquetas (se llena solo al importar) y fichas: un enlace da N ejercicios al azar de los que cumplan un filtro, encadenados y con resumen (decisión 26) | Hecha (21/9/2026) |
 | 8a | Publicación en GitHub Pages (guía `PUBLICAR-EN-GITHUB.md`) | Hecha (20/9/2026): <https://djvgon.github.io/armonizar/> |
-| 8b | Recogida de resultados: Apps Script (mismo dominio murciaeduca.es identifica al alumno) → hoja de cálculo, y calificación en Classroom vía API (solo en tareas creadas por el propio script; el alumno sigue pulsando «Entregar»). Opcional: corrección en el servidor para los ejercicios evaluables, de modo que las respuestas no viajen en el enlace. Decidido 20/9/2026: dejarlo para esta etapa | Pendiente |
+| 8b·1 | **Medida e informe** (`js/registro.js`): la aplicación mide sola la práctica —tiempo de trabajo, aciertos al primer intento y finales, detalle nota a nota con el acorde modelo como etiqueta de contenido— y, al terminar, enseña el informe con la nota sobre 10, deja copiarlo para pegarlo en Classroom y descargar el detalle en CSV (decisión 60) | Hecha (23/9/2026) |
+| 8b·2 | **Envío al formulario**: botón «Enviar al profesor» que abre un formulario de Google **ya relleno** con el resultado; el alumno solo pulsa Enviar. Identidad: el correo del centro, verificado por Google. La dirección plantilla del formulario la produce `CrearFormularioPractica.gs` y se pega en el configurador, que descarga `envio.json` junto a `banco.json` | En marcha |
+| 8b·3 | Calificación en Classroom vía API (solo en tareas creadas por el propio script; el alumno sigue pulsando «Entregar»). Opcional: corrección en el servidor para los ejercicios evaluables, de modo que las respuestas no viajen en el enlace | Pendiente |
 | 9 | Análisis sobre partitura real, al estilo de NEO: imagen con puntos marcados por el profesor (en cada punto, cifra y grado) o vídeo con partitura y audio que se detiene en los puntos de cifrado. Misma corrección (parejas admisibles por punto, fijadas a mano en el configurador, con tonalidad por tramo). La imagen puede viajar dentro de un `.json` sin alojamiento; el vídeo (YouTube o archivo) necesita la publicación de la Etapa 8 | Propuesta (20/9/2026), pendiente de decidir |
 
 Decisiones pendientes: el resto del cuadro azul (decisión 49) —préstamos
 modales con apóstrofo (`II'`) y las demás dominantes secundarias (V/IV,
 V/VI…), que hoy solo contemplan el V/V—; la sexta aumentada en menor.
 
+### Pendiente: la interfaz en el móvil (anotado el 23/9/2026, a petición de Diego)
+
+En pantalla grande se trabaja bien; en el móvil no. Medido sobre un fragmento de
+14 notas (A3-8-08, armonización de bajo, con la realización a la vista):
+
+| | ventana | página | partitura | paletas |
+|---|---|---|---|---|
+| Móvil vertical (390×844) | 844 | 1275 | 1109 px de ancho en una caja de 374 → **scroll horizontal** | y=839 |
+| Móvil horizontal (844×390) | 390 | 1337 | y=483, alto 383 | y=880 |
+| Escritorio (1400×900) | 900 | 1414 | y=459 | y=976 |
+
+Los dos problemas, con sus causas:
+
+1. **En horizontal no se ven a la vez la partitura y las paletas.** La partitura
+   empieza en y=483 y las paletas en y=880: entre las dos suman 606 px en una
+   ventana de 390. Encima, los 483 px de preámbulo (cabecera + recuadro +
+   barra de sonido) son más altos que la pantalla entera, así que al abrir el
+   ejercicio **no se ve una sola nota**.
+2. **En vertical la partitura no cabe**: 1109 px de música en 374 de caja.
+
+Y una causa que conviene arreglar primero, porque es barata y lo empeora todo:
+los dos puntos de corte del CSS son **solo de anchura** (600 y 719 px). Un móvil
+en horizontal mide 844×390: pasa de largo por los dos y recibe la disposición de
+escritorio dentro de una ventana de 390 px de alto. Hace falta un corte por
+ALTURA (u `orientation: landscape`).
+
+Opciones, de menor a mayor coste:
+
+- **Punto de corte por altura** (barato). Que el móvil en horizontal reciba la
+  disposición compacta que ya existe.
+- **Paletas fijas abajo** (barato-medio), al modo del teclado de una aplicación de
+  ejercicios: la música se desplaza, los controles no se mueven nunca. Es el
+  patrón habitual y ataca directamente el «ir y venir».
+- **Plegar el preámbulo en el móvil** (barato): título y un botón ⓘ; el recuadro
+  de lección, tonalidad y repertorio, detrás de un toque.
+- **La vista sigue a la nota activa** (barato): al cambiar de nota, llevarla a la
+  vista dentro de la caja de la partitura. Con scroll horizontal, quita todo el
+  arrastre manual.
+- **Tamaño de la partitura ajustable** (barato): `ESCALA_PX` ya existe.
+- **Reflujo en varios sistemas** (caro): repartir la música en sistemas que quepan
+  en el ancho, como hace cualquier editor de partituras. Es lo único que arregla
+  de verdad el móvil en VERTICAL, y es reescribir la disposición de
+  `partitura.js` (las casillas, los circulitos, las filas de función y tonalidad
+  y el globo pasan a calcularse por sistema). Sustituye a la mejora pequeña
+  «partir en dos sistemas los ejercicios largos».
+- **Modo foco (una nota cada vez)**: desaconsejado. El alumno ha de pensar sobre
+  la sucesión —la cadencia, el enlace—, y ocultar el contexto va contra eso.
+
+Orden propuesto: los cuatro baratos primero (dejan el horizontal utilizable) y el
+reflujo después (deja el vertical utilizable).
+
 Mejoras pequeñas anotadas: dibujar el bajo pinchando en un pentagrama como
-alternativa al texto; partir en dos sistemas los ejercicios largos;
+alternativa al texto;
 constructor de cifras al estilo teoria.com como alternativa a la paleta;
 corrección inmediata nota a nota como opción.
 
@@ -1275,8 +1359,12 @@ corrección inmediata nota a nota como opción.
   un MusicXML de `ejemplos/`, analizar, generar dirección, abrir como alumno).
 - Una función por sesión; al terminar, la aplicación debe seguir abriéndose
   con doble clic y `pruebas.html` sin discrepancias.
-- Al cerrar la sesión se actualiza este documento (estado de las etapas y
-  decisiones nuevas).
+- Al cerrar la sesión se actualizan **dos** documentos: este (decisiones nuevas,
+  numeradas, y estado de las etapas) y **`BITACORA.md`**, que es el cuaderno de a
+  bordo: en qué punto estamos, qué queda por hacer y por qué orden, qué espera una
+  respuesta de Diego y qué ha propuesto él que todavía no se ha llevado a cabo.
+  Lo que se decide va aquí; lo que está a medias o pendiente, allí. Nada de lo que
+  Diego proponga puede quedarse solo en la conversación.
 - Las respuestas del corpus son la fuente de verdad; el motor se ajusta a
   ellas, no al revés.
 - Cuando la aplicación esté publicada, cada entrega a la carpeta de Drive va
