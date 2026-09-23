@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260924-1600">
-  <link rel="stylesheet" href="css/estilo.css?v=20260924-1600">
+  <link rel="stylesheet" href="css/bravura.css?v=20260924-2020">
+  <link rel="stylesheet" href="css/estilo.css?v=20260924-2020">
 </head>
 <body class="configurador">
 
@@ -40,6 +40,9 @@
       </div>
 
       <div id="banco-cuerpo" hidden>
+        <!-- Las dos mitades de la ficha, sombreadas para que se distingan de un vistazo:
+             qué entra (el filtro) y cómo se le presenta (lo que ve el alumno). -->
+        <div class="bloque-opciones">
         <h3>Qué fragmentos entran</h3>
         <div class="fila-campos">
           <label class="campo">
@@ -95,7 +98,9 @@
           </label>
         </div>
         <p class="ayuda">Ponle <b>título</b>: es el nombre con el que vas a reconocer esta práctica en tu hoja de calificaciones. Sin él se construye uno automático con la lección, el tipo y cuántos ejercicios lleva.</p>
+        </div>
 
+        <div class="bloque-opciones">
         <h3>Cómo se le presenta al alumno</h3>
         <div class="fila-campos">
           <label class="campo">
@@ -152,6 +157,7 @@
             <input id="reintentos" type="checkbox" checked>
             <span>Permitir corregir solo los errores antes de ver la solución</span>
           </label>
+        </div>
         </div>
         <p class="ayuda" id="ficha-cuenta"></p>
 
@@ -308,6 +314,18 @@
           <span class="ayuda">El motor propone las cifras de cada nota; después puedes corregirlas a mano.</span>
         </div>
 
+        <!-- Recorrido por los fragmentos que cumplen el filtro (decisión 67): permite
+             repasarlos uno a uno sin volver cada vez a la tabla. -->
+        <div class="recorrido" id="recorrido" hidden>
+          <button type="button" id="btn-recorrido-ant" class="boton-pequeno boton-atajo" title="Fragmento anterior de los que cumplen el filtro">
+            <span>◀ Anterior</span><span class="atajo" id="atajo-ant"></span>
+          </button>
+          <span id="recorrido-cuenta"></span>
+          <button type="button" id="btn-recorrido-sig" class="boton-pequeno boton-atajo" title="Fragmento siguiente de los que cumplen el filtro">
+            <span>Siguiente ▶</span><span class="atajo" id="atajo-sig"></span>
+          </button>
+        </div>
+
         <!-- Revisión -->
         <div class="sub-paso" id="paso-revision" hidden>
           <h3>Revisión de las respuestas</h3>
@@ -380,17 +398,17 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260924-1600</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260924-2020</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260924-1600"></script>
-  <script src="js/reglas.js?v=20260924-1600"></script>
-  <script src="js/ejercicios.js?v=20260924-1600"></script>
-  <script src="js/partitura.js?v=20260924-1600"></script>
-  <script src="js/musicxml.js?v=20260924-1600"></script>
-  <script src="js/musescore.js?v=20260924-1600"></script>
-  <script src="js/banco.js?v=20260924-1600"></script>
-  <script src="js/realizacion.js?v=20260924-1600"></script>
-  <script src="js/configurador.js?v=20260924-1600"></script>
+  <script src="js/teoria.js?v=20260924-2020"></script>
+  <script src="js/reglas.js?v=20260924-2020"></script>
+  <script src="js/ejercicios.js?v=20260924-2020"></script>
+  <script src="js/partitura.js?v=20260924-2020"></script>
+  <script src="js/musicxml.js?v=20260924-2020"></script>
+  <script src="js/musescore.js?v=20260924-2020"></script>
+  <script src="js/banco.js?v=20260924-2020"></script>
+  <script src="js/realizacion.js?v=20260924-2020"></script>
+  <script src="js/configurador.js?v=20260924-2020"></script>
 </body>
 </html>

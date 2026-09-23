@@ -482,6 +482,31 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .configurador .plegable > *:not(summary) { margin-left: 1rem; margin-right: 1rem; }
 .configurador .plegable > *:last-child { margin-bottom: 1rem; }
 .configurador .botonera-banco button.secundario { margin-left: 0; }
+/* Las dos mitades de «Preparar una ficha», sombreadas para separarlas a la vista sin
+   ocupar más sitio: el relleno es el justo para que el color no toque los controles. */
+.configurador .bloque-opciones {
+  margin-top: 1rem; padding: .1rem .9rem .5rem;
+  background: rgba(160, 120, 60, .055); border-radius: 10px;
+  border: 1px solid rgba(160, 120, 60, .14);
+}
+.configurador .bloque-opciones > h3 { margin-top: .6rem; }
+.configurador .bloque-opciones > .ayuda:last-child { margin-bottom: 0; }
+/* Barra de recorrido: las flechas para repasar los fragmentos del filtro uno a uno */
+.configurador .recorrido {
+  display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;
+  margin: 1.1rem 0 .2rem; padding: .45rem .8rem;
+  background: rgba(160, 120, 60, .07); border: 1px solid rgba(160, 120, 60, .18); border-radius: 999px;
+  font-size: .9rem; color: var(--tinta-suave);
+}
+.configurador .recorrido button { min-width: 7.5rem; }
+/* El atajo de teclado, debajo del rótulo y en pequeño: se lee sin estorbar y se acaba
+   aprendiendo, que es de lo que se trata cuando hay que repasar cien fragmentos. */
+.boton-atajo { display: inline-flex; flex-direction: column; align-items: center; line-height: 1.15; padding-top: 3px; padding-bottom: 3px; }
+.boton-atajo .atajo { font-size: .7rem; opacity: .62; letter-spacing: .02em; }
+.configurador .recorrido button:disabled { opacity: .4; cursor: default; }
+.configurador .recorrido button:disabled:hover { border-color: var(--linea); }
+.configurador .recorrido b { color: var(--tinta); }
+.configurador .recorrido .recorrido-aviso { color: #9a3b12; }
 .configurador .sub-paso { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--linea); }
 .configurador .sub-paso > h3:first-child { margin-top: 0; }
 /* Las fichas de tipo de ejercicio, en columna y más compactas cuando van al lado del archivo */

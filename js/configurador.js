@@ -1026,6 +1026,11 @@
     const filtro = filtroFicha();
     const lista = Banco.filtrar(banco, filtro);
     const conAvisos = Banco.filtrar(banco, Object.assign({}, filtro, { conAvisos: true }));
+    /* El recorrido va sobre LOS MISMOS fragmentos y en el mismo orden que la tabla —los
+       que cumplen el filtro, incluidos los que tienen avisos—: si no, «siguiente» no
+       llevaría a donde el ojo espera. Son los objetos del banco, no copias, para poder
+       saber por cuál se va con indexOf. */
+    estado.recorrido = { lista: conAvisos.slice(), modo: filtro.modo };
     $('#ficha-cuenta').textContent = lista.length
       ? lista.length + ' fragmentos cumplen el filtro; cada ficha tomará ' + Math.min(lista.length, filtro.n) + ' al azar.'
       : 'Ningún fragmento cumple el filtro. Prueba con otro tipo de ejercicio o menos restricciones (recuerda que la armonización de soprano necesita fragmentos con la melodía escrita).';
@@ -1087,7 +1092,60 @@
       acc.appendChild(bCargar); acc.appendChild(document.createTextNode(' · ')); acc.appendChild(bQuitar);
       cuerpo.appendChild(tr);
     });
+    pintarRecorrido();
   }
+
+  /* ---------- Recorrido por los fragmentos del filtro (decisión 67) ----------
+     Repasar 116 fragmentos volviendo a la tabla entre uno y otro es inviable; con dos
+     flechas se hace de corrido. */
+  function indiceRecorrido() {
+    const r = estado.recorrido;
+    if (!r || !r.lista.length || !estado.banco) return -1;
+    return r.lista.indexOf(estado.banco.entrada);
+  }
+
+  function pintarRecorrido() {
+    const caja = $('#recorrido');
+    if (!caja) return;
+    const r = estado.recorrido, i = indiceRecorrido();
+    caja.hidden = i < 0;
+    if (i < 0) return;
+    const e = r.lista[i];
+    $('#btn-recorrido-ant').disabled = i === 0;
+    $('#btn-recorrido-sig').disabled = i === r.lista.length - 1;
+    const mal = !!(e.avisos && e.avisos.length);
+    $('#recorrido-cuenta').innerHTML = (mal ? '<b class="recorrido-aviso">⚠</b> ' : '')
+      + 'Fragmento <b>' + (i + 1) + '</b> de ' + r.lista.length
+      + ' · ' + (e.leccion || '—') + ' · ' + Teoria.nombreCorto(e.tonalidad)
+      + (mal ? ' — ' + e.avisos.join('; ') : '');
+  }
+
+  /* ¿Se ha tocado algo desde que se cargó del banco? Se compara con lo que hay guardado:
+     respuestas, tonalidad y modulaciones. Sin esto, pasar al siguiente se llevaría por
+     delante una corrección a medias sin decir nada. */
+  function hayCambiosSinGuardar() {
+    const b = estado.banco;
+    if (!b || !estado.respuestas) return false;
+    const parte = b.entrada[b.voz];
+    if (!parte || !Array.isArray(parte.respuestas)) return false;
+    const mismas = JSON.stringify(parte.respuestas) === JSON.stringify(estado.respuestas);
+    const ton = b.entrada.tonalidad || {};
+    const mismaTon = ton.tonica === $('#tonica').value && ton.modo === $('#modo').value;
+    const planas = m => JSON.stringify((m || []).map(x => ({ n: x.nota, t: x.tonalidad })));
+    return !(mismas && mismaTon && planas(parte.modulaciones) === planas(estado.modulaciones));
+  }
+
+  function recorrer(salto) {
+    const r = estado.recorrido, i = indiceRecorrido();
+    if (i < 0) return;
+    const j = i + salto;
+    if (j < 0 || j >= r.lista.length) return;
+    if (hayCambiosSinGuardar()
+      && !confirm('Has cambiado este fragmento y no lo has guardado en el banco. Si pasas al siguiente se perderá lo que hayas tocado. ¿Seguir?')) return;
+    cargarDelBanco(r.lista[j], r.modo);
+  }
+
+  /* ---------- Borrador ---------- */
 
   // Trae un fragmento del banco al paso 1, para revisarlo o retocarlo
   function cargarDelBanco(e, modo) {
@@ -1121,9 +1179,13 @@
     }
     estado.banco = { entrada: e, voz: Banco.vozDeModo(modo) };
     pintarOrigenBanco();
+    pintarRecorrido();
     guardarBorrador();
     abrirFragmento();
-    $('#paso-bajo').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    /* Se aterriza en la partitura, no en el título del plegable: lo que se viene a hacer
+       al pulsar «Cargar» es mirar el fragmento, y si no está a la vista hay que bajar. */
+    const destino = (!$('#paso-revision').hidden && $('#vista-previa')) ? $('#vista-previa') : $('#paso-bajo');
+    destino.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   /* ---------- Guardar en el banco lo revisado a mano ---------- */
@@ -1322,6 +1384,29 @@
       banco.forEach(e => { if (e.leccion === lec) { e.leccionRepertorio = cifras.slice(); e.leccionAcordes = acs.slice(); n++; } });
       guardarBanco(); pintarBanco();
       aviso('Repertorio de ' + lec + ' actualizado en ' + n + ' fragmentos. Descarga el banco.json y vuelve a subirlo.', 7000);
+    });
+    /* El atajo se escribe con la tecla de cada sistema: en el Mac, Option (⌥); en lo
+       demás, Alt. Es la misma tecla para el navegador, pero no en el teclado. */
+    const pistas = [(navigator.userAgentData && navigator.userAgentData.platform) || '',
+      navigator.platform || '', navigator.userAgent || ''].join(' ');
+    const esMac = /Mac|iPhone|iPad/.test(pistas);
+    const mod = esMac ? '⌥' : 'Alt +';
+    $('#atajo-ant').textContent = mod + ' ←';
+    $('#atajo-sig').textContent = mod + ' →';
+    $('#btn-recorrido-ant').title += ' (' + mod + ' ←)';
+    $('#btn-recorrido-sig').title += ' (' + mod + ' →)';
+    $('#btn-recorrido-ant').addEventListener('click', () => recorrer(-1));
+    $('#btn-recorrido-sig').addEventListener('click', () => recorrer(1));
+    /* Alt + flechas para repasar de corrido. Con Alt para no estorbar al escribir, y
+       nunca cuando el foco está en un campo de texto o en un desplegable. */
+    document.addEventListener('keydown', ev => {
+      if (!ev.altKey || ev.ctrlKey || ev.metaKey) return;
+      if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+      const t = ev.target, et = t && t.tagName;
+      if (et === 'INPUT' || et === 'TEXTAREA' || et === 'SELECT' || (t && t.isContentEditable)) return;
+      if ($('#recorrido').hidden) return;
+      ev.preventDefault();
+      recorrer(ev.key === 'ArrowRight' ? 1 : -1);
     });
     $('#btn-ficha').addEventListener('click', generarFicha);
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
