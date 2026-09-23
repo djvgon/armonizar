@@ -602,7 +602,16 @@
     const hechas = estado.respuestas.filter((r, i) => notaRespondida(i)).length;
     // Tras corregir, el número de intento solo tiene sentido si el ejercicio sigue abierto (hay errores que corregir)
     const enCurso = estado.intento > 0 && !estado.mostrarSolucion;
-    $('#progreso').textContent = hechas + ' de ' + n + ' notas completas' + (enCurso ? ' · intento ' + (estado.intento + 1) : '');
+    /* En una ficha, el progreso dice también por dónde va y que el envío espera al
+       final: el alumno tiene que saber desde el principio que enviar exige terminar,
+       no descubrirlo cuando ya no le queda tiempo. */
+    let texto = hechas + ' de ' + n + ' notas completas' + (enCurso ? ' · intento ' + (estado.intento + 1) : '');
+    if (estado.ficha) {
+      const f = estado.ficha;
+      texto = 'Ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ' · ' + texto;
+      if (Envio.disponible()) texto += ' · podrás enviar el resultado al terminar los ' + f.lista.length;
+    }
+    $('#progreso').textContent = texto;
     $('#btn-corregir').disabled = estado.corregido;
     document.querySelectorAll('.paleta .tecla').forEach(b => { b.disabled = estado.corregido; });
     document.querySelectorAll('.paleta-caja').forEach(p => p.classList.remove('destacada'));
@@ -1134,6 +1143,7 @@
       intento: estado.intento,
       primero: estado.primerIntento
     };
+    guardarFicha();
   }
 
   function siguienteDeFicha() {
@@ -1142,6 +1152,7 @@
     if (f.k + 1 >= f.lista.length) { resumenFicha(); return; }
     f.k++;
     cargar(Banco.ejercicio(f.lista[f.k], f.filtro, f.k));
+    guardarFicha();                    // ya está cerrado el ejercicio anterior en el registro
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -1198,17 +1209,24 @@
       h += '<p class="desglose">Lo que más se te ha resistido: '
         + cont.slice(0, 4).map(x => '<b>' + x.acorde + '</b> (' + x.fallos + ' de ' + x.veces + ')').join(' · ') + '.</p>';
     }
+    /* Enviar exige haber terminado la práctica entera (decisión 64): así todas las
+       filas que le llegan al profesor miden lo mismo. Sin formulario configurado, o
+       con la práctica a medias, queda la vía de copiar el informe. */
+    const hayForm = Envio.disponible();
+    const puedeEnviar = hayForm && r.completa;
+    if (hayForm && !r.completa) {
+      h += '<p class="ayuda-informe">Has hecho <b>' + r.hechos + ' de ' + r.previstos + '</b> ejercicios. '
+        + 'Para enviar el resultado a tu profesor hay que terminar la ficha entera: así todos los resultados miden lo mismo. '
+        + 'Vuelve a abrir el enlace y continuarás donde lo dejaste.</p>';
+    }
     h += '<label class="campo-informe"><span>Escribe tu nombre y apellidos para el informe</span>'
       + '<input id="informe-alumno" type="text" autocomplete="name" placeholder="Nombre y apellidos"></label>';
-    /* Si hay formulario configurado (envio.json), enviar es lo principal; si no lo hay,
-       el informe se lleva a Classroom copiándolo. Un caso u otro, nunca los dos en
-       primer plano: dos botones «principales» no dicen al alumno cuál pulsar. */
-    const hayForm = Envio.disponible();
     h += '<div class="botonera botonera-resultado">'
-      + (hayForm ? '<button type="button" id="btn-informe-enviar" class="primario">Enviar al profesor</button>' : '')
-      + '<button type="button" id="btn-informe-copiar"' + (hayForm ? '' : ' class="primario"') + '>Copiar el informe</button>'
-      + '<button type="button" id="btn-informe-csv">Descargar el detalle</button></div>';
-    h += '<p class="ayuda-informe">' + (hayForm
+      + (puedeEnviar ? '<button type="button" id="btn-informe-enviar" class="primario">Enviar al profesor</button>' : '')
+      + (puedeEnviar ? '' : '<button type="button" id="btn-informe-copiar" class="primario">Copiar el informe</button>'
+        + '<button type="button" id="btn-informe-csv">Descargar el detalle</button>')
+      + '</div>';
+    h += '<p class="ayuda-informe">' + (puedeEnviar
       ? 'Al enviar se abre el formulario del centro con tus datos ya puestos: compruébalos y pulsa Enviar. Tendrás que iniciar sesión con tu correo de murciaeduca.es.'
       : 'Copia el informe y pégalo en la tarea de Classroom.') + '</p>';
     h += '</div>';
@@ -1238,9 +1256,7 @@
     if (be2) be2.addEventListener('click', () => {
       const r = Registro.resumen();
       if (!r) return;
-      const cont = Registro.porContenido().filter(x => x.fallos)
-        .slice(0, 8).map(x => x.acorde + ' (' + x.fallos + '/' + x.veces + ')').join(', ');
-      const url = Envio.direccion(r, cont);
+      const url = Envio.direccion(r);
       if (!url) { aviso('No se ha podido preparar el envío. Copia el informe y pégalo en Classroom.', 8000); return; }
       window.open(url, '_blank', 'noopener');
       aviso('Se ha abierto el formulario con tus datos. Revísalos y pulsa Enviar allí.', 9000);
@@ -1269,6 +1285,21 @@
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
 
+  /* Cómo se llama esta ficha en el informe y en la hoja del profesor. Si le pusiste
+     título en el configurador, ese; si no, uno construido con lo que la distingue
+     —lección, tipo de ejercicio y cuántos—, porque «Ficha» a secas en todas las filas
+     de la hoja no deja distinguir una práctica de otra. */
+  function nombreDeFicha(filtro, lista) {
+    if (filtro.titulo) return filtro.titulo;
+    const lecs = [...new Set(lista.map(e => e.leccion).filter(Boolean))];
+    const partes = [];
+    if (lecs.length === 1) partes.push(lecs[0]);
+    else if (lecs.length > 1) partes.push(lecs.length + ' lecciones');
+    partes.push(Ejercicios.MODOS[filtro.modo] || 'Ejercicios');
+    partes.push(lista.length + (lista.length === 1 ? ' ejercicio' : ' ejercicios'));
+    return partes.join(' · ');
+  }
+
   async function iniciarFicha(texto) {
     let filtro;
     try { filtro = Banco.decodificar(texto); } catch (e) {
@@ -1285,14 +1316,57 @@
         + '. Si has abierto la página desde el disco, las fichas solo funcionan con la aplicación publicada.', 12000);
       cargar(Ejercicios.CORPUS[0]); return;
     }
+    // ¿Dejó esta misma ficha a medias? Entonces se continúa en vez de empezar de cero
+    const vuelta = reanudarFicha(texto, entradas);
+    if (vuelta) {
+      estado.ficha = vuelta;
+      aviso('Continúas la ficha que dejaste a medias: vas por el ejercicio '
+        + (vuelta.k + 1) + ' de ' + vuelta.lista.length + '.', 9000);
+      cargar(Banco.ejercicio(vuelta.lista[vuelta.k], vuelta.filtro, vuelta.k));
+      return;
+    }
     const lista = Banco.elegir(entradas, filtro);
     if (!lista.length) {
       aviso('En el banco no hay ningún ejercicio que cumpla lo que pide esta ficha.', 10000);
       cargar(Ejercicios.CORPUS[0]); return;
     }
-    estado.ficha = { filtro, lista, k: 0, marcador: [] };
-    Registro.iniciarPractica({ tipo: 'ficha', titulo: filtro.titulo || 'Ficha', modo: filtro.modo, n: lista.length });
+    estado.ficha = { filtro, lista, k: 0, marcador: [], hash: texto };
+    Registro.iniciarPractica({ tipo: 'ficha', titulo: nombreDeFicha(filtro, lista), modo: filtro.modo, n: lista.length });
+    guardarFicha();
     cargar(Banco.ejercicio(lista[0], filtro, 0));
+  }
+
+  /* ---------- Reanudar una ficha a medias (decisión 64) ----------
+     Con el envío condicionado a terminarla, una ficha de ocho ejercicios es un
+     compromiso largo: si se cierra la pestaña, se va el ordenador o se acaba la clase,
+     perderlo todo y tener que repetir los ocho sería injusto. Se guarda qué fragmentos
+     le tocaron —no basta el filtro, porque los saca al azar— y por cuál iba. */
+  const CLAVE_FICHA = 'armonizar.ficha';
+
+  function guardarFicha() {
+    const f = estado.ficha;
+    if (!f || !f.hash) return;
+    try {
+      localStorage.setItem(CLAVE_FICHA, JSON.stringify({
+        hash: f.hash, ids: f.lista.map(e => e.id), k: f.k, marcador: f.marcador
+      }));
+    } catch (e) { /* sin almacenamiento: no se podrá reanudar, y no pasa nada */ }
+  }
+
+  function reanudarFicha(texto, entradas) {
+    let g = null;
+    try { const t = localStorage.getItem(CLAVE_FICHA); g = t ? JSON.parse(t) : null; } catch (e) { return null; }
+    if (!g || g.hash !== texto || !Array.isArray(g.ids) || !g.ids.length) return null;
+    // Los mismos fragmentos, en el mismo orden. Si el banco cambió y falta alguno, se empieza de nuevo
+    const porId = new Map(entradas.map(e => [e.id, e]));
+    const lista = g.ids.map(id => porId.get(id));
+    if (!lista.every(Boolean)) return null;
+    const p = Registro.recuperar();
+    if (!p || p.tipo !== 'ficha' || !Array.isArray(p.ejercicios)) return null;
+    const k = p.ejercicios.length;
+    if (k <= 0 || k >= lista.length) return null;        // ni empezada ni terminada: nada que reanudar
+    Registro.restaurar(p);
+    return { filtro: Banco.decodificar(texto), lista, k, marcador: (g.marcador || []).slice(0, k), hash: texto };
   }
 
   function reiniciar() { cargar(estado.ejercicio); }

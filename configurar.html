@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260924-0930">
-  <link rel="stylesheet" href="css/estilo.css?v=20260924-0930">
+  <link rel="stylesheet" href="css/bravura.css?v=20260924-1600">
+  <link rel="stylesheet" href="css/estilo.css?v=20260924-1600">
 </head>
 <body class="configurador">
 
@@ -13,239 +13,25 @@
     <div class="cabecera-texto">
       <p class="sobretitulo">Armonización con cifrado barroco · profesor</p>
       <h1>Configurador de ejercicios</h1>
-      <p class="instruccion">Escribe o importa un bajo, elige el repertorio, revisa las cifras que propone el motor y genera la dirección que recibirán los alumnos.</p>
+      <p class="instruccion">Arriba, lo de cada semana: preparar una ficha y copiar su enlace. Abajo, el banco: añadir fragmentos de un archivo de MuseScore y revisar los que ya están.</p>
     </div>
     <a class="enlace-boton" href="index.html">Ir a la página del alumno →</a>
   </header>
 
   <main>
 
-    <!-- ===== Paso 1: el bajo ===== -->
-    <section class="paso" id="paso-bajo">
-      <h2><span class="num">1</span> <span id="titulo-voz">El bajo</span></h2>
-      <div class="columnas">
-        <div class="columna">
-          <label class="campo">
-            <span id="etiqueta-voz">Escribe el bajo</span>
-            <textarea id="texto-bajo" rows="3" spellcheck="false" placeholder="do3 re3 | mi3 do3 | sol3r | do3r"></textarea>
-          </label>
-          <p class="ayuda">Notas separadas por espacios, compases por <code>|</code>; un guion bajo <code>_</code> es un silencio (<code>_</code>, <code>_n</code>, <code>_c</code>, <code>_r</code>). Sin sufijo = blanca; <code>r</code> = redonda; <code>n</code> = negra; <code>c</code> = corchea; un punto añade el puntillo (<code>do3.</code> = blanca con puntillo, para 3/4). Alteraciones: <code>fa#3</code>, <code>sib2</code>. Si no pones octava se toma la 3 (<code>do3</code> es el do del segundo espacio en clave de fa)<span id="ayuda-octava-soprano" hidden">; en una armonización de soprano, la 4 (<code>do4</code> es el do central)</span>.</p>
-          <p id="errores-bajo" class="error" hidden></p>
-        </div>
-        <div class="columna">
-          <div id="zona-archivo" class="zona-archivo" tabindex="0" role="button" aria-label="Importar archivo">
-            <p><b>Arrastra aquí un archivo</b> o pulsa para elegirlo</p>
-            <p class="ayuda"><code>.mscz</code> de MuseScore (no hace falta exportarlo a nada), <code>.musicxml</code> o <code>.json</code> guardado desde este configurador. Se toma el pentagrama del bajo —el superior, en una armonización de soprano— y cada barra doble cierra un ejercicio.</p>
-            <input type="file" id="archivo" accept=".mscz,.mscx,.musicxml,.xml,.json,application/json,application/xml,text/xml" hidden>
-          </div>
-          <div id="fragmentos" class="fragmentos" hidden>
-            <p class="ayuda" id="fragmentos-titulo"></p>
-            <div id="lista-fragmentos" class="lista-fragmentos"></div>
-            <p id="avisos-importacion" class="aviso-suave" hidden></p>
-          </div>
-        </div>
-      </div>
+    <!-- ===================================================================
+         A · PREPARAR UNA FICHA
+         Es lo que se hace cada semana, así que va primero (decisión 66).
+         Aquí están TODAS las opciones de la ficha: antes cuatro de ellas
+         vivían en el antiguo paso 3 y se aplicaban a la ficha sin que se
+         viera, que era el reparto más confuso de la interfaz.
+         =================================================================== -->
+    <section class="paso" id="paso-ficha">
+      <h2><span class="num">A</span> Preparar una ficha</h2>
+      <p class="ayuda">Una ficha es <b>un enlace que da al alumno varios ejercicios al azar</b> de entre los del banco que cumplan un filtro. No lleva dentro los ejercicios: lleva el filtro, así que ampliar o corregir el banco no invalida los enlaces ya repartidos.</p>
 
-      <div class="fila-campos">
-        <label class="campo">
-          <span>Tónica</span>
-          <select id="tonica"></select>
-        </label>
-        <label class="campo">
-          <span>Modo</span>
-          <select id="modo">
-            <option value="mayor">mayor</option>
-            <option value="menor">menor</option>
-          </select>
-        </label>
-        <label class="campo">
-          <span>Compás</span>
-          <select id="compas">
-            <option value="4/4">4/4</option>
-            <option value="3/4">3/4</option>
-            <option value="2/2">2/2</option>
-            <option value="2/4">2/4</option>
-            <option value="3/2">3/2</option>
-          </select>
-        </label>
-        <label class="campo campo-ancho">
-          <span>Título del ejercicio</span>
-          <input id="titulo" type="text" placeholder="Ejercicio 1">
-        </label>
-        <label class="campo campo-ancho">
-          <span>Colección (opcional)</span>
-          <input id="coleccion" type="text" placeholder="RO ascendente en Do mayor">
-        </label>
-      </div>
-    </section>
-
-    <!-- ===== Paso 2: tipo de ejercicio ===== -->
-    <section class="paso" id="paso-tipo">
-      <h2><span class="num">2</span> Tipo de ejercicio</h2>
-      <div class="tipos" role="radiogroup" aria-label="Tipo de ejercicio">
-        <label class="tipo">
-          <input type="radio" name="modo-ej" value="cifrar">
-          <span class="tipo-titulo">Análisis</span>
-          <span class="tipo-texto">Se le dan el bajo y la realización a cuatro voces; ha de señalar el cifrado armónico y el grado de cada acorde.</span>
-        </label>
-        <label class="tipo">
-          <input type="radio" name="modo-ej" value="armonizar" checked>
-          <span class="tipo-titulo">Armonización de bajo</span>
-          <span class="tipo-texto">Ve solo el bajo; ha de cifrarlo (puede oír lo que escribe). Las notas de cada acorde se escriben en el pentagrama según las va señalando.</span>
-        </label>
-        <label class="tipo">
-          <input type="radio" name="modo-ej" value="audicion">
-          <span class="tipo-titulo">Audición</span>
-          <span class="tipo-texto">No ve nada (o solo el bajo, a elegir en las opciones): escucha la armonización (entera o acorde a acorde) y ha de cifrar lo que suena. Bajo y realización se ven al terminar.</span>
-        </label>
-        <label class="tipo">
-          <input type="radio" name="modo-ej" value="soprano">
-          <span class="tipo-titulo">Armonización de soprano</span>
-          <span class="tipo-texto">Ve la melodía y la armoniza: en cada nota elige la fundamental y el cifrado, y el bajo aparece escrito. La realización, con la melodía arriba, se ve al terminar.</span>
-        </label>
-      </div>
-    </section>
-
-    <!-- ===== Paso 3: opciones ===== -->
-    <section class="paso" id="paso-opciones">
-      <h2><span class="num">3</span> Repertorio y opciones</h2>
-      <p class="ayuda" id="ayuda-repertorio">Las cifras marcadas forman la paleta del alumno y limitan las respuestas admisibles.</p>
-      <div id="repertorio-opciones" class="repertorio-opciones"></div>
-      <div id="acordes-funciones" class="acordes-funciones" hidden>
-        <p class="ayuda">Acordes disponibles, por función tonal. Solo estos entran en el análisis de la melodía; la paleta de cifrados del alumno se forma con las cifras de los acordes marcados.</p>
-        <div id="acordes-lista"></div>
-        <label class="campo campo-linea formula-tst">
-          <input id="formula-tst" type="checkbox" checked>
-          <span>Fórmula <b>T S T</b>: se admite la bordadura I – IV – I (el II nunca vuelve a la tónica)</span>
-        </label>
-      </div>
-      <div class="fila-campos">
-        <label class="campo campo-linea">
-          <input id="pedir-romano" type="checkbox" checked>
-          <span>Pedir también el grado de la fundamental (I … VII)</span>
-        </label>
-        <label class="campo campo-linea">
-          <input id="reintentos" type="checkbox" checked>
-          <span>Permitir corregir solo los errores antes de ver la solución</span>
-        </label>
-        <label class="campo">
-          <span>Ayuda con los grados</span>
-          <select id="ayuda-grados">
-            <option value="ninguna">Ninguna: paleta completa, sin lista</option>
-            <option value="lista" selected>Mostrar la lista de grados en juego (paleta completa)</option>
-            <option value="paleta">Limitar la paleta a los grados en juego</option>
-          </select>
-        </label>
-        <label class="campo">
-          <span>Sobre el grado 6 descendente, la respuesta modelo es</span>
-          <select id="preferir">
-            <option value="">II4/3 (tercero)</option>
-            <option value="+6">+6, dominante secundaria del V (cuarto)</option>
-          </select>
-        </label>
-        <label class="campo">
-          <span>Funciones tonales (fila T · S · D)</span>
-          <select id="funciones">
-            <option value="" selected>Sin fila de funciones</option>
-            <option value="dadas">Dadas: el alumno ve la función de cada acorde</option>
-            <option value="pedir">Pedirlas: el alumno indica primero la función de cada acorde</option>
-          </select>
-        </label>
-        <label class="campo">
-          <span>Grados de la escala sobre el bajo (circulitos)</span>
-          <select id="grados-bajo">
-            <option value="1" selected>Sí: encima de cada nota del bajo, su grado en la escala</option>
-            <option value="">No</option>
-          </select>
-        </label>
-        <label class="campo" id="campo-bajo-audicion" hidden>
-          <span>Audición: qué ve el alumno mientras escucha</span>
-          <select id="bajo-audicion">
-            <option value="" selected>Nada: ni el bajo ni la realización</option>
-            <option value="bajo">Solo el bajo (la realización, no)</option>
-          </select>
-        </label>
-        <label class="campo">
-          <span>Tonalidades (fila «Tonalidad»)</span>
-          <select id="tonalidades">
-            <option value="" selected>Automático: dadas si el fragmento modula</option>
-            <option value="dadas">Dadas: el alumno ve el tono y dónde cambia</option>
-            <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
-            <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
-          </select>
-        </label>
-      </div>
-      <div class="botonera">
-        <button id="btn-analizar" type="button" class="primario">Analizar el bajo</button>
-        <span class="ayuda">El motor propone las cifras de cada nota; después puedes corregirlas a mano.</span>
-      </div>
-    </section>
-
-    <!-- ===== Paso 3: revisión ===== -->
-    <section class="paso" id="paso-revision" hidden>
-      <h2><span class="num">4</span> Revisión de las respuestas</h2>
-      <div id="vista-previa" class="partitura-caja"></div>
-      <label class="campo campo-linea"><input id="ver-solucion" type="checkbox" checked><span>Mostrar la solución modelo en la vista previa</span></label>
-      <p class="ayuda">Marca las cifras admisibles de cada nota y elige cuál es la modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. En una <b>armonización de soprano</b> cada opción es un acorde (fundamental y cifra; entre paréntesis, el bajo que resulta): el motor propone los que caben en una sucesión válida y deja sin marcar los demás acordes que contienen la nota. Cambiar la <b>función</b> de una nota vuelve a analizar la melodía con esa función fijada. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
-      <div class="tabla-caja">
-        <table id="tabla-revision" class="tabla-revision">
-          <thead><tr><th>#</th><th>Nota</th><th>Tonalidad <small class="th-ayuda">(despliega para modular desde esa nota)</small></th><th>Grado</th><th class="col-fun">Función</th><th id="th-admisibles">Cifras admisibles (● modelo)</th><th>Regla</th></tr></thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <p id="avisos-revision" class="error" hidden></p>
-      <div class="banco-origen" id="banco-origen" hidden>
-        <p id="banco-origen-texto" class="ayuda"></p>
-        <div class="botonera">
-          <button id="btn-banco-guardar" type="button" class="primario">Guardar los cambios en el banco</button>
-          <button id="btn-banco-soltar" type="button" class="secundario">Dejar de revisarlo</button>
-        </div>
-        <p class="ayuda">Se guardan la <b>tonalidad</b>, las <b>modulaciones</b> y las <b>cifras admisibles</b> de esta voz, con la modelo delante, y se recalculan las etiquetas. Si cambias la tonalidad, la otra voz se vuelve a analizar sola. El banco vive en este navegador: cuando termines de corregir, <b>descarga <code>banco.json</code> y súbelo a GitHub</b>.</p>
-      </div>
-    </section>
-
-    <!-- ===== Paso 4: dirección ===== -->
-    <section class="paso" id="paso-direccion" hidden>
-      <h2><span class="num">5</span> Dirección para los alumnos</h2>
-      <div class="botonera">
-        <button id="btn-generar" type="button" class="primario">Generar dirección</button>
-        <button id="btn-copiar" type="button" disabled>Copiar</button>
-        <a id="btn-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
-        <button id="btn-json" type="button" class="secundario" disabled>Descargar .json</button>
-      </div>
-      <textarea id="direccion" rows="3" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección del ejercicio"></textarea>
-      <p class="ayuda">La dirección contiene el ejercicio completo (bajo, repertorio y respuestas); no hace falta guardar nada en ningún servidor. Es larga, pero se pega sin problema en Google Classroom.</p>
-
-      <div id="todos-fragmentos" hidden>
-        <h3>Todos los fragmentos del archivo importado</h3>
-        <p class="ayuda">Genera una dirección por fragmento con las cifras que propone el motor y las opciones actuales (sin revisión manual). Conviene comprobar en la lista si algún fragmento tiene notas sin propuesta.</p>
-        <div class="botonera">
-          <button id="btn-todos" type="button">Generar direcciones de todos los fragmentos</button>
-          <button id="btn-copiar-todos" type="button" disabled>Copiar la lista</button>
-        </div>
-        <textarea id="direcciones-todos" rows="8" readonly spellcheck="false" hidden></textarea>
-      </div>
-    </section>
-
-    <!-- ===== Paso 6: banco de fragmentos y fichas ===== -->
-    <section class="paso" id="paso-banco">
-      <h2><span class="num">6</span> Banco de fragmentos y fichas</h2>
-      <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifras que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Con el banco montas <b>fichas</b>: un enlace que le da al alumno varios ejercicios al azar de los que cumplan un filtro. El banco se guarda en este navegador; para que las fichas funcionen hay que <b>descargarlo como <code>banco.json</code> y subirlo a GitHub</b> junto a la aplicación.</p>
-
-      <div class="banco-anadir" id="banco-anadir" hidden>
-        <label class="campo">
-          <span>Lección</span>
-          <input id="banco-leccion" type="text" placeholder="A3-1" size="8">
-        </label>
-        <label class="campo">
-          <span>Nombre de la lección</span>
-          <input id="banco-leccion-nombre" type="text" placeholder="I, V y V7" size="22">
-        </label>
-        <button id="btn-banco-anadir" type="button" class="primario">Añadir los fragmentos del archivo al banco</button>
-        <span class="ayuda" id="banco-anadir-ayuda">Se analizan todos los fragmentos del archivo importado con las opciones actuales.</span>
-      </div>
-
-      <div class="botonera">
+      <div class="botonera botonera-banco">
         <button id="btn-banco-descargar" type="button" class="secundario">Descargar banco.json</button>
         <button id="btn-banco-cargar" type="button" class="secundario">Cargar banco.json</button>
         <button id="btn-banco-vaciar" type="button" class="secundario">Vaciar el banco</button>
@@ -254,7 +40,7 @@
       </div>
 
       <div id="banco-cuerpo" hidden>
-        <h3>Filtro</h3>
+        <h3>Qué fragmentos entran</h3>
         <div class="fila-campos">
           <label class="campo">
             <span>Tipo de ejercicio</span>
@@ -308,7 +94,9 @@
             <input id="ficha-titulo" type="text" placeholder="Ficha 1 · El 6/4 cadencial">
           </label>
         </div>
-        <h3>Opciones de la ficha</h3>
+        <p class="ayuda">Ponle <b>título</b>: es el nombre con el que vas a reconocer esta práctica en tu hoja de calificaciones. Sin él se construye uno automático con la lección, el tipo y cuántos ejercicios lleva.</p>
+
+        <h3>Cómo se le presenta al alumno</h3>
         <div class="fila-campos">
           <label class="campo">
             <span>Ayuda con los grados</span>
@@ -342,13 +130,30 @@
               <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
             </select>
           </label>
+          <label class="campo">
+            <span>Grados de la escala sobre el bajo (circulitos)</span>
+            <select id="grados-bajo">
+              <option value="1" selected>Sí: encima de cada nota del bajo, su grado en la escala</option>
+              <option value="">No</option>
+            </select>
+          </label>
+          <label class="campo" id="campo-bajo-audicion" hidden>
+            <span>Audición: qué ve el alumno mientras escucha</span>
+            <select id="bajo-audicion">
+              <option value="" selected>Nada: ni el bajo ni la realización</option>
+              <option value="bajo">Solo el bajo (la realización, no)</option>
+            </select>
+          </label>
+          <label class="campo campo-linea">
+            <input id="pedir-romano" type="checkbox" checked>
+            <span>Pedir también el grado de la fundamental (I … VII)</span>
+          </label>
+          <label class="campo campo-linea">
+            <input id="reintentos" type="checkbox" checked>
+            <span>Permitir corregir solo los errores antes de ver la solución</span>
+          </label>
         </div>
-        <p class="ayuda">Estas cuatro rigen en toda la ficha y son independientes de las del paso 3. Las demás opciones del paso 3 —pedir el grado, permitir corregir los errores, los grados del bajo y, en la Audición, qué se ve— se aplican también aquí tal como estén arriba.</p>
         <p class="ayuda" id="ficha-cuenta"></p>
-        <div class="banco-repertorio">
-          <p class="ayuda" id="leccion-repertorio">Cada fragmento guarda el repertorio de su lección —las cifras y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha.</p>
-          <button id="btn-leccion-repertorio" type="button" class="secundario" disabled>Dar a esta lección el repertorio del paso 3</button>
-        </div>
 
         <div class="botonera">
           <button id="btn-ficha" type="button" class="primario">Generar la dirección de la ficha</button>
@@ -356,10 +161,22 @@
           <a id="btn-ficha-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
         </div>
         <textarea id="ficha-direccion" rows="2" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección de la ficha"></textarea>
-        <p class="ayuda">La ficha no lleva dentro los ejercicios: lleva el filtro. Cada vez que un alumno la abre, la página saca del banco otros ejercicios al azar de entre los que cumplen el filtro. Para ampliar o corregir el banco basta con volver a subir <code>banco.json</code>: <b>los enlaces repartidos siguen valiendo</b>.</p>
+        <p class="ayuda">Genera la dirección <b>desde el configurador publicado</b>, no desde el disco: las fichas necesitan leer <code>banco.json</code> del servidor. Si has cambiado el banco, acuérdate de descargarlo y subirlo a GitHub antes de repartir el enlace.</p>
+      </div>
+    </section>
 
-        <h3>Fragmentos del banco</h3>
-        <p class="ayuda">Se muestran los que cumplen el filtro. El nivel se puede corregir a mano; <b>«Cargar» lo trae al paso 1 con su análisis tal como está guardado</b> —tonalidad, modulaciones y cifras de cada nota—, para verlo y corregirlo: lo que cambies se guarda con el botón «Guardar los cambios en el banco» del paso 4. «Quitar» lo saca del banco.</p>
+    <!-- ===================================================================
+         B · EL BANCO
+         Lo ocasional: llenarlo y corregirlo. Las dos tareas van plegadas
+         para que no compitan con la ficha; «El fragmento en curso» se abre
+         solo al pulsar «Cargar» en la tabla o al importar un archivo.
+         =================================================================== -->
+    <section class="paso" id="paso-banco">
+      <h2><span class="num">B</span> El banco de fragmentos</h2>
+      <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifras que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Vive <b>en este navegador</b>: para que las fichas funcionen hay que descargarlo como <code>banco.json</code> y subirlo a GitHub junto a la aplicación.</p>
+
+      <div id="banco-tabla" hidden>
+        <p class="ayuda">Se muestran los que cumplen el filtro de arriba. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifras de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
         <div class="tabla-caja">
           <table id="tabla-banco" class="tabla-revision tabla-banco">
             <thead><tr><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifras del modelo</th><th>Nivel</th><th></th></tr></thead>
@@ -367,6 +184,176 @@
           </table>
         </div>
       </div>
+
+      <!-- B1 · Añadir fragmentos -->
+      <details class="plegable" id="det-anadir">
+        <summary>Añadir fragmentos de un archivo</summary>
+
+        <div class="columnas">
+          <div class="columna">
+            <div id="zona-archivo" class="zona-archivo" tabindex="0" role="button" aria-label="Importar archivo">
+              <p><b>Arrastra aquí un archivo</b> o pulsa para elegirlo</p>
+              <p class="ayuda"><code>.mscz</code> de MuseScore (no hace falta exportarlo a nada), <code>.musicxml</code> o <code>.json</code> guardado desde este configurador. Se toma el pentagrama del bajo —el superior, en una armonización de soprano— y cada barra doble cierra un ejercicio.</p>
+              <input type="file" id="archivo" accept=".mscz,.mscx,.musicxml,.xml,.json,application/json,application/xml,text/xml" hidden>
+            </div>
+            <div id="fragmentos" class="fragmentos" hidden>
+              <p class="ayuda" id="fragmentos-titulo"></p>
+              <div id="lista-fragmentos" class="lista-fragmentos"></div>
+              <p id="avisos-importacion" class="aviso-suave" hidden></p>
+            </div>
+          </div>
+          <div class="columna">
+            <p class="ayuda"><b>Qué voz se está importando.</b> Decide cómo se analiza el archivo: si se lee el pentagrama del bajo o el de la melodía. Al cargar un fragmento del banco se pone solo, con el tipo que tengas elegido arriba.</p>
+            <div class="tipos tipos-compactos" role="radiogroup" aria-label="Tipo de ejercicio">
+              <label class="tipo">
+                <input type="radio" name="modo-ej" value="cifrar">
+                <span class="tipo-titulo">Análisis</span>
+                <span class="tipo-texto">Se le dan el bajo y la realización a cuatro voces; ha de señalar el cifrado y el grado de cada acorde.</span>
+              </label>
+              <label class="tipo">
+                <input type="radio" name="modo-ej" value="armonizar" checked>
+                <span class="tipo-titulo">Armonización de bajo</span>
+                <span class="tipo-texto">Ve solo el bajo; ha de cifrarlo. Las notas de cada acorde se escriben según las va señalando.</span>
+              </label>
+              <label class="tipo">
+                <input type="radio" name="modo-ej" value="audicion">
+                <span class="tipo-titulo">Audición</span>
+                <span class="tipo-texto">Escucha la armonización y cifra lo que suena. Bajo y realización se ven al terminar.</span>
+              </label>
+              <label class="tipo">
+                <input type="radio" name="modo-ej" value="soprano">
+                <span class="tipo-titulo">Armonización de soprano</span>
+                <span class="tipo-texto">Ve la melodía y la armoniza: en cada nota elige fundamental y cifrado, y el bajo aparece escrito.</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <h3>Repertorio de la lección</h3>
+        <p class="ayuda" id="ayuda-repertorio">Las cifras marcadas forman la paleta del alumno y limitan las respuestas admisibles. <b>Se guardan con cada fragmento</b> al añadirlo: por eso una ficha puede mezclar lecciones y cada fragmento se juega con los acordes de la suya.</p>
+        <div id="repertorio-opciones" class="repertorio-opciones"></div>
+        <div id="acordes-funciones" class="acordes-funciones" hidden>
+          <p class="ayuda">Acordes disponibles, por función tonal. Solo estos entran en el análisis de la melodía; la paleta de cifrados del alumno se forma con las cifras de los acordes marcados.</p>
+          <div id="acordes-lista"></div>
+          <label class="campo campo-linea formula-tst">
+            <input id="formula-tst" type="checkbox" checked>
+            <span>Fórmula <b>T S T</b>: se admite la bordadura I – IV – I (el II nunca vuelve a la tónica)</span>
+          </label>
+        </div>
+
+        <div class="banco-anadir" id="banco-anadir" hidden>
+          <label class="campo">
+            <span>Lección</span>
+            <input id="banco-leccion" type="text" placeholder="A3-1" size="8">
+          </label>
+          <label class="campo">
+            <span>Nombre de la lección</span>
+            <input id="banco-leccion-nombre" type="text" placeholder="I, V y V7" size="22">
+          </label>
+          <button id="btn-banco-anadir" type="button" class="primario">Añadir los fragmentos del archivo al banco</button>
+          <span class="ayuda" id="banco-anadir-ayuda">Se analizan todos los fragmentos del archivo importado con las opciones actuales.</span>
+        </div>
+
+        <div class="banco-repertorio">
+          <p class="ayuda" id="leccion-repertorio">Cada fragmento guarda el repertorio que tenía marcado cuando se añadió. Si lo cambias después, este botón lo aplica a todos los de una lección.</p>
+          <button id="btn-leccion-repertorio" type="button" class="secundario" disabled>Dar a esta lección el repertorio de arriba</button>
+        </div>
+      </details>
+
+      <!-- B2 · El fragmento en curso -->
+      <details class="plegable" id="paso-bajo">
+        <summary><span id="titulo-voz">El fragmento en curso</span></summary>
+
+        <label class="campo">
+          <span id="etiqueta-voz">Escribe el bajo</span>
+          <textarea id="texto-bajo" rows="3" spellcheck="false" placeholder="do3 re3 | mi3 do3 | sol3r | do3r"></textarea>
+        </label>
+        <p class="ayuda">Aquí aparece el fragmento que estés revisando. Se puede escribir a mano: notas separadas por espacios, compases por <code>|</code>; un guion bajo <code>_</code> es un silencio (<code>_</code>, <code>_n</code>, <code>_c</code>, <code>_r</code>). Sin sufijo = blanca; <code>r</code> = redonda; <code>n</code> = negra; <code>c</code> = corchea; un punto añade el puntillo (<code>do3.</code> = blanca con puntillo, para 3/4). Alteraciones: <code>fa#3</code>, <code>sib2</code>. Si no pones octava se toma la 3 (<code>do3</code> es el do del segundo espacio en clave de fa)<span id="ayuda-octava-soprano" hidden>; en una armonización de soprano, la 4 (<code>do4</code> es el do central)</span>.</p>
+        <p id="errores-bajo" class="error" hidden></p>
+
+        <div class="fila-campos">
+          <label class="campo">
+            <span>Tónica</span>
+            <select id="tonica"></select>
+          </label>
+          <label class="campo">
+            <span>Modo</span>
+            <select id="modo">
+              <option value="mayor">mayor</option>
+              <option value="menor">menor</option>
+            </select>
+          </label>
+          <label class="campo">
+            <span>Compás</span>
+            <select id="compas">
+              <option value="4/4">4/4</option>
+              <option value="3/4">3/4</option>
+              <option value="2/2">2/2</option>
+              <option value="2/4">2/4</option>
+              <option value="3/2">3/2</option>
+            </select>
+          </label>
+          <label class="campo campo-ancho">
+            <span>Título del ejercicio</span>
+            <input id="titulo" type="text" placeholder="Ejercicio 1">
+          </label>
+          <label class="campo campo-ancho">
+            <span>Colección (opcional)</span>
+            <input id="coleccion" type="text" placeholder="RO ascendente en Do mayor">
+          </label>
+        </div>
+
+        <div class="botonera">
+          <button id="btn-analizar" type="button" class="primario">Analizar</button>
+          <span class="ayuda">El motor propone las cifras de cada nota; después puedes corregirlas a mano.</span>
+        </div>
+
+        <!-- Revisión -->
+        <div class="sub-paso" id="paso-revision" hidden>
+          <h3>Revisión de las respuestas</h3>
+          <div id="vista-previa" class="partitura-caja"></div>
+          <label class="campo campo-linea"><input id="ver-solucion" type="checkbox" checked><span>Mostrar la solución modelo en la vista previa</span></label>
+          <p class="ayuda">Marca las cifras admisibles de cada nota y elige cuál es la modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. En una <b>armonización de soprano</b> cada opción es un acorde (fundamental y cifra; entre paréntesis, el bajo que resulta): el motor propone los que caben en una sucesión válida y deja sin marcar los demás acordes que contienen la nota. Cambiar la <b>función</b> de una nota vuelve a analizar la melodía con esa función fijada. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
+          <div class="tabla-caja">
+            <table id="tabla-revision" class="tabla-revision">
+              <thead><tr><th>#</th><th>Nota</th><th>Tonalidad <small class="th-ayuda">(despliega para modular desde esa nota)</small></th><th>Grado</th><th class="col-fun">Función</th><th id="th-admisibles">Cifras admisibles (● modelo)</th><th>Regla</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p id="avisos-revision" class="error" hidden></p>
+          <div class="banco-origen" id="banco-origen" hidden>
+            <p id="banco-origen-texto" class="ayuda"></p>
+            <div class="botonera">
+              <button id="btn-banco-guardar" type="button" class="primario">Guardar los cambios en el banco</button>
+              <button id="btn-banco-soltar" type="button" class="secundario">Dejar de revisarlo</button>
+            </div>
+            <p class="ayuda">Se guardan la <b>tonalidad</b>, las <b>modulaciones</b> y las <b>cifras admisibles</b> de esta voz, con la modelo delante, y se recalculan las etiquetas. Si cambias la tonalidad, la otra voz se vuelve a analizar sola. El banco vive en este navegador: cuando termines de corregir, <b>descarga <code>banco.json</code> y súbelo a GitHub</b>.</p>
+          </div>
+        </div>
+
+        <!-- Enlace de este fragmento suelto -->
+        <div class="sub-paso" id="paso-direccion" hidden>
+          <h3>Enlace de este fragmento suelto</h3>
+          <p class="ayuda">Para mandar <b>un ejercicio concreto</b>, no una ficha. La dirección lleva dentro el ejercicio completo (bajo, repertorio y respuestas) y se le presenta al alumno con las opciones de «Cómo se le presenta al alumno», arriba.</p>
+          <div class="botonera">
+            <button id="btn-generar" type="button">Generar dirección</button>
+            <button id="btn-copiar" type="button" disabled>Copiar</button>
+            <a id="btn-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
+            <button id="btn-json" type="button" class="secundario" disabled>Descargar .json</button>
+          </div>
+          <textarea id="direccion" rows="3" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección del ejercicio"></textarea>
+
+          <div id="todos-fragmentos" hidden>
+            <h3>Todos los fragmentos del archivo importado</h3>
+            <p class="ayuda">Genera una dirección por fragmento con las cifras que propone el motor y las opciones actuales (sin revisión manual). Conviene comprobar en la lista si algún fragmento tiene notas sin propuesta.</p>
+            <div class="botonera">
+              <button id="btn-todos" type="button">Generar direcciones de todos los fragmentos</button>
+              <button id="btn-copiar-todos" type="button" disabled>Copiar la lista</button>
+            </div>
+            <textarea id="direcciones-todos" rows="8" readonly spellcheck="false" hidden></textarea>
+          </div>
+        </div>
+      </details>
     </section>
 
     <!-- Recogida de resultados (etapa 8b). La aplicación no envía nada por su cuenta:
@@ -374,7 +361,7 @@
          la dirección plantilla que imprime CrearFormularioPractica.gs y se descarga el
          envio.json que hay que subir a GitHub junto a banco.json. -->
     <section class="paso">
-      <h2>Recogida de resultados</h2>
+      <h2><span class="num">C</span> Recogida de resultados</h2>
       <p class="ayuda">Al terminar una práctica, el alumno ve su informe y puede enviártelo. El envío abre un <b>formulario de Google ya relleno</b>: él solo comprueba su nombre y pulsa Enviar, y Google añade su correo del centro, verificado. Cada envío es una fila de la hoja de respuestas.</p>
       <p class="ayuda">La dirección plantilla la produce el script <code>CrearFormularioPractica.gs</code>, que crea el formulario y su hoja. Se ejecuta en <a href="https://script.google.com" target="_blank" rel="noopener">script.google.com</a> y se puede volver a ejecutar sin miedo: no duplica nada.</p>
       <label class="campo">
@@ -393,17 +380,17 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260924-0930</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260924-1600</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260924-0930"></script>
-  <script src="js/reglas.js?v=20260924-0930"></script>
-  <script src="js/ejercicios.js?v=20260924-0930"></script>
-  <script src="js/partitura.js?v=20260924-0930"></script>
-  <script src="js/musicxml.js?v=20260924-0930"></script>
-  <script src="js/musescore.js?v=20260924-0930"></script>
-  <script src="js/banco.js?v=20260924-0930"></script>
-  <script src="js/realizacion.js?v=20260924-0930"></script>
-  <script src="js/configurador.js?v=20260924-0930"></script>
+  <script src="js/teoria.js?v=20260924-1600"></script>
+  <script src="js/reglas.js?v=20260924-1600"></script>
+  <script src="js/ejercicios.js?v=20260924-1600"></script>
+  <script src="js/partitura.js?v=20260924-1600"></script>
+  <script src="js/musicxml.js?v=20260924-1600"></script>
+  <script src="js/musescore.js?v=20260924-1600"></script>
+  <script src="js/banco.js?v=20260924-1600"></script>
+  <script src="js/realizacion.js?v=20260924-1600"></script>
+  <script src="js/configurador.js?v=20260924-1600"></script>
 </body>
 </html>

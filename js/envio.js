@@ -42,7 +42,7 @@ const Envio = (() => {
 
   /* Los valores que van a cada marca. El orden no importa: se sustituye por
      nombre. Lo que no exista se queda en blanco, nunca con la marca a la vista. */
-  function valores(r, contenidos) {
+  function valores(r) {
     const coma = x => String(x).replace('.', ',');
     return {
       ALUMNO: r.alumno || '',
@@ -58,14 +58,15 @@ const Envio = (() => {
       ACFIN: r.aciertosFinal,
       REINT: r.reintentos,
       SEGUNDOS: r.segundos,
-      CONTENIDOS: contenidos || '',
+      CONTENIDOS: Registro.contenidosCompactos(),
+      CURSO: Registro.contenidosCurso(),
       CODIGO: Registro.codigo(r)
     };
   }
 
-  function direccion(r, contenidos) {
+  function direccion(r) {
     if (!cfg) return '';
-    const v = valores(r, contenidos);
+    const v = valores(r);
     return cfg.plantilla.replace(/ZZ([A-Z]+)ZZ/g, (m, clave) =>
       Object.prototype.hasOwnProperty.call(v, clave) ? encodeURIComponent(v[clave]) : '');
   }

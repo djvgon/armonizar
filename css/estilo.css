@@ -463,3 +463,28 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .banco-origen { margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--borde, #d8d0c4); border-radius: .5rem; background: rgba(160, 120, 60, .07); }
 .banco-origen > .ayuda:first-child { margin-top: 0; font-weight: 600; }
 .banco-origen .botonera { margin: .6rem 0; }
+
+/* ---- Configurador: plegables de la zona del banco (decisión 66) ----
+   Lo ocasional —llenar el banco y corregir fragmentos— va plegado, para que no
+   compita con lo semanal, que es preparar una ficha. */
+.configurador .plegable {
+  margin-top: 1.2rem; border: 1px solid var(--linea); border-radius: 10px;
+  background: var(--papel); overflow: hidden;
+}
+.configurador .plegable > summary {
+  cursor: pointer; padding: .7rem 1rem; font-size: 1.05rem;
+  background: rgba(160, 120, 60, .06); list-style: none;
+}
+.configurador .plegable > summary::-webkit-details-marker { display: none; }
+.configurador .plegable > summary::before { content: '▸ '; color: var(--tinta-suave); }
+.configurador .plegable[open] > summary::before { content: '▾ '; }
+.configurador .plegable > summary:hover { background: rgba(160, 120, 60, .12); }
+.configurador .plegable > *:not(summary) { margin-left: 1rem; margin-right: 1rem; }
+.configurador .plegable > *:last-child { margin-bottom: 1rem; }
+.configurador .botonera-banco button.secundario { margin-left: 0; }
+.configurador .sub-paso { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--linea); }
+.configurador .sub-paso > h3:first-child { margin-top: 0; }
+/* Las fichas de tipo de ejercicio, en columna y más compactas cuando van al lado del archivo */
+.configurador .tipos-compactos { grid-template-columns: 1fr; gap: .4rem; }
+.configurador .tipos-compactos .tipo { padding: .5rem .7rem; }
+.configurador .tipos-compactos .tipo-texto { font-size: .8rem; }

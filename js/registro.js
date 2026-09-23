@@ -55,6 +55,41 @@ const Registro = (() => {
     const et = c ? c.etiqueta : cifra;
     return (romano || '?') + (et === '—' ? '' : ' ' + et);
   }
+  /* ---------- Contenido del curso al que pertenece cada nota (etapa 8b·4) ----------
+     Solo lo que se deduce con CERTEZA del acorde modelo y del papel de la nota; nada
+     de adivinar. Las secuencias y las prolongaciones no están aquí a propósito: son
+     patrones sobre varios acordes, no propiedades de uno, y habrá que declararlas en
+     el banco. Lista corta a propósito: una rejilla de cuarenta contenidos ni se lee ni
+     le llegan datos suficientes a ninguna casilla. */
+  const CIFRAS_SEPTIMA = ['7', '7+', '65', '43', '42', '+6', '+4', '9'];
+  const CIFRAS_DISMINUIDO = ['65d'];
+
+  function contenidoDeNota(romano, cifra, papel) {
+    if (papel === 'pivote') return 'Modulación';
+    if (romano && romano.indexOf('/') >= 0) return 'Dominante secundaria';
+    if (cifra === '64') return 'Cadencial 6/4';
+    if (papel === 'final') return 'Cadencia';
+    if (CIFRAS_DISMINUIDO.includes(cifra)) return 'Séptima disminuida';
+    if (CIFRAS_SEPTIMA.includes(cifra)) return 'Séptima de dominante';
+    if (cifra === '6' || cifra === '64') return 'Inversión de tríada';
+    return 'Tríada en estado fundamental';
+  }
+
+  // Los contenidos de la práctica, con fallos y apariciones, igual que porContenido()
+  function porContenidoCurso() {
+    if (!p) return [];
+    const m = new Map();
+    p.notas.forEach(x => {
+      const k = x.contenido || '?';
+      const v = m.get(k) || { contenido: k, veces: 0, fallos: 0 };
+      v.veces++; if (!x.bien) v.fallos++;
+      m.set(k, v);
+    });
+    return [...m.values()].sort((a, b) => (b.fallos - a.fallos) || (b.veces - a.veces));
+  }
+
+  const contenidosCurso = () => porContenidoCurso().map(x => x.contenido + '=' + x.fallos + '/' + x.veces).join(' | ');
+
   function gradoDelBajo(nota, ton) {
     try {
       const g = Teoria.grado(Teoria.nota(nota), ton);
@@ -128,6 +163,9 @@ const Registro = (() => {
         if (!r.okEnlace) falla.push('enlace');
         const esSop = Ejercicios.esSoprano(e);
         const bajo = esSop ? (estado.bajos && estado.bajos[i]) : notas[i];
+        const papel = Ejercicios.esPivote(e, i) ? 'pivote'
+          : i === res.length - 1 ? 'final'
+            : i === 0 ? 'inicio' : '';
         p.notas.push({
           ej: ej.k,
           leccion: ej.leccion,
@@ -137,9 +175,8 @@ const Registro = (() => {
           gradoBajo: bajo ? gradoDelBajo(bajo, ton) : '',
           acorde: etiquetaAcorde(r.modeloRomano, r.modelo),
           funcion: r.modeloFuncion || '',
-          papel: Ejercicios.esPivote(e, i) ? 'pivote'
-            : i === res.length - 1 ? 'final'
-              : i === 0 ? 'inicio' : '',
+          papel,
+          contenido: contenidoDeNota(r.modeloRomano, r.modelo, papel),
           bien: r.ok ? 1 : 0,
           falla: falla.join('+')
         });
@@ -196,6 +233,15 @@ const Registro = (() => {
     return [...m.values()].sort((a, b) => (b.fallos - a.fallos) || (b.veces - a.veces));
   }
 
+  /* Los contenidos de la práctica en una línea, para el formulario del profesor:
+     TODOS los acordes que salieron, con fallos y apariciones, no solo los fallados.
+     Sin el denominador no se pueden sumar prácticas: «el V/V se falló 12 veces» no
+     dice nada si no se sabe si salió 15 veces o 200. Formato «acorde=fallos/veces»,
+     separados por « | », que se lee de un vistazo y se parte con una fórmula. */
+  function contenidosCompactos() {
+    return porContenido().map(x => x.acorde + '=' + x.fallos + '/' + x.veces).join(' | ');
+  }
+
   const mmss = s => (s < 60 ? s + ' s' : Math.floor(s / 60) + ' min ' + String(s % 60).padStart(2, '0') + ' s');
 
   /* Informe en texto: lo que el alumno copia y pega en la tarea de Classroom,
@@ -245,21 +291,46 @@ const Registro = (() => {
   // Detalle nota a nota, para el análisis fino
   function detalleCSV() {
     if (!p) return '';
-    const cab = 'ejercicio;leccion;modo;tonalidad;nota;gradoBajo;acorde;funcion;papel;bien;falla';
-    return [cab].concat(p.notas.map(x => [x.ej, x.leccion, x.modo, x.tonalidad, x.nota, x.gradoBajo, x.acorde, x.funcion, x.papel, x.bien, x.falla].join(';'))).join('\n');
+    const cab = 'ejercicio;leccion;modo;tonalidad;nota;gradoBajo;acorde;funcion;papel;contenido;bien;falla';
+    return [cab].concat(p.notas.map(x => [x.ej, x.leccion, x.modo, x.tonalidad, x.nota, x.gradoBajo, x.acorde, x.funcion, x.papel, x.contenido, x.bien, x.falla].join(';'))).join('\n');
   }
 
   /* ---------- Copia de seguridad en el navegador ----------
      Si el alumno cierra la pestaña antes de enviar, la práctica no se pierde: al
      volver, la aplicación puede ofrecerle enviarla. */
+  /* Al guardar hay que consolidar el reloj: mientras corre, el tiempo vivido está en
+     `desde` (una marca de hora de ESTA sesión), no en `ms`. Si se guardara tal cual, al
+     reanudar en otra sesión esa marca no valdría nada y el tiempo trabajado se perdería. */
+  function instantanea() {
+    if (!p) return null;
+    const r = p.reloj;
+    const ms = r ? r.ms + (r.desde !== null ? Date.now() - r.desde : 0) : 0;
+    return Object.assign({}, p, { reloj: { ms, desde: null } });
+  }
   function guardar() {
-    try { if (p) localStorage.setItem(CLAVE, JSON.stringify(p)); } catch (e) { /* sin almacenamiento */ }
+    try { const s = instantanea(); if (s) localStorage.setItem(CLAVE, JSON.stringify(s)); } catch (e) { /* sin almacenamiento */ }
   }
   function recuperar() {
     try { const t = localStorage.getItem(CLAVE); return t ? JSON.parse(t) : null; } catch (e) { return null; }
   }
+
+  /* Retoma una práctica guardada (el alumno cerró la pestaña a media ficha).
+     Dos cuidados: el reloj guardado trae un «desde» de otra sesión, que hay que
+     descartar para no contar como trabajo el rato que estuvo cerrada; y el detalle
+     del ejercicio que quedó a medias se tira, porque ese ejercicio se repite entero
+     y si no se contaría dos veces. */
+  function restaurar(guardada) {
+    if (!guardada || !guardada.ejercicios) return null;
+    p = guardada;
+    p.reloj = { ms: (p.reloj && p.reloj.ms) || 0, desde: document.hidden ? null : Date.now() };
+    const hechos = p.ejercicios.length;
+    p.notas = (p.notas || []).filter(x => x.ej <= hechos);
+    ej = null; reloj = null;
+    guardar();
+    return p;
+  }
   function olvidar() { try { localStorage.removeItem(CLAVE); } catch (e) { /* nada */ } }
 
   return { iniciarPractica, iniciarEjercicio, cerrarEjercicio, anotarCorreccion, fijarAlumno,
-    resumen, porContenido, informeTexto, detalleCSV, codigo, recuperar, olvidar, mmss, fechaLocal };
+    resumen, porContenido, contenidosCompactos, porContenidoCurso, contenidosCurso, informeTexto, detalleCSV, codigo, recuperar, restaurar, olvidar, mmss, fechaLocal };
 })();

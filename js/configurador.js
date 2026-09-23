@@ -83,19 +83,27 @@
   const modoElegido = () => (document.querySelector('input[name="modo-ej"]:checked') || {}).value || 'armonizar';
   const elegirModo = m => { const r = document.querySelector('input[name="modo-ej"][value="' + m + '"]'); if (r) r.checked = true; };
 
+  /* Las opciones que ve el alumno son UNAS, no dos juegos (decisión 66). Antes había
+     un juego en el paso 3 y otro en la ficha, y cuatro de los del paso 3 se colaban
+     en la ficha sin que se viera. Ahora todas viven en la zona A y de ahí las leen
+     tanto la ficha como la vista previa y el enlace de un fragmento suelto. */
   function opciones() {
-    const pref = $('#preferir').value;
-    return { pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
-      modo: modoElegido(), preferir: pref ? [pref] : [], tonalidades: $('#tonalidades').value, bajoAudicion: $('#bajo-audicion').value === 'bajo',
+    const pref = $('#ficha-preferir').value;
+    const fun = $('#ficha-funciones').value;
+    return { pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked,
+      ayudaGrados: $('#ficha-ayuda-grados').value,
+      modo: modoElegido(), preferir: pref ? [pref] : [], tonalidades: $('#ficha-tonalidades').value,
+      bajoAudicion: $('#bajo-audicion').value === 'bajo',
       gradosBajo: $('#grados-bajo').value === '1',
-      funciones: $('#funciones').value === 'dadas' || $('#funciones').value === 'pedir' ? $('#funciones').value : null };
+      funciones: fun === 'dadas' || fun === 'pedir' ? fun : null };
   }
   // Campos y rótulos que dependen del tipo de ejercicio: la opción «qué ve el alumno en
   // Audición» y, en la melodía de soprano, los textos del paso 1 (la voz dada es la melodía)
   function ajustarCampoAudicion() {
-    $('#campo-bajo-audicion').hidden = modoElegido() !== 'audicion';
+    const sel = $('#ficha-modo');
+    $('#campo-bajo-audicion').hidden = (sel && sel.value ? sel.value : modoElegido()) !== 'audicion';
     const sop = esSoprano();
-    $('#titulo-voz').textContent = sop ? 'La melodía' : 'El bajo';
+    $('#titulo-voz').textContent = 'El fragmento en curso · ' + (sop ? 'la melodía' : 'el bajo');
     $('#etiqueta-voz').textContent = sop ? 'Escribe la melodía (soprano)' : 'Escribe el bajo';
     $('#texto-bajo').placeholder = sop ? 'mi4 fa4n mi4n | re4 si3 | do4r' : 'do3 re3 | mi3 do3 | sol3r | do3r';
     $('#ayuda-octava-soprano').hidden = !sop;
@@ -576,6 +584,7 @@
   function cargarMusicXML(r, nombre) {
     estado.banco = null; pintarOrigenBanco();
     estado.fragmentos = r.fragmentos;
+    abrirAnadir(); abrirFragmento();
     estado.nombreArchivo = nombre;
     const cont = $('#lista-fragmentos');
     cont.innerHTML = '';
@@ -627,19 +636,20 @@
     document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (ej.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
     $('#pedir-romano').checked = ej.pedirRomano !== false;
     $('#reintentos').checked = ej.reintentos !== false;
-    $('#ayuda-grados').value = Ejercicios.ayudaGrados(ej);
+    $('#ficha-ayuda-grados').value = Ejercicios.ayudaGrados(ej);
     $('#grados-bajo').value = Ejercicios.gradosBajo(ej) ? '1' : '';
     elegirModo(Ejercicios.modo(ej));
     $('#bajo-audicion').value = ej.mostrarBajo === true ? 'bajo' : '';
-    $('#funciones').value = Ejercicios.funciones(ej) || '';
+    $('#ficha-funciones').value = Ejercicios.funciones(ej) || '';
     estado.funciones = Array.isArray(ej.funcionesNotas) ? ej.funcionesNotas.slice() : null;
     if (Array.isArray(ej.acordes)) marcarAcordes(ej.acordes);
     $('#formula-tst').checked = ej.formulaTST !== false;
     ajustarCampoAudicion();
-    $('#preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
+    $('#ficha-preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
     estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
-    $('#tonalidades').value = ['dadas', 'pedir', 'no'].includes(ej.tonalidades) ? ej.tonalidades : '';
+    $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ej.tonalidades) ? ej.tonalidades : '';
     estado.compases = ej.compases;
+    abrirFragmento();
     estado.respuestas = ej.respuestas.map(a => a.slice());
     try { estado.propuesta = proponerPara(ej, estado.funciones); } catch (e) { estado.propuesta = null; }
     leerBajo();
@@ -649,6 +659,12 @@
     aviso('Ejercicio cargado desde el archivo.');
   }
 
+  /* El fragmento en curso vive en un plegable (decisión 66): se abre solo cuando hay
+     algo que mirar dentro —al cargar del banco o al importar un archivo—, para que no
+     estorbe el resto del tiempo. */
+  function abrirFragmento() { const d = $('#paso-bajo'); if (d) d.open = true; }
+  function abrirAnadir() { const d = $('#det-anadir'); if (d) d.open = true; }
+
   /* ---------- Borrador ---------- */
 
   function guardarBorrador() {
@@ -656,14 +672,17 @@
       localStorage.setItem(CLAVE_BORRADOR, JSON.stringify({
         texto: $('#texto-bajo').value, tonica: $('#tonica').value, modo: $('#modo').value, compas: $('#compas').value,
         titulo: $('#titulo').value, coleccion: $('#coleccion').value, repertorio: repertorio(),
-        pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked, ayudaGrados: $('#ayuda-grados').value,
-        tipo: modoElegido(), preferir: $('#preferir').value, respuestas: estado.respuestas,
+        pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked,
+        tipo: modoElegido(), respuestas: estado.respuestas,
         bancoId: estado.banco ? estado.banco.entrada.id : null, bancoVoz: estado.banco ? estado.banco.voz : null,
-        modulaciones: estado.modulaciones, tonalidades: $('#tonalidades').value, bajoAudicion: $('#bajo-audicion').value,
+        modulaciones: estado.modulaciones, bajoAudicion: $('#bajo-audicion').value,
         gradosBajo: $('#grados-bajo').value,
         fichaAyudaGrados: $('#ficha-ayuda-grados').value, fichaPreferir: $('#ficha-preferir').value, fichaFunciones: $('#ficha-funciones').value,
         fichaTonalidades: $('#ficha-tonalidades').value,
-        funciones: $('#funciones').value, funcionesNotas: estado.funciones,
+        // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
+        ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
+          '#ficha-modula', '#ficha-n', '#ficha-titulo'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
+        funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
     } catch (e) { /* sin almacenamiento: no pasa nada */ }
@@ -679,12 +698,18 @@
       $('#texto-bajo').value = b.texto || ''; $('#tonica').value = b.tonica || 'C'; $('#modo').value = modoTon;
       $('#compas').value = b.compas || '4/4'; $('#titulo').value = b.titulo || ''; $('#coleccion').value = b.coleccion || '';
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
-      $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#ayuda-grados').value = b.ayudaGrados || 'lista'; $('#grados-bajo').value = b.gradosBajo === '' ? '' : '1';
-      $('#ficha-ayuda-grados').value = b.fichaAyudaGrados || 'lista'; $('#ficha-preferir').value = b.fichaPreferir || ''; $('#ficha-funciones').value = b.fichaFunciones || '';
-      $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(b.fichaTonalidades) ? b.fichaTonalidades : '';
-      elegirModo(tipo); $('#preferir').value = b.preferir || '';
+      $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#grados-bajo').value = b.gradosBajo === '' ? '' : '1';
+      /* Las opciones del alumno viven ahora solo en la ficha (decisión 66). En un borrador
+         antiguo estaban por duplicado: se recogen las de la ficha y, si no las hubiera,
+         las del paso 3 de entonces, para no perder lo que hubiera elegido. */
+      $('#ficha-ayuda-grados').value = b.fichaAyudaGrados || b.ayudaGrados || 'lista';
+      $('#ficha-preferir').value = b.fichaPreferir || b.preferir || '';
+      $('#ficha-funciones').value = b.fichaFunciones || (b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '');
+      const ton = b.fichaTonalidades || b.tonalidades;
+      $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ton) ? ton : '';
+      estado.fichaGuardada = b.ficha && typeof b.ficha === 'object' ? b.ficha : null;
+      elegirModo(tipo);
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
-      $('#funciones').value = b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '';
       estado.funciones = Array.isArray(b.funcionesNotas) ? b.funcionesNotas : null;
       if (Array.isArray(b.acordes)) marcarAcordes(b.acordes);
       $('#formula-tst').checked = b.formulaTST !== false;
@@ -696,7 +721,6 @@
         const e = banco.find(x => x.id === b.bancoId);
         if (e && e[b.bancoVoz]) estado.banco = { entrada: e, voz: b.bancoVoz };
       }
-      $('#tonalidades').value = ['dadas', 'pedir', 'no'].includes(b.tonalidades) ? b.tonalidades : '';
       leerBajo();
       ajustarCampoModulacion();
       if (b.respuestas && b.respuestas.length === Ejercicios.numNotas({ compases: estado.compases })) {
@@ -782,16 +806,16 @@
     }
 
     $('#texto-bajo').addEventListener('input', () => { estado.banco = null; pintarOrigenBanco(); estado.companera = null; leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
-    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ayuda-grados', '#preferir', '#tonalidades', '#bajo-audicion', '#grados-bajo'].forEach(sel => {
+    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-tonalidades', '#bajo-audicion', '#grados-bajo'].forEach(sel => {
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
-    $('#funciones').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) { if (esSoprano()) analizar(true, true); else pintarRevision(); } });
+    $('#ficha-funciones').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) { if (esSoprano()) analizar(true, true); else pintarRevision(); } });
     // Si cambia la tonalidad inicial, las modulaciones dejan de tener sentido
     ['#tonica', '#modo'].forEach(sel => $(sel).addEventListener('change', () => { if (estado.modulaciones.length) { estado.modulaciones = []; if (estado.respuestas) analizar(); } }));
     document.querySelectorAll('input[name="modo-ej"]').forEach(r => r.addEventListener('change', () => {
       // La armonización de soprano parte de la función tonal de cada acorde: si no había fila, se activa
-      if (esSoprano() && !$('#funciones').value) $('#funciones').value = 'dadas';
+      if (esSoprano() && !$('#ficha-funciones').value) $('#ficha-funciones').value = 'dadas';
       ajustarCampoAudicion(); limpiarDireccion();
       // Entre bajo dado y melodía de soprano cambia la voz dada y la forma de las respuestas
       const eraSoprano = estado.respuestas && estado.respuestas.some(a => a.some(x => String(x).includes('|')));
@@ -983,6 +1007,7 @@
   function pintarBanco() {
     const hay = banco.length > 0;
     $('#banco-cuerpo').hidden = !hay;
+    const caja = $('#banco-tabla'); if (caja) caja.hidden = !hay;
     $('#btn-banco-descargar').disabled = !hay;
     $('#btn-banco-vaciar').disabled = !hay;
     if (!hay) { $('#banco-resumen').textContent = 'El banco está vacío.'; return; }
@@ -1097,6 +1122,7 @@
     estado.banco = { entrada: e, voz: Banco.vozDeModo(modo) };
     pintarOrigenBanco();
     guardarBorrador();
+    abrirFragmento();
     $('#paso-bajo').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -1262,6 +1288,19 @@
     sel.value = 'armonizar';
     leerBanco();
     pintarBanco();
+    /* El filtro guardado se repone DESPUÉS de llenar los desplegables (el de lecciones
+       lo llena pintarBanco con las que hay en el banco), y se vuelve a pintar con él. */
+    const g = estado.fichaGuardada;
+    if (g) {
+      Object.keys(g).forEach(id => {
+        const e = $(id);
+        if (!e || g[id] === undefined || g[id] === '') return;
+        if (e.tagName === 'SELECT' && ![...e.options].some(o => o.value === g[id])) return;
+        e.value = g[id];
+      });
+      pintarBanco();
+      ajustarCampoAudicion();
+    }
     if (!banco.length) bancoPublicado();
     $('#btn-banco-anadir').addEventListener('click', anadirAlBanco);
     $('#btn-banco-guardar').addEventListener('click', guardarEnBanco);
@@ -1289,8 +1328,10 @@
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n',
      '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades'].forEach(id => {
-      $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); guardarBorrador(); });
+      $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador(); });
     });
+    // El título de la ficha no filtra nada, pero sí conviene no perderlo al recargar
+    $('#ficha-titulo').addEventListener('input', () => { limpiarFicha(); guardarBorrador(); });
   }
   function limpiarFicha() {
     $('#ficha-direccion').value = '';
