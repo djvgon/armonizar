@@ -191,7 +191,14 @@ const Reglas = (() => {
       case 2: return R(['+6', '6'], 'Grado 2: +6 (V7 en segunda inversión); también VII6.', 'R7 RO');
       case 3: return R(['6'], 'Grado 3: primera inversión de la tónica.', 'R7 RO');
       case 4:
-        if (s === '2asc') return R(['65', '53'], 'Grado 4 que asciende a grado 5: 6/5 (o IV).', 'R7 RO');
+        /* Grado 4 que sube al 5: la subdominante que va a la dominante. El orden es el de
+           Diego (decisión 76): primero el 6/5 (II6/5, la respuesta de la RO, que además trae
+           la tónica); si la lección todavía no lo tiene, **II6 antes que IV**, porque IV → V
+           con los dos acordes en estado fundamental es el tropiezo clásico de las quintas
+           paralelas. El IV solo cuando la melodía trae la tónica —que el II6 no contiene—, y
+           de eso se encarga solo el desempate por voz compañera de más abajo. Es además lo
+           que ya hacía R5 para el 4.º grado entre el 6.º y el 5.º: ahora R7 dice lo mismo. */
+        if (s === '2asc') return R(['65', '6', '53'], 'Grado 4 que asciende a grado 5: 6/5; si la lección no lo tiene, II6 (IV solo si la melodía trae la tónica).', 'R7 RO');
         if (s === '2desc') {
           if (c.llegada === '2desc') return R(['+4'], 'Grado 4 que desciende de grado 5 a grado 3: +4 (V7 en tercera inversión).', 'R7 RO');
           return R(['+4', '53'], 'Grado 4 que desciende a grado 3 (llegando por salto): +4, o IV.', 'R7 RO');
