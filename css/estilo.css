@@ -545,3 +545,6 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 
 .configurador .desfase ul { margin: .3rem 0 .5rem; padding-left: 1.2rem; }
 .configurador .desfase li { margin: .15rem 0; }
+/* El desfase en el que la copia local va por detrás: rojo, porque ahí descargar y subir
+   borra fragmentos para los alumnos (decisión 79). */
+.configurador .desfase.peligro { background: #fdf1ef; border-color: #e0a89f; border-left-color: #c0564a; }

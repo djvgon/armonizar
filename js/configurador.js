@@ -1319,23 +1319,52 @@
 
   const listaCorta = ids => ids.slice(0, 6).join(', ') + (ids.length > 6 ? ' y ' + (ids.length - 6) + ' más' : '');
 
+  /* ¿Quién va por delante? (decisión 79)
+     Cuando el PUBLICADO tiene fragmentos que aquí no están, lo más probable con diferencia
+     es que la copia de este navegador se haya quedado vieja: uno no borra fragmentos por
+     accidente, pero sí abre el configurador en un navegador que lleva semanas sin mirar.
+     Cuando los fragmentos de más están AQUÍ, es al revés. Y si solo cambia lo que dicen
+     algunos, no hay manera de saberlo y no se finge que sí. */
+  function direccionDesfase(d) {
+    if (d.faltan.length && !d.nuevos.length) return 'atrasado';   // al publicado le sobran: este navegador va detrás
+    if (d.nuevos.length && !d.faltan.length) return 'adelantado'; // aquí hay cosas que no están subidas
+    return 'incierto';
+  }
+
   function pintarDesfase() {
     const caja = $('#banco-desfase');
     if (!caja) return;
     const d = comparaConPublicado();
     if (!d || !d.sinPublicar) { caja.hidden = true; return; }
     if (caja.dataset.cerrado === '1') return;        // «Ahora no»: vuelve a salir al recargar
+    const dir = direccionDesfase(d);
     const ul = $('#banco-desfase-lista');
     ul.innerHTML = '';
     const linea = txt => { const li = document.createElement('li'); li.textContent = txt; ul.appendChild(li); };
-    if (d.modificados.length) linea('Aquí has cambiado ' + d.modificados.length
-      + (d.modificados.length > 1 ? ' fragmentos: ' : ' fragmento: ') + listaCorta(d.modificados));
-    if (d.nuevos.length) linea('Aquí hay ' + d.nuevos.length
-      + (d.nuevos.length > 1 ? ' fragmentos nuevos: ' : ' fragmento nuevo: ') + listaCorta(d.nuevos));
-    if (d.faltan.length) linea('En el publicado hay ' + d.faltan.length
-      + (d.faltan.length > 1 ? ' que aquí no están: ' : ' que aquí no está: ') + listaCorta(d.faltan));
+    /* Del contenido distinto NO se dice «lo has cambiado tú»: puede ser que la copia de
+       aquí sea la vieja, y afirmarlo llevaba a subir precisamente la mala. */
+    if (d.modificados.length) linea('Dicen cosas distintas aquí y en el publicado: ' + listaCorta(d.modificados)
+      + (d.modificados.length > 1 ? ' (' + d.modificados.length + ' fragmentos)' : ''));
+    if (d.nuevos.length) linea('Solo están aquí, no en el publicado: ' + listaCorta(d.nuevos));
+    if (d.faltan.length) linea('Están en el publicado y aquí no: ' + listaCorta(d.faltan));
     linea('En total: ' + banco.length + ' fragmentos aquí y ' + estado.publicado.n + ' publicados'
-      + (estado.publicado.creado ? ' (' + estado.publicado.creado + ')' : '') + '.');
+      + (estado.publicado.creado ? ', del ' + estado.publicado.creado : '') + '.');
+
+    const titulo = $('#banco-desfase-titulo'), pista = $('#banco-desfase-pista');
+    const bDesc = $('#btn-desfase-descargar'), bCarg = $('#btn-desfase-cargar');
+    bDesc.classList.toggle('primario', dir === 'adelantado');
+    bCarg.classList.toggle('primario', dir === 'atrasado');
+    caja.classList.toggle('peligro', dir === 'atrasado');
+    if (dir === 'atrasado') {
+      titulo.textContent = 'La copia de este navegador se ha quedado atrás.';
+      pista.textContent = 'El banco publicado tiene fragmentos que aquí no están, así que lo más seguro es que esta copia sea la vieja. Carga el publicado. Ojo: si descargas y subes lo de aquí, esos fragmentos desaparecerán para los alumnos.';
+    } else if (dir === 'adelantado') {
+      titulo.textContent = 'Tienes cambios sin subir.';
+      pista.textContent = 'Aquí hay fragmentos que no están publicados. Descarga banco.json y súbelo a GitHub: hasta entonces los alumnos siguen viendo el banco anterior.';
+    } else {
+      titulo.textContent = 'El banco de este navegador no coincide con el publicado.';
+      pista.textContent = 'Hay el mismo número de fragmentos pero alguno dice cosas distintas, así que la aplicación no puede saber cuál es el bueno. Si lo que vale es lo de aquí, descárgalo y súbelo; si ya subiste tus cambios desde otro sitio, carga el publicado.';
+    }
     caja.hidden = false;
   }
 
@@ -1431,6 +1460,19 @@
   }
 
   function descargarBanco() {
+    /* Red de seguridad (decisión 79). Descargar es el paso previo a subir, y subir un banco
+       más corto que el publicado borra fragmentos para los alumnos sin que nadie lo note.
+       Si este navegador va por detrás, se pregunta antes. */
+    const d = comparaConPublicado();
+    if (d && d.faltan.length) {
+      const msg = 'Cuidado: el banco publicado tiene ' + d.faltan.length
+        + (d.faltan.length > 1 ? ' fragmentos que aquí no están (' : ' fragmento que aquí no está (')
+        + listaCorta(d.faltan) + ').\n\nSi subes este archivo a GitHub, '
+        + (d.faltan.length > 1 ? 'desaparecerán' : 'desaparecerá') + ' para los alumnos.'
+        + '\n\nSi lo que querías era ponerte al día, cancela y pulsa «Cargar el banco publicado».'
+        + '\n\n¿Descargar de todas formas?';
+      if (!confirm(msg)) return;
+    }
     const blob = new Blob([JSON.stringify(Banco.archivo(banco), null, 1)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -1554,6 +1596,9 @@
     window.addEventListener('beforeunload', ev => {
       const d = comparaConPublicado();
       if (!d || !d.sinPublicar) return;
+      /* Solo cuando hay algo AQUÍ que perder. Si esta copia es la que va por detrás, no hay
+         nada que salvar y preguntar en cada salida sería una lata (decisión 79). */
+      if (direccionDesfase(d) === 'atrasado') return;
       ev.preventDefault();
       ev.returnValue = '';
       return '';
