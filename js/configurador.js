@@ -740,11 +740,11 @@
 
   /* ---------- Utilidades de interfaz ---------- */
 
-  function aviso(txt) {
+  function aviso(txt, ms) {
     const a = $('#aviso');
     a.textContent = txt; a.hidden = false;
     clearTimeout(aviso.t);
-    aviso.t = setTimeout(() => { a.hidden = true; }, 4500);
+    aviso.t = setTimeout(() => { a.hidden = true; }, ms || 4500);
   }
 
   function pintarRepertorio() {
@@ -1149,6 +1149,26 @@
   /* ---------- Borrador ---------- */
 
   // Trae un fragmento del banco al paso 1, para revisarlo o retocarlo
+  /* ---------- Ir a un fragmento por su identificador (decisión 73) ----------
+     Con 131 fragmentos, la única manera de decir «mira este» era el Cmd+F del navegador.
+     Ahora el id es una dirección: la casilla de búsqueda de la tabla y, sobre todo,
+     `configurar.html#id=A3-4-04`, que se puede pegar en un mensaje y abre el fragmento
+     cargado y listo para corregir. El fragmento se abre aunque no cumpla el filtro de la
+     ficha —es lo que se quiere cuando a uno le mandan un enlace—, y entonces se avisa,
+     porque el recorrido con las flechas sí va por el filtro. */
+  function abrirPorId(id, silencioso) {
+    const busca = String(id || '').trim().toUpperCase();
+    if (!busca) return false;
+    const e = banco.find(x => String(x.id || '').toUpperCase() === busca);
+    if (!e) { if (!silencioso) aviso('No hay ningún fragmento con el id «' + id + '» en el banco.'); return false; }
+    // Se abre con la voz que tenga: si no hay bajo, la melodía
+    const modo = e[Banco.vozDeModo(filtroFicha().modo)] ? filtroFicha().modo : (e.bajo ? 'armonizar' : 'soprano');
+    cargarDelBanco(e, modo);
+    const enFiltro = Banco.filtrar(banco, Object.assign({}, filtroFicha(), { conAvisos: true })).some(x => x.id === e.id);
+    if (!enFiltro) aviso('Abierto ' + e.id + '. Ojo: no cumple el filtro de arriba, así que las flechas de recorrido no pasan por él.', 7000);
+    return true;
+  }
+
   function cargarDelBanco(e, modo) {
     const parte = e[Banco.vozDeModo(modo)];
     if (!parte) { aviso('Ese fragmento no tiene esa voz escrita.'); return; }
@@ -1418,6 +1438,22 @@
     });
     // El título de la ficha no filtra nada, pero sí conviene no perderlo al recargar
     $('#ficha-titulo').addEventListener('input', () => { limpiarFicha(); guardarBorrador(); });
+
+    /* Búsqueda por id: la casilla, el botón y el Enter hacen lo mismo. */
+    const buscar = () => { if (abrirPorId($('#banco-buscar').value)) $('#banco-buscar').value = ''; };
+    $('#btn-banco-buscar').addEventListener('click', buscar);
+    $('#banco-buscar').addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); buscar(); } });
+
+    /* `configurar.html#id=A3-4-04` abre ese fragmento al cargar la página, y también si se
+       cambia el hash con la página ya abierta (así funcionan varios enlaces seguidos de una
+       lista). El hash se limpia después para que recargar no vuelva a saltar al fragmento. */
+    const porHash = silencioso => {
+      const m = /^#id=(.+)$/i.exec(location.hash || '');
+      if (!m) return;
+      if (abrirPorId(decodeURIComponent(m[1]), silencioso)) history.replaceState(null, '', location.pathname + location.search);
+    };
+    window.addEventListener('hashchange', () => porHash(false));
+    porHash(false);
   }
   function limpiarFicha() {
     $('#ficha-direccion').value = '';

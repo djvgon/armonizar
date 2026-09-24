@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260925-0420">
-  <link rel="stylesheet" href="css/estilo.css?v=20260925-0420">
+  <link rel="stylesheet" href="css/bravura.css?v=20260925-0545">
+  <link rel="stylesheet" href="css/estilo.css?v=20260925-0545">
 </head>
 <body class="configurador">
 
@@ -182,6 +182,12 @@
       <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifras que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Vive <b>en este navegador</b>: para que las fichas funcionen hay que descargarlo como <code>banco.json</code> y subirlo a GitHub junto a la aplicación.</p>
 
       <div id="banco-tabla" hidden>
+        <p class="buscar-id">
+          <label for="banco-buscar">Ir a un fragmento por su id</label>
+          <input type="search" id="banco-buscar" placeholder="A3-7-09" autocomplete="off" spellcheck="false">
+          <button type="button" id="btn-banco-buscar">Abrir</button>
+          <span class="ayuda" id="banco-buscar-ayuda">Lo abre en «El fragmento en curso», esté o no dentro del filtro. También funciona desde fuera: <code>configurar.html#id=A3-7-09</code>.</span>
+        </p>
         <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifras de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
         <div class="tabla-caja">
           <table id="tabla-banco" class="tabla-revision tabla-banco">
@@ -398,17 +404,17 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260925-0420</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260925-0545</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260925-0420"></script>
-  <script src="js/reglas.js?v=20260925-0420"></script>
-  <script src="js/ejercicios.js?v=20260925-0420"></script>
-  <script src="js/partitura.js?v=20260925-0420"></script>
-  <script src="js/musicxml.js?v=20260925-0420"></script>
-  <script src="js/musescore.js?v=20260925-0420"></script>
-  <script src="js/banco.js?v=20260925-0420"></script>
-  <script src="js/realizacion.js?v=20260925-0420"></script>
-  <script src="js/configurador.js?v=20260925-0420"></script>
+  <script src="js/teoria.js?v=20260925-0545"></script>
+  <script src="js/reglas.js?v=20260925-0545"></script>
+  <script src="js/ejercicios.js?v=20260925-0545"></script>
+  <script src="js/partitura.js?v=20260925-0545"></script>
+  <script src="js/musicxml.js?v=20260925-0545"></script>
+  <script src="js/musescore.js?v=20260925-0545"></script>
+  <script src="js/banco.js?v=20260925-0545"></script>
+  <script src="js/realizacion.js?v=20260925-0545"></script>
+  <script src="js/configurador.js?v=20260925-0545"></script>
 </body>
 </html>
