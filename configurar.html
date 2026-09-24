@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260925-0710">
-  <link rel="stylesheet" href="css/estilo.css?v=20260925-0710">
+  <link rel="stylesheet" href="css/bravura.css?v=20260925-0950">
+  <link rel="stylesheet" href="css/estilo.css?v=20260925-0950">
 </head>
 <body class="configurador">
 
@@ -180,6 +180,22 @@
     <section class="paso" id="paso-banco">
       <h2><span class="num">B</span> El banco de fragmentos</h2>
       <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifras que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Vive <b>en este navegador</b>: para que las fichas funcionen hay que descargarlo como <code>banco.json</code> y subirlo a GitHub junto a la aplicación.</p>
+
+      <!-- El banco de este navegador y el publicado no coinciden (decisiones 77 y 78).
+           Un solo cartel, porque la diferencia es una sola: lo que cambia es en qué dirección.
+           La aplicación no puede saber cuál de los dos es el bueno —puede que hayas corregido
+           aquí sin subir, o que hayas subido desde otro sitio—, así que ofrece las dos salidas
+           y decide el profesor. -->
+      <div id="banco-desfase" class="desfase" hidden>
+        <p><b>El banco de este navegador no coincide con el publicado.</b></p>
+        <ul id="banco-desfase-lista"></ul>
+        <p class="ayuda">Mientras no subas <code>banco.json</code> a GitHub, los alumnos siguen viendo el banco publicado. Si lo que vale es lo que hay aquí, descárgalo y súbelo; si ya subiste tus cambios desde otro sitio, carga el publicado.</p>
+        <p class="botonera-desfase">
+          <button type="button" id="btn-desfase-descargar" class="primario">Descargar banco.json</button>
+          <button type="button" id="btn-desfase-cargar">Cargar el banco publicado</button>
+          <button type="button" id="btn-desfase-cerrar">Ahora no</button>
+        </p>
+      </div>
 
       <div id="banco-tabla" hidden>
         <p class="buscar-id">
@@ -404,17 +420,17 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260925-0710</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260925-0950</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260925-0710"></script>
-  <script src="js/reglas.js?v=20260925-0710"></script>
-  <script src="js/ejercicios.js?v=20260925-0710"></script>
-  <script src="js/partitura.js?v=20260925-0710"></script>
-  <script src="js/musicxml.js?v=20260925-0710"></script>
-  <script src="js/musescore.js?v=20260925-0710"></script>
-  <script src="js/banco.js?v=20260925-0710"></script>
-  <script src="js/realizacion.js?v=20260925-0710"></script>
-  <script src="js/configurador.js?v=20260925-0710"></script>
+  <script src="js/teoria.js?v=20260925-0950"></script>
+  <script src="js/reglas.js?v=20260925-0950"></script>
+  <script src="js/ejercicios.js?v=20260925-0950"></script>
+  <script src="js/partitura.js?v=20260925-0950"></script>
+  <script src="js/musicxml.js?v=20260925-0950"></script>
+  <script src="js/musescore.js?v=20260925-0950"></script>
+  <script src="js/banco.js?v=20260925-0950"></script>
+  <script src="js/realizacion.js?v=20260925-0950"></script>
+  <script src="js/configurador.js?v=20260925-0950"></script>
 </body>
 </html>
