@@ -5493,8 +5493,7 @@
       "53"
      ],
      [
-      "+4",
-      "53"
+      "+4"
      ],
      [
       "6"
@@ -15960,8 +15959,7 @@
       "53"
      ],
      [
-      "65",
-      "7"
+      "65"
      ],
      [
       "+4"
@@ -18829,6 +18827,20 @@
     "modulaciones": [
      {
       "nota": 5,
+      "tonalidad": {
+       "tonica": "G",
+       "modo": "mayor"
+      }
+     },
+     {
+      "nota": 11,
+      "tonalidad": {
+       "tonica": "D",
+       "modo": "mayor"
+      }
+     },
+     {
+      "nota": 12,
       "tonalidad": {
        "tonica": "G",
        "modo": "mayor"
