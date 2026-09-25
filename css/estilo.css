@@ -453,14 +453,17 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
   svg.partitura { min-width: 560px; max-width: none; }   /* no se encoge: se desplaza en horizontal y las casillas siguen siendo pulsables */
   .paletas {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
-    padding: 4px 8px 6px; background: var(--papel);
+    padding: 1px 8px 3px; background: var(--papel);
     border-top: 1px solid var(--linea); box-shadow: 0 -4px 14px rgba(0,0,0,.08);
   }
   /* El rótulo, también aquí A LA IZQUIERDA y en el mismo renglón que las teclas
      (decisión 111): cada paleta se ahorra su línea de título, que en el móvil es lo que
      de verdad falta. Va en una columna estrecha y con el texto CORTO —«Función» en vez de
      «Función tonal»—, para dejarle a las teclas todo el ancho que se pueda. */
-  .paleta-caja { margin-top: 1px; padding: 2px 3px 3px; border-radius: 8px; gap: 5px; align-items: center; }
+  /* Los renglones, PEGADOS uno al siguiente (decisión 112): sin margen entre cajas y sin
+     relleno arriba ni abajo. Lo que separa visualmente un renglón del de abajo es el
+     hueco propio de las teclas; el recuadro de la paleta activa queda ceñido a ellas. */
+  .paleta-caja { margin-top: 0; padding: 0 3px; border-radius: 8px; gap: 5px; align-items: center; }
   .tecla { padding: 2px 4px; }
   .paleta-etiqueta { flex: 0 0 3.4rem; font-size: .58rem; letter-spacing: .02em; line-height: 1.1; text-align: right; }
   .etq-larga { display: none; }

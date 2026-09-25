@@ -731,9 +731,17 @@ const Ejercicios = (() => {
        'no'    → no hay fila. Si el fragmento modula, se cifra igualmente en las tonalidades
                  verdaderas, pero no se le dicen: es la modulación SIN ANUNCIAR
        ausente → como siempre: fila dada si el fragmento modula, nada si no modula. Los
-                 enlaces antiguos, que llevan `aviso`, siguen valiendo. */
+                 enlaces antiguos, que llevan `aviso`, siguen valiendo.
+
+     Pedir lo que no hay que pedir no es pedir (decisión 112). La opción 'pedir' es de la
+     FICHA entera, y en una ficha la mayoría de los fragmentos no modulan: en ellos la fila
+     «Tonalidad» no tiene nada que recoger y la paleta de tonos —cinco teclas y un renglón
+     entero del teclado del móvil— no sirve para nada. Así que 'pedir' solo pide donde hay
+     modulación; donde no la hay, no hay fila. No se descubre nada con ello: el enunciado
+     ya dice «este fragmento modula» cuando modula. */
   function tonalidades(ej) {
-    if (ej.tonalidades === 'dadas' || ej.tonalidades === 'pedir') return ej.tonalidades;
+    if (ej.tonalidades === 'pedir') return modula(ej) ? 'pedir' : null;
+    if (ej.tonalidades === 'dadas') return 'dadas';
     if (ej.tonalidades === 'no') return null;
     if (!modula(ej)) return null;
     return aviso(ej) === 'existe' ? 'pedir' : 'dadas';
