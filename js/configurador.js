@@ -468,8 +468,13 @@
     const modelos = ej.respuestas.map(a => (a[0] ? Ejercicios.cifraDe(a[0]) : null));
     const mods = Ejercicios.modulaciones(ej);
     const pivotes = new Set(mods.map(m => m.nota));
+    /* La vista previa enseña lo que vería el alumno con el tipo de ficha elegido
+       (decisión 90): en armonización de bajo y audición, el grado del BAJO; en análisis y
+       melodía de soprano, el de la fundamental. */
+    const gradoBajo = Ejercicios.campoGrado({ modo: modoElegido() }) === 'bajo';
     const romanoModelo = (a, i, ton) => {
       if (!a[0]) return null;
+      if (gradoBajo) return Teoria.textoGrado(notas[i], ton);
       if (sop) { const p = Ejercicios.par(a[0]); return Teoria.gradoEscrito(p.romano, p.cifra); }
       return Teoria.romanoEscrito(a[0], notas[i], ton);
     };

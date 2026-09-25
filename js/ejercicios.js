@@ -489,9 +489,33 @@ const Ejercicios = (() => {
      dibujar el acorde enseñaría el bajo que hay que reconocer de oído. */
   function realizacion(ej) { return modo(ej) === 'audicion' ? 'alCerrar' : 'siempre'; }
   function verBajo(ej) { return modo(ej) !== 'audicion' || ej.mostrarBajo === true; }
+  /* ¿Qué grado responde el alumno? (decisión 90)
+       'bajo'         → el grado de la escala que ocupa la NOTA DEL BAJO (1 … 7, con ♯/♭),
+                        que es lo que lo ata a la regla de la octava;
+       'fundamental'  → el grado de la FUNDAMENTAL en romano (I … VII, V/V), el análisis.
+     Va por tipo de ficha. Solo la **armonización de bajo** pide el grado del bajo: es la
+     única en que el bajo está delante y el trabajo consiste en leerlo con la regla de la
+     octava. En **Audición** el bajo no se ve, así que pedir el grado que ocupa en la
+     escala no tendría sentido: lo que hace el alumno es identificar el acorde que suena,
+     que es análisis de oído (criterio de Diego, 25/9/2026). El **Análisis** nombra el
+     acorde, y la **melodía de soprano** necesita la fundamental por fuerza, porque de ella
+     y de la cifra sale el bajo. El profesor puede cambiarlo con `campoGrado`. */
+  function campoGrado(ej) {
+    if (ej && (ej.campoGrado === 'bajo' || ej.campoGrado === 'fundamental')) return ej.campoGrado;
+    return modo(ej) === 'armonizar' ? 'bajo' : 'fundamental';
+  }
+  // El grado de una pareja, en la forma que pida el ejercicio
+  function gradoDe(ej, p) { return p ? (campoGrado(ej) === 'bajo' ? p.gradoBajo : p.romano) : null; }
+
   /* ¿Se dibujan los grados de la escala en circulito sobre el bajo? (decisión 52). Van
-     puestos salvo que el profesor los quite: ej.gradosBajo === false. */
-  function gradosBajo(ej) { return ej.gradosBajo !== false; }
+     puestos salvo que el profesor los quite (`gradosBajo: false`) y —desde la decisión
+     90— salvo que sean justo lo que se le pide al alumno: el circulito sería la respuesta
+     escrita encima de la nota. El profesor puede reponerlos con `gradosBajo: true`. */
+  function gradosBajo(ej) {
+    if (ej.gradosBajo === true) return true;
+    if (ej.gradosBajo === false) return false;
+    return !(campoGrado(ej) === 'bajo' && pideRomano(ej));
+  }
 
   // Nivel de ayuda con los grados: 'ninguna' | 'lista' | 'paleta'
   function ayudaGrados(ej) { return ['ninguna', 'lista', 'paleta'].includes(ej.ayudaGrados) ? ej.ayudaGrados : 'lista'; }
@@ -548,13 +572,30 @@ const Ejercicios = (() => {
   // respuestas admisibles, en orden I … VII.
   function grados(ej) {
     if (Array.isArray(ej.grados) && ej.grados.length) return ej.grados.slice();
+    const bajo = campoGrado(ej) === 'bajo';
     const usados = new Set();
     for (let i = 0; i < ej.respuestas.length; i++) {
-      parejas(ej, i).forEach(p => usados.add(p.romano));
-      if (esPivote(ej, i)) parejasEn(ej, i, tonalidadAntes(ej, i)).forEach(p => usados.add(p.romano));
+      parejas(ej, i).forEach(p => usados.add(gradoDe(ej, p)));
+      if (esPivote(ej, i)) parejasEn(ej, i, tonalidadAntes(ej, i)).forEach(p => usados.add(gradoDe(ej, p)));
     }
-    // Los siete diatónicos y, detrás, los cromáticos (V/V)
+    usados.delete(null); usados.delete(undefined);
+    // Grados del bajo: por número, con las alteraciones junto al suyo. Romanos: I … VII y, detrás, los cromáticos (V/V)
+    if (bajo) return [...usados].sort((a, b) => Teoria.ordenGrado(a) - Teoria.ordenGrado(b));
     return Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS).filter(r => usados.has(r));
+  }
+
+  /* La paleta de grados: lo que se le ofrece al alumno para elegir. Con ayuda 'paleta',
+     solo los que de verdad hacen falta; si no, la escala entera —los siete grados del
+     bajo, o los siete romanos— más los alterados o cromáticos que use el ejercicio. */
+  function paletaGrados(ej) {
+    const usados = grados(ej);
+    if (ayudaGrados(ej) === 'paleta') return usados;
+    if (campoGrado(ej) === 'bajo') {
+      const base = ['1', '2', '3', '4', '5', '6', '7'];
+      return base.concat(usados.filter(g => !base.includes(g)))
+        .sort((a, b) => Teoria.ordenGrado(a) - Teoria.ordenGrado(b));
+    }
+    return Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS.filter(g => usados.includes(g)));
   }
 
   /* ---- Modulación ----
@@ -608,8 +649,16 @@ const Ejercicios = (() => {
     const notas = Teoria.notasDeCompases(ej.compases);
     /* El grado que se devuelve es el ESCRITO: la dominante secundaria se escribe V/V, no II
        (decisión 48). Por dentro, para deducir el bajo, se sigue usando el grado real. */
-    if (esSoprano(ej)) return admisibles(ej, i).map(id => { const p = par(id); const t = Teoria.tonParaAcorde(p.romano, p.cifra, ton, notas[i]); return { id, cifra: p.cifra, romano: Teoria.gradoEscrito(p.romano, p.cifra), bajo: Teoria.bajoDe(p.romano, p.cifra, t) }; });
-    return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.gradoEscrito(Teoria.romano(id, notas[i], ton), id) }));
+    if (esSoprano(ej)) return admisibles(ej, i).map(id => {
+      const p = par(id); const t = Teoria.tonParaAcorde(p.romano, p.cifra, ton, notas[i]);
+      const bajo = Teoria.bajoDe(p.romano, p.cifra, t);
+      return { id, cifra: p.cifra, romano: Teoria.gradoEscrito(p.romano, p.cifra), bajo, gradoBajo: bajo ? Teoria.textoGrado(bajo, ton) : null };
+    });
+    /* `gradoBajo` es el grado de la escala de la nota del bajo (decisión 90). No depende
+       de la cifra —la nota es la que es—, así que sale igual en todas las parejas; se
+       guarda en cada una para que el alumno se corrija con el mismo camino que el romano. */
+    const gb = Teoria.textoGrado(notas[i], ton);
+    return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.gradoEscrito(Teoria.romano(id, notas[i], ton), id), gradoBajo: gb }));
   }
   // Parejas en la tonalidad que rige en la nota (en el pivote, la nueva); la primera es la modelo.
   function parejas(ej, i) { return parejasEn(ej, i, tonalidadEn(ej, i)); }
@@ -657,7 +706,7 @@ const Ejercicios = (() => {
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
+  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, gradoDe, paletaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
     funciones, funcionModelo, funcionesAdmisibles, funcionesDelEjercicio, gradosBajo, bajosDe,
     modulaciones, modula, aviso, tonalidades, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

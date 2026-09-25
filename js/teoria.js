@@ -341,6 +341,22 @@ const Teoria = (() => {
     return { grado: i + 1, alt: n.alt - esc[i].alt };
   }
 
+  /* El grado de la escala tal como se escribe: «4» o, si va alterado, «♯4» / «♭6»
+     (decisión 52). Es lo que va dentro del circulito sobre el bajo y —desde la
+     decisión 90— lo que el alumno responde en la armonización de bajo. */
+  function textoGrado(n, ton) {
+    let g;
+    try { g = grado(n, ton); } catch (e) { return null; }
+    if (!g || !g.grado) return null;
+    return (g.alt > 0 ? '♯' : g.alt < 0 ? '♭' : '') + g.grado;
+  }
+  // Orden de los grados escritos: por número y, dentro, ♭ · natural · ♯
+  function ordenGrado(txt) {
+    const m = String(txt || '').match(/^([♯♭]?)(\d)$/);
+    if (!m) return 99;
+    return Number(m[2]) * 3 + (m[1] === '♭' ? 0 : m[1] === '♯' ? 2 : 1);
+  }
+
   /* Texto → tonalidad: «Sol M», «Sol mayor», «SolM», «sol m», «mi menor», «→ Sol M».
      Sin indicación de modo, la inicial mayúscula se lee como mayor y la minúscula como menor
      (convención española). Devuelve {tonica, modo} o null. */
@@ -841,7 +857,7 @@ const Teoria = (() => {
 
   return {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
-    escalaNatural, escalaVoces, armadura, grado, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
+    escalaNatural, escalaVoces, armadura, grado, textoGrado, ordenGrado, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
     FUNCIONES, FUNCIONES_CROMATICAS, TODAS_FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,

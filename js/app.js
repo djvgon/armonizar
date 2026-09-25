@@ -99,6 +99,7 @@
     estado.romanos = new Array(n).fill(null);
     estado.romanos2 = new Array(n).fill(null);
     estado.pedirRomano = Ejercicios.pideRomano(ej) || Ejercicios.esSoprano(ej);   // en la melodía de soprano el grado es imprescindible: de él sale el bajo
+    estado.campoGrado = Ejercicios.campoGrado(ej);   // 'bajo' | 'fundamental' (decisión 90)
     estado.modoFun = Ejercicios.funciones(ej);
     estado.funciones = estado.modoFun === 'dadas' ? ej.respuestas.map((_, i) => Ejercicios.funcionModelo(ej, i)) : new Array(n).fill(null);
     estado.bajos = new Array(n).fill(null);
@@ -160,7 +161,9 @@
        filas ha de rellenar y qué significan las notas en rojo. */
     const señala = [];
     if (estado.modoFun === 'pedir') señala.push('su <b>función tonal</b>');
-    if (estado.pedirRomano) señala.push('el <b>grado</b> de su fundamental');
+    if (estado.pedirRomano) señala.push(estado.campoGrado === 'bajo'
+      ? 'el <b>grado</b> que la nota del bajo ocupa en la escala'
+      : 'el <b>grado</b> de su fundamental');
     señala.push('el <b>cifrado</b> (la inversión en que lo escribes)');
     const que = señala.length > 1
       ? señala.slice(0, -1).join(', ') + ' y ' + señala[señala.length - 1]
@@ -292,28 +295,36 @@
     pr.innerHTML = '';
     $('#paleta-romanos-caja').hidden = !estado.pedirRomano;
     if (estado.pedirRomano) {
-      /* Los siete grados diatónicos y, detrás, los CROMÁTICOS: la dominante de la
-         dominante (V/V), que no es un grado de la escala sino una dominante secundaria
-         (decisión 48). El V/V solo aparece cuando el ejercicio lo usa o cuando la paleta
-         está completa y la lección lo trae en su repertorio. */
+      /* Según el tipo de ficha (decisión 90): los grados del BAJO en arábigo —1 … 7, con
+         los alterados que use el ejercicio— o los de la FUNDAMENTAL en romano. En romano
+         van los siete diatónicos y, detrás, los CROMÁTICOS: la dominante de la dominante
+         (V/V), que no es un grado de la escala sino una dominante secundaria (decisión
+         48), y que solo aparece cuando el ejercicio la usa o cuando la paleta está
+         completa y la lección la trae en su repertorio. */
+      /* El número pequeño es el del GRADO, no el sitio que ocupa en la paleta (I = 1 …
+         VII = 7), de modo que la tecla es la misma esté la paleta completa o recortada.
+         Con los grados del bajo el número es el grado mismo; los alterados (♯4) comparten
+         cifra con el natural, así que se quedan sin tecla y se pulsan con el ratón. */
       const todos = Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS);
-      const usados = Ejercicios.grados(estado.ejercicio);
-      const permitidos = Ejercicios.ayudaGrados(estado.ejercicio) === 'paleta' ? usados
-        : Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS.filter(g => usados.includes(g)));
-      todos.forEach((r, k) => {
-        if (!permitidos.includes(r)) return;
+      const numeroDe = r => (estado.campoGrado === 'bajo'
+        ? (/^\d$/.test(r) ? Number(r) : null)
+        : (todos.indexOf(r) >= 0 ? todos.indexOf(r) + 1 : null));
+      Ejercicios.paletaGrados(estado.ejercicio).forEach(r => {
+        const k = numeroDe(r);
         const cont = document.createDocumentFragment();
         const txt = document.createElement('span');
         txt.className = 'tecla-romano-texto';
         txt.textContent = r;
         cont.appendChild(txt);
-        const num = document.createElement('span');
-        num.className = 'tecla-num';
-        num.textContent = String(k + 1);
-        cont.appendChild(num);
-        const b = tecla('tecla-romano', cont, 'Grado ' + r + ' (tecla ' + (k + 1) + ')', () => responderRomano(r));
+        if (k !== null) {
+          const num = document.createElement('span');
+          num.className = 'tecla-num';
+          num.textContent = String(k);
+          cont.appendChild(num);
+        }
+        const b = tecla('tecla-romano', cont, 'Grado ' + r + (k !== null ? ' (tecla ' + k + ')' : ''), () => responderRomano(r));
         b.dataset.romano = r;
-        b.dataset.atajo = String(k + 1);
+        if (k !== null) b.dataset.atajo = String(k);
         b.setAttribute('aria-label', 'Grado ' + r);
         pr.appendChild(b);
       });
@@ -905,9 +916,14 @@
       const adm = parejas.map(p => p.cifra);
       const cifra = estado.respuestas[i], rom = estado.romanos[i], rom2 = estado.romanos2[i];
       const okCifra = cifra !== null && adm.includes(cifra);
+      /* El grado se juzga contra las parejas que quedan tras la cifra, cuando la cifra es
+         correcta: así «V» solo vale si la cifra elegida da de verdad un V. Con el grado
+         del BAJO (decisión 90) eso da igual —la nota del bajo es la que es, la cifra no la
+         cambia—, y por eso todas las parejas llevan el mismo `gradoBajo`. */
       const cand = pares => (okCifra ? pares.filter(p => p.cifra === cifra) : pares);
-      const acierta = (pares, r) => r !== null && cand(pares).some(p => p.romano === r);
-      let okRomano = true, okRomano2 = true, modeloRomano = parejas[0].romano;
+      const gr = p => Ejercicios.gradoDe(ej, p);
+      const acierta = (pares, r) => r !== null && cand(pares).some(p => gr(p) === r);
+      let okRomano = true, okRomano2 = true, modeloRomano = gr(parejas[0]);
       if (estado.pedirRomano) {
         const doble = esDoble(i);
         if (l.antes && !hayFilaTonalidad()) {
@@ -917,19 +933,19 @@
           const antes = Ejercicios.parejasEn(ej, i, l.antes);
           okRomano = acierta(parejas, rom) || acierta(antes, rom);
           okRomano2 = true;
-          modeloRomano = antes[0].romano + ' = ' + parejas[0].romano;
+          modeloRomano = gr(antes[0]) + ' = ' + gr(parejas[0]);
         } else if (marcasOk && l.antes) {
           // Nota marcada (pivote): grado en la tonalidad anterior y en la nueva
           const antes = Ejercicios.parejasEn(ej, i, l.antes);
           okRomano = acierta(antes, rom);
           okRomano2 = acierta(parejas, rom2);
-          modeloRomano = antes[0].romano + ' = ' + parejas[0].romano;
+          modeloRomano = gr(antes[0]) + ' = ' + gr(parejas[0]);
         } else if (!marcasOk && Ejercicios.esPivote(ej, i)) {
           // Marcas equivocadas: en el pivote vale cualquiera de las dos lecturas
           const antes = Ejercicios.parejasEn(ej, i, Ejercicios.tonalidadAntes(ej, i));
           okRomano = acierta(parejas, rom) || acierta(antes, rom);
           okRomano2 = !doble || acierta(parejas, rom2) || acierta(antes, rom2);
-          modeloRomano = antes[0].romano + ' = ' + parejas[0].romano;
+          modeloRomano = gr(antes[0]) + ' = ' + gr(parejas[0]);
         } else {
           okRomano = acierta(parejas, rom);
           okRomano2 = !doble || acierta(parejas, rom2);   // marca sobrante: la segunda mitad se juzga en la tonalidad que rige
@@ -1083,7 +1099,7 @@
         if (r.ok) return;
         const nombre = Teoria.nombreEs(notas[i]);
         const parejas = Ejercicios.parejas(ej, i);
-        const ver = p => (estado.pedirRomano ? p.romano + ' ' : '') + Teoria.CIFRADOS[p.cifra].etiqueta;
+        const ver = p => (estado.pedirRomano ? Ejercicios.gradoDe(ej, p) + ' ' : '') + Teoria.CIFRADOS[p.cifra].etiqueta;
         const gradoDado = esDoble(i) ? (r.romano || '¿?') + ' = ' + (r.romano2 || '¿?') : (r.romano || '¿grado?');
         const funDada = estado.modoFun === 'pedir' ? (r.funcion || '¿función?') + ' · ' : '';
         const dada = funDada + (estado.pedirRomano ? gradoDado + ' ' : '') + (r.cifra ? Teoria.CIFRADOS[r.cifra].etiqueta : '¿cifra?');
