@@ -450,7 +450,12 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
   .realizacion-barra .control-etiqueta { display: none; }
   .selector-pequeno { font-size: .8rem; padding: 2px 4px; }
   .partitura-caja { padding: 4px 6px; }
-  svg.partitura { min-width: 560px; max-width: none; }   /* no se encoge: se desplaza en horizontal y las casillas siguen siendo pulsables */
+  /* La partitura, SIEMPRE a su tamaño natural (decisión 115). `max-width: none` la deja
+     crecer —el fragmento largo se desplaza en horizontal y las casillas siguen siendo
+     pulsables (decisión 99)— y, quitado el `min-width: 560px` que había aquí, el corto
+     deja de estirarse: con tres notas, aquel mínimo lo inflaba un 77 % y se comía la
+     pantalla de alto. Ahora una negra mide lo mismo tenga el fragmento 3 notas o 17. */
+  svg.partitura { max-width: none; margin: 0 auto; }
   .paletas {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
     padding: 1px 8px 3px; background: var(--papel);
