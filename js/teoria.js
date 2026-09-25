@@ -736,6 +736,40 @@ const Teoria = (() => {
     if (esSecundaria(romano, cifra)) return [SECUNDARIAS[romano].funcion];
     return cifra === '64' && romano === 'I' ? ['D'] : funcionesDe(romano);
   }
+  /* ---- El relieve de cada nota (decisión 98, regla de Diego) ----
+     Qué notas usa un pasaje se resume en una escala, y una escala no distingue Do mayor de
+     re dórico: las notas son las mismas y lo que cambia es cuál manda. Lo que decide es
+     **en cuáles insiste la melodía**, y Diego da tres señales:
+       · empezar y acabar en ella —acabar pesa más que empezar—;
+       · llegar a ella **por salto** (el do–sol de «Campanitas del lugar»);
+       · destacarla por **cambio de dirección** melódica (un pico o un valle).
+     Devuelve un mapa clase de altura → puntos. Los pesos son un orden de importancia, no
+     una medida: el final por encima del principio, y el salto por encima del giro.
+     NO se cuentan ni la duración ni la parte métrica: Diego nombró estas tres, y añadir
+     más por mi cuenta sería cambiarle la regla. */
+  function relievePorNota(notas) {
+    const puntos = new Map();
+    const suma = (n, p) => { const c = clase(n); puntos.set(c, (puntos.get(c) || 0) + p); };
+    const ns = (notas || []).map(n => { try { return nota(n); } catch (e) { return null; } }).filter(Boolean);
+    if (!ns.length) return puntos;
+    suma(ns[0], 3);                       // la primera
+    suma(ns[ns.length - 1], 4);           // la última, que pesa más
+    const letra = n => LETRAS.indexOf(n.letra);
+    const paso = (a, b) => { const d = (letra(b) - letra(a) + 7) % 7; return Math.min(d, 7 - d); };
+    for (let i = 1; i < ns.length; i++) {
+      if (paso(ns[i - 1], ns[i]) >= 2) suma(ns[i], 2);        // llegada por salto (3.ª o más)
+    }
+    for (let i = 1; i < ns.length - 1; i++) {
+      const a = midi(ns[i - 1]), b = midi(ns[i]), c = midi(ns[i + 1]);
+      if ((b - a) * (c - b) < 0) suma(ns[i], 1);              // pico o valle
+    }
+    return puntos;
+  }
+  // Relieve de la tónica de una tonalidad dentro de un pasaje
+  function relieveDeTonica(ton, notas) {
+    try { return relievePorNota(notas).get(clase(nota(ton.tonica + '4'))) || 0; } catch (e) { return 0; }
+  }
+
   /* El acorde SIN su posición (decisión 92): el grado y, si lo lleva, la séptima o la
      novena. «V 6/5̸» y «V +4» son el mismo acorde —V7— en inversiones distintas, y en el
      inventario que ve el alumno han de contar como uno solo. El número de notas sale de
@@ -881,7 +915,7 @@ const Teoria = (() => {
 
   return {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
-    escalaNatural, escalaVoces, armadura, grado, textoGrado, ordenGrado, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
+    escalaNatural, escalaVoces, armadura, grado, textoGrado, ordenGrado, relievePorNota, relieveDeTonica, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
     FUNCIONES, FUNCIONES_CROMATICAS, TODAS_FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,

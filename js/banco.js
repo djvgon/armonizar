@@ -187,10 +187,51 @@ const Banco = (() => {
       + '. Corrige la armadura en la partitura.';
   };
 
+  /* ---- La sensible manda sobre el modo (decisión 97, regla de Diego) ----
+     Una armadura vale para dos tonalidades, la mayor y su relativa menor, y hasta ahora
+     el modo solo se corregía cuando la lectura mayor dejaba alguna nota del bajo sin
+     cifra. Pero hay una prueba mucho más directa y más temprana, que es la que usa Diego
+     al mirar la partitura: **si aparece la sensible de la relativa menor, el pasaje está
+     en menor**. Con armadura de un bemol, un do♯ significa re menor y no Fa mayor; y lo
+     mismo en todos los tonos.
+     Esa sensible sola no bastaría: el do♯ podría ser la tercera de una dominante
+     secundaria del VI en Fa mayor (V/vi). Por eso va con la subregla del RELIEVE
+     (decisión 98): decide la nota en la que el pasaje **insiste** —empezar y acabar en
+     ella, llegar a ella por salto, destacarla con un cambio de dirección—, no el conjunto
+     de notas que emplea, que se resume en una escala y no distingue Do mayor de re dórico.
+     Si el pasaje insiste en fa, es Fa mayor con un V/vi de paso; si insiste en re, es re
+     menor. En el empate manda la sensible, que es la prueba más fuerte de las dos. */
+  function modoPorLaSensible(ton, notas) {
+    if (!ton || ton.modo !== 'mayor' || !notas.length) return null;
+    let menor = null;
+    try {
+      menor = Teoria.tonalidadesCandidatas(ton, notas, null)
+        .find(t => t.modo === 'menor' && Teoria.armadura(t) === Teoria.armadura(ton)) || null;
+    } catch (e) { return null; }
+    if (!menor) return null;
+    try {
+      const sept = Teoria.escalaNatural(menor)[6];          // 7.º grado natural de la menor
+      const hay = notas.some(n => n.letra === sept.letra && n.alt === sept.alt + 1);   // …elevado
+      if (!hay) return null;
+      // El relieve decide entre las dos: la mayor solo se conserva si insiste MÁS que la menor
+      return Teoria.relieveDeTonica(ton, notas) > Teoria.relieveDeTonica(menor, notas) ? null : menor;
+    } catch (e) { return null; }
+  }
+
   function tonalidadQueCuadra(f, op, hayB, hayS) {
     const ton = f.tonalidad;
-    if (!hayB) return ton;
     if ((f.modulacionesBajo || []).length || (f.modulacionesSoprano || []).length) return ton;
+    /* La sensible de la relativa menor, antes que nada: vale con bajo o sin él, y vale
+       aunque la lectura mayor no deje ninguna nota sin cifra, que es justo el caso que se
+       colaba (decisión 97). */
+    let todas = [];
+    try {
+      if (hayB) Teoria.notasDeCompases(f.compasesBajo).forEach(n => todas.push(Teoria.nota(n)));
+      if (hayS) Teoria.notasDeCompases(f.compasesSoprano).forEach(n => todas.push(Teoria.nota(n)));
+    } catch (e) { todas = []; }
+    const porSensible = modoPorLaSensible(ton, todas);
+    if (porSensible) return porSensible;
+    if (!hayB) return ton;
     const prueba = t => {
       try {
         const r = analizar(f.compasesBajo, t, null, false, Object.assign({}, op, { companera: null }));
@@ -204,7 +245,13 @@ const Banco = (() => {
       if (hayS) Teoria.notasDeCompases(f.compasesSoprano).forEach(n => notas.push(Teoria.nota(n)));
     } catch (e) { return ton; }
     const ultima = notas.length ? Teoria.notasDeCompases(f.compasesBajo).slice(-1)[0] : null;
-    const cands = Teoria.tonalidadesCandidatas(ton, notas, ultima);
+    /* Las candidatas, ordenadas por el RELIEVE de su tónica (decisión 98): si varias
+       admiten todas las notas, gana aquella en cuya tónica insiste de verdad el pasaje.
+       Es un desempate estable, así que el orden anterior se conserva cuando empatan. */
+    const cands = Teoria.tonalidadesCandidatas(ton, notas, ultima)
+      .map((t, k) => ({ t, k, r: Teoria.relieveDeTonica(t, todas.length ? todas : notas) }))
+      .sort((a, b) => b.r - a.r || a.k - b.k)
+      .map(x => x.t);
     return cands.find(prueba) || ton;
   }
 
