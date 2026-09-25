@@ -802,9 +802,20 @@ const Teoria = (() => {
 
   const FUNCIONES = ['T', 'S', 'D'];                 // las diatónicas (cuadro verde)
   const FUNCIONES_CROMATICAS = Object.keys(SECUNDARIAS).map(k => SECUNDARIAS[k].funcion);   // DD (cuadro azul)
-  const TODAS_FUNCIONES = FUNCIONES.concat(FUNCIONES_CROMATICAS);
-  const FUNCION_DE ={ I: ['T'], II: ['S'], III: ['T'], IV: ['S'], V: ['D'], VI: ['T', 'S'], VII: ['D'] };
-  const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante', DD: 'dominante de la dominante' };
+  /* Y una función que no es función: **ninguna** (decisión 116, Diego). El III no tiene
+     función tonal —ni tónica ni subdominante ni dominante—, y se ve con toda claridad
+     cuando hace de acorde pivote: viniendo de Do M, el mi menor es el III de Do y el v
+     natural de la menor, y ninguna de las dos lecturas es una función. En la paleta y en
+     la casilla se escribe **—**; por dentro es 'N', porque `null` ya significa «sin
+     responder» y hacían falta cosas distintas. */
+  const SIN_FUNCION = 'N';
+  const FUNCIONES_EXTRA = FUNCIONES_CROMATICAS.concat([SIN_FUNCION]);   // solo se ofrecen si el ejercicio las pide
+  const TODAS_FUNCIONES = FUNCIONES.concat(FUNCIONES_EXTRA);
+  const FUNCION_DE ={ I: ['T'], II: ['S'], III: [SIN_FUNCION], IV: ['S'], V: ['D'], VI: ['T', 'S'], VII: ['D'] };
+  const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante', DD: 'dominante de la dominante', N: 'sin función tonal' };
+  const TEXTO_FUNCION = { T: 'T', S: 'S', D: 'D', DD: 'DD', N: '—' };
+  // Cómo se ESCRIBE una función en la paleta, la casilla y el desplegable
+  const textoFuncion = f => (f ? (TEXTO_FUNCION[f] || f) : '');
   // Funciones posibles de un grado (la primera es la habitual)
   function funcionesDe(romano) {
     const sec = SECUNDARIAS[gradoInterno(romano)];
@@ -999,7 +1010,7 @@ const Teoria = (() => {
     escalaNatural, escalaVoces, armadura, grado, textoGrado, ordenGrado, relievePorNota, relieveDeTonica, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
-    FUNCIONES, FUNCIONES_CROMATICAS, TODAS_FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,
+    FUNCIONES, FUNCIONES_CROMATICAS, FUNCIONES_EXTRA, SIN_FUNCION, TODAS_FUNCIONES, NOMBRE_FUNCION, textoFuncion, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,
     SECUNDARIAS, GRADOS_CROMATICOS, esSecundaria, esSecundariaEn, gradoEscrito, acordeSinPosicion, gradoInterno, secundariaDe, romanoEscrito
   };
 })();

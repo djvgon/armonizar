@@ -328,7 +328,7 @@
         const sel = document.createElement('select');
         sel.className = 'sel-fun';
         sel.title = 'Función tonal de este acorde (la ve el alumno si las funciones se dan; se corrige si se piden)';
-        Teoria.TODAS_FUNCIONES.forEach(f => { const o = document.createElement('option'); o.value = f; o.textContent = f + ' · ' + Teoria.NOMBRE_FUNCION[f]; if (estado.funciones[i] === f) o.selected = true; sel.appendChild(o); });
+        Teoria.TODAS_FUNCIONES.forEach(f => { const o = document.createElement('option'); o.value = f; o.textContent = Teoria.textoFuncion(f) + ' · ' + Teoria.NOMBRE_FUNCION[f]; if (estado.funciones[i] === f) o.selected = true; sel.appendChild(o); });
         sel.addEventListener('change', () => {
           limpiarDireccion();
           estado.funciones[i] = sel.value;

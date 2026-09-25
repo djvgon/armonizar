@@ -288,7 +288,7 @@
        subdominante 4, dominante 5. Así la tecla se aprende sola y no depende del sitio que
        ocupe el botón. La dominante de la dominante lleva el 2, que es el grado sobre el
        que se construye. */
-    const NUM_FUNCION = { T: '1', S: '4', D: '5', DD: '2' };
+    const NUM_FUNCION = { T: '1', S: '4', D: '5', DD: '2', N: '0' };   // «ninguna» lleva el 0 (decisión 116)
     const pf = $('#paleta-funciones');
     pf.innerHTML = '';
     $('#paleta-funciones-caja').hidden = estado.modoFun !== 'pedir';
@@ -296,7 +296,7 @@
       Ejercicios.funcionesDelEjercicio(estado.ejercicio).forEach(f => {
         const n = NUM_FUNCION[f] || '';
         const cont = document.createDocumentFragment();
-        const txt = document.createElement('span'); txt.className = 'tecla-romano-texto'; txt.textContent = f; cont.appendChild(txt);
+        const txt = document.createElement('span'); txt.className = 'tecla-romano-texto'; txt.textContent = Teoria.textoFuncion(f); cont.appendChild(txt);
         const num = document.createElement('span'); num.className = 'tecla-num'; num.textContent = n; cont.appendChild(num);
         const b = tecla('tecla-fun', cont, Teoria.NOMBRE_FUNCION[f] + (n ? ' (tecla ' + n + ')' : ''), () => responderFuncion(f));
         b.dataset.funcion = f; if (n) b.dataset.atajo = n;
@@ -459,14 +459,14 @@
     const una = (i, campo) => {
       const lista = campo === 'funcion2' ? estado.funciones2 : estado.funciones;
       const ok = r => (campo === 'funcion2' ? r.okFuncion2 : r.okFuncion);
-      const c = { texto: lista[i] || '', clase: '', fija: false };
+      const c = { texto: Teoria.textoFuncion(lista[i]), clase: '', fija: false };
       if (estado.modoFun === 'dadas') { c.clase = 'dada'; c.fija = true; }
       else if (estado.corregido && estado.resultados) c.clase = ok(estado.resultados[i]) ? 'bien' : 'mal';
       else if (bloqueada(i, campo)) c.clase = 'bien fija';
       if (estado.corregido && estado.mostrarSolucion && !c.texto) {
-        c.texto = campo === 'funcion2'
+        c.texto = Teoria.textoFuncion(campo === 'funcion2'
           ? Ejercicios.funcionModelo(ej, i)
-          : (esDobleFun(i) ? Ejercicios.funcionModeloEn(ej, i, Ejercicios.tonalidadAntes(ej, i)) : Ejercicios.funcionModelo(ej, i));
+          : (esDobleFun(i) ? Ejercicios.funcionModeloEn(ej, i, Ejercicios.tonalidadAntes(ej, i)) : Ejercicios.funcionModelo(ej, i)));
       }
       return c;
     };

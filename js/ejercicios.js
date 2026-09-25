@@ -461,12 +461,19 @@ const Ejercicios = (() => {
     return Teoria.TODAS_FUNCIONES.filter(f => out.has(f));
   }
   /* Funciones que hacen falta en este ejercicio: siempre las tres diatónicas y, además,
-     las cromáticas (DD) si algún acorde admisible las pide. Es lo que se ofrece en la
-     paleta del alumno y en el desplegable del configurador. */
+     las que no son de diario —la DD y la «ninguna» (—) de la decisión 116— solo si algún
+     acorde admisible las pide. Es lo que se ofrece en la paleta del alumno y en el
+     desplegable del configurador. */
   function funcionesDelEjercicio(ej) {
     const usadas = new Set();
-    for (let i = 0; i < ej.respuestas.length; i++) funcionesAdmisibles(ej, i).forEach(f => usadas.add(f));
-    return Teoria.FUNCIONES.concat(Teoria.FUNCIONES_CROMATICAS.filter(f => usadas.has(f)));
+    for (let i = 0; i < ej.respuestas.length; i++) {
+      funcionesAdmisibles(ej, i).forEach(f => usadas.add(f));
+      /* En el PIVOTE la casilla se parte en dos (decisión 95) y la de arriba se lee en la
+         tonalidad de partida, así que sus funciones también han de estar en la paleta: si
+         no, el alumno ve una casilla que pide «—» y ninguna tecla con la que ponerlo. */
+      if (esPivote(ej, i)) funcionesAdmisiblesEn(ej, i, tonalidadAntes(ej, i)).forEach(f => usadas.add(f));
+    }
+    return Teoria.FUNCIONES.concat(Teoria.FUNCIONES_EXTRA.filter(f => usadas.has(f)));
   }
 
   /* ---- Bajo deducido (melodía de soprano) ----
