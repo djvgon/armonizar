@@ -606,10 +606,23 @@ const Banco = (() => {
     if (!Array.isArray(lista)) throw new Error('El archivo no tiene una lista de fragmentos.');
     return lista.filter(e => e && (e.bajo || e.soprano));
   }
+  /* Las lecciones, en el orden del PROGRAMA, que va del 1 al 19 seguido: la 1 a la 9 son
+     1.º de Armonía (`A3-…`) y la 10 a la 19, 2.º (`A4-…`). Ordenar los códigos como texto
+     ponía `A3-10` entre `A3-1` y `A3-2`, así que se ordena por curso y por número, como
+     números. Se hace aquí y no rellenando los códigos con ceros: el dato se queda legible
+     y el arreglo vive en un solo sitio (decisión 117). */
+  const troceaLeccion = c => {
+    const m = /^([A-Z]*)(\d*)\D*(\d+)/i.exec(String(c || ''));
+    return m ? [m[1].toUpperCase(), Number(m[2] || 0), Number(m[3])] : ['', 0, 0];
+  };
+  const comparaLecciones = (a, b) => {
+    const x = troceaLeccion(a), y = troceaLeccion(b);
+    return x[0].localeCompare(y[0]) || x[1] - y[1] || x[2] - y[2] || String(a).localeCompare(String(b));
+  };
   const lecciones = entradas => {
     const out = [];
     (entradas || []).forEach(e => { if (e.leccion && !out.includes(e.leccion)) out.push(e.leccion); });
-    return out.sort();
+    return out.sort(comparaLecciones);
   };
   // «A3-1. I, V y V7 - Fragmentos Bajo.mscz» → «A3-1»
   function leccionDeNombre(nombre) {
@@ -644,7 +657,7 @@ const Banco = (() => {
   }
 
   return { VERSION, MODOS, modoDe, vozDeModo, paginaDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
-    ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, etiquetar,
+    ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, comparaLecciones, etiquetar,
     transportarEntrada, transportada, tonicasDeFicha, tonicaEn,
     analizarVoz: analizar, companeraDe: companera,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
