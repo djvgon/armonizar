@@ -1743,19 +1743,37 @@
        aquí mismo: son los que verá el alumno con ESTE enlace. Se mira sobre todos los
        fragmentos del filtro, no sobre los n que toquen, porque el sorteo de cuáles
        entran sí es al azar y cambia en cada alumno. */
+    /* En qué tonos van a salir (decisiones 102 y 109). El reparto es por POSICIÓN en la
+       ficha, no por fragmento, así que lo que se puede anticipar es la vuelta completa:
+       el 1.º saldrá en este tono, el 2.º en este otro… y sin repetir mientras queden
+       tónicas libres. Cada tono se enseña en sus dos modos, porque el fragmento que
+       toque decide con cuál de las dos listas se cuenta. */
     const p = $('#ficha-tonos-reparto');
     if (filtro.tonos || typeof filtro.maxAlt === 'number') {
-      const cuenta = {};
-      lista.forEach(e => {
-        const t = Teoria.nombreCorto(Banco.ejercicio(e, filtro, 0).tonalidad);
-        cuenta[t] = (cuenta[t] || 0) + 1;
-      });
-      const orden = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a]);
-      p.innerHTML = '<b>Los ' + lista.length + ' fragmentos del filtro saldrían así:</b> '
-        + orden.map(t => t + ' (' + cuenta[t] + ')').join(' · ')
-        + '. Cada fragmento lleva siempre el mismo tono con este enlace; para repartirlos de otra manera, genera el enlace otra vez.';
+      const n = Math.max(1, Math.min(filtro.n || 8, lista.length));
+      const paso = [];
+      for (let k = 0; k < n; k++) {
+        const may = Banco.tonicaEn(filtro, 'mayor', k), men = Banco.tonicaEn(filtro, 'menor', k);
+        const txt = [may && Teoria.nombreCorto({ tonica: may, modo: 'mayor' }),
+          men && Teoria.nombreCorto({ tonica: men, modo: 'menor' })].filter(Boolean).join(' / ');
+        paso.push((k + 1) + '.º ' + txt);
+      }
+      p.innerHTML = '<b>Los tonos de esta ficha, por orden:</b> ' + paso.join(' · ')
+        + '. Según sea mayor o menor el fragmento que toque en cada sitio, sale uno u otro de los dos. '
+        + 'No se repite ninguno mientras queden libres; para repartirlos de otra manera, cambia cualquier opción y vuelve a generar el enlace.';
       p.hidden = false;
     } else p.hidden = true;
+    /* Sin título, la ficha llega a la hoja de calificaciones con un nombre automático
+       (decisión 109). Es estable y distingue unas fichas de otras, pero no dice de qué va,
+       y es el nombre que vas a tener que reconocer dentro de tres meses. Se avisa aquí,
+       con el nombre que le va a tocar, en vez de dejarlo a que uno se acuerde. */
+    if (!filtro.titulo) {
+      const n = Math.max(1, Math.min(filtro.n || 8, lista.length));
+      const auto = [filtro.leccion || 'Varias lecciones', Ejercicios.MODOS[filtro.modo] || 'Ejercicios',
+        n + (n === 1 ? ' ejercicio' : ' ejercicios')].join(' · ');
+      aviso('Esta ficha va sin título: en tu hoja de calificaciones saldrá como «' + auto
+        + ' · (código)». Ponle uno —«Ficha 1 · El 6/4 cadencial»— y vuelve a generarla si quieres reconocerla de un vistazo.', 11000);
+    }
     // Desde el disco el enlace no le sirve a nadie: las fichas necesitan la aplicación publicada
     if (location.protocol === 'file:') aviso('Ojo: esta dirección es de tu disco. Las fichas hay que generarlas desde el configurador publicado en GitHub, porque necesitan leer banco.json del servidor.', 10000);
   }

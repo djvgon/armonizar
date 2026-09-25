@@ -659,8 +659,6 @@
     estado.ocultarBajo = !bajoVisible();
     Partitura.dibujar($('#partitura'), estado.ejercicio, estado, seleccionar);
     pintarPaletaTonalidades();
-    ajustarCompacto();
-    enfocarActiva();
     const n = estado.respuestas.length;
     const hechas = estado.respuestas.filter((r, i) => notaRespondida(i)).length;
     // Tras corregir, el número de intento solo tiene sentido si el ejercicio sigue abierto (hay errores que corregir)
@@ -677,13 +675,21 @@
     $('#progreso').textContent = texto;
     $('#btn-corregir').disabled = estado.corregido;
     document.querySelectorAll('.paleta .tecla').forEach(b => { b.disabled = estado.corregido; });
+    /* Cuál es la paleta que toca ahora. En pantalla grande solo se destaca; en el móvil
+       es además la ÚNICA que se dibuja (decisión 111), así que acertar aquí importa:
+       `funcion2` estaba fuera de la lista —llegó con la decisión 95— y en la segunda
+       función del pivote se destacaba la de cifrados. */
     document.querySelectorAll('.paleta-caja').forEach(p => p.classList.remove('destacada'));
     if (!estado.corregido) {
-      const caja = estado.campo === 'tonalidad' && tonalidadEditable() ? '#paleta-tonalidades-caja'
-        : estado.campo === 'funcion' && estado.modoFun === 'pedir' ? '#paleta-funciones-caja'
-        : (estado.campo === 'romano' || estado.campo === 'romano2') && pideGrado() ? '#paleta-romanos-caja' : '#paleta-caja';
+      const c = estado.campo;
+      const caja = c === 'tonalidad' && tonalidadEditable() ? '#paleta-tonalidades-caja'
+        : (c === 'funcion' || c === 'funcion2') && estado.modoFun === 'pedir' ? '#paleta-funciones-caja'
+        : (c === 'romano' || c === 'romano2') && pideGrado() ? '#paleta-romanos-caja' : '#paleta-caja';
       $(caja).classList.add('destacada');
     }
+    // Con la paleta ya elegida: el hueco que hay que dejarle abajo y la casilla activa a la vista
+    ajustarCompacto();
+    enfocarActiva();
   }
 
   /* ---------- Pantalla estrecha (móvil) ----------
@@ -1383,15 +1389,26 @@
      título en el configurador, ese; si no, uno construido con lo que la distingue
      —lección, tipo de ejercicio y cuántos—, porque «Ficha» a secas en todas las filas
      de la hoja no deja distinguir una práctica de otra. */
+  /* El nombre con el que la práctica llega a la hoja de calificaciones (decisión 109).
+     Sin título puesto por el profesor sale uno automático, y sale del FILTRO, no de los
+     fragmentos que le hayan tocado a este alumno: el sorteo es distinto para cada uno, así
+     que antes, con una ficha de varias lecciones, a un alumno le salía «2 lecciones · …» y
+     a otro «3 lecciones · …» y sus filas no se agrupaban. Lleva además un código corto
+     del filtro, para que dos fichas de la misma lección, tipo y tamaño —la de esta semana
+     y la de la que viene— no se confundan entre sí. */
+  function codigoDeFicha(filtro) {
+    const txt = JSON.stringify(filtro);
+    let h = 2166136261;
+    for (let i = 0; i < txt.length; i++) { h ^= txt.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return ((h >>> 0).toString(36) + '0000').slice(0, 4);
+  }
   function nombreDeFicha(filtro, lista) {
     if (filtro.titulo) return filtro.titulo;
-    const lecs = [...new Set(lista.map(e => e.leccion).filter(Boolean))];
-    const partes = [];
-    if (lecs.length === 1) partes.push(lecs[0]);
-    else if (lecs.length > 1) partes.push(lecs.length + ' lecciones');
-    partes.push(Ejercicios.MODOS[filtro.modo] || 'Ejercicios');
-    partes.push(lista.length + (lista.length === 1 ? ' ejercicio' : ' ejercicios'));
-    return partes.join(' · ');
+    const n = filtro.n || (lista ? lista.length : 0);
+    return [filtro.leccion || 'Varias lecciones',
+      Ejercicios.MODOS[filtro.modo] || 'Ejercicios',
+      n + (n === 1 ? ' ejercicio' : ' ejercicios'),
+      codigoDeFicha(filtro)].join(' · ');
   }
 
   async function iniciarFicha(texto) {

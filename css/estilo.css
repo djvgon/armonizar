@@ -212,6 +212,8 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
   text-transform: uppercase; color: var(--tinta-suave);
 }
 .paleta { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; min-width: 0; }
+/* Dos redacciones del mismo rótulo: la larga en pantalla grande, la corta en el móvil */
+.etq-corta { display: none; }
 .tecla-romano { min-width: 40px; min-height: 42px; font-size: .88rem; letter-spacing: .03em; }
 .tecla {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -454,10 +456,15 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
     padding: 4px 8px 6px; background: var(--papel);
     border-top: 1px solid var(--linea); box-shadow: 0 -4px 14px rgba(0,0,0,.08);
   }
-  /* En pantalla estrecha el rótulo vuelve ARRIBA: ahí lo escaso es el ancho, y 7 rem de
-     rótulo a la izquierda se comerían dos teclas de cada fila. */
-  .paleta-caja { display: block; margin-top: 2px; padding: 3px 4px 4px; border-radius: 8px; }
-  .paleta-etiqueta { display: block; font-size: .62rem; margin-bottom: 3px; text-align: left; }
+  /* El rótulo, también aquí A LA IZQUIERDA y en el mismo renglón que las teclas
+     (decisión 111): cada paleta se ahorra su línea de título, que en el móvil es lo que
+     de verdad falta. Va en una columna estrecha y con el texto CORTO —«Función» en vez de
+     «Función tonal»—, para dejarle a las teclas todo el ancho que se pueda. */
+  .paleta-caja { margin-top: 1px; padding: 2px 3px 3px; border-radius: 8px; gap: 5px; align-items: center; }
+  .tecla { padding: 2px 4px; }
+  .paleta-etiqueta { flex: 0 0 3.4rem; font-size: .58rem; letter-spacing: .02em; line-height: 1.1; text-align: right; }
+  .etq-larga { display: none; }
+  .etq-corta { display: inline; }
   .paleta { gap: 4px; }
   .tecla { min-width: 36px; min-height: 40px; padding: 2px 5px; border-radius: 8px; box-shadow: none; }
   .tecla-num { display: none; }

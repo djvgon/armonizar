@@ -500,12 +500,23 @@ const Banco = (() => {
     if (typeof f.maxAlt === 'number') return Teoria.tonicasPorAlteraciones(modo, f.maxAlt);
     return [];
   }
+  /* La tónica que le toca a la POSICIÓN k de la ficha. Por rotación y no por sorteo
+     (Diego, 25/9): así no se repite ninguna mientras queden libres, que es lo que se le
+     pide a un reparto. La semilla, que viaja en el enlace, decide por dónde empieza la
+     vuelta; la posición la pone la ficha. Antes salía de un revoltijo del id del
+     fragmento y, con 7 tónicas y 8 ejercicios, repetía con más frecuencia de la cuenta. */
+  function tonicaEn(filtro, modo, k) {
+    const lista = tonicasDeFicha(filtro, modo);
+    if (!lista.length) return null;
+    return lista[(revoltijo(String((filtro || {}).semilla || '')) + (k || 0)) % lista.length];
+  }
   function transportada(e, filtro, k) {
-    const lista = tonicasDeFicha(filtro, e.tonalidad.modo);
+    const modo = e.tonalidad.modo;
+    const lista = tonicasDeFicha(filtro, modo);
     if (!lista.length) return e;
-    const base = revoltijo(String((filtro || {}).semilla || '') + '·' + String(e.id || k || ''));
+    const desde = lista.indexOf(tonicaEn(filtro, modo, k));
     for (let i = 0; i < lista.length; i++) {
-      const cand = transportarEntrada(e, lista[(base + i) % lista.length]);
+      const cand = transportarEntrada(e, lista[(desde + i + lista.length) % lista.length]);
       if (cand) return cand;                       // la primera que se pueda dibujar
     }
     return e;
@@ -634,7 +645,7 @@ const Banco = (() => {
 
   return { VERSION, MODOS, modoDe, vozDeModo, paginaDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, etiquetar,
-    transportarEntrada, transportada, tonicasDeFicha,
+    transportarEntrada, transportada, tonicasDeFicha, tonicaEn,
     analizarVoz: analizar, companeraDe: companera,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
 })();
