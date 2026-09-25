@@ -8619,6 +8619,7 @@
       "6"
      ],
      [
+      "6",
       "53"
      ],
      [
@@ -8684,7 +8685,9 @@
     ]
    },
    "nivelManual": null,
-   "avisos": [],
+   "avisos": [
+    "alguna nota de la melodía se queda sin acorde posible"
+   ],
    "etiquetas": {
     "voces": "ambas",
     "notas": 5,
