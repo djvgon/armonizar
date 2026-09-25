@@ -244,9 +244,10 @@ const Reglas = (() => {
      sobre ese mismo bajo, de modo que solo se propone cuando la nota siguiente repite la
      nota. Fuera de ahí —el 6/4 como arpegio de la tónica, do → sol— no se propone: sería
      un 6/4 que no resuelve, y además la fila de funciones lo daría por dominante. */
-  function seiscuatroCadencial(id, c, notas, cortes, ton) {
+  function seiscuatroCadencial(id, c, notas, cortes, ton, compas, fuerza, divide) {
     if (id !== '64') return true;
     if (c.esUltima) return false;
+    if (!Teoria.cabeSeisCuatro(compas, fuerza, divide)) return false;   // y en parte fuerte (decisiones 87 y 89)
     const sig = notas[c.i + 1];
     if (!sig || (cortes && cortes[c.i + 1])) return false;
     try {
@@ -283,6 +284,7 @@ const Reglas = (() => {
     const notas = notasDe(ej);
     const cortes = cortesDe(ej);
     const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
+    const divide = Teoria.divideElTiempo(ej.compases, ej.compas);
     const salida = [];
     for (let i = 0; i < notas.length; i++) {
       const c = contexto(notas, i, ton, cortes);
@@ -295,7 +297,7 @@ const Reglas = (() => {
          alumno con los acordes que tiene a mano. */
       const filtra = ids => ids.filter(id => repertorio.includes(id) && cuadraConElBajo(id, c.nota, ton)
         && dominanteSecundariaPermitida(id, c.nota, ton, ej.acordes) && acordePermitido(id, c.nota, ton, ej.acordes)
-        && seiscuatroCadencial(id, c, notas, cortes, ton));
+        && seiscuatroCadencial(id, c, notas, cortes, ton, ej.compas, fuerzas[i], divide[i]));
       const candidatas = [
         () => r1_final(c), () => r0_dominanteDeLaDominante(c), () => r2_cadencia(c, notas, ton),
         () => r3_repeticion(c, previo, ton, repertorio, cambia),
@@ -428,7 +430,7 @@ const Reglas = (() => {
       const rom = Teoria.romano(id, n, ton);
       let romSig = null;
       if (idSig && nSig && tonSig) { try { romSig = Teoria.romano(idSig, nSig, tonSig); } catch (e) { romSig = null; } }
-      return Teoria.funcionDe(rom, romSig, id);
+      return Teoria.funcionDe(rom, romSig, id, romSig ? idSig : null);
     } catch (e) { return null; }
   }
 
@@ -792,6 +794,7 @@ const Reglas = (() => {
     frases.forEach((f, q) => { for (let i = f.ini; i <= f.fin; i++) fraseDe[i] = q; });
     const finDeFrase = i => frases[fraseDe[i]].fin === i;
     const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
+    const divide = Teoria.divideElTiempo(ej.compases, ej.compas);
     const reglasEn = i => ({ tst, esFinal: finDeFrase(i), pideCambio: Teoria.pideCambio(fuerzas, i) && !cortes[i] });
     const esFun = (x, f) => x.funciones.includes(f);
     const soloFun = (cs, f) => { const s = cs.filter(x => esFun(x, f)); return s.length ? s : null; };
@@ -829,7 +832,8 @@ const Reglas = (() => {
             else { const s = soloFun(cands[fin - 1], 'S'); if (s) { cands[fin - 1] = s; plagal = true; } }   // sin dominante posible: cadencia plagal
           }
           if (largo >= 4 && !forzadas[fin - 2] && !plagal) {
-            const seisCuatro = cands[fin - 2].filter(x => x.romano === 'I' && x.cifra === '64');
+            const seisCuatro = Teoria.cabeSeisCuatro(ej.compas, fuerzas[fin - 2], divide[fin - 2])
+              ? cands[fin - 2].filter(x => x.romano === 'I' && x.cifra === '64') : [];
             const vRaiz = cands[fin - 1].some(x => x.romano === 'V' && (x.cifra === '53' || x.cifra === '7+'));
             if (seisCuatro.length && vRaiz) {
               con64 = true;
@@ -914,8 +918,9 @@ const Reglas = (() => {
       else if (!modelo) explicacion = '⚠ Ninguno de los acordes que contienen esta nota encaja en una sucesión válida (revisa las funciones o el repertorio).';
       else {
         const cif = Teoria.CIFRADOS[modelo.cifra].etiqueta;
-        const sig = i + 1 < n && modeloIdx[i + 1] !== null && modeloIdx[i + 1] !== undefined && cands[i + 1][modeloIdx[i + 1]] ? cands[i + 1][modeloIdx[i + 1]].romano : null;
-        const f = forzadas[i] || Teoria.funcionDe(modelo.romano, sig, modelo.cifra);
+        const vecino = k => (k >= 0 && k < n && modeloIdx[k] !== null && modeloIdx[k] !== undefined ? cands[k][modeloIdx[k]] : null) || null;
+        const mSig = vecino(i + 1), mAnt = vecino(i - 1);
+        const f = forzadas[i] || Teoria.funcionDe(modelo.romano, mSig ? mSig.romano : null, modelo.cifra, mSig ? mSig.cifra : null, mAnt);
         explicacion = Teoria.nombreEs(Teoria.nota(s)) + ' es la ' + MIEMBRO_TXT[modelo.miembro] + ' de ' + Teoria.gradoEscrito(modelo.romano, modelo.cifra) + (cif === '—' ? '' : ' ' + cif)
           + ' (bajo ' + Teoria.nombreEs(modelo.bajo) + (modelo.melodica ? ', menor melódica' : '') + '; función ' + f + ', ' + Teoria.NOMBRE_FUNCION[f] + ')' + (modelo.avisos.length ? '; ' + modelo.avisos.join(', ') : '') + '.';
       }

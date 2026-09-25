@@ -134,6 +134,50 @@ const Teoria = (() => {
   // ¿La nota i está en parte más fuerte que la anterior? (entonces el acorde ha de cambiar)
   const pideCambio = (fuerzas, i) => i > 0 && !!fuerzas && fuerzas[i] > fuerzas[i - 1];
 
+  /* ¿En este compás se divide el tiempo? (decisión 89)
+     Lo que decide no es la figura de una nota suelta, sino el nivel en que se mueve la
+     armonía: aquí cada nota del bajo lleva un acorde, así que la figura más corta DEL
+     COMPÁS es el ritmo armónico de ese compás. Si es más breve que el tiempo —corcheas
+     en un 2/4—, el tiempo está dividido y la cabeza de cada tiempo pasa a ser fuerte
+     respecto de lo que la rodea. Devuelve un valor por nota, como `fuerzasMetricas`. */
+  function divideElTiempo(compases, compas) {
+    const c = compas && compas.length === 2 ? compas : [4, 4];
+    const unidad = 4 / c[1];
+    const out = [];
+    (compases || []).forEach(cp => {
+      const duras = cp.filter(x => x[0] !== null).map(x => x[1] || 0);
+      const divide = duras.length ? Math.min.apply(null, duras) < unidad - 0.01 : false;
+      cp.forEach(x => { if (x[0] !== null) out.push(divide); });
+    });
+    return out;
+  }
+
+  /* ¿Cabe aquí el 6/4 cadencial? (decisión 87, criterio de Diego, 25/9/2026)
+     El 6/4 cadencial retrasa la dominante, y para que se oiga como retraso y no como un
+     tropiezo tiene que caer en parte fuerte:
+       · compás binario → solo tiempo fuerte: el primero y, en el de cuatro tiempos, el
+         tercero (la mitad del compás). En 2/4, donde la mitad del compás ES el segundo
+         tiempo y es débil, solo el primero.
+       · compás ternario → además, el segundo o el tercero.
+       · nunca a contratiempo.
+     Los compases compuestos (6/8, 12/8) se cuentan como binarios: la cabeza de cada
+     tiempo con puntillo es lo que marca `fuerzasMetricas` con 3 y 2.
+
+     Y una corrección de Diego (decisión 89): «fuerte» es relativo al nivel en que se
+     mueve la armonía. Si el ritmo armónico divide el tiempo —corcheas en un 2/4—, la
+     cabeza de CADA tiempo es fuerte respecto de las notas que la rodean, y el 6/4 cabe
+     también ahí. Lo que sigue sin caber, en ningún compás, es el contratiempo. */
+  function cabeSeisCuatro(compas, fuerza, divide) {
+    if (fuerza === null || fuerza === undefined) return true;   // sin métrica que consultar
+    if (fuerza === 3) return true;                              // primer tiempo, siempre
+    if (fuerza === 0) return false;                             // a contratiempo, nunca
+    if (divide) return fuerza >= 1;                             // el tiempo dividido sube todo un nivel
+    const c = compas && compas.length === 2 ? compas : [4, 4];
+    if (c[0] === 3 || c[0] === 9) return fuerza >= 1;           // ternario: también 2.º y 3.er tiempo
+    if (c[0] === 2) return false;                               // dos tiempos: solo el primero
+    return fuerza >= 2;                                         // 4/4, 6/8, 12/8: la mitad del compás
+  }
+
   /* ---- Acontecimientos: notas y silencios ----
      Un acontecimiento del bajo o de la melodía es [nombre, duración]; con nombre null es un
      silencio. Las respuestas del alumno van por NOTA, así que cada acontecimiento lleva su
@@ -676,14 +720,26 @@ const Teoria = (() => {
     if (esSecundaria(romano, cifra)) return [SECUNDARIAS[romano].funcion];
     return cifra === '64' && romano === 'I' ? ['D'] : funcionesDe(romano);
   }
-  // Función habitual, dado el grado siguiente (para el VI: S si sigue una dominante)
-  function funcionDe(romano, romanoSiguiente, cifra) {
+  /* Función habitual del acorde, mirando a los vecinos.
+     El acorde siguiente se mira CON su cifra (decisión 86): el 6/4 cadencial se escribe
+     I6/4 pero suena como dominante, y mirando solo el grado se contaba como tónica, de
+     modo que un VI que va a parar a él se etiquetaba T cuando ya está haciendo de S.
+
+     El VI (decisión 88, criterio de Diego): subdominante son «las sonoridades sobre
+     movimientos del bajo que preparan la dominante», así que el VI de I – VI – IV – V ya
+     es subdominante, aunque entre él y la dominante haya otra subdominante. Solo hay una
+     excepción, y es la cadencia rota: el VI que RESUELVE una dominante la sustituye a la
+     tónica, y ahí es tónica. */
+  function funcionDe(romano, romanoSiguiente, cifra, cifraSiguiente, anterior) {
     if (esSecundaria(romano, cifra)) return SECUNDARIAS[romano].funcion;
     if (cifra === '64' && romano === 'I') return 'D';
     const f = funcionesDe(romano);
-    // El VI hace de subdominante cuando va hacia una dominante, sea la de la tonalidad
-    // (D) o la dominante secundaria (DD)
-    if (romano === 'VI' && romanoSiguiente && ['D', 'DD'].includes(funcionesDe(romanoSiguiente)[0])) return 'S';
+    if (romano === 'VI') {
+      const fAnt = anterior && anterior.romano ? funcionesDeAcorde(anterior.romano, anterior.cifra)[0] : null;
+      if (fAnt === 'D' || fAnt === 'DD') return 'T';         // cadencia rota: el VI hace de tónica
+      const fSig = romanoSiguiente ? funcionesDeAcorde(romanoSiguiente, cifraSiguiente)[0] : null;
+      if (fSig === 'D' || fSig === 'DD' || fSig === 'S') return 'S';
+    }
     return f[0];
   }
 
@@ -785,7 +841,7 @@ const Teoria = (() => {
 
   return {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
-    escalaNatural, escalaVoces, armadura, grado, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio,
+    escalaNatural, escalaVoces, armadura, grado, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
     FUNCIONES, FUNCIONES_CROMATICAS, TODAS_FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,

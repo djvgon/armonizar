@@ -427,8 +427,9 @@ const Ejercicios = (() => {
     if (Array.isArray(ej.funcionesNotas) && Teoria.TODAS_FUNCIONES.includes(ej.funcionesNotas[i])) return ej.funcionesNotas[i];
     const p = parejas(ej, i)[0];
     if (!p) return 'T';
-    const sig = i + 1 < numNotas(ej) ? (parejas(ej, i + 1)[0] || {}).romano : null;
-    return Teoria.funcionDe(p.romano, sig, p.cifra);
+    const pSig = i + 1 < numNotas(ej) ? (parejas(ej, i + 1)[0] || {}) : {};
+    const pAnt = i > 0 ? (parejas(ej, i - 1)[0] || null) : null;
+    return Teoria.funcionDe(p.romano, pSig.romano || null, p.cifra, pSig.cifra || null, pAnt);
   }
   // Funciones que se dan por buenas en la nota i: la modelo y las de cualquier acorde admisible
   function funcionesAdmisibles(ej, i) {
