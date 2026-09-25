@@ -27,7 +27,7 @@
                       vozDada:'soprano' (las notas del ejercicio son la melodía y van en el
                       pentagrama de sol; el bajo lo aporta bajos:[nota|null…], deducido de
                       cada respuesta, y bajosMal:[bool] lo pinta en rojo),
-                      filaFunciones:{visible, editable, celdas:[{texto, clase, fija}]}
+                      filaFunciones:{visible, editable, celdas:[{texto, clase, fija}], celdas2, dobles}
                       (fila «Función» T · S · D bajo los grados, campo 'funcion'),
                       avisosVoces:[{texto, notas:[{i, voz}]}] (errores de conducción de voces:
                       las notas implicadas se dibujan en rojo y, al pulsar cualquiera de
@@ -209,7 +209,15 @@ const Partitura = (() => {
     const HUECO_SISTEMA = conGrados ? Math.max(7.5 * SP, ALTO_GRADOS + 4 * SP) : 7.5 * SP;
     const Y_TOP = conSol ? Y_BOT_SOL + HUECO_SISTEMA : 5.5 * SP + Y0 + ALTO_GRADOS; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
-    const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // borde superior de las casillas de cifra
+    /* ---- Orden de las filas bajo el pentagrama (decisión 93, Diego) ----
+       De arriba abajo: FUNCIÓN · CIFRADO · GRADO · TONALIDAD. Leído de abajo arriba es la
+       cadena de la que cuelga cada dato: la tonalidad manda sobre el grado —el mismo do es
+       1 en Do M y 4 en Sol M—, el grado sobre el cifrado, y del cifrado sale la función.
+       Antes la función iba entre el grado y la tonalidad y partía esa cadena por la mitad. */
+    const filaFun = estado.filaFunciones && estado.filaFunciones.visible ? estado.filaFunciones : null;   // fila «Función» (T · S · D)
+    const ALTO_FUN = (estado.filaFunciones && (estado.filaFunciones.dobles || []).some(Boolean)) ? 5.4 * SP : 2.7 * SP;
+    const Y_FUN = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;
+    const Y_CASILLA = filaFun ? Y_FUN + ALTO_FUN + 0.8 * SP : Y_FUN;   // borde superior de las casillas de cifra
     const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
     const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
     const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;  // borde superior de las casillas de grado
@@ -250,6 +258,7 @@ const Partitura = (() => {
       try { return Teoria.bajoDe(res.modeloRomano, res.modelo, (tonsNota && tonsNota[it.k]) || ton); } catch (e) { return null; }
     };
     const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];
+    const gradosDados = !!estado.gradosDados;   // la fila del grado viene escrita (decisión 94)
     /* Un renglón por TONALIDAD, no uno nuevo por cada cambio (decisión 83). Antes, cada
        pivote abría un renglón más: un fragmento que sale de Sol M, toma prestado un acorde
        de Re M y vuelve a Sol M gastaba TRES renglones, y el tercero repetía el primero.
@@ -273,12 +282,9 @@ const Partitura = (() => {
     const PASO_RENGLON = ALTO_ROMANO + 0.5 * SP;
     const yRenglon = r => Y_ROMANO + r * PASO_RENGLON;
     const Y_FIN_ROMANO = pedirRomano ? yRenglon(NUM_RENGLONES - 1) + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
-    const filaFun = estado.filaFunciones && estado.filaFunciones.visible ? estado.filaFunciones : null;   // fila «Función» (T · S · D)
-    const Y_FUN = Y_FIN_ROMANO + 0.8 * SP, ALTO_FUN = 2.7 * SP;
-    const Y_FIN_FUN = filaFun ? Y_FUN + ALTO_FUN : Y_FIN_ROMANO;
     const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
-    const Y_TON = Y_FIN_FUN + 0.8 * SP, ALTO_TON = 2.7 * SP;
-    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_FUN;
+    const Y_TON = Y_FIN_ROMANO + 0.8 * SP, ALTO_TON = 2.7 * SP;
+    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_ROMANO;
     const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
     const Y_MODELO = Y_FIN_CASILLAS + 2.4 * SP;            // centro de la respuesta modelo (tras corregir)
     /* Si hay errores de conducción de voces, se reserva al pie una banda para el globo de
@@ -689,10 +695,23 @@ const Partitura = (() => {
           const clases = ['casilla', 'casilla-romano'];
           if (esPivote) clases.push(k ? 'pivote-abajo' : 'pivote-arriba');
           const bloqueadaAqui = !!bloq[campo];
-          if (activa && !bloqueadaAqui && estado.campo === campo) clases.push('activa');
-          else if (activa && !bloqueadaAqui) clases.push('activa-nota');
           const lista = campo === 'romano2' ? estado.romanos2 : estado.romanos;
           const rom = lista ? lista[i] : null;
+          /* Grados DADOS (decisión 94): la casilla se ve, con el grado escrito, pero no se
+             responde ni se corrige. Se pinta como las demás casillas dadas —la de función
+             y la de tonalidad—, para que se distinga de un vistazo de las que él rellena. */
+          if (gradosDados) {
+            clases.push('dada', 'fija');
+            g.setAttribute('class', clases.join(' '));
+            g.setAttribute('tabindex', '-1');
+            g.setAttribute('role', 'note');
+            g.appendChild(el('rect', { x: x0, y: y0, width: ANCHO_CASILLA, height: alto, rx: esPivote ? 0 : 0.7 * SP, class: 'fondo' }));
+            g.appendChild(el('text', { x: cx, y: y0 + ALTO_ROMANO / 2 + 0.75 * SP, 'text-anchor': 'middle', class: 'romano' }, rom || ''));
+            svg.appendChild(g);
+            return;
+          }
+          if (activa && !bloqueadaAqui && estado.campo === campo) clases.push('activa');
+          else if (activa && !bloqueadaAqui) clases.push('activa-nota');
           const okAqui = res ? (campo === 'romano2' ? res.okRomano2 : res.okRomano) : null;
           if (res) clases.push(okAqui ? 'bien' : 'mal');
           else if (bloqueadaAqui) clases.push('bien', 'fija');
@@ -723,26 +742,40 @@ const Partitura = (() => {
         }
       }
 
-      // Fila «Función»: T · S · D de cada acorde (dada por el profesor o pedida al alumno)
+      /* Fila «Función»: T · S · D de cada acorde (dada por el profesor o pedida al alumno).
+         En el acorde PIVOTE se parte en dos, una por tonalidad (decisión 95): arriba la
+         función en el tono de partida y abajo en el de llegada —el mismo acorde es tónica
+         en uno y subdominante en el otro—, unidas por las mismas barras verticales que
+         llevan los grados. */
       if (filaFun) {
-        const celda = filaFun.celdas[i] || {};
-        const editable = filaFun.editable && !celda.fija;
-        const g = el('g', { 'data-indice': i, 'data-campo': 'funcion', tabindex: editable ? 0 : -1, role: editable ? 'button' : 'note',
-          'aria-label': 'Función tonal de la nota ' + (i + 1) });
-        const clases = ['casilla', 'casilla-fun'];
-        if (!editable) clases.push('fija');
-        if (celda.clase) clases.push(celda.clase);
-        if (activa && editable && estado.campo === 'funcion') clases.push('activa');
-        else if (activa && editable) clases.push('activa-nota');
-        if (celda.texto) clases.push('llena');
-        g.setAttribute('class', clases.join(' '));
-        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_FUN, width: ANCHO_CASILLA, height: ALTO_FUN, rx: 0.6 * SP, class: 'fondo' }));
-        g.appendChild(el('text', { x: cx, y: Y_FUN + ALTO_FUN / 2 + 0.6 * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
-        if (editable && !soloLectura) {
-          g.addEventListener('click', () => alPulsar(i, 'funcion'));
-          g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, 'funcion'); } });
-        }
-        svg.appendChild(g);
+        const dobleFun = !!(filaFun.dobles && filaFun.dobles[i]) && !!(filaFun.celdas2 && filaFun.celdas2[i]);
+        const partesFun = dobleFun ? ['funcion', 'funcion2'] : ['funcion'];
+        const xF = cx - ANCHO_CASILLA / 2;
+        const altoUna = dobleFun ? (ALTO_FUN - 0.25 * SP) / 2 : ALTO_FUN;
+        partesFun.forEach((campo, k) => {
+          const celda = (campo === 'funcion2' ? filaFun.celdas2[i] : filaFun.celdas[i]) || {};
+          const editable = filaFun.editable && !celda.fija;
+          const yF = Y_FUN + k * (altoUna + 0.25 * SP);
+          const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: editable ? 0 : -1, role: editable ? 'button' : 'note',
+            'aria-label': 'Función tonal de la nota ' + (i + 1) + (dobleFun ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
+          const clases = ['casilla', 'casilla-fun'];
+          if (dobleFun) clases.push(k ? 'pivote-abajo' : 'pivote-arriba');
+          if (!editable) clases.push('fija');
+          if (celda.clase) clases.push(celda.clase);
+          if (activa && editable && estado.campo === campo) clases.push('activa');
+          else if (activa && editable) clases.push('activa-nota');
+          if (celda.texto) clases.push('llena');
+          g.setAttribute('class', clases.join(' '));
+          g.appendChild(el('rect', { x: xF, y: yF, width: ANCHO_CASILLA, height: altoUna, rx: dobleFun ? 0 : 0.6 * SP, class: 'fondo' }));
+          g.appendChild(el('text', { x: cx, y: yF + altoUna / 2 + (dobleFun ? 0.42 : 0.6) * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
+          if (editable && !soloLectura) {
+            g.addEventListener('click', () => alPulsar(i, campo));
+            g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, campo); } });
+          }
+          svg.appendChild(g);
+        });
+        if (dobleFun) [xF, xF + ANCHO_CASILLA].forEach(x => svg.appendChild(
+          el('line', { x1: x, x2: x, y1: Y_FUN - 0.3 * SP, y2: Y_FUN + ALTO_FUN + 0.3 * SP, class: 'pivote-barra' })));
         if (i === 0) svg.appendChild(el('text', { x: cx - ANCHO_CASILLA / 2 - 0.7 * SP, y: Y_FUN + ALTO_FUN / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, 'Función:'));
       }
 

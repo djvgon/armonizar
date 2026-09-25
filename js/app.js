@@ -100,18 +100,30 @@
     estado.romanos2 = new Array(n).fill(null);
     estado.pedirRomano = Ejercicios.pideRomano(ej) || Ejercicios.esSoprano(ej);   // en la melodía de soprano el grado es imprescindible: de él sale el bajo
     estado.campoGrado = Ejercicios.campoGrado(ej);   // 'bajo' | 'fundamental' (decisión 90)
+    /* El grado del bajo, dado: la fila está, pero viene escrita y el alumno no la toca
+       (decisión 94). Y con los grados ocultos, en armonización de bajo no hay fila. */
+    estado.gradosDados = Ejercicios.gradoDado(ej);
+    if (Ejercicios.sinFilaGrado(ej)) estado.pedirRomano = false;
     estado.modoFun = Ejercicios.funciones(ej);
     estado.funciones = estado.modoFun === 'dadas' ? ej.respuestas.map((_, i) => Ejercicios.funcionModelo(ej, i)) : new Array(n).fill(null);
+    /* La función en el PIVOTE se parte en dos, una por tonalidad (decisión 95): la de
+       arriba es la del tono de partida y la de abajo la del de llegada. */
+    estado.funciones2 = estado.modoFun === 'dadas'
+      ? ej.respuestas.map((_, i) => (Ejercicios.esPivote(ej, i) ? Ejercicios.funcionModelo(ej, i) : null))
+      : new Array(n).fill(null);
+    if (estado.modoFun === 'dadas') ej.respuestas.forEach((_, i) => {
+      if (Ejercicios.esPivote(ej, i)) estado.funciones[i] = Ejercicios.funcionModeloEn(ej, i, Ejercicios.tonalidadAntes(ej, i));
+    });
     estado.bajos = new Array(n).fill(null);
     estado.bajosMal = null;
     estado.activa = 0;
-    estado.campo = estado.modoFun === 'pedir' ? 'funcion' : estado.pedirRomano ? 'romano' : 'cifra';
+    estado.campo = estado.modoFun === 'pedir' ? 'funcion' : (estado.pedirRomano && !estado.gradosDados) ? 'romano' : 'cifra';
     estado.corregido = false;
     estado.resultados = null;
     estado.resultadoMod = null;
     estado.intento = 0;
     estado.primerIntento = null;
-    estado.bloqueadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false }));
+    estado.bloqueadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false, funcion2: false }));
     // Modulación: en modo 'completo' las marcas vienen dadas; en 'existe' las pone el alumno
     estado.modoTon = Ejercicios.tonalidades(ej);
     /* Sin fila y con modulación, el fragmento se cifra igualmente en sus tonalidades
@@ -127,6 +139,17 @@
     estado.realizacionCuando = Ejercicios.realizacion(ej);
     estado.gradosPermitidos = Ejercicios.gradosBajo(ej);
     estado.verGrados = estado.gradosPermitidos;
+    /* Grados dados: la fila se rellena con el grado del bajo, medido en la tonalidad que
+       rige en cada nota. En el pivote, las dos lecturas (decisión 94). */
+    if (estado.gradosDados) for (let i = 0; i < n; i++) {
+      const p = Ejercicios.parejas(ej, i)[0];
+      estado.romanos[i] = p ? Ejercicios.gradoDe(ej, p) : null;
+      if (Ejercicios.esPivote(ej, i)) {
+        const antes = Ejercicios.parejasEn(ej, i, Ejercicios.tonalidadAntes(ej, i))[0];
+        estado.romanos2[i] = estado.romanos[i];
+        estado.romanos[i] = antes ? Ejercicios.gradoDe(ej, antes) : estado.romanos[i];
+      }
+    }
     estado.sonando = null;
     estado.alSonar = sonarAcorde;
     Sonido.parar();
@@ -161,7 +184,7 @@
        filas ha de rellenar y qué significan las notas en rojo. */
     const señala = [];
     if (estado.modoFun === 'pedir') señala.push('su <b>función tonal</b>');
-    if (estado.pedirRomano) señala.push(estado.campoGrado === 'bajo'
+    if (pideGrado()) señala.push(estado.campoGrado === 'bajo'
       ? 'el <b>grado</b> que la nota del bajo ocupa en la escala'
       : 'el <b>grado</b> de su fundamental');
     señala.push('el <b>cifrado</b> (la inversión en que lo escribes)');
@@ -218,21 +241,24 @@
     const rep = $('#repertorio');
     rep.innerHTML = '';
     const acordes = Array.isArray(ej.acordes) && ej.acordes.length ? ej.acordes : null;
-    if (estado.modoEj === 'soprano' && acordes) {
-      // En la armonización de soprano el repertorio son ACORDES (grado + cifra), no cifras sueltas
-      $('#etiqueta-repertorio').textContent = 'Acordes ' + deLaLeccion;
-      acordes.forEach(id => {
-        const p = Ejercicios.par(id);
-        const c = Teoria.CIFRADOS[p.cifra];
-        if (!c) return;
+    /* El inventario de acordes, SIN inversiones (decisión 92). En una ficha es el de
+       TODA la ficha —la unión de las lecciones que entran, que por ser acumulativas es
+       «todo lo visto hasta la más avanzada»— y no cambia de un fragmento a otro: es la
+       lista que Diego escribe en la pizarra al empezar la clase. */
+    const acordesFicha = estado.ficha
+      ? [...new Set([].concat(...estado.ficha.lista.map(e => e.leccionAcordes || [])))]
+      : null;
+    const inv = Ejercicios.inventario((acordesFicha && acordesFicha.length) ? acordesFicha : acordes);
+    if (inv.length) {
+      $('#etiqueta-repertorio').textContent = estado.ficha ? 'En esta ficha entran' : 'En este ejercicio entran';
+      inv.forEach(a => {
         const s = document.createElement('span');
-        s.className = 'ficha ficha-acorde';
-        const rom = Teoria.gradoEscrito(p.romano, p.cifra);
-        s.title = rom + ' ' + c.nombre + ' — ' + c.descripcion;
-        const r = document.createElement('span');
-        r.className = 'ficha-acorde-romano'; r.textContent = rom;
-        s.appendChild(r);
-        s.appendChild(Partitura.iconoCifra(p.cifra, 30));
+        s.className = 'ficha ficha-romano';
+        s.textContent = a.nombre;
+        // El detalle sigue a mano, sin llenar la cabecera: las inversiones, en el título
+        s.title = a.posiciones.length > 1
+          ? a.nombre + ' — en este repertorio, en ' + a.posiciones.length + ' posiciones: ' + a.posiciones.join(' · ')
+          : a.nombre + ' — solo en ' + a.posiciones[0];
         rep.appendChild(s);
       });
     } else {
@@ -250,8 +276,8 @@
     gr.innerHTML = '';
     const ayuda = Ejercicios.ayudaGrados(ej);
     $('#etiqueta-grados').textContent = 'Grados en este ejercicio';
-    $('#grados-fila').hidden = !estado.pedirRomano || ayuda === 'ninguna' || (estado.modoEj === 'soprano' && !!acordes);
-    if (estado.pedirRomano && ayuda !== 'ninguna') Ejercicios.grados(ej).forEach(r => {
+    $('#grados-fila').hidden = !pideGrado() || ayuda === 'ninguna' || (estado.modoEj === 'soprano' && !!acordes);
+    if (pideGrado() && ayuda !== 'ninguna') Ejercicios.grados(ej).forEach(r => {
       const s = document.createElement('span');
       s.className = 'ficha ficha-romano';
       s.textContent = r;
@@ -293,8 +319,8 @@
     // Paleta de grados: el número pequeño es el del grado (I = 1 … VII = 7)
     const pr = $('#paleta-romanos');
     pr.innerHTML = '';
-    $('#paleta-romanos-caja').hidden = !estado.pedirRomano;
-    if (estado.pedirRomano) {
+    $('#paleta-romanos-caja').hidden = !pideGrado();
+    if (pideGrado()) {
       /* Según el tipo de ficha (decisión 90): los grados del BAJO en arábigo —1 … 7, con
          los alterados que use el ejercicio— o los de la FUNDAMENTAL en romano. En romano
          van los siete diatónicos y, detrás, los CROMÁTICOS: la dominante de la dominante
@@ -373,6 +399,9 @@
   // ¿La casilla de grado de la nota i está partida en dos (nota marcada)?
   // La casilla de grado se parte en dos solo si la fila «Tonalidad» está a la vista: sin
   // ella, el pivote se cifra en la tonalidad que rige, sin desvelar que hay un cambio.
+  /* ¿Se le PIDE el grado? Con los grados dados (decisión 94) la fila está y se ve, pero
+     viene escrita: ni se navega, ni se ofrece paleta, ni cuenta en la corrección. */
+  const pideGrado = () => estado.pedirRomano && !estado.gradosDados;
   const esDoble = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && estado.pedirRomano;
   const hayFilaTonalidad = () => estado.modoTon !== null;
   const tonalidadEditable = () => estado.modoTon === 'pedir' && !estado.tonalidadBloqueada && !estado.corregido;
@@ -439,15 +468,24 @@
   function prepararFunciones() {
     const ej = estado.ejercicio;
     if (!estado.modoFun) { estado.filaFunciones = null; return; }
-    const celdas = estado.respuestas.map((_, i) => {
-      const c = { texto: estado.funciones[i] || '', clase: '', fija: false };
+    const una = (i, campo) => {
+      const lista = campo === 'funcion2' ? estado.funciones2 : estado.funciones;
+      const ok = r => (campo === 'funcion2' ? r.okFuncion2 : r.okFuncion);
+      const c = { texto: lista[i] || '', clase: '', fija: false };
       if (estado.modoFun === 'dadas') { c.clase = 'dada'; c.fija = true; }
-      else if (estado.corregido && estado.resultados) c.clase = estado.resultados[i].okFuncion ? 'bien' : 'mal';
-      else if (bloqueada(i, 'funcion')) c.clase = 'bien fija';
-      if (estado.corregido && estado.mostrarSolucion && !c.texto) c.texto = Ejercicios.funcionModelo(ej, i);
+      else if (estado.corregido && estado.resultados) c.clase = ok(estado.resultados[i]) ? 'bien' : 'mal';
+      else if (bloqueada(i, campo)) c.clase = 'bien fija';
+      if (estado.corregido && estado.mostrarSolucion && !c.texto) {
+        c.texto = campo === 'funcion2'
+          ? Ejercicios.funcionModelo(ej, i)
+          : (esDobleFun(i) ? Ejercicios.funcionModeloEn(ej, i, Ejercicios.tonalidadAntes(ej, i)) : Ejercicios.funcionModelo(ej, i));
+      }
       return c;
-    });
-    estado.filaFunciones = { visible: true, editable: estado.modoFun === 'pedir' && !estado.corregido, celdas };
+    };
+    const celdas = estado.respuestas.map((_, i) => una(i, 'funcion'));
+    const celdas2 = estado.respuestas.map((_, i) => (esDobleFun(i) ? una(i, 'funcion2') : null));
+    estado.filaFunciones = { visible: true, editable: estado.modoFun === 'pedir' && !estado.corregido,
+      celdas, celdas2, dobles: estado.respuestas.map((_, i) => esDobleFun(i)) };
   }
 
   // Melodía de soprano: el bajo que corresponde a cada respuesta (fundamental + cifra)
@@ -460,10 +498,11 @@
   const melodia = () => Reglas.notasDe(estado.ejercicio);
 
   function responderFuncion(f) {
-    if (estado.corregido || estado.modoFun !== 'pedir' || bloqueada(estado.activa, 'funcion')) return;
+    const campo = estado.campo === 'funcion2' && esDobleFun(estado.activa) ? 'funcion2' : 'funcion';
+    if (estado.corregido || estado.modoFun !== 'pedir' || bloqueada(estado.activa, campo)) return;
     const i = estado.activa;
-    estado.campo = 'funcion';
-    estado.funciones[i] = f;
+    estado.campo = campo;
+    if (campo === 'funcion2') estado.funciones2[i] = f; else estado.funciones[i] = f;
     if (estado.tocadas) estado.tocadas[i].funcion = true;
     avanzar();
     pintar();
@@ -476,7 +515,7 @@
     estado.marcas[i] = t;
     if (estado.tocadas) estado.tocadas[i].tonalidad = true;
     // Al marcar, la casilla de grado de esa nota se parte: se pasa a rellenar su segunda mitad si falta
-    estado.campo = estado.pedirRomano ? (estado.romanos[i] ? 'romano2' : 'romano') : 'cifra';
+    estado.campo = pideGrado() ? (estado.romanos[i] ? 'romano2' : 'romano') : 'cifra';
     pintar();
   }
 
@@ -490,7 +529,7 @@
   // ¿La nota i tiene ya cifra y grado (o solo cifra, si no se pide el grado)?
   // En una nota marcada como cambio de tonalidad hacen falta los dos grados.
   function notaCompleta(i) {
-    return !!estado.respuestas[i] && (!estado.pedirRomano || (!!estado.romanos[i] && (!esDoble(i) || !!estado.romanos2[i])));
+    return !!estado.respuestas[i] && (!pideGrado() || (!!estado.romanos[i] && (!esDoble(i) || !!estado.romanos2[i])));
   }
 
   const cifrasModelo = () => estado.ejercicio.respuestas.map((_, i) => Ejercicios.admisibles(estado.ejercicio, i)[0]);
@@ -502,7 +541,7 @@
     return estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null));
   }
   // ¿La nota está respondida del todo (también la función, si se pide)?
-  const notaRespondida = i => notaCompleta(i) && (estado.modoFun !== 'pedir' || !!estado.funciones[i]);
+  const notaRespondida = i => notaCompleta(i) && (estado.modoFun !== 'pedir' || (!!estado.funciones[i] && (!esDobleFun(i) || !!estado.funciones2[i])));
 
   // El bajo se dobla a la octava grave al sonar, para que destaque y se oigan bien las inversiones.
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];
@@ -629,7 +668,7 @@
     if (!estado.corregido) {
       const caja = estado.campo === 'tonalidad' && tonalidadEditable() ? '#paleta-tonalidades-caja'
         : estado.campo === 'funcion' && estado.modoFun === 'pedir' ? '#paleta-funciones-caja'
-        : (estado.campo === 'romano' || estado.campo === 'romano2') && estado.pedirRomano ? '#paleta-romanos-caja' : '#paleta-caja';
+        : (estado.campo === 'romano' || estado.campo === 'romano2') && pideGrado() ? '#paleta-romanos-caja' : '#paleta-caja';
       $(caja).classList.add('destacada');
     }
   }
@@ -668,17 +707,20 @@
   // La fila «Tonalidad» no entra: es opcional.
   // Si se pide la función tonal, va la primera (es el plan del que sale el acorde).
   const conFuncion = () => estado.modoFun === 'pedir';
-  const camposDe = j => (conFuncion() ? ['funcion'] : []).concat(estado.pedirRomano ? (esDoble(j) ? ['romano', 'romano2', 'cifra'] : ['romano', 'cifra']) : ['cifra']);
+  /* La casilla de función se parte en el pivote, igual que la del grado: la tonalidad ha
+     de estar a la vista para que las dos lecturas signifiquen algo (decisión 95). */
+  const esDobleFun = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && !!estado.modoFun;
+  const camposDe = j => (conFuncion() ? (esDobleFun(j) ? ['funcion', 'funcion2'] : ['funcion']) : []).concat(pideGrado() ? (esDoble(j) ? ['romano', 'romano2', 'cifra'] : ['romano', 'cifra']) : ['cifra']);
   // Las mismas casillas en su orden VISUAL, de arriba abajo (para las flechas ↑ ↓)
-  const camposVisuales = j => (estado.pedirRomano ? (esDoble(j) ? ['cifra', 'romano', 'romano2'] : ['cifra', 'romano']) : ['cifra']).concat(conFuncion() ? ['funcion'] : []);
-  const campoInicial = () => (conFuncion() ? 'funcion' : estado.pedirRomano ? 'romano' : 'cifra');
-  const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : campo === 'funcion' ? estado.funciones[j] : estado.romanos[j]);
+  const camposVisuales = j => (pideGrado() ? (esDoble(j) ? ['cifra', 'romano', 'romano2'] : ['cifra', 'romano']) : ['cifra']).concat(conFuncion() ? (esDobleFun(j) ? ['funcion', 'funcion2'] : ['funcion']) : []);
+  const campoInicial = () => (conFuncion() ? 'funcion' : pideGrado() ? 'romano' : 'cifra');
+  const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : campo === 'funcion2' ? estado.funciones2[j] : campo === 'funcion' ? estado.funciones[j] : estado.romanos[j]);
 
   function seleccionar(i, campo) {
     if (estado.corregido) return;
     campo = campo || campoInicial();
     if (campo === 'tonalidad') { if (!tonalidadEditable() || i === 0) return; }
-    else if (campo === 'funcion' && !conFuncion()) return;
+    else if ((campo === 'funcion' || campo === 'funcion2') && !conFuncion()) return;
     else if (!camposDe(i).includes(campo)) campo = campoInicial();
     if (campo !== 'tonalidad' && bloqueada(i, campo)) {
       // Si la casilla pulsada está bloqueada, ir a otra editable de la misma nota
@@ -836,7 +878,7 @@
   function parar() { Sonido.parar(); marcarSonando(null); $('#btn-parar').hidden = true; }
 
   function responderRomano(r) {
-    if (estado.corregido || !estado.pedirRomano) return;
+    if (estado.corregido || !pideGrado()) return;
     const i = estado.activa;
     // El grado va a la mitad activa de la casilla (en un pivote hay dos: anterior y nueva)
     const campo = estado.campo === 'romano2' && esDoble(i) ? 'romano2' : 'romano';
@@ -862,6 +904,7 @@
     if (bloqueada(i, estado.campo)) return;
     if (estado.campo === 'romano2') estado.romanos2[i] = null;
     else if (estado.campo === 'romano') estado.romanos[i] = null;
+    else if (estado.campo === 'funcion2') estado.funciones2[i] = null;
     else if (estado.campo === 'funcion') estado.funciones[i] = null;
     else estado.respuestas[i] = null;
     pintar();
@@ -924,7 +967,7 @@
       const gr = p => Ejercicios.gradoDe(ej, p);
       const acierta = (pares, r) => r !== null && cand(pares).some(p => gr(p) === r);
       let okRomano = true, okRomano2 = true, modeloRomano = gr(parejas[0]);
-      if (estado.pedirRomano) {
+      if (pideGrado()) {
         const doble = esDoble(i);
         if (l.antes && !hayFilaTonalidad()) {
           /* Modulación sin anunciar: el pivote tiene una sola casilla, porque el alumno no
@@ -952,10 +995,21 @@
         }
       }
       // Función tonal (si se pide): vale la del acorde modelo, la de cualquier admisible o la del acorde dado si es correcto
-      let okFuncion = true;
-      const fun = estado.funciones[i];
-      if (estado.modoFun === 'pedir') okFuncion = !!fun && (Ejercicios.funcionesAdmisibles(ej, i).includes(fun) || (okRomano && okCifra && Teoria.funcionesDeAcorde(rom, cifra).includes(fun)));
-      return { ok: okCifra && okRomano && okRomano2 && okFuncion, okCifra, okRomano, okRomano2, okFuncion, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion: Ejercicios.funcionModelo(ej, i), cifra, romano: rom, romano2: rom2, funcion: fun };
+      let okFuncion = true, okFuncion2 = true;
+      const fun = estado.funciones[i], fun2 = estado.funciones2[i];
+      const dobleFun = esDobleFun(i);
+      const tonAntes = dobleFun ? Ejercicios.tonalidadAntes(ej, i) : null;
+      /* En el pivote se juzga cada casilla en SU tonalidad: arriba la de partida, abajo la
+         de llegada. El mismo acorde puede ser T en una y S en la otra, y las dos valen. */
+      if (estado.modoFun === 'pedir') {
+        const vale = (f, adm) => !!f && (adm.includes(f) || (okRomano && okCifra && Teoria.funcionesDeAcorde(rom, cifra).includes(f)));
+        okFuncion = vale(fun, dobleFun ? Ejercicios.funcionesAdmisiblesEn(ej, i, tonAntes) : Ejercicios.funcionesAdmisibles(ej, i));
+        okFuncion2 = !dobleFun || vale(fun2, Ejercicios.funcionesAdmisibles(ej, i));
+      }
+      const modeloFuncion = dobleFun
+        ? Ejercicios.funcionModeloEn(ej, i, tonAntes) + ' = ' + Ejercicios.funcionModelo(ej, i)
+        : Ejercicios.funcionModelo(ej, i);
+      return { ok: okCifra && okRomano && okRomano2 && okFuncion && okFuncion2, okCifra, okRomano, okRomano2, okFuncion, okFuncion2, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion, cifra, romano: rom, romano2: rom2, funcion: fun, funcion2: fun2 };
     });
     /* Síncopa armónica: al pasar a una parte más fuerte la armonía ha de cambiar. Un acorde
        que entra en parte débil y se prolonga sobre la fuerte es un error de enlace, y se
@@ -1005,9 +1059,10 @@
       // editable aunque sus dos casillas estén entre las admisibles
       const enlaceOk = r.okEnlace && !conAviso.has(i);
       if (r.okCifra && enlaceOk) estado.bloqueadas[i].cifra = true;
-      if (!estado.pedirRomano || (r.okRomano && enlaceOk)) estado.bloqueadas[i].romano = true;
-      if (!estado.pedirRomano || !esDoble(i) || r.okRomano2) estado.bloqueadas[i].romano2 = true;
+      if (!pideGrado() || (r.okRomano && enlaceOk)) estado.bloqueadas[i].romano = true;
+      if (!pideGrado() || !esDoble(i) || r.okRomano2) estado.bloqueadas[i].romano2 = true;
       if (estado.modoFun !== 'pedir' || r.okFuncion) estado.bloqueadas[i].funcion = true;
+      if (estado.modoFun !== 'pedir' || !esDobleFun(i) || r.okFuncion2) estado.bloqueadas[i].funcion2 = true;
     });
     if (estado.resultadoMod) {
       if (estado.resultadoMod.ok) estado.tonalidadBloqueada = true;
@@ -1050,13 +1105,13 @@
     const caja = $('#resultado');
     const pct = Math.round(100 * aciertos / n);
     let html = '<h2>' + aciertos + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
-    const aciertosFun = res.filter(r => r.okFuncion).length;
+    const aciertosFun = res.filter(r => r.okFuncion && r.okFuncion2).length;
     const enlacesMal = res.filter(r => !r.okEnlace).length;
     const porArreglar = (estado.avisosRespuesta || []).length;          // los que ha causado el alumno
     const vocesMal = Math.max((estado.avisosVoces || []).length, porArreglar);   // los que se dibujan en rojo
     const notasArreglar = [...(estado.notasAviso || new Set())].sort((a, b) => a - b).map(k => k + 1);
     const hayQueArreglar = notasArreglar.length > 0;
-    if (estado.pedirRomano) html += '<p class="desglose">' + (estado.modoFun === 'pedir' ? 'Funciones: ' + aciertosFun + ' de ' + n + ' · ' : '') + 'Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
+    if (pideGrado()) html += '<p class="desglose">' + (estado.modoFun === 'pedir' ? 'Funciones: ' + aciertosFun + ' de ' + n + ' · ' : '') + 'Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
       + (enlacesMal ? ' · Enlaces incorrectos: ' + enlacesMal : '')
       + (vocesMal ? ' · Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso') + (porArreglar ? ' (' + porArreglar + ' por arreglar)' : '') + ' (notas en rojo)' : '')
       + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
@@ -1099,18 +1154,18 @@
         if (r.ok) return;
         const nombre = Teoria.nombreEs(notas[i]);
         const parejas = Ejercicios.parejas(ej, i);
-        const ver = p => (estado.pedirRomano ? Ejercicios.gradoDe(ej, p) + ' ' : '') + Teoria.CIFRADOS[p.cifra].etiqueta;
+        const ver = p => (pideGrado() ? Ejercicios.gradoDe(ej, p) + ' ' : '') + Teoria.CIFRADOS[p.cifra].etiqueta;
         const gradoDado = esDoble(i) ? (r.romano || '¿?') + ' = ' + (r.romano2 || '¿?') : (r.romano || '¿grado?');
-        const funDada = estado.modoFun === 'pedir' ? (r.funcion || '¿función?') + ' · ' : '';
-        const dada = funDada + (estado.pedirRomano ? gradoDado + ' ' : '') + (r.cifra ? Teoria.CIFRADOS[r.cifra].etiqueta : '¿cifra?');
-        const modelo = (estado.modoFun === 'pedir' ? r.modeloFuncion + ' · ' : '') + (estado.pedirRomano ? r.modeloRomano + ' ' : '') + Teoria.CIFRADOS[r.modelo].etiqueta;
+        const funDada = estado.modoFun === 'pedir' ? ((esDobleFun(i) ? (r.funcion || '¿?') + ' = ' + (r.funcion2 || '¿?') : (r.funcion || '¿función?'))) + ' · ' : '';
+        const dada = funDada + (pideGrado() ? gradoDado + ' ' : '') + (r.cifra ? Teoria.CIFRADOS[r.cifra].etiqueta : '¿cifra?');
+        const modelo = (estado.modoFun === 'pedir' ? r.modeloFuncion + ' · ' : '') + (pideGrado() ? r.modeloRomano + ' ' : '') + Teoria.CIFRADOS[r.modelo].etiqueta;
         let expl = '';
         const modeloId = parejas[0] ? parejas[0].id : r.modelo;
         if (estado.propuesta && estado.propuesta[i] && estado.propuesta[i].modelo === modeloId) expl = estado.propuesta[i].explicacion;
         const otras = parejas.slice(1).map(ver);
         let que = '';
         if (!r.okEnlace) que = ' (falla el enlace: ' + r.enlace + ')';
-        else if (!r.okFuncion && r.okCifra && r.okRomano && r.okRomano2) que = ' (falla la función)';
+        else if (!(r.okFuncion && r.okFuncion2) && r.okCifra && r.okRomano && r.okRomano2) que = ' (falla la función)';
         else if (!(!r.okCifra && !(r.okRomano && r.okRomano2))) que = !r.okCifra ? ' (falla la cifra)' : !(r.okRomano && r.okRomano2) ? ' (falla el grado)' : '';
         html += '<li><b>Nota ' + (i + 1) + ' (' + nombre + ')</b>' + que + ': has puesto <span class="cif mal">' + dada + '</span>; '
           + 'la respuesta modelo es <span class="cif bien">' + modelo + '</span>'
@@ -1430,7 +1485,7 @@
       // El número pequeño de cada tecla de la paleta activa (cifra, grado o tonalidad)
       const paleta = estado.campo === 'tonalidad' ? '#paleta-tonalidades'
         : estado.campo === 'funcion' && estado.modoFun === 'pedir' ? '#paleta-funciones'
-        : (estado.campo === 'romano' || estado.campo === 'romano2') && estado.pedirRomano ? '#paleta-romanos' : '#paleta';
+        : (estado.campo === 'romano' || estado.campo === 'romano2') && pideGrado() ? '#paleta-romanos' : '#paleta';
       const b = document.querySelector(paleta + ' .tecla[data-atajo="' + ev.key + '"]');
       if (b) { ev.preventDefault(); b.click(); }
     }

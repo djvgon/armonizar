@@ -125,6 +125,11 @@ svg.partitura .casilla:focus { outline: none; }
 svg.partitura .casilla:focus .fondo { stroke: var(--acento); }
 svg.partitura .casilla.activa .fondo { fill: var(--acento-suave); stroke: var(--acento); stroke-width: 2.2; }
 svg.partitura .casilla.llena .fondo { fill: var(--papel); }
+/* Casilla DADA: el dato viene escrito y no se responde (la función, la tonalidad y, en la
+   armonización de bajo con los grados dados, el grado del bajo). Decisión 94. */
+svg.partitura .casilla-romano.dada .fondo { fill: var(--acento-suave); stroke: var(--acento); }
+svg.partitura .casilla-romano.dada .romano { fill: var(--acento); }
+svg.partitura .casilla.fija { cursor: default; }
 svg.partitura .casilla.bien .fondo { fill: var(--bien-suave); stroke: var(--bien); stroke-width: 2; }
 svg.partitura .casilla.mal .fondo { fill: var(--mal-suave); stroke: var(--mal); stroke-width: 2; }
 svg.partitura .casilla.mal .cifra-texto, svg.partitura .casilla.mal .cifra-raya { fill: var(--mal); stroke: var(--mal); }

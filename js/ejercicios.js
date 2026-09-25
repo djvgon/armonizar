@@ -423,13 +423,24 @@ const Ejercicios = (() => {
      ausente (sin fila). ej.funcionesNotas: la función de cada nota fijada por el profesor
      (si falta, se deduce del acorde modelo). */
   function funciones(ej) { return ej.funciones === 'dadas' || ej.funciones === 'pedir' ? ej.funciones : null; }
-  function funcionModelo(ej, i) {
+  function funcionModelo(ej, i) { return funcionModeloEn(ej, i, tonalidadEn(ej, i)); }
+  /* La misma, leída en una tonalidad concreta (decisión 95). En el acorde pivote hace
+     falta dos veces: el mismo acorde es tónica en el tono de partida y subdominante en el
+     de llegada, y las dos lecturas son verdad. Los vecinos se miran en la tonalidad que
+     rige en ellos, que es lo que oye el alumno. */
+  function funcionModeloEn(ej, i, ton) {
     if (Array.isArray(ej.funcionesNotas) && Teoria.TODAS_FUNCIONES.includes(ej.funcionesNotas[i])) return ej.funcionesNotas[i];
-    const p = parejas(ej, i)[0];
+    const p = parejasEn(ej, i, ton)[0];
     if (!p) return 'T';
     const pSig = i + 1 < numNotas(ej) ? (parejas(ej, i + 1)[0] || {}) : {};
     const pAnt = i > 0 ? (parejas(ej, i - 1)[0] || null) : null;
     return Teoria.funcionDe(p.romano, pSig.romano || null, p.cifra, pSig.cifra || null, pAnt);
+  }
+  // Funciones admisibles leídas en una tonalidad concreta (para el pivote)
+  function funcionesAdmisiblesEn(ej, i, ton) {
+    const out = new Set([funcionModeloEn(ej, i, ton)]);
+    parejasEn(ej, i, ton).forEach(p => Teoria.funcionesDeAcorde(p.romano, p.cifra).forEach(f => out.add(f)));
+    return Teoria.TODAS_FUNCIONES.filter(f => out.has(f));
   }
   // Funciones que se dan por buenas en la nota i: la modelo y las de cualquier acorde admisible
   function funcionesAdmisibles(ej, i) {
@@ -502,10 +513,17 @@ const Ejercicios = (() => {
      y de la cifra sale el bajo. El profesor puede cambiarlo con `campoGrado`. */
   function campoGrado(ej) {
     if (ej && (ej.campoGrado === 'bajo' || ej.campoGrado === 'fundamental')) return ej.campoGrado;
-    // Solo donde el bajo está delante tiene sentido pedir el grado que ocupa en la escala
-    if (modo(ej) !== 'armonizar') return 'fundamental';
-    return estadoGrados(ej) === 'pedido' ? 'bajo' : 'fundamental';
+    /* En la armonización de bajo la fila del grado es SIEMPRE el grado del bajo
+       (decisión 94): lo único que cambia con el estado es si lo escribe el alumno
+       ('pedido'), si viene ya escrito ('dado') o si no hay fila ('oculto'). En los demás
+       tipos esa fila es el romano de la fundamental y el grado del bajo, cuando se ve, va
+       en circulitos sobre el pentagrama. */
+    return modo(ej) === 'armonizar' ? 'bajo' : 'fundamental';
   }
+  // ¿La fila del grado del bajo viene ya escrita? (solo en armonización de bajo)
+  function gradoDado(ej) { return campoGrado(ej) === 'bajo' && estadoGrados(ej) === 'dado'; }
+  // ¿No hay fila de grado? (armonización de bajo con los grados ocultos)
+  function sinFilaGrado(ej) { return campoGrado(ej) === 'bajo' && estadoGrados(ej) === 'oculto'; }
 
   /* El grado del bajo en este ejercicio (decisión 91). Tres estados, un solo mando:
        'dado'    → el circulito va puesto encima de la nota y el alumno no lo escribe;
@@ -528,9 +546,10 @@ const Ejercicios = (() => {
   function gradoDe(ej, p) { return p ? (campoGrado(ej) === 'bajo' ? p.gradoBajo : p.romano) : null; }
 
   /* ¿Se dibujan los grados de la escala en circulito sobre el bajo? (decisión 52). Solo
-     en el estado 'dado': si se le piden, el circulito sería la respuesta escrita encima
-     de la nota, y si están ocultos, no hay nada que dibujar. */
-  function gradosBajo(ej) { return estadoGrados(ej) === 'dado'; }
+     en el estado 'dado' y solo donde el grado del bajo NO tiene fila propia: en la
+     armonización de bajo, cuando viene dado, va escrito en su fila y no hace falta
+     repetirlo encima del pentagrama (decisión 94). */
+  function gradosBajo(ej) { return estadoGrados(ej) === 'dado' && campoGrado(ej) !== 'bajo'; }
 
   // Nivel de ayuda con los grados: 'ninguna' | 'lista' | 'paleta'
   function ayudaGrados(ej) { return ['ninguna', 'lista', 'paleta'].includes(ej.ayudaGrados) ? ej.ayudaGrados : 'lista'; }
@@ -597,6 +616,33 @@ const Ejercicios = (() => {
     // Grados del bajo: por número, con las alteraciones junto al suyo. Romanos: I … VII y, detrás, los cromáticos (V/V)
     if (bajo) return [...usados].sort((a, b) => Teoria.ordenGrado(a) - Teoria.ordenGrado(b));
     return Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS).filter(r => usados.has(r));
+  }
+
+  /* ---------- El inventario de acordes (decisión 92) ----------
+     Lo que Diego escribe en la pizarra al empezar: los acordes con los que se trabaja,
+     **sin inversiones**. Las listas de acordes de las lecciones son acumulativas —cada
+     una contiene la anterior, comprobado en el banco—, así que la unión de los fragmentos
+     de una ficha es justo «todo lo visto hasta la lección más avanzada que entra».
+     Devuelve [{nombre, posiciones}]: el nombre para el alumno y las inversiones que de
+     verdad se usan, que van en el título de la etiqueta por si quiere el detalle. */
+  const ORDEN_INVENTARIO = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+  function inventario(acordes) {
+    const m = new Map();
+    (acordes || []).forEach(id => {
+      const p = par(id);
+      if (!p.cifra || !Teoria.CIFRADOS[p.cifra]) return;
+      const nombre = Teoria.acordeSinPosicion(p.romano, p.cifra);
+      if (!m.has(nombre)) m.set(nombre, []);
+      const etq = Teoria.CIFRADOS[p.cifra].etiqueta;
+      if (!m.get(nombre).includes(etq)) m.get(nombre).push(etq);
+    });
+    const raiz = n => n.replace(/[79]/g, '').split('/')[0];
+    const peso = n => {
+      const i = ORDEN_INVENTARIO.indexOf(raiz(n));
+      return (i < 0 ? 90 : i) * 10 + (n.indexOf('/') >= 0 ? 5 : 0) + (/[79]/.test(n) ? 1 : 0);
+    };
+    return [...m.keys()].sort((a, b) => peso(a) - peso(b) || a.localeCompare(b))
+      .map(nombre => ({ nombre, posiciones: m.get(nombre) }));
   }
 
   /* La paleta de grados: lo que se le ofrece al alumno para elegir. Con ayuda 'paleta',
@@ -721,7 +767,7 @@ const Ejercicios = (() => {
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, estadoGrados, gradoDe, paletaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
-    funciones, funcionModelo, funcionesAdmisibles, funcionesDelEjercicio, gradosBajo, bajosDe,
+  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, estadoGrados, gradoDado, sinFilaGrado, gradoDe, paletaGrados, inventario, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
+    funciones, funcionModelo, funcionModeloEn, funcionesAdmisibles, funcionesAdmisiblesEn, funcionesDelEjercicio, gradosBajo, bajosDe,
     modulaciones, modula, aviso, tonalidades, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

@@ -491,11 +491,20 @@
       romanos2: ver ? ej.respuestas.map((a, i) => (a[0] && pivotes.has(i) ? romanoModelo(a, i, Ejercicios.tonalidadEn(ej, i)) : null)) : new Array(n).fill(null),
       dobles: ej.respuestas.map((_, i) => pivotes.has(i)),
       etiquetas: mods.map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'dada' })),
-      pedirRomano: opciones().pedirRomano || sop, activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
+      // Con los grados ocultos, en armonización de bajo no hay fila de grado (decisión 94)
+      pedirRomano: (opciones().pedirRomano || sop) && !Ejercicios.sinFilaGrado(ejV),
+      gradosDados: Ejercicios.gradoDado(ejV), activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
       realizacion: ver ? Realizacion.realizar(ej, modelos, opReal).acordes : null,   // el profesor siempre puede ver la realización modelo
       vozDada: sop ? 'soprano' : null,
       bajos: sop ? opReal.bajos : null,
-      filaFunciones: opciones().funciones ? { visible: true, editable: false, celdas: ej.respuestas.map((_, i) => ({ texto: Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true })) } : null,
+      /* La fila de funciones, con el pivote partido en dos (decisión 95): arriba la función
+         en el tono de partida y abajo en el de llegada. */
+      filaFunciones: opciones().funciones ? {
+        visible: true, editable: false,
+        celdas: ej.respuestas.map((_, i) => ({ texto: pivotes.has(i) ? Ejercicios.funcionModeloEn(ej, i, Ejercicios.tonalidadAntes(ej, i)) : Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true })),
+        celdas2: ej.respuestas.map((_, i) => (pivotes.has(i) ? { texto: Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true } : null)),
+        dobles: ej.respuestas.map((_, i) => pivotes.has(i))
+      } : null,
       gradosBajo: Ejercicios.gradosBajo(ejV),   // el circulito, solo cuando el grado va DADO (decisión 91)
       numerar: true,                       // el número de cada acorde es el de su fila en la tabla de revisión
       alPulsarNumero: irAFila

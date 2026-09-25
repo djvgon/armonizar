@@ -736,6 +736,30 @@ const Teoria = (() => {
     if (esSecundaria(romano, cifra)) return [SECUNDARIAS[romano].funcion];
     return cifra === '64' && romano === 'I' ? ['D'] : funcionesDe(romano);
   }
+  /* El acorde SIN su posición (decisión 92): el grado y, si lo lleva, la séptima o la
+     novena. «V 6/5̸» y «V +4» son el mismo acorde —V7— en inversiones distintas, y en el
+     inventario que ve el alumno han de contar como uno solo. El número de notas sale de
+     las voces del cifrado: 2 por encima del bajo es tríada, 3 es acorde de séptima.
+     En una dominante secundaria la cifra va antes de la barra: V7/V, no V/V7. */
+  const NOTAS_CIFRADO = {};     // cuántas notas tiene el acorde de cada cifrado, calculado una vez
+  function notasDelCifrado(cifra) {
+    if (NOTAS_CIFRADO[cifra] !== undefined) return NOTAS_CIFRADO[cifra];
+    let n = 3;
+    // Se cuentan sobre un bajo cualquiera: el número de voces superiores no depende de él
+    try { n = vocesSuperiores(cifra, { letra: 'C', alt: 0, octava: 3 }, { tonica: 'C', modo: 'mayor' }).length + 1; } catch (e) { n = 3; }
+    NOTAS_CIFRADO[cifra] = n;
+    return n;
+  }
+
+  function acordeSinPosicion(romano, cifra) {
+    const notas = notasDelCifrado(cifra);
+    const sufijo = notas >= 5 ? '9' : notas === 4 ? '7' : '';
+    const rom = gradoEscrito(romano, cifra);
+    if (!sufijo) return rom;
+    const barra = rom.indexOf('/');
+    return barra < 0 ? rom + sufijo : rom.slice(0, barra) + sufijo + rom.slice(barra);
+  }
+
   /* Función habitual del acorde, mirando a los vecinos.
      El acorde siguiente se mira CON su cifra (decisión 86): el 6/4 cadencial se escribe
      I6/4 pero suena como dominante, y mirando solo el grado se contaba como tónica, de
@@ -861,6 +885,6 @@ const Teoria = (() => {
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
     FUNCIONES, FUNCIONES_CROMATICAS, TODAS_FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,
-    SECUNDARIAS, GRADOS_CROMATICOS, esSecundaria, gradoEscrito, gradoInterno, secundariaDe, romanoEscrito
+    SECUNDARIAS, GRADOS_CROMATICOS, esSecundaria, gradoEscrito, acordeSinPosicion, gradoInterno, secundariaDe, romanoEscrito
   };
 })();
