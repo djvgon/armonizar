@@ -512,56 +512,36 @@ const Ejercicios = (() => {
      dibujar el acorde enseñaría el bajo que hay que reconocer de oído. */
   function realizacion(ej) { return modo(ej) === 'audicion' ? 'alCerrar' : 'siempre'; }
   function verBajo(ej) { return modo(ej) !== 'audicion' || ej.mostrarBajo === true; }
-  /* ¿Qué grado responde el alumno? (decisión 90)
-       'bajo'         → el grado de la escala que ocupa la NOTA DEL BAJO (1 … 7, con ♯/♭),
-                        que es lo que lo ata a la regla de la octava;
-       'fundamental'  → el grado de la FUNDAMENTAL en romano (I … VII, V/V), el análisis.
-     Va por tipo de ficha. Solo la **armonización de bajo** pide el grado del bajo: es la
-     única en que el bajo está delante y el trabajo consiste en leerlo con la regla de la
-     octava. En **Audición** el bajo no se ve, así que pedir el grado que ocupa en la
-     escala no tendría sentido: lo que hace el alumno es identificar el acorde que suena,
-     que es análisis de oído (criterio de Diego, 25/9/2026). El **Análisis** nombra el
-     acorde, y la **melodía de soprano** necesita la fundamental por fuerza, porque de ella
-     y de la cifra sale el bajo. El profesor puede cambiarlo con `campoGrado`. */
-  function campoGrado(ej) {
-    if (ej && (ej.campoGrado === 'bajo' || ej.campoGrado === 'fundamental')) return ej.campoGrado;
-    /* En la armonización de bajo la fila del grado es SIEMPRE el grado del bajo
-       (decisión 94): lo único que cambia con el estado es si lo escribe el alumno
-       ('pedido'), si viene ya escrito ('dado') o si no hay fila ('oculto'). En los demás
-       tipos esa fila es el romano de la fundamental y el grado del bajo, cuando se ve, va
-       en circulitos sobre el pentagrama. */
-    return modo(ej) === 'armonizar' ? 'bajo' : 'fundamental';
-  }
-  // ¿La fila del grado del bajo viene ya escrita? (solo en armonización de bajo)
-  function gradoDado(ej) { return campoGrado(ej) === 'bajo' && estadoGrados(ej) === 'dado'; }
-  // ¿No hay fila de grado? (armonización de bajo con los grados ocultos)
-  function sinFilaGrado(ej) { return campoGrado(ej) === 'bajo' && estadoGrados(ej) === 'oculto'; }
+  /* ¿Qué grado responde el alumno? **Siempre el de la FUNDAMENTAL**, en romano
+     (I … VII, V/V), en los cuatro tipos de ficha (decisión 113, Diego: «no me convence
+     que en la armonización de bajos se indique solo el grado del bajo… mejor indicar en
+     todos los ejercicios lo mismo»). Deroga las decisiones 90 y 94, que en la
+     armonización de bajo ponían ahí el grado de la ESCALA que ocupa la nota del bajo.
 
-  /* El grado del bajo en este ejercicio (decisión 91). Tres estados, un solo mando:
-       'dado'    → el circulito va puesto encima de la nota y el alumno no lo escribe;
-       'pedido'  → lo escribe él (y entonces no se dibuja: sería la respuesta a la vista);
-       'oculto'  → ni se dibuja ni se pide.
-     Sin decir nada, en armonización de bajo se pide —es de lo que va la ficha— y en los
-     demás tipos va dado. Los enlaces repartidos antes llevan un booleano en `gradosBajo`
-     (true = dado, false = oculto) y se leen igual, así que siguen valiendo. */
+     El grado de la escala del bajo no desaparece: deja de ser una respuesta y vuelve a
+     ser lo que es en los otros tres tipos, una anotación sobre la música —el circulito de
+     la decisión 52— que está o no está. Quien la enciende es `estadoGrados`. */
+  function gradoDe(ej, p) { return p ? p.romano : null; }
+
+  /* El circulito de grado sobre cada nota del bajo (decisiones 52, 91 y 113). Dos estados:
+       'dado'    → va puesto encima de la nota;
+       'oculto'  → no se dibuja.
+     Sin decir nada va dado, igual en los cuatro tipos. Los enlaces repartidos antes llevan
+     un booleano (true = dado, false = oculto) o una de las tres palabras de la decisión 91:
+     **'pedido' ya no existe y se lee como 'oculto'**, que es exactamente lo que aquellos
+     enlaces dibujaban —nada—, porque allí el grado del bajo iba en su fila. Lo que cambia
+     en esos enlaces es la fila, que ahora pide la fundamental. */
   function estadoGrados(ej) {
     const v = ej && ej.gradosBajo;
-    /* Pedirlos solo se puede donde el bajo está delante: en los demás tipos la casilla del
-       grado es la fundamental, así que un 'pedido' de más se comporta como 'oculto'. */
-    if (v === 'pedido') return modo(ej) === 'armonizar' ? 'pedido' : 'oculto';
-    if (v === 'dado' || v === 'oculto') return v;
-    if (v === true) return 'dado';
-    if (v === false) return 'oculto';
-    return modo(ej) === 'armonizar' ? 'pedido' : 'dado';
+    if (v === 'oculto' || v === 'pedido' || v === false) return 'oculto';
+    return 'dado';
   }
-  // El grado de una pareja, en la forma que pida el ejercicio
-  function gradoDe(ej, p) { return p ? (campoGrado(ej) === 'bajo' ? p.gradoBajo : p.romano) : null; }
 
-  /* ¿Se dibujan los grados de la escala en circulito sobre el bajo? (decisión 52). Solo
-     en el estado 'dado' y solo donde el grado del bajo NO tiene fila propia: en la
-     armonización de bajo, cuando viene dado, va escrito en su fila y no hace falta
-     repetirlo encima del pentagrama (decisión 94). */
-  function gradosBajo(ej) { return estadoGrados(ej) === 'dado' && campoGrado(ej) !== 'bajo'; }
+  /* ¿Se dibujan los grados de la escala en circulito sobre el bajo? En los cuatro tipos,
+     siempre que el estado sea 'dado' y el bajo esté a la vista (en Audición no lo está, y
+     de eso se ocupa `app.js`). Ya no hay excepción para la armonización de bajo: allí el
+     circulito es justo la ayuda que enlaza la nota con la regla de la octava. */
+  function gradosBajo(ej) { return estadoGrados(ej) === 'dado'; }
 
   // Nivel de ayuda con los grados: 'ninguna' | 'lista' | 'paleta'
   function ayudaGrados(ej) { return ['ninguna', 'lista', 'paleta'].includes(ej.ayudaGrados) ? ej.ayudaGrados : 'lista'; }
@@ -656,15 +636,13 @@ const Ejercicios = (() => {
   // respuestas admisibles, en orden I … VII.
   function grados(ej) {
     if (Array.isArray(ej.grados) && ej.grados.length) return ej.grados.slice();
-    const bajo = campoGrado(ej) === 'bajo';
     const usados = new Set();
     for (let i = 0; i < ej.respuestas.length; i++) {
       parejas(ej, i).forEach(p => usados.add(gradoDe(ej, p)));
       if (esPivote(ej, i)) parejasEn(ej, i, tonalidadAntes(ej, i)).forEach(p => usados.add(gradoDe(ej, p)));
     }
     usados.delete(null); usados.delete(undefined);
-    // Grados del bajo: por número, con las alteraciones junto al suyo. Romanos: I … VII y, detrás, los cromáticos (V/V)
-    if (bajo) return [...usados].sort((a, b) => Teoria.ordenGrado(a) - Teoria.ordenGrado(b));
+    // I … VII y, detrás, los cromáticos (V/V)
     return Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS).filter(r => usados.has(r));
   }
 
@@ -696,16 +674,11 @@ const Ejercicios = (() => {
   }
 
   /* La paleta de grados: lo que se le ofrece al alumno para elegir. Con ayuda 'paleta',
-     solo los que de verdad hacen falta; si no, la escala entera —los siete grados del
-     bajo, o los siete romanos— más los alterados o cromáticos que use el ejercicio. */
+     solo los que de verdad hacen falta; si no, los siete romanos más los cromáticos que
+     use el ejercicio. */
   function paletaGrados(ej) {
     const usados = grados(ej);
     if (ayudaGrados(ej) === 'paleta') return usados;
-    if (campoGrado(ej) === 'bajo') {
-      const base = ['1', '2', '3', '4', '5', '6', '7'];
-      return base.concat(usados.filter(g => !base.includes(g)))
-        .sort((a, b) => Teoria.ordenGrado(a) - Teoria.ordenGrado(b));
-    }
     return Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS.filter(g => usados.includes(g)));
   }
 
@@ -828,7 +801,7 @@ const Ejercicios = (() => {
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, ORDEN_CIFRAS, ordenarCifras, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, estadoGrados, gradoDado, sinFilaGrado, gradoDe, paletaGrados, inventario, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
+  return { CORPUS, REPERTORIO_RO, ORDEN_CIFRAS, ordenarCifras, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, estadoGrados, gradoDe, paletaGrados, inventario, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
     funciones, funcionModelo, funcionModeloEn, funcionesAdmisibles, funcionesAdmisiblesEn, funcionesDelEjercicio, gradosBajo, bajosDe,
     modulaciones, modula, aviso, tonalidades, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

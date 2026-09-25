@@ -98,12 +98,9 @@
     estado.respuestas = new Array(n).fill(null);
     estado.romanos = new Array(n).fill(null);
     estado.romanos2 = new Array(n).fill(null);
+    /* La fila del grado es la de la FUNDAMENTAL en los cuatro tipos (decisión 113). O se
+       pide o no hay fila: no existe el estado «viene escrita» de la decisión 94. */
     estado.pedirRomano = Ejercicios.pideRomano(ej) || Ejercicios.esSoprano(ej);   // en la melodía de soprano el grado es imprescindible: de él sale el bajo
-    estado.campoGrado = Ejercicios.campoGrado(ej);   // 'bajo' | 'fundamental' (decisión 90)
-    /* El grado del bajo, dado: la fila está, pero viene escrita y el alumno no la toca
-       (decisión 94). Y con los grados ocultos, en armonización de bajo no hay fila. */
-    estado.gradosDados = Ejercicios.gradoDado(ej);
-    if (Ejercicios.sinFilaGrado(ej)) estado.pedirRomano = false;
     estado.modoFun = Ejercicios.funciones(ej);
     estado.funciones = estado.modoFun === 'dadas' ? ej.respuestas.map((_, i) => Ejercicios.funcionModelo(ej, i)) : new Array(n).fill(null);
     /* La función en el PIVOTE se parte en dos, una por tonalidad (decisión 95): la de
@@ -117,7 +114,7 @@
     estado.bajos = new Array(n).fill(null);
     estado.bajosMal = null;
     estado.activa = 0;
-    estado.campo = estado.modoFun === 'pedir' ? 'funcion' : (estado.pedirRomano && !estado.gradosDados) ? 'romano' : 'cifra';
+    estado.campo = estado.modoFun === 'pedir' ? 'funcion' : estado.pedirRomano ? 'romano' : 'cifra';
     estado.corregido = false;
     estado.resultados = null;
     estado.resultadoMod = null;
@@ -139,17 +136,6 @@
     estado.realizacionCuando = Ejercicios.realizacion(ej);
     estado.gradosPermitidos = Ejercicios.gradosBajo(ej);
     estado.verGrados = estado.gradosPermitidos;
-    /* Grados dados: la fila se rellena con el grado del bajo, medido en la tonalidad que
-       rige en cada nota. En el pivote, las dos lecturas (decisión 94). */
-    if (estado.gradosDados) for (let i = 0; i < n; i++) {
-      const p = Ejercicios.parejas(ej, i)[0];
-      estado.romanos[i] = p ? Ejercicios.gradoDe(ej, p) : null;
-      if (Ejercicios.esPivote(ej, i)) {
-        const antes = Ejercicios.parejasEn(ej, i, Ejercicios.tonalidadAntes(ej, i))[0];
-        estado.romanos2[i] = estado.romanos[i];
-        estado.romanos[i] = antes ? Ejercicios.gradoDe(ej, antes) : estado.romanos[i];
-      }
-    }
     estado.sonando = null;
     estado.alSonar = sonarAcorde;
     Sonido.parar();
@@ -184,9 +170,7 @@
        filas ha de rellenar y qué significan las notas en rojo. */
     const señala = [];
     if (estado.modoFun === 'pedir') señala.push('su <b>función tonal</b>');
-    if (pideGrado()) señala.push(estado.campoGrado === 'bajo'
-      ? 'el <b>grado</b> que la nota del bajo ocupa en la escala'
-      : 'el <b>grado</b> de su fundamental');
+    if (pideGrado()) señala.push('el <b>grado</b> de su fundamental');
     señala.push('el <b>cifrado</b> (la inversión en que lo escribes)');
     const que = señala.length > 1
       ? señala.slice(0, -1).join(', ') + ' y ' + señala[señala.length - 1]
@@ -326,20 +310,15 @@
     pr.innerHTML = '';
     $('#paleta-romanos-caja').hidden = !pideGrado();
     if (pideGrado()) {
-      /* Según el tipo de ficha (decisión 90): los grados del BAJO en arábigo —1 … 7, con
-         los alterados que use el ejercicio— o los de la FUNDAMENTAL en romano. En romano
-         van los siete diatónicos y, detrás, los CROMÁTICOS: la dominante de la dominante
-         (V/V), que no es un grado de la escala sino una dominante secundaria (decisión
-         48), y que solo aparece cuando el ejercicio la usa o cuando la paleta está
-         completa y la lección la trae en su repertorio. */
+      /* Los grados de la FUNDAMENTAL en romano, en los cuatro tipos de ficha (decisión
+         113): los siete diatónicos y, detrás, los CROMÁTICOS —la dominante de la
+         dominante (V/V), que no es un grado de la escala sino una dominante secundaria
+         (decisión 48)—, que solo aparecen cuando el ejercicio los usa o cuando la paleta
+         está completa y la lección los trae en su repertorio. */
       /* El número pequeño es el del GRADO, no el sitio que ocupa en la paleta (I = 1 …
-         VII = 7), de modo que la tecla es la misma esté la paleta completa o recortada.
-         Con los grados del bajo el número es el grado mismo; los alterados (♯4) comparten
-         cifra con el natural, así que se quedan sin tecla y se pulsan con el ratón. */
+         VII = 7), de modo que la tecla es la misma esté la paleta completa o recortada. */
       const todos = Teoria.ROMANOS.concat(Teoria.GRADOS_CROMATICOS);
-      const numeroDe = r => (estado.campoGrado === 'bajo'
-        ? (/^\d$/.test(r) ? Number(r) : null)
-        : (todos.indexOf(r) >= 0 ? todos.indexOf(r) + 1 : null));
+      const numeroDe = r => (todos.indexOf(r) >= 0 ? todos.indexOf(r) + 1 : null);
       Ejercicios.paletaGrados(estado.ejercicio).forEach(r => {
         const k = numeroDe(r);
         const cont = document.createDocumentFragment();
@@ -407,9 +386,10 @@
   // ¿La casilla de grado de la nota i está partida en dos (nota marcada)?
   // La casilla de grado se parte en dos solo si la fila «Tonalidad» está a la vista: sin
   // ella, el pivote se cifra en la tonalidad que rige, sin desvelar que hay un cambio.
-  /* ¿Se le PIDE el grado? Con los grados dados (decisión 94) la fila está y se ve, pero
-     viene escrita: ni se navega, ni se ofrece paleta, ni cuenta en la corrección. */
-  const pideGrado = () => estado.pedirRomano && !estado.gradosDados;
+  /* ¿Hay fila de grado? Desde la decisión 113 no hay más que dos posibilidades —se pide o
+     no está—, así que `pideGrado` y `estado.pedirRomano` son lo mismo. Se conserva el
+     nombre porque por él pasan la navegación, la paleta, el enunciado y la corrección. */
+  const pideGrado = () => estado.pedirRomano;
   const esDoble = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && estado.pedirRomano;
   const hayFilaTonalidad = () => estado.modoTon !== null;
   const tonalidadEditable = () => estado.modoTon === 'pedir' && !estado.tonalidadBloqueada && !estado.corregido;
@@ -989,9 +969,10 @@
       const cifra = estado.respuestas[i], rom = estado.romanos[i], rom2 = estado.romanos2[i];
       const okCifra = cifra !== null && adm.includes(cifra);
       /* El grado se juzga contra las parejas que quedan tras la cifra, cuando la cifra es
-         correcta: así «V» solo vale si la cifra elegida da de verdad un V. Con el grado
-         del BAJO (decisión 90) eso da igual —la nota del bajo es la que es, la cifra no la
-         cambia—, y por eso todas las parejas llevan el mismo `gradoBajo`. */
+         correcta: así «V» solo vale si la cifra elegida da de verdad un V. Esto es lo que
+         hace que la fundamental se pueda pedir también en las dos fichas de ARMONIZAR,
+         donde el acorde lo elige el alumno: se corrige contra la cifra que él ha puesto,
+         no contra un modelo (decisión 113). */
       const cand = pares => (okCifra ? pares.filter(p => p.cifra === cifra) : pares);
       const gr = p => Ejercicios.gradoDe(ej, p);
       const acierta = (pares, r) => r !== null && cand(pares).some(p => gr(p) === r);

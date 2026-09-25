@@ -96,7 +96,7 @@
       ayudaGrados: $('#ficha-ayuda-grados').value,
       modo: modoElegido(), preferir: pref ? [pref] : [], tonalidades: $('#ficha-tonalidades').value,
       bajoAudicion: $('#bajo-audicion').value === 'bajo',
-      gradosBajo: $('#grados-bajo').value,          // 'auto' | 'dado' | 'pedido' | 'oculto' (decisión 91)
+      gradosBajo: $('#grados-bajo').value,          // 'dado' | 'oculto' (decisiones 91 y 113)
       gradosPrimero: $('#grados-primero').checked,
       funciones: fun === 'dadas' || fun === 'pedir' ? fun : null };
   }
@@ -217,7 +217,7 @@
     if (!op.pedirRomano) ej.pedirRomano = false;
     if (!op.reintentos) ej.reintentos = false;
     if (op.ayudaGrados !== 'lista') ej.ayudaGrados = op.ayudaGrados;
-    if (['dado', 'pedido', 'oculto'].includes(op.gradosBajo)) ej.gradosBajo = op.gradosBajo;
+    if (op.gradosBajo === 'oculto') ej.gradosBajo = 'oculto';
     if (op.modo !== 'armonizar') ej.modo = op.modo;
     if (op.modo === 'audicion' && op.bajoAudicion) ej.mostrarBajo = true;
     if (op.modo === 'soprano') {
@@ -513,15 +513,12 @@
     const modelos = ej.respuestas.map(a => (a[0] ? Ejercicios.cifraDe(a[0]) : null));
     const mods = Ejercicios.modulaciones(ej);
     const pivotes = new Set(mods.map(m => m.nota));
-    /* La vista previa enseña lo que vería el alumno (decisiones 90 y 91): el grado del
-       BAJO donde se le pide, el de la fundamental donde no. Con «solo en el primer
-       fragmento» marcado, la previa es el fragmento 1, así que los grados van DADOS. */
-    const ejV = opciones().gradosPrimero && Ejercicios.modo(ej) === 'armonizar'
-      ? Object.assign({}, ej, { gradosBajo: 'dado' }) : ej;
-    const gradoBajo = Ejercicios.campoGrado(ejV) === 'bajo';
+    /* La vista previa enseña lo que vería el alumno. El grado es el de la FUNDAMENTAL en
+       los cuatro tipos (decisión 113). Con «solo en el primer fragmento» marcado, la
+       previa es el fragmento 1, así que los circulitos del bajo van puestos. */
+    const ejV = opciones().gradosPrimero ? Object.assign({}, ej, { gradosBajo: 'dado' }) : ej;
     const romanoModelo = (a, i, ton) => {
       if (!a[0]) return null;
-      if (gradoBajo) return Teoria.textoGrado(notas[i], ton);
       if (sop) { const p = Ejercicios.par(a[0]); return Teoria.gradoEscrito(p.romano, p.cifra); }
       return Teoria.romanoEscrito(a[0], notas[i], ton);
     };
@@ -535,9 +532,8 @@
       romanos2: ver ? ej.respuestas.map((a, i) => (a[0] && pivotes.has(i) ? romanoModelo(a, i, Ejercicios.tonalidadEn(ej, i)) : null)) : new Array(n).fill(null),
       dobles: ej.respuestas.map((_, i) => pivotes.has(i)),
       etiquetas: mods.map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'dada' })),
-      // Con los grados ocultos, en armonización de bajo no hay fila de grado (decisión 94)
-      pedirRomano: (opciones().pedirRomano || sop) && !Ejercicios.sinFilaGrado(ejV),
-      gradosDados: Ejercicios.gradoDado(ejV), activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
+      pedirRomano: opciones().pedirRomano || sop,
+      activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
       realizacion: ver ? Realizacion.realizar(ej, modelos, opReal).acordes : null,   // el profesor siempre puede ver la realización modelo
       vozDada: sop ? 'soprano' : null,
       bajos: sop ? opReal.bajos : null,
@@ -549,7 +545,7 @@
         celdas2: ej.respuestas.map((_, i) => (pivotes.has(i) ? { texto: Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true } : null)),
         dobles: ej.respuestas.map((_, i) => pivotes.has(i))
       } : null,
-      gradosBajo: Ejercicios.gradosBajo(ejV),   // el circulito, solo cuando el grado va DADO (decisión 91)
+      gradosBajo: Ejercicios.gradosBajo(ejV),   // el circulito sobre el bajo (decisiones 91 y 113)
       numerar: true,                       // el número de cada acorde es el de su fila en la tabla de revisión
       alPulsarNumero: irAFila,
       alPasarNumero: globoAcorde
@@ -792,8 +788,7 @@
     $('#pedir-romano').checked = ej.pedirRomano !== false;
     $('#reintentos').checked = ej.reintentos !== false;
     $('#ficha-ayuda-grados').value = Ejercicios.ayudaGrados(ej);
-    $('#grados-bajo').value = ['dado', 'pedido', 'oculto'].includes(ej.gradosBajo) ? ej.gradosBajo
-      : ej.gradosBajo === false ? 'oculto' : ej.gradosBajo === true ? 'dado' : 'auto';
+    $('#grados-bajo').value = Ejercicios.estadoGrados(ej);
     elegirModo(Ejercicios.modo(ej));
     $('#bajo-audicion').value = ej.mostrarBajo === true ? 'bajo' : '';
     $('#ficha-funciones').value = Ejercicios.funciones(ej) || '';
@@ -854,7 +849,7 @@
       $('#texto-bajo').value = b.texto || ''; $('#tonica').value = b.tonica || 'C'; $('#modo').value = modoTon;
       $('#compas').value = b.compas || '4/4'; $('#titulo').value = b.titulo || ''; $('#coleccion').value = b.coleccion || '';
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
-      $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#grados-bajo').value = ['dado', 'pedido', 'oculto', 'auto'].includes(b.gradosBajo) ? b.gradosBajo : (b.gradosBajo === '' ? 'oculto' : 'auto');
+      $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#grados-bajo').value = b.gradosBajo === 'oculto' || b.gradosBajo === 'pedido' ? 'oculto' : 'dado';
       $('#grados-primero').checked = !!b.gradosPrimero;
       /* Las opciones del alumno viven ahora solo en la ficha (decisión 66). En un borrador
          antiguo estaban por duplicado: se recogen las de la ficha y, si no las hubiera,
@@ -1216,8 +1211,8 @@
     const op = opciones();
     if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
     if (!op.reintentos) f.reintentos = false;
-    if (['dado', 'pedido', 'oculto'].includes(op.gradosBajo)) f.gradosBajo = op.gradosBajo;
-    if (op.gradosPrimero && f.modo === 'armonizar') f.gradosPrimero = true;
+    if (op.gradosBajo === 'oculto') f.gradosBajo = 'oculto';
+    if (op.gradosPrimero) f.gradosPrimero = true;
     if (f.modo === 'audicion' && op.bajoAudicion) f.mostrarBajo = true;
     if (f.modo === 'soprano') {
       f.acordes = acordesElegidos();

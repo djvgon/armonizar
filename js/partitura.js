@@ -58,6 +58,7 @@ const Partitura = (() => {
     silRedonda: '', silBlanca: '', silNegra: '', silCorchea: '',
     puntillo: '', corcheteArriba: '', corcheteAbajo: '',
     sostenido: '', bemol: '', becuadro: '',
+    dobleSostenido: '', dobleBemol: '',   // decisión 114
     compas: d => String.fromCodePoint(0xE080 + d),
     cifra: {
       '0': '', '1': '', '2': '', '3': '', '4': '', '5': '',
@@ -67,7 +68,8 @@ const Partitura = (() => {
     }
   };
   // Anchuras de avance (en espacios) de los glifos que necesitamos alinear.
-  const ANCHO = { redonda: 1.69, blanca: 1.18, negra: 1.18, sostenido: 1.0, bemol: 0.9, becuadro: 0.67 };
+  const ANCHO = { redonda: 1.69, blanca: 1.18, negra: 1.18, sostenido: 1.0, bemol: 0.9, becuadro: 0.67,
+    dobleSostenido: 1.0, dobleBemol: 1.65 };   // medidas en la propia Bravura (1 em = 4 espacios)
 
   // Figura de una duración en negras: 4 redonda, 2 blanca, 1 negra, 0.5 corchea; ×1.5 con puntillo.
   function figura(dur) {
@@ -264,7 +266,6 @@ const Partitura = (() => {
       try { return Teoria.bajoDe(res.modeloRomano, res.modelo, (tonsNota && tonsNota[it.k]) || ton); } catch (e) { return null; }
     };
     const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];
-    const gradosDados = !!estado.gradosDados;   // la fila del grado viene escrita (decisión 94)
     /* Un renglón por TONALIDAD, no uno nuevo por cada cambio (decisión 83). Antes, cada
        pivote abría un renglón más: un fragmento que sale de Sol M, toma prestado un acorde
        de Re M y vuelve a Sol M gastaba TRES renglones, y el tercero repetía el primero.
@@ -394,8 +395,14 @@ const Partitura = (() => {
     // Alteración necesaria según la armadura: solo se dibuja si la nota difiere de ella
     const escalaArm = Teoria.escalaNatural(ton);
     const altArmadura = letra => { const e = escalaArm.find(x => x.letra === letra); return e ? e.alt : 0; };
-    const glifoAlt = alt => (alt > 0 ? G.sostenido : alt < 0 ? G.bemol : G.becuadro);
-    const anchoAlt = alt => (alt > 0 ? ANCHO.sostenido : alt < 0 ? ANCHO.bemol : ANCHO.becuadro);
+    /* Cinco alteraciones, no tres (decisión 114): el doble sostenido y el doble bemol hacen falta
+       en cuanto se transporta a sol♯, re♯ o la♯ menor —donde la sensible es fa𝄪, do𝄪 o sol𝄪— y a las
+       tonalidades de muchos bemoles. El doble bemol es ANCHO (1,65 espacios, son dos bemoles
+       pegados), así que sin su medida propia la nota se le montaba encima. */
+    const glifoAlt = alt => (alt >= 2 ? G.dobleSostenido : alt === 1 ? G.sostenido
+      : alt <= -2 ? G.dobleBemol : alt === -1 ? G.bemol : G.becuadro);
+    const anchoAlt = alt => (alt >= 2 ? ANCHO.dobleSostenido : alt === 1 ? ANCHO.sostenido
+      : alt <= -2 ? ANCHO.dobleBemol : alt === -1 ? ANCHO.bemol : ANCHO.becuadro);
 
     // Números de los acordes (los mismos que la columna # de la tabla de revisión)
     const zonasAcorde = [];
@@ -733,19 +740,6 @@ const Partitura = (() => {
           const bloqueadaAqui = !!bloq[campo];
           const lista = campo === 'romano2' ? estado.romanos2 : estado.romanos;
           const rom = lista ? lista[i] : null;
-          /* Grados DADOS (decisión 94): la casilla se ve, con el grado escrito, pero no se
-             responde ni se corrige. Se pinta como las demás casillas dadas —la de función
-             y la de tonalidad—, para que se distinga de un vistazo de las que él rellena. */
-          if (gradosDados) {
-            clases.push('dada', 'fija');
-            g.setAttribute('class', clases.join(' '));
-            g.setAttribute('tabindex', '-1');
-            g.setAttribute('role', 'note');
-            g.appendChild(el('rect', { x: x0, y: y0, width: ANCHO_CASILLA, height: alto, rx: esPivote ? 0 : 0.7 * SP, class: 'fondo' }));
-            g.appendChild(el('text', { x: cx, y: y0 + ALTO_ROMANO / 2 + 0.75 * SP, 'text-anchor': 'middle', class: 'romano' }, rom || ''));
-            svg.appendChild(g);
-            return;
-          }
           if (activa && !bloqueadaAqui && estado.campo === campo) clases.push('activa');
           else if (activa && !bloqueadaAqui) clases.push('activa-nota');
           const okAqui = res ? (campo === 'romano2' ? res.okRomano2 : res.okRomano) : null;

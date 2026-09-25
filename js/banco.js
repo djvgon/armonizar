@@ -417,16 +417,17 @@ const Banco = (() => {
     const iv = Teoria.intervaloEntreTonicas(e.tonalidad.tonica, tonicaDestino);
     const mueve = n => Teoria.transportar(Teoria.nota(n), iv.pasos, iv.semitonos);
 
-    /* Primero, ¿se puede DIBUJAR? La fuente incrustada es un subconjunto de Bravura con
-       ♯, ♭ y ♮, sin doble sostenido ni doble bemol. Medido sobre el banco entero: hasta
-       5 alteraciones no aparece ni uno; a 6 aparece un caso y a 7, cuatro. En esos, se
-       devuelve null y quien llama prueba con otra tónica. */
+    /* Primero, ¿se puede DIBUJAR? Desde la decisión 114 la fuente incrustada lleva también el
+       doble sostenido y el doble bemol, así que el tope real es el TRIPLE: por encima de dos
+       alteraciones en una nota no hay signo que ponerle, y eso no lo produce ninguna tonalidad
+       de las que reparte el configurador (el tope son 7 alteraciones). El filtro se queda por si
+       algún día se escribe a mano un fragmento que ya venga con alteraciones dobles. */
     let imposible = false;
     ['bajo', 'soprano'].forEach(v => {
       const p = e[v]; if (!p) return;
       p.compases.forEach(c => c.forEach(([n]) => {
         if (!n) return;
-        try { if (Math.abs(mueve(n).alt) >= 2) imposible = true; } catch (err) { imposible = true; }
+        try { if (Math.abs(mueve(n).alt) >= 3) imposible = true; } catch (err) { imposible = true; }
       }));
     });
     if (imposible) return null;
@@ -557,13 +558,12 @@ const Banco = (() => {
     if (f.pedirRomano === false) ej.pedirRomano = false;
     if (f.reintentos === false) ej.reintentos = false;
     if (f.ayudaGrados && f.ayudaGrados !== 'lista') ej.ayudaGrados = f.ayudaGrados;
-    /* Los grados del bajo (decisión 91): dado · pedido · oculto. Con `gradosPrimero`, la
-       ficha hace la rampa que pidió Diego —«se presenta la información en el fragmento 1
-       pero no en los siguientes»—: el primero los lleva puestos y en los demás se piden.
-       Solo tiene sentido en armonización de bajo, que es donde se pueden pedir. */
-    if (f.gradosPrimero && modo === 'armonizar') ej.gradosBajo = (k || 0) === 0 ? 'dado' : 'pedido';
-    else if (['dado', 'pedido', 'oculto'].includes(f.gradosBajo)) ej.gradosBajo = f.gradosBajo;
-    else if (f.gradosBajo === false) ej.gradosBajo = 'oculto';   // enlaces repartidos antes
+    /* El circulito de grado sobre el bajo (decisiones 91 y 113): dado · oculto. Con
+       `gradosPrimero`, la ficha hace la rampa que pidió Diego —«se presenta la información
+       en el fragmento 1 pero no en los siguientes»—: el primero los lleva puestos y los
+       demás no. Vale en los cuatro tipos, porque el circulito ya no es una respuesta. */
+    if (f.gradosPrimero) ej.gradosBajo = (k || 0) === 0 ? 'dado' : 'oculto';
+    else if (f.gradosBajo === 'oculto' || f.gradosBajo === 'pedido' || f.gradosBajo === false) ej.gradosBajo = 'oculto';
     if (f.funciones) ej.funciones = f.funciones;
     // La respuesta modelo preferida sobre el 6.º descendente (+6 en cuarto curso)
     if (Array.isArray(f.preferir) && f.preferir.length) ej.preferir = f.preferir.slice();

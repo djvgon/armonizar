@@ -27,7 +27,10 @@ const Teoria = (() => {
   const LETRAS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
   const NOMBRE_ES = { C: 'do', D: 're', E: 'mi', F: 'fa', G: 'sol', A: 'la', B: 'si' };
   const SEMITONOS = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
-  const ALT_TEXTO = { '-2': '𝄫', '-1': '♭', '0': '', '1': '♯', '2': '𝄪' };
+  /* En el TEXTO —«fa♯♯3», «si♭♭2»— la doble alteración se escribe con dos signos sencillos y no
+     con 𝄪 y 𝄫 (decisión 114): esos dos caracteres no los tiene ninguna fuente de sistema y salían
+     como un cuadradito. En el PENTAGRAMA sí van los signos de verdad, que los dibuja Bravura. */
+  const ALT_TEXTO = { '-2': '♭♭', '-1': '♭', '0': '', '1': '♯', '2': '♯♯' };
 
   /* ---------- Notas ---------- */
 
@@ -369,8 +372,15 @@ const Teoria = (() => {
        semitonos—, y de ahí salen dobles alteraciones a mansalva. */
     const pasos = ((LETRAS.indexOf(nb.letra) - LETRAS.indexOf(na.letra)) % 7 + 7) % 7;         // 0…6
     const semis = (((SEMITONOS[nb.letra] + nb.alt) - (SEMITONOS[na.letra] + na.alt)) % 12 + 12) % 12;  // 0…11
-    // Y del par ascendente se toma el camino más corto, bajando la octava entera si procede
-    return semis > 6 ? { pasos: pasos - 7, semitonos: semis - 12 } : { pasos, semitonos: semis };
+    /* Y del par ascendente se toma el camino más corto. Al bajar, los pasos de letra son
+       los que FALTAN para la octava, en negativo: `-((7 - pasos) % 7)`. El módulo no
+       sobra, y es el fallo que tenía esto (decisión 114): con la MISMA letra —do → do♭,
+       la → la♭— `pasos` vale 0 y `pasos - 7` daba una octava entera de más, de modo que
+       la nota salía con once alteraciones y el transporte descartaba el tono. Do♭ M era
+       el caso más ruidoso: 48 de los 101 transportes que seguían cayéndose. */
+    return semis > 6
+      ? { pasos: -((7 - pasos) % 7), semitonos: semis - 12 }
+      : { pasos, semitonos: semis };
   }
 
   // La misma tonalidad, transportada. Conserva el modo (una menor sigue siendo menor).
