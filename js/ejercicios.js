@@ -502,20 +502,35 @@ const Ejercicios = (() => {
      y de la cifra sale el bajo. El profesor puede cambiarlo con `campoGrado`. */
   function campoGrado(ej) {
     if (ej && (ej.campoGrado === 'bajo' || ej.campoGrado === 'fundamental')) return ej.campoGrado;
-    return modo(ej) === 'armonizar' ? 'bajo' : 'fundamental';
+    // Solo donde el bajo está delante tiene sentido pedir el grado que ocupa en la escala
+    if (modo(ej) !== 'armonizar') return 'fundamental';
+    return estadoGrados(ej) === 'pedido' ? 'bajo' : 'fundamental';
+  }
+
+  /* El grado del bajo en este ejercicio (decisión 91). Tres estados, un solo mando:
+       'dado'    → el circulito va puesto encima de la nota y el alumno no lo escribe;
+       'pedido'  → lo escribe él (y entonces no se dibuja: sería la respuesta a la vista);
+       'oculto'  → ni se dibuja ni se pide.
+     Sin decir nada, en armonización de bajo se pide —es de lo que va la ficha— y en los
+     demás tipos va dado. Los enlaces repartidos antes llevan un booleano en `gradosBajo`
+     (true = dado, false = oculto) y se leen igual, así que siguen valiendo. */
+  function estadoGrados(ej) {
+    const v = ej && ej.gradosBajo;
+    /* Pedirlos solo se puede donde el bajo está delante: en los demás tipos la casilla del
+       grado es la fundamental, así que un 'pedido' de más se comporta como 'oculto'. */
+    if (v === 'pedido') return modo(ej) === 'armonizar' ? 'pedido' : 'oculto';
+    if (v === 'dado' || v === 'oculto') return v;
+    if (v === true) return 'dado';
+    if (v === false) return 'oculto';
+    return modo(ej) === 'armonizar' ? 'pedido' : 'dado';
   }
   // El grado de una pareja, en la forma que pida el ejercicio
   function gradoDe(ej, p) { return p ? (campoGrado(ej) === 'bajo' ? p.gradoBajo : p.romano) : null; }
 
-  /* ¿Se dibujan los grados de la escala en circulito sobre el bajo? (decisión 52). Van
-     puestos salvo que el profesor los quite (`gradosBajo: false`) y —desde la decisión
-     90— salvo que sean justo lo que se le pide al alumno: el circulito sería la respuesta
-     escrita encima de la nota. El profesor puede reponerlos con `gradosBajo: true`. */
-  function gradosBajo(ej) {
-    if (ej.gradosBajo === true) return true;
-    if (ej.gradosBajo === false) return false;
-    return !(campoGrado(ej) === 'bajo' && pideRomano(ej));
-  }
+  /* ¿Se dibujan los grados de la escala en circulito sobre el bajo? (decisión 52). Solo
+     en el estado 'dado': si se le piden, el circulito sería la respuesta escrita encima
+     de la nota, y si están ocultos, no hay nada que dibujar. */
+  function gradosBajo(ej) { return estadoGrados(ej) === 'dado'; }
 
   // Nivel de ayuda con los grados: 'ninguna' | 'lista' | 'paleta'
   function ayudaGrados(ej) { return ['ninguna', 'lista', 'paleta'].includes(ej.ayudaGrados) ? ej.ayudaGrados : 'lista'; }
@@ -706,7 +721,7 @@ const Ejercicios = (() => {
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, gradoDe, paletaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
+  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, estadoGrados, gradoDe, paletaGrados, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
     funciones, funcionModelo, funcionesAdmisibles, funcionesDelEjercicio, gradosBajo, bajosDe,
     modulaciones, modula, aviso, tonalidades, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

@@ -392,7 +392,13 @@ const Banco = (() => {
     if (f.pedirRomano === false) ej.pedirRomano = false;
     if (f.reintentos === false) ej.reintentos = false;
     if (f.ayudaGrados && f.ayudaGrados !== 'lista') ej.ayudaGrados = f.ayudaGrados;
-    if (f.gradosBajo === false) ej.gradosBajo = false;
+    /* Los grados del bajo (decisión 91): dado · pedido · oculto. Con `gradosPrimero`, la
+       ficha hace la rampa que pidió Diego —«se presenta la información en el fragmento 1
+       pero no en los siguientes»—: el primero los lleva puestos y en los demás se piden.
+       Solo tiene sentido en armonización de bajo, que es donde se pueden pedir. */
+    if (f.gradosPrimero && modo === 'armonizar') ej.gradosBajo = (k || 0) === 0 ? 'dado' : 'pedido';
+    else if (['dado', 'pedido', 'oculto'].includes(f.gradosBajo)) ej.gradosBajo = f.gradosBajo;
+    else if (f.gradosBajo === false) ej.gradosBajo = 'oculto';   // enlaces repartidos antes
     if (f.funciones) ej.funciones = f.funciones;
     // La respuesta modelo preferida sobre el 6.º descendente (+6 en cuarto curso)
     if (Array.isArray(f.preferir) && f.preferir.length) ej.preferir = f.preferir.slice();

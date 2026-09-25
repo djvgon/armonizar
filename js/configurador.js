@@ -96,7 +96,8 @@
       ayudaGrados: $('#ficha-ayuda-grados').value,
       modo: modoElegido(), preferir: pref ? [pref] : [], tonalidades: $('#ficha-tonalidades').value,
       bajoAudicion: $('#bajo-audicion').value === 'bajo',
-      gradosBajo: $('#grados-bajo').value === '1',
+      gradosBajo: $('#grados-bajo').value,          // 'auto' | 'dado' | 'pedido' | 'oculto' (decisión 91)
+      gradosPrimero: $('#grados-primero').checked,
       funciones: fun === 'dadas' || fun === 'pedir' ? fun : null };
   }
   // Campos y rótulos que dependen del tipo de ejercicio: la opción «qué ve el alumno en
@@ -216,7 +217,7 @@
     if (!op.pedirRomano) ej.pedirRomano = false;
     if (!op.reintentos) ej.reintentos = false;
     if (op.ayudaGrados !== 'lista') ej.ayudaGrados = op.ayudaGrados;
-    if (!op.gradosBajo) ej.gradosBajo = false;
+    if (['dado', 'pedido', 'oculto'].includes(op.gradosBajo)) ej.gradosBajo = op.gradosBajo;
     if (op.modo !== 'armonizar') ej.modo = op.modo;
     if (op.modo === 'audicion' && op.bajoAudicion) ej.mostrarBajo = true;
     if (op.modo === 'soprano') {
@@ -468,10 +469,12 @@
     const modelos = ej.respuestas.map(a => (a[0] ? Ejercicios.cifraDe(a[0]) : null));
     const mods = Ejercicios.modulaciones(ej);
     const pivotes = new Set(mods.map(m => m.nota));
-    /* La vista previa enseña lo que vería el alumno con el tipo de ficha elegido
-       (decisión 90): en armonización de bajo y audición, el grado del BAJO; en análisis y
-       melodía de soprano, el de la fundamental. */
-    const gradoBajo = Ejercicios.campoGrado({ modo: modoElegido() }) === 'bajo';
+    /* La vista previa enseña lo que vería el alumno (decisiones 90 y 91): el grado del
+       BAJO donde se le pide, el de la fundamental donde no. Con «solo en el primer
+       fragmento» marcado, la previa es el fragmento 1, así que los grados van DADOS. */
+    const ejV = opciones().gradosPrimero && Ejercicios.modo(ej) === 'armonizar'
+      ? Object.assign({}, ej, { gradosBajo: 'dado' }) : ej;
+    const gradoBajo = Ejercicios.campoGrado(ejV) === 'bajo';
     const romanoModelo = (a, i, ton) => {
       if (!a[0]) return null;
       if (gradoBajo) return Teoria.textoGrado(notas[i], ton);
@@ -493,7 +496,7 @@
       vozDada: sop ? 'soprano' : null,
       bajos: sop ? opReal.bajos : null,
       filaFunciones: opciones().funciones ? { visible: true, editable: false, celdas: ej.respuestas.map((_, i) => ({ texto: Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true })) } : null,
-      gradosBajo: opciones().gradosBajo,   // grados de la escala en circulito sobre el bajo
+      gradosBajo: Ejercicios.gradosBajo(ejV),   // el circulito, solo cuando el grado va DADO (decisión 91)
       numerar: true,                       // el número de cada acorde es el de su fila en la tabla de revisión
       alPulsarNumero: irAFila
     };
@@ -671,7 +674,8 @@
     $('#pedir-romano').checked = ej.pedirRomano !== false;
     $('#reintentos').checked = ej.reintentos !== false;
     $('#ficha-ayuda-grados').value = Ejercicios.ayudaGrados(ej);
-    $('#grados-bajo').value = Ejercicios.gradosBajo(ej) ? '1' : '';
+    $('#grados-bajo').value = ['dado', 'pedido', 'oculto'].includes(ej.gradosBajo) ? ej.gradosBajo
+      : ej.gradosBajo === false ? 'oculto' : ej.gradosBajo === true ? 'dado' : 'auto';
     elegirModo(Ejercicios.modo(ej));
     $('#bajo-audicion').value = ej.mostrarBajo === true ? 'bajo' : '';
     $('#ficha-funciones').value = Ejercicios.funciones(ej) || '';
@@ -710,7 +714,7 @@
         tipo: modoElegido(), respuestas: estado.respuestas,
         bancoId: estado.banco ? estado.banco.entrada.id : null, bancoVoz: estado.banco ? estado.banco.voz : null,
         modulaciones: estado.modulaciones, bajoAudicion: $('#bajo-audicion').value,
-        gradosBajo: $('#grados-bajo').value,
+        gradosBajo: $('#grados-bajo').value, gradosPrimero: $('#grados-primero').checked,
         fichaAyudaGrados: $('#ficha-ayuda-grados').value, fichaPreferir: $('#ficha-preferir').value, fichaFunciones: $('#ficha-funciones').value,
         fichaTonalidades: $('#ficha-tonalidades').value,
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
@@ -732,7 +736,8 @@
       $('#texto-bajo').value = b.texto || ''; $('#tonica').value = b.tonica || 'C'; $('#modo').value = modoTon;
       $('#compas').value = b.compas || '4/4'; $('#titulo').value = b.titulo || ''; $('#coleccion').value = b.coleccion || '';
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
-      $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#grados-bajo').value = b.gradosBajo === '' ? '' : '1';
+      $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#grados-bajo').value = ['dado', 'pedido', 'oculto', 'auto'].includes(b.gradosBajo) ? b.gradosBajo : (b.gradosBajo === '' ? 'oculto' : 'auto');
+      $('#grados-primero').checked = !!b.gradosPrimero;
       /* Las opciones del alumno viven ahora solo en la ficha (decisión 66). En un borrador
          antiguo estaban por duplicado: se recogen las de la ficha y, si no las hubiera,
          las del paso 3 de entonces, para no perder lo que hubiera elegido. */
@@ -840,7 +845,7 @@
     }
 
     $('#texto-bajo').addEventListener('input', () => { estado.banco = null; pintarOrigenBanco(); estado.companera = null; leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
-    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-tonalidades', '#bajo-audicion', '#grados-bajo'].forEach(sel => {
+    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-tonalidades', '#bajo-audicion', '#grados-bajo', '#grados-primero'].forEach(sel => {
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
@@ -1033,7 +1038,8 @@
     const op = opciones();
     if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
     if (!op.reintentos) f.reintentos = false;
-    if (!op.gradosBajo) f.gradosBajo = false;
+    if (['dado', 'pedido', 'oculto'].includes(op.gradosBajo)) f.gradosBajo = op.gradosBajo;
+    if (op.gradosPrimero && f.modo === 'armonizar') f.gradosPrimero = true;
     if (f.modo === 'audicion' && op.bajoAudicion) f.mostrarBajo = true;
     if (f.modo === 'soprano') {
       f.acordes = acordesElegidos();

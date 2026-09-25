@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260926-0510">
-  <link rel="stylesheet" href="css/estilo.css?v=20260926-0510">
+  <link rel="stylesheet" href="css/bravura.css?v=20260926-0645">
+  <link rel="stylesheet" href="css/estilo.css?v=20260926-0645">
 </head>
 <body class="configurador">
 
@@ -146,11 +146,18 @@
             </select>
           </label>
           <label class="campo">
-            <span>Grados de la escala sobre el bajo (circulitos)</span>
+            <span>Grados de la escala del bajo</span>
             <select id="grados-bajo">
-              <option value="1" selected>Sí: encima de cada nota del bajo, su grado en la escala</option>
-              <option value="">No</option>
+              <option value="auto" selected>Lo que toque por tipo (armonización: pedidos; los demás: dados)</option>
+              <option value="dado">Dados: el circulito con el grado, encima de cada nota</option>
+              <option value="pedido">Pedidos: los escribe el alumno (solo en armonización de bajo)</option>
+              <option value="oculto">Ocultos: ni se ven ni se piden</option>
             </select>
+            <span class="ayuda" id="grados-bajo-ayuda">En armonización de bajo, «pedidos» es lo que pone el alumno en la casilla del grado. En análisis, audición y melodía de soprano esa casilla es siempre el grado de la fundamental, así que ahí solo cabe darlos u ocultarlos.</span>
+          </label>
+          <label class="campo campo-linea">
+            <input id="grados-primero" type="checkbox">
+            <span>En una ficha, dar los grados solo en el primer fragmento y pedirlos en los demás</span>
           </label>
           <label class="campo" id="campo-bajo-audicion" hidden>
             <span>Audición: qué ve el alumno mientras escucha</span>
@@ -161,7 +168,7 @@
           </label>
           <label class="campo campo-linea">
             <input id="pedir-romano" type="checkbox" checked>
-            <span>Pedir también el grado de la fundamental (I … VII)</span>
+            <span>Pedir también el grado (de la fundamental, o el del bajo en la armonización de bajo)</span>
           </label>
           <label class="campo campo-linea">
             <input id="reintentos" type="checkbox" checked>
@@ -430,17 +437,17 @@
   <p id="aviso" class="aviso" hidden></p>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260926-0510</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260926-0645</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260926-0510"></script>
-  <script src="js/reglas.js?v=20260926-0510"></script>
-  <script src="js/ejercicios.js?v=20260926-0510"></script>
-  <script src="js/partitura.js?v=20260926-0510"></script>
-  <script src="js/musicxml.js?v=20260926-0510"></script>
-  <script src="js/musescore.js?v=20260926-0510"></script>
-  <script src="js/banco.js?v=20260926-0510"></script>
-  <script src="js/realizacion.js?v=20260926-0510"></script>
-  <script src="js/configurador.js?v=20260926-0510"></script>
+  <script src="js/teoria.js?v=20260926-0645"></script>
+  <script src="js/reglas.js?v=20260926-0645"></script>
+  <script src="js/ejercicios.js?v=20260926-0645"></script>
+  <script src="js/partitura.js?v=20260926-0645"></script>
+  <script src="js/musicxml.js?v=20260926-0645"></script>
+  <script src="js/musescore.js?v=20260926-0645"></script>
+  <script src="js/banco.js?v=20260926-0645"></script>
+  <script src="js/realizacion.js?v=20260926-0645"></script>
+  <script src="js/configurador.js?v=20260926-0645"></script>
 </body>
 </html>
