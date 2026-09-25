@@ -351,6 +351,23 @@ const Reglas = (() => {
   /* ---- Síncopa armónica en un bajo dado ----
      Dos cifras seguidas que dan el MISMO acorde al pasar a una parte más fuerte. Se compara
      el acorde entero (sus clases de altura), de modo que I y I6 cuentan como el mismo. */
+  /* ---- Síncopa armónica (reglas de Diego, decisión 80) ----
+     Sobre un tiempo que pide cambio de armonía, la armonía ha de cambiar de verdad. Qué
+     cuenta como «no cambiar»:
+
+     · **El mismo acorde, siempre** — aunque el bajo se mueva. Un I6 en parte débil seguido
+       de I en el tiempo fuerte es síncopa, aunque el bajo vaya do → la. Antes esto se
+       eximía como «arpegio de la marcha de la RO», y era el agujero por el que se colaba.
+     · **Dos acordes de DOMINANTE, siempre** — aunque sean distintos y el bajo se mueva.
+       VII6 al final de un compás y V6/5̸ al principio del siguiente forman síncopa: la
+       dominante no se renueva por cambiar de inversión.
+     · **Dos subdominantes distintas, no.** En Do M, IV al final de un compás y VI al
+       principio del siguiente es un cambio de armonía legítimo.
+     · **Dos tónicas distintas, tampoco** —pero ese caso no hace falta escribirlo: el VI
+       detrás de una tónica cuenta como subdominante, así que cae en la regla anterior.
+
+     El **6/4 cadencial** queda fuera de todo esto: I6/4 → V sobre el mismo bajo es la
+     fórmula, no un defecto. */
   function sincopaBajo(ej, i, cifraAnt, cifraAct) {
     if (i < 1 || !cifraAnt || !cifraAct) return false;
     if (cifraAnt === '64' || cifraAct === '64') return false;        // el 6/4 cadencial es otra armonía
@@ -358,9 +375,19 @@ const Reglas = (() => {
     if (!Teoria.pideCambio(fuerzas, i) || cortesDe(ej)[i]) return false;
     const notas = notasDe(ej), tons = Teoria.tonalidadesPorNota(ej);
     try {
-      // Arpegio del mismo acorde (el bajo cambia de nota): no es síncopa, es la marcha de la RO
-      if (Teoria.clase(Teoria.nota(notas[i - 1])) !== Teoria.clase(Teoria.nota(notas[i]))) return false;
-      return Teoria.claveAcorde(cifraAnt, notas[i - 1], tons[i - 1]) === Teoria.claveAcorde(cifraAct, notas[i], tons[i]);
+      const nAnt = notas[i - 1], nAct = notas[i], tAnt = tons[i - 1], tAct = tons[i];
+      // El mismo acorde: síncopa, mueva o no el bajo
+      if (Teoria.claveAcorde(cifraAnt, nAnt, tAnt) === Teoria.claveAcorde(cifraAct, nAct, tAct)) return true;
+      /* Excepción: el MISMO acorde sobre el MISMO bajo que gana o suelta su séptima —el
+         V que pasa a V7 antes de resolver, la fórmula I–V–V7–I de A3-1—. No es una
+         dominante nueva, es la misma completándose, igual que el 6/4 cadencial de arriba. */
+      if (Teoria.clase(Teoria.nota(nAnt)) === Teoria.clase(Teoria.nota(nAct))
+        && Teoria.clase(Teoria.fundamental(cifraAnt, Teoria.nota(nAnt), tAnt))
+         === Teoria.clase(Teoria.fundamental(cifraAct, Teoria.nota(nAct), tAct))) return false;
+      // Acordes distintos: solo sincopan si los dos son de dominante
+      const fAnt = funcionDeId(cifraAnt, nAnt, tAnt, cifraAct, nAct, tAct);
+      const fAct = funcionDeId(cifraAct, nAct, tAct, null, null, null);
+      return fAnt === 'D' && fAct === 'D';
     } catch (e) { return false; }
   }
 
