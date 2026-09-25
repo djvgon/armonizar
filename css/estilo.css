@@ -532,6 +532,29 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 }
 .configurador .buscar-id .ayuda { flex: 1 1 18rem; margin: 0; }
 
+/* Semáforo del banco (decisión 85). Siempre visible, también en verde: la pregunta
+   «¿están viendo los alumnos lo que veo yo?» tiene que poder contestarse de un vistazo,
+   sin tener que acordarse de mirar. El color va en la luz y en el borde izquierdo, nunca
+   solo en el color (hay quien no los distingue): el texto dice lo mismo. */
+.configurador .semaforo {
+  display: flex; align-items: center; flex-wrap: wrap; gap: .5rem;
+  margin: 0 0 1rem; padding: .5rem .8rem;
+  background: #f6f7f8; border: 1px solid #d8dcdf; border-left: 4px solid #98a0a6; border-radius: 6px;
+  font-size: .95rem;
+}
+.configurador .semaforo .luz {
+  width: .8rem; height: .8rem; border-radius: 50%; flex: none;
+  background: #98a0a6; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18);
+}
+.configurador .semaforo #banco-semaforo-texto { flex: 1 1 16rem; }
+.configurador .semaforo button { font-size: .88rem; padding: .25rem .6rem; }
+.configurador .semaforo[data-estado="verde"] { background: #f0f7f0; border-color: #b9d6b9; border-left-color: #4a9a52; }
+.configurador .semaforo[data-estado="verde"] .luz { background: #4a9a52; }
+.configurador .semaforo[data-estado="ambar"] { background: #fdf6e3; border-color: #e0c97f; border-left-color: #d9a441; }
+.configurador .semaforo[data-estado="ambar"] .luz { background: #d9a441; }
+.configurador .semaforo[data-estado="rojo"] { background: #fdf1ef; border-color: #e0a89f; border-left-color: #c0564a; }
+.configurador .semaforo[data-estado="rojo"] .luz { background: #c0564a; }
+
 /* Aviso de banco desfasado (decisión 77): el publicado no es el de este navegador.
    Va en ámbar, no en rojo: no es un error, es una decisión que tomar. */
 .configurador .desfase {

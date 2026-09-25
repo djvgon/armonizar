@@ -250,9 +250,26 @@ const Partitura = (() => {
       try { return Teoria.bajoDe(res.modeloRomano, res.modelo, (tonsNota && tonsNota[it.k]) || ton); } catch (e) { return null; }
     };
     const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];
-    const renglon = [];
-    { let r = 0; for (let i = 0; i < numNotas; i++) { if (dobles[i] && i > 0) r++; renglon.push(r); } }
-    const NUM_RENGLONES = (renglon[numNotas - 1] || 0) + 1;
+    /* Un renglón por TONALIDAD, no uno nuevo por cada cambio (decisión 83). Antes, cada
+       pivote abría un renglón más: un fragmento que sale de Sol M, toma prestado un acorde
+       de Re M y vuelve a Sol M gastaba TRES renglones, y el tercero repetía el primero.
+       Ahora cada tonalidad tiene el suyo y, al volver a una ya usada, se vuelve a SU
+       renglón. Lo normal pasa así a dos —el de partida y el de la modulación—, que es como
+       se escribe a mano, donde el sitio entre sistemas es el que es. */
+    const renglon = [], renglonAntes = [];
+    {
+      const clave = t => t ? (t.tonica + '/' + t.modo) : '?';
+      const fila = new Map();
+      for (let i = 0; i < numNotas; i++) {
+        const tAct = (tonsNota && tonsNota[i]) || ton;
+        const tAnt = i > 0 ? ((tonsNota && tonsNota[i - 1]) || ton) : tAct;
+        [clave(tAnt), clave(tAct)].forEach(k => { if (!fila.has(k)) fila.set(k, fila.size); });
+        renglonAntes.push(fila.get(clave(tAnt)));
+        renglon.push(fila.get(clave(tAct)));
+      }
+    }
+    const NUM_RENGLONES = Math.max(1, ...renglon.map(r => r + 1), ...renglonAntes.map(r => r + 1));
+    const rotuladas = new Set();     // renglones que ya llevan escrito el nombre de su tonalidad
     const PASO_RENGLON = ALTO_ROMANO + 0.5 * SP;
     const yRenglon = r => Y_ROMANO + r * PASO_RENGLON;
     const Y_FIN_ROMANO = pedirRomano ? yRenglon(NUM_RENGLONES - 1) + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
@@ -656,10 +673,17 @@ const Partitura = (() => {
         const esPivote = !!dobles[i] && i > 0;
         const partes = esPivote ? ['romano', 'romano2'] : ['romano'];
         const x0 = cx - ANCHO_CASILLA / 2;
+        /* En el pivote, los dos grados van en el renglón de SU tonalidad: el de la anterior
+           en renglonAntes[i] y el de la nueva en renglon[i]. Al volver a una tonalidad ya
+           usada, el de la nueva puede quedar ARRIBA del de la anterior; la casilla que
+           queda arriba es la que se estira hasta la de abajo, sea cuál sea (decisión 83). */
+        const rArriba = Math.min(renglonAntes[i], renglon[i]);
+        const rAbajo = Math.max(renglonAntes[i], renglon[i]);
         partes.forEach((campo, k) => {
-          const r = esPivote ? renglon[i] - 1 + k : renglon[i];
+          const r = esPivote ? (k === 0 ? renglonAntes[i] : renglon[i]) : renglon[i];
           const y0 = yRenglon(r);
-          const alto = esPivote && k === 0 ? PASO_RENGLON : ALTO_ROMANO;    // la de arriba llega hasta la de abajo
+          const alto = (esPivote && rAbajo > rArriba && r === rArriba)
+            ? (rAbajo - rArriba) * PASO_RENGLON : ALTO_ROMANO;    // la de arriba llega hasta la de abajo
           const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: 0, role: 'button',
             'aria-label': 'Grado de la nota ' + (i + 1) + (sinBajo ? '' : ' (' + Teoria.nombreEs(n) + ')') + (esPivote ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
           const clases = ['casilla', 'casilla-romano'];
@@ -684,15 +708,17 @@ const Partitura = (() => {
         });
         if (esPivote) {
           // Las dos líneas verticales que unen los dos grados del pivote: | I | sobre | V |
-          const yA = yRenglon(renglon[i] - 1), yB = yRenglon(renglon[i]) + ALTO_ROMANO;
+          const yA = yRenglon(rArriba), yB = yRenglon(rAbajo) + ALTO_ROMANO;
           [x0, x0 + ANCHO_CASILLA].forEach(x => svg.appendChild(el('line', { x1: x, x2: x, y1: yA - 0.3 * SP, y2: yB + 0.3 * SP, class: 'pivote-barra' })));
         }
         // Nombre de la tonalidad al principio de cada renglón (si hay modulación)
         if (filaTon && filaTon.celdas) {
           const celda = filaTon.celdas[i] || {};
-          if ((i === 0 || esPivote) && celda.texto && celda.texto !== '¿?') {
-            const r = esPivote ? renglon[i] : 0;
-            svg.appendChild(el('text', { x: x0 - 0.7 * SP, y: yRenglon(r) + ALTO_ROMANO / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, celda.texto + ':'));
+          const rRotulo = esPivote ? renglon[i] : (i === 0 ? renglon[0] : -1);
+          // El nombre se escribe una vez por renglón: al volver a una tonalidad ya rotulada, no se repite
+          if (rRotulo >= 0 && !rotuladas.has(rRotulo) && celda.texto && celda.texto !== '¿?') {
+            rotuladas.add(rRotulo);
+            svg.appendChild(el('text', { x: x0 - 0.7 * SP, y: yRenglon(rRotulo) + ALTO_ROMANO / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, celda.texto + ':'));
           }
         }
       }

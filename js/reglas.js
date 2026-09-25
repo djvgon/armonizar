@@ -358,9 +358,12 @@ const Reglas = (() => {
      · **El mismo acorde, siempre** — aunque el bajo se mueva. Un I6 en parte débil seguido
        de I en el tiempo fuerte es síncopa, aunque el bajo vaya do → la. Antes esto se
        eximía como «arpegio de la marcha de la RO», y era el agujero por el que se colaba.
-     · **Dos acordes de DOMINANTE, siempre** — aunque sean distintos y el bajo se mueva.
-       VII6 al final de un compás y V6/5̸ al principio del siguiente forman síncopa: la
-       dominante no se renueva por cambiar de inversión.
+     · **Dos acordes de DOMINANTE DEL MISMO TONO, siempre** — aunque sean distintos y el
+       bajo se mueva. VII6 al final de un compás y V6/5̸ al principio del siguiente forman
+       síncopa: VII6, V y V7 se oyen todos como subconjuntos del acorde total, el V7, de modo
+       que la dominante no se renueva por cambiar de inversión. **Si cada dominante es de un
+       tono distinto** —una dominante secundaria y luego la de la tonalidad— son acordes
+       diferentes de verdad y no hay síncopa (decisión 84, Diego, sobre `A3-8-05`).
      · **Dos subdominantes distintas, no.** En Do M, IV al final de un compás y VI al
        principio del siguiente es un cambio de armonía legítimo.
      · **Dos tónicas distintas, tampoco** —pero ese caso no hace falta escribirlo: el VI
@@ -384,7 +387,10 @@ const Reglas = (() => {
       if (Teoria.clase(Teoria.nota(nAnt)) === Teoria.clase(Teoria.nota(nAct))
         && Teoria.clase(Teoria.fundamental(cifraAnt, Teoria.nota(nAnt), tAnt))
          === Teoria.clase(Teoria.fundamental(cifraAct, Teoria.nota(nAct), tAct))) return false;
-      // Acordes distintos: solo sincopan si los dos son de dominante
+      /* Acordes distintos: solo sincopan si los dos son de dominante Y DEL MISMO TONO. Dos
+         dominantes de tonos distintos —la secundaria y luego la de la tonalidad— son dos
+         armonías de verdad distintas y renuevan el acorde (decisión 84). */
+      if (!Teoria.mismaTonalidad(tAnt, tAct)) return false;
       const fAnt = funcionDeId(cifraAnt, nAnt, tAnt, cifraAct, nAct, tAct);
       const fAct = funcionDeId(cifraAct, nAct, tAct, null, null, null);
       return fAnt === 'D' && fAct === 'D';
@@ -959,5 +965,5 @@ const Reglas = (() => {
     return { ok: false, motivo };
   }
 
-  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, sincopaBajo, contexto, notasDe, cortesDe, movimiento };
+  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, sincopaBajo, contexto, notasDe, cortesDe, movimiento, candidatosFuncion };
 })();

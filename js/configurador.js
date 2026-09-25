@@ -52,6 +52,7 @@
 
   const estado = {
     publicado: null,         // firma del banco.json publicado, para saber qué está sin subir (decisión 78)
+    publicadoFallo: false,   // se ha intentado leerlo y no ha podido: el semáforo lo dice (decisión 85)
     compases: [],            // bajo actual (compases → notas [nombre, dur])
     respuestas: null,        // respuestas revisadas (lista de ids por nota) o null
     propuesta: null,         // salida del motor para la tabla
@@ -328,7 +329,30 @@
         sel.addEventListener('change', () => {
           limpiarDireccion();
           estado.funciones[i] = sel.value;
-          if (sop) analizar(true); else { guardarBorrador(); pintarVistaPrevia(); }
+          if (sop) { analizar(true); return; }
+          /* En el bajo, cambiar la función VUELVE A MARCAR los acordes (decisión 82). Antes
+             solo se repintaba la vista previa y había que ir quitando a mano las cifras de
+             la función vieja y poniendo las de la nueva. Ahora se marcan solas las cifras
+             del repertorio de la lección que sobre ESTE bajo dan un acorde de la función
+             elegida —incluido el 6/4 cadencial entre las de dominante, que es I con cifra
+             6/4—. Si no hay ninguna, no se toca nada: más vale dejarlo como estaba que
+             vaciar la nota. */
+          try {
+            const cand = Reglas.candidatosFuncion(Teoria.nota(n), ton, rep, acordesElegidos(), sel.value,
+              null, null, null);
+            if (cand.length) {
+              estado.respuestas[i] = cand.slice();
+              guardarBorrador();
+              pintarRevision();
+              aviso('Nota ' + (i + 1) + ': marcados los acordes de función ' + sel.value + ' que caben sobre '
+                + Teoria.nombreEs(Teoria.nota(n)) + ' — ' + cand.map(x => Teoria.romanoEscrito(x, n, ton)).join(', ')
+                + '. La modelo es la primera; cámbiala si quieres otra.', 8000);
+              return;
+            }
+            aviso('Nota ' + (i + 1) + ': ninguna cifra del repertorio de la lección da un acorde de función '
+              + sel.value + ' sobre ' + Teoria.nombreEs(Teoria.nota(n)) + '. Se dejan los acordes como estaban.', 8000);
+          } catch (e) { /* si algo falla, se deja como estaba */ }
+          guardarBorrador(); pintarVistaPrevia();
         });
         cf.appendChild(sel);
       }
@@ -871,6 +895,10 @@
 
   const CLAVE_BANCO = 'armonizar.banco';
   let banco = [];
+  /* El `#id=` de la URL se resuelve al arrancar, pero si este navegador no tenía banco
+     todavía no hay dónde buscar: se guarda aquí para reintentarlo en cuanto llegue el
+     banco.json publicado (decisión 82). */
+  let reintentarHash = null;
 
   function leerBanco() {
     try { banco = Banco.leerArchivo(localStorage.getItem(CLAVE_BANCO) || '[]'); } catch (e) { banco = []; }
@@ -1015,12 +1043,13 @@
     const caja = $('#banco-tabla'); if (caja) caja.hidden = !hay;
     $('#btn-banco-descargar').disabled = !hay;
     $('#btn-banco-vaciar').disabled = !hay;
-    if (!hay) { $('#banco-resumen').textContent = 'El banco está vacío.'; return; }
+    if (!hay) { $('#banco-resumen').textContent = 'El banco está vacío.'; pintarSemaforo(); return; }
     const lecs = Banco.lecciones(banco);
     const nombres = Banco.nombresDeLecciones(banco);
     const etiqueta = l => l + (nombres[l] ? ' · ' + nombres[l] : '');
     $('#banco-resumen').textContent = banco.length + ' fragmentos en el banco'
       + (lecs.length ? ' · ' + lecs.length + (lecs.length > 1 ? ' lecciones' : ' lección') : '') + '.';
+    pintarSemaforo();        // ¿coincide con lo publicado? (decisión 85)
     pintarDesfase();         // ¿queda algo tocado que no esté subido? (decisión 78)
     /* Desplegable de lecciones: con el nombre, no solo el código, que es lo que dice qué
        acordes entran en la lección (conservando la elegida). */
@@ -1186,6 +1215,14 @@
     $('#tonica').value = e.tonalidad.tonica;
     $('#modo').value = e.tonalidad.modo;
     $('#compas').value = (e.compas || [4, 4]).join('/');
+    /* El repertorio de SU lección, no el que hubiera puesto (decisión 82). Faltaba, y tenía
+       dos consecuencias feas: al revisar un fragmento se veían marcadas las cifras y los
+       acordes de por defecto —el repertorio de tercero— en vez de los de su lección, de modo
+       que el 6/4 cadencial no aparecía entre los de dominante ni aunque la lección fuera la
+       del 6/4; y si se volvía a analizar, se analizaba con la paleta equivocada. */
+    if (Array.isArray(e.leccionRepertorio) && e.leccionRepertorio.length)
+      document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = e.leccionRepertorio.includes(i.value); });
+    if (Array.isArray(e.leccionAcordes) && e.leccionAcordes.length) marcarAcordes(e.leccionAcordes);
     $('#titulo').value = e.titulo || (e.leccion ? e.leccion : 'Ejercicio');
     estado.modulaciones = (parte.modulaciones || []).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
     estado.respuestas = null; estado.propuesta = null;
@@ -1331,6 +1368,94 @@
     return 'incierto';
   }
 
+  /* ---------- El semáforo del banco (decisión 85) ----------
+     El aviso de desfase solo sale cuando hay desfase, y eso deja sin contestar la
+     pregunta que de verdad se hace uno al abrir el configurador: «lo que estoy viendo,
+     ¿es lo que ven los alumnos?». Callar puede querer decir «todo en orden» o «ni lo he
+     mirado», y la diferencia importa. El semáforo está siempre y dice siempre algo.
+       verde  = idénticos
+       ámbar  = aquí hay cambios que no están subidos
+       rojo   = esta copia va por detrás (subirla borraría fragmentos publicados)
+       gris   = no hay con qué comparar (desde el disco, o sin banco publicado)
+     El botón «Igualar» hace lo que toca en cada caso, no siempre lo mismo. */
+  function pintarSemaforo() {
+    const caja = $('#banco-semaforo');
+    if (!caja) return;
+    const txt = $('#banco-semaforo-texto');
+    const bIg = $('#btn-semaforo-igualar'), bRe = $('#btn-semaforo-recomprobar');
+    const d = comparaConPublicado();
+    bIg.hidden = true;
+    bRe.hidden = location.protocol === 'file:';
+    if (!estado.publicado) {
+      caja.dataset.estado = 'sin';
+      txt.textContent = location.protocol === 'file:'
+        ? 'Abierto desde el disco: no hay banco publicado con el que comparar. Lo que cambies aquí solo está aquí.'
+        : (estado.publicadoFallo ? 'No se ha podido leer el banco publicado: no hay con qué comparar.'
+          : 'Comprobando el banco publicado…');
+      return;
+    }
+    const pub = 'publicado: ' + estado.publicado.n + (estado.publicado.n === 1 ? ' fragmento' : ' fragmentos')
+      + (estado.publicado.creado ? ' del ' + estado.publicado.creado : '');
+    if (!d || !d.sinPublicar) {
+      caja.dataset.estado = 'verde';
+      txt.textContent = 'Al día: este navegador y lo que ven los alumnos son lo mismo (' + pub + ').';
+      return;
+    }
+    const dir = direccionDesfase(d);
+    const cuenta = n => n + (n === 1 ? ' fragmento' : ' fragmentos');
+    if (dir === 'atrasado') {
+      caja.dataset.estado = 'rojo';
+      txt.textContent = 'Esta copia va por detrás: le faltan ' + cuenta(d.faltan.length)
+        + ' que sí están publicados. No la subas (' + pub + ').';
+      bIg.textContent = 'Traer el banco publicado';
+      bIg.hidden = false;
+      bIg.onclick = () => cargarPublicado();
+    } else if (dir === 'adelantado') {
+      caja.dataset.estado = 'ambar';
+      txt.textContent = 'Tienes ' + cuenta(d.nuevos.length) + ' sin subir: los alumnos todavía ven el banco anterior ('
+        + pub + ').';
+      bIg.textContent = 'Descargar banco.json para subirlo';
+      bIg.hidden = false;
+      bIg.onclick = () => descargarBanco();
+    } else {
+      caja.dataset.estado = 'ambar';
+      const uno = n => n === 1;
+      txt.textContent = 'No coinciden: ' + (d.modificados.length
+        ? cuenta(d.modificados.length) + (uno(d.modificados.length) ? ' dice' : ' dicen') + ' cosas distintas aquí y en lo publicado'
+        : 'el contenido no es el mismo')
+        + (d.nuevos.length ? ', ' + cuenta(d.nuevos.length) + (uno(d.nuevos.length) ? ' solo está aquí' : ' solo están aquí') : '')
+        + (d.faltan.length ? ', ' + cuenta(d.faltan.length) + (uno(d.faltan.length) ? ' solo está publicado' : ' solo están publicados') : '')
+        + '. Mira el detalle en «El banco de fragmentos» (' + pub + ').';
+    }
+  }
+
+  /* Volver a comprobar sin recargar la página. Es el paso que faltaba: se descarga
+     banco.json, se sube a GitHub y el aviso seguía ahí, porque la foto de lo publicado
+     se tomaba una sola vez al arrancar. Con `?t=` se salta la caché, que es lo que hacía
+     que recargar tampoco sirviera hasta pasado un rato. */
+  async function recomprobarPublicado() {
+    const b = $('#btn-semaforo-recomprobar');
+    if (b) { b.disabled = true; b.textContent = 'Comprobando…'; }
+    const ok = await leerPublicado();
+    if (b) { b.disabled = false; b.textContent = 'Volver a comprobar'; }
+    pintarSemaforo();
+    pintarDesfase();
+    if (!ok) { aviso('No se ha podido leer el banco publicado.', 6000); return; }
+    const d = comparaConPublicado();
+    aviso(d && d.sinPublicar
+      ? 'Comprobado: sigue sin coincidir con lo publicado.'
+      : 'Comprobado: este navegador y el banco publicado son lo mismo.', 6000);
+  }
+
+  function cargarPublicado() {
+    const lista = estado.publicado && estado.publicado.lista;
+    if (!lista) { aviso('No hay banco publicado que cargar.'); return; }
+    banco = lista.map(e => JSON.parse(JSON.stringify(e)));
+    guardarBanco();
+    pintarBanco();
+    aviso('Cargado el banco publicado: ' + banco.length + ' fragmentos.', 6000);
+  }
+
   function pintarDesfase() {
     const caja = $('#banco-desfase');
     if (!caja) return;
@@ -1375,38 +1500,45 @@
      Lo que NO se hace es sustituirlo solo: lo que hay en el navegador puede llevar
      correcciones todavía sin descargar, y machacarlas sería perderlas. Así que se avisa
      y se deja elegir. */
-  async function bancoPublicado() {
-    if (location.protocol === 'file:') return;
+  /* Lee banco.json de al lado y guarda la foto de lo publicado. Devuelve true si lo ha
+     conseguido. `?t=` esquiva la caché del navegador y la de GitHub Pages: sin eso, el
+     archivo recién subido tardaba en verse y parecía que subirlo no había servido. */
+  async function leerPublicado() {
+    if (location.protocol === 'file:') return false;
     try {
-      const r = await fetch(location.href.split('#')[0].replace(/[^/]*$/, '') + 'banco.json', { cache: 'no-cache' });
-      if (!r.ok) return;
+      const base = location.href.split('#')[0].replace(/[^/]*$/, '');
+      const r = await fetch(base + 'banco.json?t=' + Date.now(), { cache: 'no-store' });
+      if (!r.ok) return false;
       const datos = await r.json();
       const lista = Banco.leerArchivo(datos);
-      if (!lista.length) return;
-      // La foto de lo publicado, para saber después qué se ha tocado y no se ha subido
-      estado.publicado = { firmas: firmasPorId(lista), n: lista.length, creado: datos.creado || '' };
-      if (!banco.length) {                                   // este navegador no tenía nada
-        banco = lista;
-        guardarBanco();
-        pintarBanco();
-        aviso('Banco cargado del archivo banco.json publicado: ' + banco.length + ' fragmentos.', 6000);
-        return;
-      }
-      const d = comparaConPublicado();
-      if (d && !d.sinPublicar) return;                        // el mismo: nada que decir
-      pintarDesfase();
-      aviso('El banco de este navegador no coincide con el publicado. Baja a «El banco de fragmentos».', 12000);
-      $('#btn-desfase-descargar').onclick = () => descargarBanco();
-      $('#btn-desfase-cargar').onclick = () => {
-        banco = lista;
-        guardarBanco();
-        pintarBanco();
-        aviso('Cargado el banco publicado: ' + banco.length + ' fragmentos.', 6000);
-      };
-      $('#btn-desfase-cerrar').onclick = () => {
-        const c = $('#banco-desfase'); c.dataset.cerrado = '1'; c.hidden = true;
-      };
-    } catch (e) { /* no hay banco publicado todavía: no es un error */ }
+      if (!lista.length) return false;
+      estado.publicado = { firmas: firmasPorId(lista), n: lista.length, creado: datos.creado || '', lista };
+      estado.publicadoFallo = false;
+      return true;
+    } catch (e) { return false; }   // no hay banco publicado todavía: no es un error
+    finally { if (!estado.publicado) estado.publicadoFallo = true; }
+  }
+
+  async function bancoPublicado() {
+    $('#btn-semaforo-recomprobar').onclick = () => recomprobarPublicado();
+    if (location.protocol === 'file:') { pintarSemaforo(); return; }
+    const ok = await leerPublicado();
+    if (!ok) { pintarSemaforo(); return; }
+    if (!banco.length) {                                   // este navegador no tenía nada
+      cargarPublicado();
+      if (reintentarHash) reintentarHash(false);   // el enlace #id= esperaba a tener banco
+      return;
+    }
+    pintarSemaforo();
+    const d = comparaConPublicado();
+    if (d && !d.sinPublicar) return;                        // el mismo: nada que decir
+    pintarDesfase();
+    aviso('El banco de este navegador no coincide con el publicado. Baja a «El banco de fragmentos».', 12000);
+    $('#btn-desfase-descargar').onclick = () => descargarBanco();
+    $('#btn-desfase-cargar').onclick = () => cargarPublicado();
+    $('#btn-desfase-cerrar').onclick = () => {
+      const c = $('#banco-desfase'); c.dataset.cerrado = '1'; c.hidden = true;
+    };
   }
 
   function generarFicha() {
@@ -1589,6 +1721,7 @@
       if (abrirPorId(decodeURIComponent(m[1]), silencioso)) history.replaceState(null, '', location.pathname + location.search);
     };
     window.addEventListener('hashchange', () => porHash(false));
+    reintentarHash = porHash;
     porHash(false);
 
     /* Último recordatorio: al cerrar la pestaña con cambios sin subir (decisión 78). El

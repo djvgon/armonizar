@@ -100,22 +100,35 @@ const Teoria = (() => {
      ternarios (3/4, 3/2) no hay mitad, así que el 2.º y el 3.er tiempo pesan igual: un
      acorde que entre en el 2.º y se prolongue al 3.º no es una síncopa armónica.
      La síncopa armónica es pasar a una parte MÁS FUERTE sin cambiar de acorde. */
+  /* Fuerza métrica de cada nota: 3 el primer tiempo del compás, 2 la mitad (solo en los
+     compases binarios), 1 los demás tiempos, 0 lo que cae a contratiempo.
+
+     La posición se cuenta DENTRO DE CADA COMPÁS, no sobre un reloj corrido desde el
+     principio (decisión 81). Con un reloj corrido, una ANACRUSA —un primer compás
+     incompleto— desplazaba todo lo que venía detrás y el motor tomaba por primer tiempo
+     notas que no lo eran. Un compás corto al final no desplaza nada, porque no hay nada
+     detrás; el de una anacrusa sí, y por eso sus notas se alinean por la DERECHA: una
+     anacrusa de una negra en 3/4 cae en el tercer tiempo, que es débil, como debe ser. */
   function fuerzasMetricas(compases, compas) {
     const c = compas && compas.length === 2 ? compas : [4, 4];
     const porCompas = (c[0] * 4) / c[1];          // duración del compás, en negras
     const unidad = 4 / c[1];                      // duración de un tiempo, en negras
     const mitad = c[0] % 2 === 0 ? porCompas / 2 : null;
     const out = [];
-    let t = 0;
-    (compases || []).forEach(cp => cp.forEach(([n, d]) => {
-      const p = ((t % porCompas) + porCompas) % porCompas;
-      let f = 0;
-      if (Math.abs(p) < 0.01) f = 3;
-      else if (mitad !== null && Math.abs(p - mitad) < 0.01) f = 2;
-      else if (Math.abs(p % unidad) < 0.01 || Math.abs((p % unidad) - unidad) < 0.01) f = 1;
-      if (n !== null) out.push(f);
-      t += d;
-    }));
+    (compases || []).forEach((cp, k) => {
+      const dura = cp.reduce((a, x) => a + (x[1] || 0), 0);
+      // Anacrusa: el primer compás, si viene corto, se pega al final del compás
+      let t = (k === 0 && dura < porCompas - 0.01) ? porCompas - dura : 0;
+      cp.forEach(([n, d]) => {
+        const p = ((t % porCompas) + porCompas) % porCompas;
+        let f = 0;
+        if (Math.abs(p) < 0.01) f = 3;
+        else if (mitad !== null && Math.abs(p - mitad) < 0.01) f = 2;
+        else if (Math.abs(p % unidad) < 0.01 || Math.abs((p % unidad) - unidad) < 0.01) f = 1;
+        if (n !== null) out.push(f);
+        t += d;
+      });
+    });
     return out;
   }
   // ¿La nota i está en parte más fuerte que la anterior? (entonces el acorde ha de cambiar)

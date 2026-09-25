@@ -5876,8 +5876,8 @@
    "fuente": "06.mscz",
    "titulo": "",
    "tonalidad": {
-    "tonica": "C",
-    "modo": "mayor"
+    "tonica": "A",
+    "modo": "menor"
    },
    "tonalidadSegura": true,
    "compas": [
@@ -5904,14 +5904,13 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "53"
-     ],
-     [
-      "+6",
       "6"
      ],
      [
-      "53"
+      "+4"
+     ],
+     [
+      "6"
      ]
     ]
    },
@@ -5934,10 +5933,15 @@
     ],
     "modulaciones": [],
     "respuestas": [
-     [],
+     [
+      "I|53",
+      "I|6"
+     ],
      [
       "V|53",
       "V|+6",
+      "V|65d",
+      "V|6",
       "V|7+",
       "VII|6"
      ],
@@ -5947,19 +5951,17 @@
     ]
    },
    "nivelManual": null,
-   "avisos": [
-    "alguna nota de la melodía se queda sin acorde posible"
-   ],
+   "avisos": [],
    "etiquetas": {
     "voces": "ambas",
     "notas": 3,
     "compases": 1,
-    "modo": "mayor",
+    "modo": "menor",
     "alteraciones": 0,
     "modula": false,
     "cifras": [
-     "53",
-     "+6"
+     "6",
+     "+4"
     ],
     "grados": [],
     "nivel": 1
@@ -6774,8 +6776,8 @@
    "fuente": "07.mscz",
    "titulo": "",
    "tonalidad": {
-    "tonica": "Bb",
-    "modo": "mayor"
+    "tonica": "G",
+    "modo": "menor"
    },
    "tonalidadSegura": true,
    "compas": [
@@ -6802,10 +6804,15 @@
     ],
     "modulaciones": [],
     "respuestas": [
-     [],
+     [
+      "I|53",
+      "I|6"
+     ],
      [
       "V|53",
       "V|+6",
+      "V|65d",
+      "V|6",
       "V|7+",
       "VII|6"
      ],
@@ -6815,24 +6822,22 @@
     ]
    },
    "nivelManual": null,
-   "avisos": [
-    "alguna nota de la melodía se queda sin acorde posible"
-   ],
+   "avisos": [],
    "etiquetas": {
     "voces": "soprano",
     "notas": 3,
     "compases": 1,
-    "modo": "mayor",
+    "modo": "menor",
     "alteraciones": 2,
     "modula": false,
     "cifras": [
      "53"
     ],
     "grados": [
-     "V",
-     "I"
+     "I",
+     "V"
     ],
-    "nivel": 1
+    "nivel": 2
    }
   },
   {
@@ -12937,7 +12942,7 @@
      ],
      [
       [
-       "B2",
+       "E3",
        2
       ],
       [
@@ -12989,11 +12994,13 @@
       "6"
      ],
      [
-      "53",
-      "+4"
+      "6",
+      "53"
      ],
      [
-      "53"
+      "64",
+      "53",
+      "7+"
      ],
      [
       "53",
@@ -13018,10 +13025,11 @@
      "53",
      "+6",
      "6",
-     "+4"
+     "+4",
+     "64"
     ],
     "grados": [],
-    "nivel": 3
+    "nivel": 4
    }
   },
   {
