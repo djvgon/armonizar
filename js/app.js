@@ -522,8 +522,13 @@
     if (i === 0) return;
     estado.marcas[i] = t;
     if (estado.tocadas) estado.tocadas[i].tonalidad = true;
-    // Al marcar, la casilla de grado de esa nota se parte: se pasa a rellenar su segunda mitad si falta
-    estado.campo = pideGrado() ? (estado.romanos[i] ? 'romano2' : 'romano') : 'cifra';
+    /* Al marcar, el acorde se parte en DOS LECTURAS y aparecen la función y el grado de la
+       tonalidad nueva. Se salta a la primera casilla de ESTA nota que quede por rellenar,
+       en el orden en que se rellenan, para no pasar al acorde siguiente con el pivote a
+       medias (Diego, 25/9). Antes solo se miraba el grado, así que con las funciones
+       pedidas la segunda función se quedaba sin visitar. */
+    const pendiente = camposDe(i).find(c => !bloqueada(i, c) && !valorDe(i, c));
+    if (pendiente) estado.campo = pendiente;
     pintar();
   }
 
