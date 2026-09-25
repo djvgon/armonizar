@@ -970,5 +970,5 @@ const Reglas = (() => {
     return { ok: false, motivo };
   }
 
-  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, sincopaBajo, contexto, notasDe, cortesDe, movimiento, candidatosFuncion };
+  return { proponer, proponerEn, proponerSoprano, candidatoDe, enlaceAlumno, sincopaBajo, contexto, notasDe, cortesDe, movimiento, candidatosFuncion, acordePermitido };
 })();

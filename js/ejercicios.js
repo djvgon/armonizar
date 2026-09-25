@@ -554,8 +554,45 @@ const Ejercicios = (() => {
   // Nivel de ayuda con los grados: 'ninguna' | 'lista' | 'paleta'
   function ayudaGrados(ej) { return ['ninguna', 'lista', 'paleta'].includes(ej.ayudaGrados) ? ej.ayudaGrados : 'lista'; }
 
+  /* ---------- La lista de acordes de la lección también corrige (decisión 101) ----------
+     Cada lección trae su lista de acordes (`ej.acordes` = ['I|53', 'V|7+', …]), que es lo
+     que Diego escribe en la pizarra: los acordes con los que se trabaja hasta ahí. El
+     motor YA se limita a ella al proponer —lo dice `acordePermitido` en reglas.js: «el
+     alumno solo tiene esos acordes a mano, así que proponerle cualquier otro es ponerle
+     una trampa»—, pero las opciones marcadas A MANO en la tabla de revisión se saltaban
+     esa comprobación, y al corregir nadie volvía a mirarla. Resultado: una opción marcada
+     valía en TODAS las lecciones que usaran ese fragmento, aunque la lección todavía no
+     hubiera visto ese acorde. Ahora la corrección mira lo mismo que el motor.
+
+     Dos cautelas, las dos a favor del alumno:
+     - **El modelo nunca se quita.** Si el modelo de un fragmento no está en la lista de su
+       lección, eso es un error de datos (lo señala el configurador), no algo que deba
+       dejar la nota sin respuesta correcta.
+     - **En el acorde pivote basta con que valga en UNA de las dos tonalidades.** Al
+       proponer se exige en las dos; al corregir, no: equivocarse por ser indulgente en un
+       pivote es mucho menos dañino que dar por mala una respuesta correcta. */
+  function soloDeLaLeccion(ej, i, ids) {
+    if (!Array.isArray(ej.acordes) || !ej.acordes.length || ids.length < 2) return ids;
+    if (typeof Reglas === 'undefined' || typeof Reglas.acordePermitido !== 'function') return ids;
+    let nota, tonA, tonB;
+    try {
+      nota = Teoria.notasDeCompases(ej.compases)[i];
+      tonB = tonalidadEn(ej, i);
+      tonA = tonalidadAntes(ej, i);
+    } catch (e) { return ids; }
+    const vale = id => {
+      // En la melodía de soprano la respuesta YA es el par «romano|cifra»: se compara tal cual
+      if (String(id).indexOf('|') >= 0) return ej.acordes.indexOf(id) >= 0;
+      return Reglas.acordePermitido(id, nota, tonB, ej.acordes)
+        || Reglas.acordePermitido(id, nota, tonA, ej.acordes);
+    };
+    const f = ids.filter((id, k) => k === 0 || vale(id));
+    return f.length ? f : ids;
+  }
+
   // Cifras admisibles de la nota i tal como se corrigen: las del corpus que estén en
-  // el repertorio del ejercicio (si ninguna lo está, se dejan todas), y con la
+  // el repertorio del ejercicio (si ninguna lo está, se dejan todas), después las que
+  // admita la lista de acordes de su lección (decisión 101), y con la
   // preferida (ej.preferir) en primer lugar como modelo.
   function admisibles(ej, i) {
     let ids = ej.respuestas[i];
@@ -563,6 +600,7 @@ const Ejercicios = (() => {
       const f = ids.filter(id => ej.repertorio.includes(cifraDe(id)));
       if (f.length) ids = f;
     }
+    ids = soloDeLaLeccion(ej, i, ids);
     if (ej.preferir) {
       const pref = ids.find(id => ej.preferir.includes(cifraDe(id)));
       if (pref) ids = [pref, ...ids.filter(id => id !== pref)];

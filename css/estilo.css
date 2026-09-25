@@ -472,6 +472,12 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
   border: 1px solid var(--linea); border-radius: 6px; background: var(--fondo);
 }
 .globo-acorde .globo-op.modelo { background: var(--bien-suave); border-color: var(--bien); }
+/* Marcada pero fuera de la lista de acordes de su lección (decisión 101): ya no se da por
+   buena al corregir. Se tacha además de teñirse, para que se vea sin depender del color. */
+.globo-acorde .globo-op.fuera-leccion, .chip.fuera-leccion {
+  border-color: var(--mal); border-style: dashed; background: var(--mal-suave);
+}
+.globo-acorde .globo-op.fuera-leccion .chip-romano, .chip.fuera-leccion .chip-romano { color: var(--mal); text-decoration: line-through; }
 .globo-acorde .globo-op .chip-romano { font-size: .8rem; color: var(--tinta-suave); }
 .globo-acorde .globo-pie { margin-top: .35rem; font-size: .75rem; color: var(--tinta-suave); }
 .globo-acorde .globo-vacio { color: var(--mal); }

@@ -296,6 +296,7 @@
     const tbody = $('#tabla-revision tbody');
     tbody.innerHTML = '';
     const sinPropuesta = [];
+    const fueraDeLeccion = [];    // marcadas que la lista de acordes de la lección no admite (decisión 101)
     estado.resumen = [];          // lo que enseña el globo al pasar el ratón por un acorde
     const sop = esSoprano();
     const conFun = !!opciones().funciones;
@@ -378,6 +379,18 @@
       const celda = tr.querySelector('.chips');
       // Opciones de la nota: en el bajo dado, las cifras del repertorio; en la melodía de soprano,
       // los acordes (fundamental + cifra) que contienen la nota, según el motor (o los marcados, si no hay análisis)
+      /* ¿Admite la lista de acordes de la lección esta opción? (decisión 101). Desde que la
+         lista corrige, una opción que no esté en ella dejará de darse por buena, así que
+         aquí se señala en la ficha, en el globo y en el aviso de debajo de la tabla. */
+      const listaAcordes = acordesElegidos();
+      const loAdmiteLaLeccion = id => {
+        if (!listaAcordes.length) return true;
+        if (String(id).indexOf('|') >= 0) return listaAcordes.indexOf(id) >= 0;
+        try {
+          return Reglas.acordePermitido(id, n, ton, listaAcordes)
+            || Reglas.acordePermitido(id, n, tonAntes, listaAcordes);
+        } catch (e) { return true; }
+      };
       let opcionesNota;
       if (sop) {
         const ids = adm.slice();                                   // primero las admisibles (la modelo delante), luego el resto de acordes con la nota
@@ -386,19 +399,22 @@
           const p = Ejercicios.par(id);
           const cand = prop && prop.candidatos ? prop.candidatos.find(x => x.id === id) : null;
           const b = cand ? cand.bajo : Teoria.bajoDe(p.romano, p.cifra, ton);
-          return { id, cifra: p.cifra, bajo: b, romTxt: Teoria.gradoEscrito(p.romano, p.cifra), extra: b ? ' (' + Teoria.nombreEs(b) + ')' : '', titulo: Teoria.CIFRADOS[p.cifra].descripcion + (b ? ' · bajo ' + Teoria.nombreEs(b) : '') + (cand && cand.avisos.length ? ' · ' + cand.avisos.join(', ') : ''), aviso: !!(cand && cand.avisos.length) };
+          const fuera = !loAdmiteLaLeccion(id);
+          return { id, cifra: p.cifra, bajo: b, romTxt: Teoria.gradoEscrito(p.romano, p.cifra), extra: b ? ' (' + Teoria.nombreEs(b) + ')' : '', titulo: Teoria.CIFRADOS[p.cifra].descripcion + (b ? ' · bajo ' + Teoria.nombreEs(b) : '') + (cand && cand.avisos.length ? ' · ' + cand.avisos.join(', ') : '') + (fuera ? ' · NO está en la lista de acordes de esta lección' : ''), aviso: !!(cand && cand.avisos.length), fuera };
         });
       } else {
         opcionesNota = rep.map(id => {
           const romTxt = esPivote ? Teoria.romanoEscrito(id, n, tonAntes) + ' = ' + Teoria.romanoEscrito(id, n, ton) : Teoria.romanoEscrito(id, n, ton);
           const noComun = esPivote && !Teoria.acordeComun(id, n, tonAntes, ton);
-          return { id, cifra: id, bajo: n, romTxt, extra: '', titulo: Teoria.CIFRADOS[id].descripcion + ' → ' + romTxt + (noComun ? ' (no es acorde común)' : ''), noComun };
+          const fuera = !loAdmiteLaLeccion(id);
+          return { id, cifra: id, bajo: n, romTxt, extra: '', titulo: Teoria.CIFRADOS[id].descripcion + ' → ' + romTxt + (noComun ? ' (no es acorde común)' : '') + (fuera ? ' · NO está en la lista de acordes de esta lección' : ''), noComun, fuera };
         });
       }
       opcionesNota.forEach(op => {
         const id = op.id;
         const chip = document.createElement('label');
-        chip.className = 'chip' + (adm.includes(id) ? ' marcada' : '') + (adm[0] === id ? ' modelo' : '') + (op.noComun ? ' no-comun' : '') + (op.aviso ? ' con-aviso' : '');
+        chip.className = 'chip' + (adm.includes(id) ? ' marcada' : '') + (adm[0] === id ? ' modelo' : '') + (op.noComun ? ' no-comun' : '') + (op.aviso ? ' con-aviso' : '')
+          + (op.fuera && adm.includes(id) ? ' fuera-leccion' : '');
         chip.title = op.titulo;
         const cb = document.createElement('input');
         cb.type = 'checkbox'; cb.checked = adm.includes(id);
@@ -425,12 +441,29 @@
         fun: conFun ? estado.funciones[i] : null,
         opciones: adm.map(id => opcionesNota.find(op => op.id === id)).filter(Boolean)
       };
+      // Marcadas que la lista de acordes de la lección NO admite: dejarán de valer al corregir
+      estado.resumen[i].opciones.forEach((op, k) => {
+        if (op && op.fuera) fueraDeLeccion.push({ nota: i + 1, romTxt: op.romTxt, cifra: op.cifra, modelo: k === 0 });
+      });
       tbody.appendChild(tr);
     });
     document.querySelectorAll('#tabla-revision .col-fun').forEach(e => { e.hidden = !conFun; });
     ajustarCampoModulacion();
     const av = $('#avisos-revision');
-    if (sinPropuesta.length) { av.textContent = 'Notas sin ninguna cifra admisible: ' + sinPropuesta.join(', ') + '. Márcalas a mano o cambia el repertorio.'; av.hidden = false; }
+    /* Dos avisos distintos. El de siempre: notas sin ninguna cifra admisible. Y el nuevo
+       (decisión 101): opciones marcadas que la lista de acordes de la lección no admite y
+       que, por tanto, ya no se darán por buenas. Si la que sobra es la MODELO, es más
+       grave: el modelo se respeta igual (la nota no se queda sin respuesta correcta), pero
+       significa que la lista de la lección está incompleta o que el modelo está mal. */
+    const partes = [];
+    if (sinPropuesta.length) partes.push('Notas sin ninguna cifra admisible: ' + sinPropuesta.join(', ') + '. Márcalas a mano o cambia el repertorio.');
+    if (fueraDeLeccion.length) {
+      const di = x => 'nota ' + x.nota + ' (' + x.romTxt + ')' + (x.modelo ? ' —¡y es la MODELO!—' : '');
+      partes.push('Fuera de la lista de acordes de esta lección: ' + fueraDeLeccion.map(di).join(', ')
+        + '. Al corregir ya no se dan por buenas'
+        + (fueraDeLeccion.some(x => x.modelo) ? '; la modelo sí se respeta, pero conviene añadir ese acorde a la lección o cambiar el modelo.' : '. Desmárcalas, o añade el acorde a la lección si ya se ha visto.'));
+    }
+    if (partes.length) { av.textContent = partes.join(' · '); av.hidden = false; }
     else av.hidden = true;
     pintarVistaPrevia();
   }
@@ -552,7 +585,7 @@
       ops.className = 'globo-ops';
       r.opciones.forEach((op, k) => {
         const d = document.createElement('span');
-        d.className = 'globo-op' + (k === 0 ? ' modelo' : '');
+        d.className = 'globo-op' + (k === 0 ? ' modelo' : '') + (op.fuera ? ' fuera-leccion' : '');
         d.title = op.titulo;
         d.appendChild(Partitura.iconoCifra(op.cifra, 26, op.bajo ? { bajo: op.bajo, ton: r.tonObj } : null));
         const t = document.createElement('span');
@@ -564,8 +597,10 @@
       caja.appendChild(ops);
       const pie = document.createElement('div');
       pie.className = 'globo-pie';
-      pie.textContent = r.opciones.length === 1 ? '1 cifra admisible (es la modelo)'
-        : r.opciones.length + ' cifras admisibles · la modelo, la primera, en verde';
+      const nf = r.opciones.filter(o => o && o.fuera).length;
+      pie.textContent = (r.opciones.length === 1 ? '1 cifra admisible (es la modelo)'
+        : r.opciones.length + ' cifras admisibles · la modelo, la primera, en verde')
+        + (nf ? ' · ' + (nf === 1 ? '1 tachada: no está' : nf + ' tachadas: no están') + ' en la lista de acordes de la lección' : '');
       caja.appendChild(pie);
     }
     // Debajo del acorde; si no cabe, encima. Siempre dentro de la ventana.
