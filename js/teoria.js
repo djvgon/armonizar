@@ -764,8 +764,31 @@ const Teoria = (() => {
   const gradoEscrito = (romano, cifra) => (esSecundaria(romano, cifra) ? SECUNDARIAS[romano].grado : romano);
   const gradoInterno = txt => (Object.keys(SECUNDARIAS).find(k => SECUNDARIAS[k].grado === txt) || txt);
   const secundariaDe = txt => SECUNDARIAS[gradoInterno(txt)] || null;
+  /* La misma pregunta, pero SABIENDO el bajo y el tono (decisión 103, Diego). `esSecundaria`
+     solo mira la cifra, así que reconoce la dominante secundaria cuando lleva séptima
+     (7/+, +6, 6/5̸, +4) y se le escapa la TRÍADA MAYOR sobre el 2.º grado —la-do♯-mi en
+     Sol M, que es la V/V sin séptima y se rotulaba «II»—. Con el bajo y el tono delante sí
+     se puede: si la 3.ª sobre la fundamental es mayor, el acorde es dominante de algo. En
+     el II diatónico —tercera menor en mayor, disminuido en menor— la prueba da falso, de
+     modo que el II de siempre se sigue rotulando II. */
+  function terceraMayorSobreFundamental(id, bajo, ton) {
+    try {
+      const nb = nota(bajo);
+      const cf = clase(fundamental(id, nb, ton));
+      const notas = [clase(nb), ...vocesSuperiores(id, nb, ton).map(clase)];
+      return notas.includes((cf + 4) % 12) && !notas.includes((cf + 3) % 12);
+    } catch (e) { return false; }
+  }
+  function esSecundariaEn(id, bajo, ton) {
+    const rom = romano(id, bajo, ton);
+    if (rom === 'V' || !SECUNDARIAS[rom]) return false;
+    return DOMINANTES.includes(id) || terceraMayorSobreFundamental(id, bajo, ton);
+  }
   // Igual que romano(), pero devuelve el grado tal como se ESCRIBE (V/V en vez de II)
-  function romanoEscrito(id, bajo, ton) { return gradoEscrito(romano(id, bajo, ton), id); }
+  function romanoEscrito(id, bajo, ton) {
+    const rom = romano(id, bajo, ton);
+    return esSecundariaEn(id, bajo, ton) && SECUNDARIAS[rom] ? SECUNDARIAS[rom].grado : gradoEscrito(rom, id);
+  }
 
   const FUNCIONES = ['T', 'S', 'D'];                 // las diatónicas (cuadro verde)
   const FUNCIONES_CROMATICAS = Object.keys(SECUNDARIAS).map(k => SECUNDARIAS[k].funcion);   // DD (cuadro azul)
@@ -967,6 +990,6 @@ const Teoria = (() => {
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,
     FUNCIONES, FUNCIONES_CROMATICAS, TODAS_FUNCIONES, NOMBRE_FUNCION, funcionesDe, funcionesDeAcorde, funcionDe, bajoDe, menorMelodica, variantesTon, tonParaAcorde, tonParaBajo,
-    SECUNDARIAS, GRADOS_CROMATICOS, esSecundaria, gradoEscrito, acordeSinPosicion, gradoInterno, secundariaDe, romanoEscrito
+    SECUNDARIAS, GRADOS_CROMATICOS, esSecundaria, esSecundariaEn, gradoEscrito, acordeSinPosicion, gradoInterno, secundariaDe, romanoEscrito
   };
 })();

@@ -757,7 +757,10 @@ const Ejercicios = (() => {
        de la cifra —la nota es la que es—, así que sale igual en todas las parejas; se
        guarda en cada una para que el alumno se corrija con el mismo camino que el romano. */
     const gb = Teoria.textoGrado(notas[i], ton);
-    return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.gradoEscrito(Teoria.romano(id, notas[i], ton), id), gradoBajo: gb }));
+    /* `romanoEscrito` y no `gradoEscrito(romano(…))`: hace falta el bajo y el tono para
+       reconocer la tríada mayor sobre el 2.º grado como V/V (decisión 103). De la función
+       tonal se encarga sola `funcionesDe`, que lee V/V como DD. */
+    return admisibles(ej, i).map(id => ({ id, cifra: id, romano: Teoria.romanoEscrito(id, notas[i], ton), gradoBajo: gb }));
   }
   // Parejas en la tonalidad que rige en la nota (en el pivote, la nueva); la primera es la modelo.
   function parejas(ej, i) { return parejasEn(ej, i, tonalidadEn(ej, i)); }
