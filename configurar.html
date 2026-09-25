@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260926-1900">
-  <link rel="stylesheet" href="css/estilo.css?v=20260926-1900">
+  <link rel="stylesheet" href="css/bravura.css?v=20260926-2030">
+  <link rel="stylesheet" href="css/estilo.css?v=20260926-2030">
 </head>
 <body class="configurador">
 
@@ -110,6 +110,34 @@
         <p class="ayuda">Ponle <b>título</b>: es el nombre con el que vas a reconocer esta práctica en tu hoja de calificaciones. Sin él se construye uno automático con la lección, el tipo y cuántos ejercicios lleva.</p>
         </div>
 
+        <!-- Transporte (decisión 102). Ojo con no confundirlo con el filtro de arriba:
+             aquel elige QUÉ fragmentos entran, por la armadura con que están escritos;
+             este dice a QUÉ TONALIDAD se transportan al dárselos al alumno. -->
+        <div class="bloque-opciones">
+        <h3>En qué tonalidades</h3>
+        <p class="ayuda">Casi todo el banco está escrito en Do M y la menor. Aquí se elige a qué tonalidades se <b>transporta</b>: cada fragmento sale en una, y el mismo enlace da siempre las mismas, así que la ficha se puede repetir, comparar e imprimir. <b>Las respuestas no cambian</b> —son cifras y grados romanos, que no dependen del tono—: cambia la música, no el ejercicio. No lo confundas con «Alteraciones de la armadura» de arriba, que es un filtro de qué fragmentos entran.</p>
+        <div class="fila-campos">
+          <label class="campo campo-ancho">
+            <span>Curso</span>
+            <select id="ficha-curso">
+              <option value="">Sin transportar — cada fragmento en el tono en que está</option>
+              <option value="2">1.º de Armonía — hasta 2 alteraciones</option>
+              <option value="3">2.º de Armonía — hasta 3 alteraciones</option>
+              <option value="5">1.º de Análisis / Fundamentos de composición — hasta 5</option>
+              <option value="7">2.º de Análisis / Fundamentos de composición — hasta 7</option>
+              <option value="x">A medida — solo las marcadas aquí abajo</option>
+            </select>
+          </label>
+        </div>
+        <div id="ficha-tonos-caja" hidden>
+          <p class="ayuda" style="margin-bottom:.2rem"><b>Mayores</b></p>
+          <div id="ficha-tonos-mayor" class="repertorio-opciones"></div>
+          <p class="ayuda" style="margin-bottom:.2rem"><b>Menores</b></p>
+          <div id="ficha-tonos-menor" class="repertorio-opciones"></div>
+          <p class="ayuda" id="ficha-tonos-aviso"></p>
+        </div>
+        </div>
+
         <div class="bloque-opciones">
         <h3>Cómo se le presenta al alumno</h3>
         <div class="fila-campos">
@@ -184,6 +212,8 @@
           <a id="btn-ficha-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
         </div>
         <textarea id="ficha-direccion" rows="2" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección de la ficha"></textarea>
+        <!-- En qué tonos saldrá cada fragmento con ESTE enlace (decisión 102) -->
+        <p class="ayuda" id="ficha-tonos-reparto" hidden></p>
         <p class="ayuda">Genera la dirección <b>desde el configurador publicado</b>, no desde el disco: las fichas necesitan leer <code>banco.json</code> del servidor. Si has cambiado el banco, acuérdate de descargarlo y subirlo a GitHub antes de repartir el enlace.</p>
       </div>
     </section>
@@ -443,17 +473,17 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260926-1900</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260926-2030</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260926-1900"></script>
-  <script src="js/reglas.js?v=20260926-1900"></script>
-  <script src="js/ejercicios.js?v=20260926-1900"></script>
-  <script src="js/partitura.js?v=20260926-1900"></script>
-  <script src="js/musicxml.js?v=20260926-1900"></script>
-  <script src="js/musescore.js?v=20260926-1900"></script>
-  <script src="js/banco.js?v=20260926-1900"></script>
-  <script src="js/realizacion.js?v=20260926-1900"></script>
-  <script src="js/configurador.js?v=20260926-1900"></script>
+  <script src="js/teoria.js?v=20260926-2030"></script>
+  <script src="js/reglas.js?v=20260926-2030"></script>
+  <script src="js/ejercicios.js?v=20260926-2030"></script>
+  <script src="js/partitura.js?v=20260926-2030"></script>
+  <script src="js/musicxml.js?v=20260926-2030"></script>
+  <script src="js/musescore.js?v=20260926-2030"></script>
+  <script src="js/banco.js?v=20260926-2030"></script>
+  <script src="js/realizacion.js?v=20260926-2030"></script>
+  <script src="js/configurador.js?v=20260926-2030"></script>
 </body>
 </html>

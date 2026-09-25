@@ -407,10 +407,117 @@ const Banco = (() => {
     return lista.slice(0, n);
   }
 
+  /* ---------- Transportar un fragmento (decisión 102) ----------
+     Devuelve una COPIA del fragmento en otra tónica, o `null` si no se puede dibujar.
+     Lo único que se toca son las notas y las tonalidades: las respuestas, el repertorio
+     y la lista de acordes de la lección están escritos en cifras y grados romanos, que
+     no dependen del tono. Por eso esto son treinta líneas y no un proyecto. */
+  function transportarEntrada(e, tonicaDestino) {
+    if (!e || !tonicaDestino || tonicaDestino === e.tonalidad.tonica) return e;
+    const iv = Teoria.intervaloEntreTonicas(e.tonalidad.tonica, tonicaDestino);
+    const mueve = n => Teoria.transportar(Teoria.nota(n), iv.pasos, iv.semitonos);
+
+    /* Primero, ¿se puede DIBUJAR? La fuente incrustada es un subconjunto de Bravura con
+       ♯, ♭ y ♮, sin doble sostenido ni doble bemol. Medido sobre el banco entero: hasta
+       5 alteraciones no aparece ni uno; a 6 aparece un caso y a 7, cuatro. En esos, se
+       devuelve null y quien llama prueba con otra tónica. */
+    let imposible = false;
+    ['bajo', 'soprano'].forEach(v => {
+      const p = e[v]; if (!p) return;
+      p.compases.forEach(c => c.forEach(([n]) => {
+        if (!n) return;
+        try { if (Math.abs(mueve(n).alt) >= 2) imposible = true; } catch (err) { imposible = true; }
+      }));
+    });
+    if (imposible) return null;
+
+    /* Y después, ¿en qué octava? El intervalo nunca pasa de un tritono, pero medio tono
+       arriba sobre un fragmento ya agudo lo saca del pentagrama. Se corre por octavas
+       LAS DOS VOCES A LA VEZ —si no, se cruzarían— buscando dejar el conjunto donde
+       estaba. */
+    const todas = [];
+    ['bajo', 'soprano'].forEach(v => {
+      const p = e[v]; if (!p) return;
+      p.compases.forEach(c => c.forEach(([n]) => { if (n) todas.push(n); }));
+    });
+    let octavas = 0;
+    if (todas.length) {
+      const viejas = todas.map(n => Teoria.midi(Teoria.nota(n)));
+      const nuevas = todas.map(n => Teoria.midi(mueve(n)));
+      const vLo = Math.min(...viejas), vHi = Math.max(...viejas);
+      const media = viejas.reduce((a, x) => a + x, 0) / viejas.length;
+      /* Se prueban tres octavas y gana la que menos se SALGA del registro que tenía el
+         fragmento. Mirar el registro y no la media importa: una media parecida puede
+         esconder una nota cuatro líneas adicionales por encima del pentagrama. */
+      let mejor = null;
+      [0, -1, 1].forEach(o => {
+        const lo = Math.min(...nuevas) + 12 * o, hi = Math.max(...nuevas) + 12 * o;
+        const exceso = Math.max(0, hi - vHi) + Math.max(0, vLo - lo);
+        const centro = Math.abs((nuevas.reduce((a, x) => a + x, 0) / nuevas.length + 12 * o) - media);
+        if (!mejor || exceso < mejor.exceso - 0.001 || (Math.abs(exceso - mejor.exceso) < 0.001 && centro < mejor.centro)) {
+          mejor = { o, exceso, centro };
+        }
+      });
+      octavas = mejor.o;
+    }
+
+    const copia = JSON.parse(JSON.stringify(e));
+    copia.tonalidad = Teoria.transportarTonalidad(e.tonalidad, iv.pasos, iv.semitonos);
+    ['bajo', 'soprano'].forEach(v => {
+      const p = copia[v]; if (!p) return;
+      p.compases = p.compases.map(c => c.map(([n, d]) => {
+        if (!n) return [n, d];
+        const x = mueve(n);
+        return [Teoria.texto({ letra: x.letra, alt: x.alt, octava: x.octava + octavas }), d];
+      }));
+      p.modulaciones = (p.modulaciones || []).map(m => ({
+        nota: m.nota, tonalidad: Teoria.transportarTonalidad(m.tonalidad, iv.pasos, iv.semitonos)
+      }));
+    });
+    // La armadura escrita en la partitura original ya no describe a esta copia
+    delete copia.armaduraEscrita;
+    copia.transportadoDe = e.tonalidad.tonica;      // para el pie del ejercicio y la revisión
+    try { etiquetar(copia); } catch (err) { /* si algo falla, quedan las etiquetas viejas */ }
+    return copia;
+  }
+
+  /* Qué tónica le toca a este fragmento en esta ficha. Determinista: sale del id del
+     fragmento y de la semilla que viaja en el enlace, así que el MISMO enlace da
+     siempre los mismos tonos —se puede imprimir, repetir y comparar entre alumnos—
+     sin guardar nada. Si la tónica elegida no se puede dibujar, se prueba la siguiente. */
+  function revoltijo(txt) {
+    let h = 2166136261;
+    for (let i = 0; i < txt.length; i++) { h ^= txt.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0);
+  }
+  function tonicasDeFicha(filtro, modo) {
+    const f = filtro || {};
+    const delModo = Teoria.CIRCULO_TONICAS[modo === 'menor' ? 'menor' : 'mayor'];
+    /* La lista a mano manda sobre el tope. Lleva tónicas de los dos modos mezcladas —el
+       profesor marca «Re M» y «si m» en la misma casilla—, así que aquí se queda con las
+       que son de ESTE modo: a un fragmento en menor no se le ofrece Sol M. */
+    if (Array.isArray(f.tonos) && f.tonos.length) return f.tonos.filter(t => delModo.includes(t));
+    if (typeof f.maxAlt === 'number') return Teoria.tonicasPorAlteraciones(modo, f.maxAlt);
+    return [];
+  }
+  function transportada(e, filtro, k) {
+    const lista = tonicasDeFicha(filtro, e.tonalidad.modo);
+    if (!lista.length) return e;
+    const base = revoltijo(String((filtro || {}).semilla || '') + '·' + String(e.id || k || ''));
+    for (let i = 0; i < lista.length; i++) {
+      const cand = transportarEntrada(e, lista[(base + i) % lista.length]);
+      if (cand) return cand;                       // la primera que se pueda dibujar
+    }
+    return e;
+  }
+
   /* ---------- De entrada a ejercicio ---------- */
 
   function ejercicio(e, filtro, k) {
     const f = filtro || {};
+    // El tono de este fragmento en esta ficha (decisión 102). Va aquí y no en `elegir`
+    // para que la ficha a medias se reanude en el MISMO tono: sale del id, no del azar.
+    e = transportada(e, f, k);
     const modo = f.modo || 'armonizar';
     const parte = e[vozDeModo(modo)];
     if (!parte) return null;
@@ -527,6 +634,7 @@ const Banco = (() => {
 
   return { VERSION, MODOS, modoDe, vozDeModo, paginaDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, etiquetar,
+    transportarEntrada, transportada, tonicasDeFicha,
     analizarVoz: analizar, companeraDe: companera,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
 })();

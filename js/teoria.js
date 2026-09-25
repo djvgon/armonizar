@@ -333,6 +333,53 @@ const Teoria = (() => {
     return esc.reduce((s, n) => s + n.alt, 0);
   }
 
+  /* ---------- Transportar de tono (decisión 102) ----------
+     El banco está escrito mayormente en Do M y la menor (74 de 132 fragmentos). Como las
+     respuestas son CIFRAS y GRADOS ROMANOS —no notas—, un fragmento transportado es el
+     mismo ejercicio con las mismas respuestas: lo único que lleva altura son los compases
+     y la tonalidad. Esto es lo que permite dar el mismo fragmento en varios tonos sin
+     guardar ni una copia. */
+
+  // Las tónicas por el círculo de quintas, de menos a más alteraciones y alternando
+  // sostenidos y bemoles: así, al cortar por un tope, quedan las de siempre.
+  const CIRCULO = {
+    mayor: ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb', 'E', 'Ab', 'B', 'Db', 'F#', 'Gb', 'C#', 'Cb'],
+    menor: ['A', 'E', 'D', 'B', 'G', 'F#', 'C', 'C#', 'F', 'G#', 'Bb', 'D#', 'Eb', 'A#', 'Ab']
+  };
+
+  /* Las tónicas de ese modo cuya armadura no pasa de `max` alteraciones. El tope se
+     comprueba con `armadura`, no con la posición en la lista: si la lista tuviera un
+     error, el tope seguiría siendo el correcto. */
+  function tonicasPorAlteraciones(modo, max) {
+    const lista = CIRCULO[modo === 'menor' ? 'menor' : 'mayor'];
+    return lista.filter(t => {
+      try { return Math.abs(armadura({ tonica: t, modo })) <= max; } catch (e) { return false; }
+    });
+  }
+
+  /* El intervalo MÁS CORTO de una tónica a otra, en {pasos de letra, semitonos}. Corto
+     importa: transportar Do M a Si M por una séptima mayor ascendente subiría el
+     fragmento casi una octava y se saldría del pentagrama; por un semitono descendente,
+     no. Nunca pasa de un tritono. */
+  function intervaloEntreTonicas(a, b) {
+    const na = nota(String(a) + '4'), nb = nota(String(b) + '4');
+    /* Los pasos de letra y los semitonos se reducen A LA VEZ, no cada uno por su lado:
+       son dos maneras de medir el MISMO intervalo y han de quedar de acuerdo. Reducirlos
+       por separado da pares imposibles —bajar una cuarta de letra y subir un tritono de
+       semitonos—, y de ahí salen dobles alteraciones a mansalva. */
+    const pasos = ((LETRAS.indexOf(nb.letra) - LETRAS.indexOf(na.letra)) % 7 + 7) % 7;         // 0…6
+    const semis = (((SEMITONOS[nb.letra] + nb.alt) - (SEMITONOS[na.letra] + na.alt)) % 12 + 12) % 12;  // 0…11
+    // Y del par ascendente se toma el camino más corto, bajando la octava entera si procede
+    return semis > 6 ? { pasos: pasos - 7, semitonos: semis - 12 } : { pasos, semitonos: semis };
+  }
+
+  // La misma tonalidad, transportada. Conserva el modo (una menor sigue siendo menor).
+  function transportarTonalidad(ton, pasos, semitonos) {
+    const t = transportar(nota(String(ton.tonica) + '4'), pasos, semitonos);
+    const alt = t.alt > 0 ? '#'.repeat(t.alt) : t.alt < 0 ? 'b'.repeat(-t.alt) : '';
+    return { tonica: t.letra + alt, modo: ton.modo };
+  }
+
   // Grado del bajo respecto a la escala natural: {grado:1..7, alt: desviación}
   function grado(n, ton) {
     n = nota(n);
@@ -915,6 +962,7 @@ const Teoria = (() => {
 
   return {
     LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
+    CIRCULO_TONICAS: CIRCULO, tonicasPorAlteraciones, intervaloEntreTonicas, transportarTonalidad,
     escalaNatural, escalaVoces, armadura, grado, textoGrado, ordenGrado, relievePorNota, relieveDeTonica, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,
     CIFRADOS, DOMINANTES, MARCADOS, ROMANOS, FUNDAMENTAL, vocesSuperiores, alteracionesCifra, filasCifra, fundamental, gradoFundamental, romano, claveAcorde, canonizar,

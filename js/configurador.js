@@ -1127,6 +1127,58 @@
       + (conAviso ? ' · ' + conAviso + ' con alguna nota sin propuesta (revísalos)' : '') + '.', 7000);
   }
 
+  /* ---------- Las tonalidades de la ficha (decisión 102) ----------
+     El desplegable «Curso» es un atajo: pone el tope de alteraciones que corresponde a
+     cada curso y marca las tónicas que caben. A partir de ahí el profesor toca las que
+     quiera y el desplegable pasa solo a «A medida». */
+  const CURSOS = { 2: '1.º de Armonía', 3: '2.º de Armonía', 5: '1.º de Análisis / Fundamentos', 7: '2.º de Análisis / Fundamentos' };
+
+  function pintarTonos(marcar) {
+    const caja = $('#ficha-tonos-caja');
+    const v = $('#ficha-curso').value;
+    caja.hidden = !v;
+    if (!v) return;
+    const tope = v === 'x' ? 7 : parseInt(v, 10);
+    ['mayor', 'menor'].forEach(modo => {
+      const div = $('#ficha-tonos-' + modo);
+      const antes = new Set([...div.querySelectorAll('input:checked')].map(i => i.value));
+      div.innerHTML = '';
+      Teoria.tonicasPorAlteraciones(modo, 7).forEach(t => {
+        const ton = { tonica: t, modo };
+        const arm = Teoria.armadura(ton);
+        const lab = document.createElement('label');
+        lab.className = 'opcion-cifra';
+        lab.title = Math.abs(arm) + ' ' + (Math.abs(arm) === 1 ? 'alteración' : 'alteraciones');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.value = t; cb.dataset.modo = modo;
+        cb.checked = marcar ? Math.abs(arm) <= tope : antes.has(t);
+        cb.addEventListener('change', () => {
+          if ($('#ficha-curso').value !== 'x') $('#ficha-curso').value = 'x';
+          limpiarDireccion(); guardarBorrador(); avisoTonos();
+        });
+        lab.appendChild(cb);
+        lab.appendChild(document.createTextNode(Teoria.nombreCorto(ton)));
+        div.appendChild(lab);
+      });
+    });
+    avisoTonos();
+  }
+  const tonosMarcados = () => [...document.querySelectorAll('#ficha-tonos-caja input:checked')].map(i => i.value);
+  function avisoTonos() {
+    const n = tonosMarcados().length;
+    const may = [...document.querySelectorAll('#ficha-tonos-mayor input:checked')].length;
+    const men = n - may;
+    /* El recordatorio de las dobles alteraciones. La fuente incrustada no tiene 𝄪 ni 𝄫,
+       así que cuando un fragmento no se puede dibujar en la tónica que le tocaba, se le
+       da la siguiente. Pasa sobre todo en las menores con muchos sostenidos —sol♯, re♯,
+       la♯ menor piden 𝄪 en la sensible— y en las tonalidades de 6 y 7 bemoles. */
+    const finas = [...document.querySelectorAll('#ficha-tonos-caja input:checked')]
+      .filter(i => Math.abs(Teoria.armadura({ tonica: i.value, modo: i.dataset.modo })) >= 5)
+      .map(i => Teoria.nombreCorto({ tonica: i.value, modo: i.dataset.modo }));
+    $('#ficha-tonos-aviso').innerHTML = (may + ' mayores y ' + men + ' menores marcadas.')
+      + (finas.length ? ' <b>Aviso:</b> ' + finas.join(', ') + ' piden dobles alteraciones en algunos fragmentos (sobre todo la sensible de las menores con muchos sostenidos), y la fuente de la partitura no las dibuja. En esos casos el fragmento sale en la siguiente tonalidad marcada, así que nunca se rompe nada; simplemente esas tonalidades salen menos.' : '');
+  }
+
   function filtroFicha() {
     const alt = parseInt($('#ficha-alteraciones').value, 10);
     const niv = $('#ficha-nivel').value.split('-').map(Number);
@@ -1152,6 +1204,14 @@
     if (fun === 'dadas' || fun === 'pedir') f.funciones = fun;
     const tons = $('#ficha-tonalidades').value;
     if (['dadas', 'pedir', 'no'].includes(tons)) f.tonalidades = tons;
+    /* El transporte (decisión 102). Con un curso elegido viaja el TOPE, que es más corto
+       en el enlace y se adapta al modo de cada fragmento; «a medida» manda la lista. La
+       semilla va también: es lo que hace que el mismo enlace dé siempre los mismos tonos
+       sin guardar nada, y se renueva cada vez que se genera un enlace nuevo. */
+    const curso = $('#ficha-curso').value;
+    if (curso === 'x') { const t = tonosMarcados(); if (t.length) f.tonos = t; }
+    else if (curso) f.maxAlt = parseInt(curso, 10);
+    if (f.tonos || typeof f.maxAlt === 'number') f.semilla = estado.semillaFicha || (estado.semillaFicha = Math.random().toString(36).slice(2, 7));
     // Las demás siguen viniendo del paso 3
     const op = opciones();
     if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
@@ -1679,6 +1739,23 @@
     $('#btn-ficha-copiar').disabled = false;
     const abrir = $('#btn-ficha-abrir');
     abrir.href = url; abrir.setAttribute('aria-disabled', 'false');
+    /* En qué tonos va a salir (decisión 102). Es determinista, así que se puede enseñar
+       aquí mismo: son los que verá el alumno con ESTE enlace. Se mira sobre todos los
+       fragmentos del filtro, no sobre los n que toquen, porque el sorteo de cuáles
+       entran sí es al azar y cambia en cada alumno. */
+    const p = $('#ficha-tonos-reparto');
+    if (filtro.tonos || typeof filtro.maxAlt === 'number') {
+      const cuenta = {};
+      lista.forEach(e => {
+        const t = Teoria.nombreCorto(Banco.ejercicio(e, filtro, 0).tonalidad);
+        cuenta[t] = (cuenta[t] || 0) + 1;
+      });
+      const orden = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a]);
+      p.innerHTML = '<b>Los ' + lista.length + ' fragmentos del filtro saldrían así:</b> '
+        + orden.map(t => t + ' (' + cuenta[t] + ')').join(' · ')
+        + '. Cada fragmento lleva siempre el mismo tono con este enlace; para repartirlos de otra manera, genera el enlace otra vez.';
+      p.hidden = false;
+    } else p.hidden = true;
     // Desde el disco el enlace no le sirve a nadie: las fichas necesitan la aplicación publicada
     if (location.protocol === 'file:') aviso('Ojo: esta dirección es de tu disco. Las fichas hay que generarlas desde el configurador publicado en GitHub, porque necesitan leer banco.json del servidor.', 10000);
   }
@@ -1835,6 +1912,15 @@
     });
     // El título de la ficha no filtra nada, pero sí conviene no perderlo al recargar
     $('#ficha-titulo').addEventListener('input', () => { limpiarFicha(); guardarBorrador(); });
+    /* Las tonalidades del transporte (decisión 102). Cambiar el curso vuelve a marcar
+       las tónicas que caben; tocar una tónica ya pasa el curso a «a medida» (lo hace el
+       propio manejador de la casilla). Cada cambio invalida la dirección generada y,
+       de paso, renueva la semilla: son otras tonalidades, es otra ficha. */
+    $('#ficha-curso').addEventListener('change', () => {
+      estado.semillaFicha = null;
+      pintarTonos(true); limpiarFicha(); guardarBorrador();
+    });
+    pintarTonos(true);
 
     /* Búsqueda por id: la casilla, el botón y el Enter hacen lo mismo. */
     const buscar = () => { if (abrirPorId($('#banco-buscar').value)) $('#banco-buscar').value = ''; };
@@ -1870,6 +1956,12 @@
     $('#ficha-direccion').value = '';
     $('#btn-ficha-copiar').disabled = true;
     $('#btn-ficha-abrir').setAttribute('aria-disabled', 'true');
+    /* Al cambiar cualquier opción, la semilla del transporte se renueva: es otra ficha,
+       que reparta los tonos de otra manera. Pulsar «Generar» dos veces seguidas sin tocar
+       nada, en cambio, da el mismo enlace — que es lo que uno espera. */
+    estado.semillaFicha = null;
+    const p = $('#ficha-tonos-reparto');
+    if (p) p.hidden = true;
   }
 
   document.addEventListener('DOMContentLoaded', arranque);
