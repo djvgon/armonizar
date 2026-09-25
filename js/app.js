@@ -53,7 +53,7 @@
     gradosPermitidos: true,   // el profesor puede quitarlos en el ejercicio
     rotacion: 0,              // posición inicial de Furno (0, 1, 2)
     rigida: false,            // misma disposición en todos los acordes (solo en pruebas.html; el alumno ya no lo ve)
-    sonar: false,             // sonar el acorde al completar cifra y grado
+    sonar: true,              // sonar el acorde al completar cifra y grado (marcada por defecto, decisión 96)
     sonando: null,            // nota cuyo acorde está sonando (para resaltar su botón ▶)
     alSonar: null,            // función que la partitura llama al pulsar el ▶ de una nota
     libre: false,             // práctica libre: la página se abrió sin ejercicio en la dirección (se ve el desplegable del corpus)
@@ -679,7 +679,10 @@
   const compacto = () => document.body.classList.contains('compacto');
 
   function ajustarCompacto() {
-    const estrecho = window.innerWidth < 720;
+    // Estrecho O bajo: el móvil en horizontal es ancho (844) pero bajísimo (390).
+    // Los dos umbrales son los mismos que los de la @media de estilo.css: si se cambia
+    // uno hay que cambiar el otro, o el CSS y el JS dejarán de estar de acuerdo.
+    const estrecho = window.innerWidth < 720 || window.innerHeight < 560;
     document.body.classList.toggle('compacto', estrecho);
     const panel = $('#paletas');
     document.body.style.paddingBottom = estrecho ? (panel.offsetHeight + 12) + 'px' : '';
@@ -1550,6 +1553,15 @@
     window.addEventListener('resize', ajustarCompacto);
     // En pantalla estrecha el enunciado va recortado; pulsarlo lo despliega
     $('#instruccion').addEventListener('click', () => { if (compacto()) $('#instruccion').classList.toggle('desplegada'); });
+    // Ventana baja (móvil en horizontal): plegar y desplegar las filas de referencia.
+    // Al desplegarlas la partitura baja, así que se vuelve a enfocar la casilla activa.
+    $('#btn-datos').addEventListener('click', () => {
+      const abierto = document.body.classList.toggle('datos-abiertos');
+      const b = $('#btn-datos');
+      b.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+      b.textContent = 'Grados y cifrados ' + (abierto ? '▴' : '▾');
+      enfocarActiva();
+    });
     window.addEventListener('hashchange', () => { if (!estado.ficha) cargar(ejercicioDesdeURL()); });
     if (inicial.has('f') && typeof Banco !== 'undefined') iniciarFicha(inicial.get('f'));
     else cargar(ejercicioDesdeURL());

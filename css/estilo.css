@@ -404,8 +404,15 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .campo.desactivado { opacity: .45; }
 
 
-/* ---- Pantalla estrecha (móvil): las paletas se fijan abajo como un teclado ---- */
-@media (max-width: 719px) {
+/* ---- Pantalla estrecha O BAJA (móvil): las paletas se fijan abajo como un teclado ----
+   Los dos cortes hacen falta. El de ANCHURA (719 px) coge el móvil en vertical. El de
+   ALTURA (559 px) coge el móvil en HORIZONTAL, que mide 844×390: pasaba de largo por el
+   corte de anchura y recibía la disposición de escritorio dentro de una ventana de 390 px
+   de alto, con el preámbulo (504 px) más alto que la pantalla entera —al abrir el
+   ejercicio no se veía ni una nota— y las paletas a 984 px de distancia. El umbral, 559,
+   deja fuera cualquier portátil (600 px de alto para arriba) y coge todos los móviles en
+   horizontal (320–430). Si se cambia aquí, cambiar también `ajustarCompacto` en app.js. */
+@media (max-width: 719px), (max-height: 559px) {
   body { padding: 10px 8px 24px; }
   h1 { font-size: 1.15rem; margin: 0 0 2px; }
   .sobretitulo { font-size: .7rem; }
@@ -445,6 +452,53 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
   .botonera button { font-size: .9rem; padding: 8px 12px; }
   .pie { font-size: .75rem; }
   .pie .teclas { display: none; }
+}
+
+/* ---- Globo de repaso del configurador (decisión 100) ----
+   Enseña, sobre la música, las cifras marcadas como válidas para el acorde por el que
+   pasa el ratón. `pointer-events: none` es lo que lo hace fiable: el globo no puede
+   robarle el ratón al acorde, así que no parpadea cuando aparece debajo del cursor. */
+svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
+.globo-acorde {
+  position: fixed; z-index: 40; max-width: 26rem;
+  padding: .5rem .7rem; font-size: .85rem;
+  background: var(--papel); border: 1px solid var(--acento); border-left: 4px solid var(--acento);
+  border-radius: 8px; box-shadow: var(--sombra); pointer-events: none;
+}
+.globo-acorde .globo-cab { color: var(--tinta-suave); margin-bottom: .4rem; }
+.globo-acorde .globo-ops { display: flex; flex-wrap: wrap; gap: .35rem; }
+.globo-acorde .globo-op {
+  display: inline-flex; align-items: center; gap: .15rem; padding: .15rem .4rem;
+  border: 1px solid var(--linea); border-radius: 6px; background: var(--fondo);
+}
+.globo-acorde .globo-op.modelo { background: var(--bien-suave); border-color: var(--bien); }
+.globo-acorde .globo-op .chip-romano { font-size: .8rem; color: var(--tinta-suave); }
+.globo-acorde .globo-pie { margin-top: .35rem; font-size: .75rem; color: var(--tinta-suave); }
+.globo-acorde .globo-vacio { color: var(--mal); }
+
+/* ---- Ventana BAJA (el móvil en horizontal: 844×390) ----
+   Aquí el enemigo no es la anchura sino la altura. Con las paletas fijas abajo
+   (unos 145 px) quedan ~245 px de banda útil, así que cada píxel de preámbulo se
+   come una línea de música. Se recorta lo que no se necesita para responder:
+   el sobretítulo, la segunda línea del enunciado y las dos filas de referencia
+   —grados y cifrados—, que además están repetidas en las paletas. Las filas se
+   PLIEGAN, no se borran: el botón las devuelve. */
+.btn-datos { display: none; }
+
+@media (max-height: 559px) {
+  .sobretitulo { display: none; }
+  .instruccion { -webkit-line-clamp: 1; }
+  .instruccion.desplegada { -webkit-line-clamp: none; }
+  #grados-fila, #cifrados-fila { display: none; }
+  body.datos-abiertos #grados-fila, body.datos-abiertos #cifrados-fila { display: flex; }
+  .btn-datos {
+    display: block; align-self: flex-start;
+    font: inherit; font-size: .72rem; color: var(--tinta-suave);
+    padding: 2px 8px; border: 1px solid var(--linea); border-radius: 6px;
+    background: var(--fondo); cursor: pointer;
+  }
+  .btn-datos:hover { border-color: var(--acento); }
+  .pie { display: none; }
 }
 
 /* ---- Banco de fragmentos y fichas ---- */

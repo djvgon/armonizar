@@ -7,8 +7,8 @@
   <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
   <meta property="og:title" content="Práctica armónica">
   <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
-  <link rel="stylesheet" href="css/bravura.css?v=20260926-1520">
-  <link rel="stylesheet" href="css/estilo.css?v=20260926-1520">
+  <link rel="stylesheet" href="css/bravura.css?v=20260926-1800">
+  <link rel="stylesheet" href="css/estilo.css?v=20260926-1800">
 </head>
 <body>
 
@@ -37,10 +37,15 @@
       <span class="repertorio-etiqueta" id="etiqueta-grados">Grados en este ejercicio</span>
       <div id="grados" class="repertorio"></div>
     </div>
-    <div class="repertorio-fila">
+    <div class="repertorio-fila" id="cifrados-fila">
       <span class="repertorio-etiqueta" id="etiqueta-repertorio">Cifrados en este ejercicio</span>
       <div id="repertorio" class="repertorio"></div>
     </div>
+    <!-- Solo aparece en ventana BAJA (el móvil en horizontal): allí las dos filas de
+         referencia —grados y cifrados— se pliegan detrás de este botón, porque son
+         casi 60 px de preámbulo y lo que muestran está repetido en las paletas de
+         abajo. No se borran: se pliegan, y un toque las devuelve. -->
+    <button type="button" id="btn-datos" class="btn-datos" aria-expanded="false">Grados y cifrados ▾</button>
   </section>
 
   <main>
@@ -109,18 +114,18 @@
        vistazo qué versión está publicada. -->
   <footer class="pie">
     <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
-    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260926-1520</span></p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260926-1800</span></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260926-1520"></script>
-  <script src="js/reglas.js?v=20260926-1520"></script>
-  <script src="js/ejercicios.js?v=20260926-1520"></script>
-  <script src="js/partitura.js?v=20260926-1520"></script>
-  <script src="js/realizacion.js?v=20260926-1520"></script>
-  <script src="js/banco.js?v=20260926-1520"></script>
-  <script src="js/registro.js?v=20260926-1520"></script>
-  <script src="js/envio.js?v=20260926-1520"></script>
-  <script src="js/sonido.js?v=20260926-1520"></script>
-  <script src="js/app.js?v=20260926-1520"></script>
+  <script src="js/teoria.js?v=20260926-1800"></script>
+  <script src="js/reglas.js?v=20260926-1800"></script>
+  <script src="js/ejercicios.js?v=20260926-1800"></script>
+  <script src="js/partitura.js?v=20260926-1800"></script>
+  <script src="js/realizacion.js?v=20260926-1800"></script>
+  <script src="js/banco.js?v=20260926-1800"></script>
+  <script src="js/registro.js?v=20260926-1800"></script>
+  <script src="js/envio.js?v=20260926-1800"></script>
+  <script src="js/sonido.js?v=20260926-1800"></script>
+  <script src="js/app.js?v=20260926-1800"></script>
 </body>
 </html>

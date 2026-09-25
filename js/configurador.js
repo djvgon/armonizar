@@ -296,6 +296,7 @@
     const tbody = $('#tabla-revision tbody');
     tbody.innerHTML = '';
     const sinPropuesta = [];
+    estado.resumen = [];          // lo que enseña el globo al pasar el ratón por un acorde
     const sop = esSoprano();
     const conFun = !!opciones().funciones;
     const ejFun = construirEjercicio(estado.compases, tonalidad(), estado.respuestas, { funcionesNotas: null });
@@ -414,6 +415,16 @@
         chip.appendChild(rb);
         celda.appendChild(chip);
       });
+      /* Lo mismo que muestran las fichas de esta fila, guardado para el globo: así el
+         globo y la tabla no pueden decir cosas distintas, porque salen del mismo sitio.
+         Solo las MARCADAS, y en el orden de `adm`, que pone la modelo la primera. */
+      estado.resumen[i] = {
+        nota: Teoria.nombreEs(Teoria.nota(n), true),
+        ton: Teoria.nombreCorto(ton), tonObj: ton,
+        grado: esPivote ? gradoTxt(Teoria.grado(n, tonAntes)) + ' = ' + gradoTxt(gradoBajo) : gradoTxt(gradoBajo),
+        fun: conFun ? estado.funciones[i] : null,
+        opciones: adm.map(id => opcionesNota.find(op => op.id === id)).filter(Boolean)
+      };
       tbody.appendChild(tr);
     });
     document.querySelectorAll('#tabla-revision .col-fun').forEach(e => { e.hidden = !conFun; });
@@ -507,9 +518,72 @@
       } : null,
       gradosBajo: Ejercicios.gradosBajo(ejV),   // el circulito, solo cuando el grado va DADO (decisión 91)
       numerar: true,                       // el número de cada acorde es el de su fila en la tabla de revisión
-      alPulsarNumero: irAFila
+      alPulsarNumero: irAFila,
+      alPasarNumero: globoAcorde
     };
+    globoAcorde(-1, null);                 // si estaba abierto, apuntaba a un dibujo que ya no existe
     Partitura.dibujar($('#vista-previa'), ej, est, () => {});
+  }
+
+  /* ---------- El globo de repaso (decisión 100) ----------
+     Revisar cien fragmentos obliga a comprobar, acorde por acorde, qué cifras han
+     quedado marcadas como válidas. Hacerlo en la tabla es ir y venir —la tabla está
+     debajo y tiene una fila por nota—; con el globo basta pasar el ratón por el acorde
+     en la vista previa y se ven ahí mismo, sobre la música. Es SOLO LECTURA: para
+     cambiar algo se sigue pulsando el acorde, que lleva a su fila. */
+  function globoAcorde(i, g) {
+    const caja = $('#globo-acorde');
+    if (!caja) return;
+    const r = i >= 0 && estado.resumen ? estado.resumen[i] : null;
+    if (!r || !g) { caja.hidden = true; return; }
+    caja.innerHTML = '';
+    const cab = document.createElement('div');
+    cab.className = 'globo-cab';
+    cab.textContent = 'Acorde ' + (i + 1) + ' · ' + r.nota + ' · grado ' + r.grado + ' de ' + r.ton
+      + (r.fun ? ' · función ' + r.fun : '');
+    caja.appendChild(cab);
+    if (!r.opciones.length) {
+      const v = document.createElement('div');
+      v.className = 'globo-vacio';
+      v.textContent = 'Sin ninguna cifra admisible.';
+      caja.appendChild(v);
+    } else {
+      const ops = document.createElement('div');
+      ops.className = 'globo-ops';
+      r.opciones.forEach((op, k) => {
+        const d = document.createElement('span');
+        d.className = 'globo-op' + (k === 0 ? ' modelo' : '');
+        d.title = op.titulo;
+        d.appendChild(Partitura.iconoCifra(op.cifra, 26, op.bajo ? { bajo: op.bajo, ton: r.tonObj } : null));
+        const t = document.createElement('span');
+        t.className = 'chip-romano';
+        t.textContent = op.romTxt;
+        d.appendChild(t);
+        ops.appendChild(d);
+      });
+      caja.appendChild(ops);
+      const pie = document.createElement('div');
+      pie.className = 'globo-pie';
+      pie.textContent = r.opciones.length === 1 ? '1 cifra admisible (es la modelo)'
+        : r.opciones.length + ' cifras admisibles · la modelo, la primera, en verde';
+      caja.appendChild(pie);
+    }
+    // Debajo del acorde; si no cabe, encima. Siempre dentro de la ventana.
+    caja.hidden = false;
+    // El ancla es el CIRCULITO, no el grupo: el grupo incluye la zona transparente de
+    // toda la columna, y colgar el globo de ella lo mandaría al pie de la partitura.
+    const ancla = g.querySelector('circle') || g;
+    const b = ancla.getBoundingClientRect(), c = caja.getBoundingClientRect();
+    let x = b.left + b.width / 2 - c.width / 2;
+    x = Math.max(8, Math.min(x, window.innerWidth - c.width - 8));
+    /* ENCIMA del circulito, no debajo: los números van en la banda de arriba, fuera del
+       pentagrama, así que el globo cae sobre el margen y NO tapa la música que se está
+       revisando —que es justo lo que hay que mirar al mismo tiempo—. Solo baja cuando
+       arriba no cabe. */
+    let y = b.top - c.height - 8;
+    if (y < 8) y = Math.min(b.bottom + 8, window.innerHeight - c.height - 8);
+    caja.style.left = Math.round(x) + 'px';
+    caja.style.top = Math.round(y) + 'px';
   }
 
   // Al pulsar el número de un acorde en la vista previa, se resalta su fila en la tabla.

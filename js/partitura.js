@@ -380,6 +380,7 @@ const Partitura = (() => {
     const anchoAlt = alt => (alt > 0 ? ANCHO.sostenido : alt < 0 ? ANCHO.bemol : ANCHO.becuadro);
 
     // Números de los acordes (los mismos que la columna # de la tabla de revisión)
+    const zonasAcorde = [];
     if (numerar) notas.forEach((it, idx) => {
       if (it.k < 0) return;
       const i = it.k;
@@ -391,6 +392,19 @@ const Partitura = (() => {
       if (typeof estado.alPulsarNumero === 'function') {
         g.setAttribute('role', 'button');
         g.addEventListener('click', () => estado.alPulsarNumero(i));
+      }
+      /* Zona de paso del ratón: toda la COLUMNA del acorde, no solo el circulito, que es
+         un blanco de 27 px y obliga a apuntar. La pone solo quien define `alPasarNumero`
+         —el configurador, en la vista previa, donde nada más es pulsable—; en la página
+         del alumno no existe, y así no tapa las casillas. Transparente, de modo que
+         tampoco se ve: lo único que hace es ensanchar el blanco. */
+      if (typeof estado.alPasarNumero === 'function') {
+        const anchoFig = figura(it.dur).ancho * SP;
+        /* La zona va en una lista y se pega al FINAL del dibujo (más abajo), no aquí:
+           los circulitos se dibujan antes que el pentagrama, así que una zona puesta
+           ahora quedaría debajo de las notas y de las casillas, y el ratón solo la
+           encontraría en los huecos. Pegada al final, la columna entera es sensible. */
+        zonasAcorde.push({ i, g, x: xNotas[idx] - 0.35 * SP, w: anchoFig + 0.7 * SP });
       }
       svg.appendChild(g);
     });
@@ -828,6 +842,19 @@ const Partitura = (() => {
     });
 
     dibujarMarcasVoz();
+
+    /* Zonas de paso del ratón por columna, lo último de todo para que nada las tape.
+       Transparentes y sin dibujo: solo ensanchan el blanco del circulito del acorde.
+       Cada una reenvía al grupo del número, de modo que pulsar la columna sigue
+       llevando a la fila de la tabla, igual que pulsar el circulito. */
+    zonasAcorde.forEach(z => {
+      const r = el('rect', { x: z.x, y: 0, width: z.w, height: ALTO_TOTAL, class: 'zona-acorde' });
+      r.addEventListener('mouseenter', () => estado.alPasarNumero(z.i, z.g));
+      r.addEventListener('mouseleave', () => estado.alPasarNumero(-1, null));
+      if (typeof estado.alPulsarNumero === 'function') r.addEventListener('click', () => estado.alPulsarNumero(z.i));
+      svg.appendChild(r);
+    });
+
     contenedor.innerHTML = '';
     contenedor.appendChild(svg);
     return svg;
