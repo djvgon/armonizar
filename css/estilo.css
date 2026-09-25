@@ -196,13 +196,22 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 
 /* ---- Paletas ---- */
 .paleta-caja {
-  margin-top: 14px; padding: 10px 12px 12px;
+  display: flex; align-items: flex-start; gap: 12px;
+  margin-top: 8px; padding: 7px 12px 8px;
   border: 1px solid transparent; border-radius: 12px;
   transition: border-color .15s, background .15s;
 }
 .paleta-caja.destacada { border-color: var(--acento); background: rgba(122, 74, 31, .05); }
-.paleta-etiqueta { display: block; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave); margin-bottom: 8px; }
-.paleta { display: flex; flex-wrap: wrap; gap: 6px; }
+/* El rótulo, A LA IZQUIERDA de las teclas y no encima (Diego, 25/9): cada paleta se
+   ahorra así un renglón entero, y son tres o cuatro. El rótulo puede ocupar dos líneas
+   —«Grado de la fundamental» las ocupa— sin dejar de compartir renglón con las teclas.
+   `align-self: center` lo deja a la altura de la primera fila de teclas. */
+.paleta-etiqueta {
+  flex: 0 0 7.2rem; align-self: center; margin: 0; text-align: right;
+  font-size: .76rem; letter-spacing: .03em; line-height: 1.2;
+  text-transform: uppercase; color: var(--tinta-suave);
+}
+.paleta { display: flex; flex-wrap: wrap; gap: 6px; flex: 1 1 auto; min-width: 0; }
 .tecla-romano { min-width: 40px; min-height: 42px; font-size: .88rem; letter-spacing: .03em; }
 .tecla {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -445,8 +454,10 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
     padding: 4px 8px 6px; background: var(--papel);
     border-top: 1px solid var(--linea); box-shadow: 0 -4px 14px rgba(0,0,0,.08);
   }
-  .paleta-caja { margin-top: 2px; padding: 3px 4px 4px; border-radius: 8px; }
-  .paleta-etiqueta { font-size: .62rem; margin-bottom: 3px; }
+  /* En pantalla estrecha el rótulo vuelve ARRIBA: ahí lo escaso es el ancho, y 7 rem de
+     rótulo a la izquierda se comerían dos teclas de cada fila. */
+  .paleta-caja { display: block; margin-top: 2px; padding: 3px 4px 4px; border-radius: 8px; }
+  .paleta-etiqueta { display: block; font-size: .62rem; margin-bottom: 3px; text-align: left; }
   .paleta { gap: 4px; }
   .tecla { min-width: 36px; min-height: 40px; padding: 2px 5px; border-radius: 8px; box-shadow: none; }
   .tecla-num { display: none; }

@@ -209,19 +209,25 @@ const Partitura = (() => {
     const HUECO_SISTEMA = conGrados ? Math.max(7.5 * SP, ALTO_GRADOS + 4 * SP) : 7.5 * SP;
     const Y_TOP = conSol ? Y_BOT_SOL + HUECO_SISTEMA : 5.5 * SP + Y0 + ALTO_GRADOS; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
-    /* ---- Orden de las filas bajo el pentagrama (decisión 93, Diego) ----
-       De arriba abajo: FUNCIÓN · CIFRADO · GRADO · TONALIDAD. Leído de abajo arriba es la
-       cadena de la que cuelga cada dato: la tonalidad manda sobre el grado —el mismo do es
-       1 en Do M y 4 en Sol M—, el grado sobre el cifrado, y del cifrado sale la función.
-       Antes la función iba entre el grado y la tonalidad y partía esa cadena por la mitad. */
+    /* ---- Orden de las filas bajo el pentagrama (decisión 106, Diego) ----
+       De arriba abajo: CIFRADO · FUNDAMENTAL · FUNCIÓN · TONALIDAD, cada uno en su banda,
+       y en el acorde pivote la casilla se parte en dos apiladas dentro de su propia banda.
+
+       Es el reparto en bandas de la decisión 93 con el orden cambiado, y deja sin efecto el
+       de bloques por tonalidad de la decisión 104: aquel ponía juntas las tres lecturas de
+       cada tonalidad, pero repetía el renglón de función y el de tonalidad una vez por
+       tonalidad y crecía demasiado a lo alto. Probado en pantalla, Diego prefiere las
+       bandas. Lo que sí cambia respecto de la 93 es el orden: la cifra arriba, pegada a la
+       música, y debajo lo que se deduce de ella —la fundamental, su función y el tono. */
     const filaFun = estado.filaFunciones && estado.filaFunciones.visible ? estado.filaFunciones : null;   // fila «Función» (T · S · D)
-    const ALTO_FUN = (estado.filaFunciones && (estado.filaFunciones.dobles || []).some(Boolean)) ? 5.4 * SP : 2.7 * SP;
-    const Y_FUN = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;
-    const Y_CASILLA = filaFun ? Y_FUN + ALTO_FUN + 0.8 * SP : Y_FUN;   // borde superior de las casillas de cifra
+    const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
+    const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // el cifrado, lo primero
     const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
     const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
-    const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;  // borde superior de las casillas de grado
+    // La banda de función se dobla cuando algún acorde pivote lleva sus dos lecturas
+    const ALTO_FUN = (estado.filaFunciones && (estado.filaFunciones.dobles || []).some(Boolean)) ? 5.4 * SP : 2.7 * SP;
     const ALTO_ROMANO = 3.1 * SP;
+    const ALTO_TON = 2.7 * SP;
     /* Modulación: cada tonalidad escribe sus grados en un renglón nuevo, un poco más
        abajo; el pivote (dobles[i]) lleva dos grados apilados —el de la tonalidad anterior
        en su renglón y el de la nueva en el siguiente— unidos por dos líneas verticales.
@@ -267,11 +273,18 @@ const Partitura = (() => {
        se escribe a mano, donde el sitio entre sistemas es el que es. */
     const renglon = [], renglonAntes = [];
     {
+      /* Los bloques se reparten según la lectura DEL ALUMNO (`estado.tonalidadesNota`),
+         no según las tonalidades verdaderas. Es la misma razón que los circulitos de grado
+         (decisión 56): si se repartieran por las verdaderas, abrir un bloque nuevo en la
+         nota 2 le estaría diciendo que ahí hay una modulación, que es justo lo que se le
+         pregunta. Cuando la tonalidad viene dada, `tonalidadesNota` es null y se usan las
+         verdaderas, que es lo correcto. */
+      const tonsBloque = Array.isArray(estado.tonalidadesNota) ? estado.tonalidadesNota : tonsNota;
       const clave = t => t ? (t.tonica + '/' + t.modo) : '?';
       const fila = new Map();
       for (let i = 0; i < numNotas; i++) {
-        const tAct = (tonsNota && tonsNota[i]) || ton;
-        const tAnt = i > 0 ? ((tonsNota && tonsNota[i - 1]) || ton) : tAct;
+        const tAct = (tonsBloque && tonsBloque[i]) || ton;
+        const tAnt = i > 0 ? ((tonsBloque && tonsBloque[i - 1]) || ton) : tAct;
         [clave(tAnt), clave(tAct)].forEach(k => { if (!fila.has(k)) fila.set(k, fila.size); });
         renglonAntes.push(fila.get(clave(tAnt)));
         renglon.push(fila.get(clave(tAct)));
@@ -279,12 +292,17 @@ const Partitura = (() => {
     }
     const NUM_RENGLONES = Math.max(1, ...renglon.map(r => r + 1), ...renglonAntes.map(r => r + 1));
     const rotuladas = new Set();     // renglones que ya llevan escrito el nombre de su tonalidad
+    /* Las cuatro bandas, una debajo de otra. La de la FUNDAMENTAL lleva dentro un renglón
+       por tonalidad (decisión 83): el pivote ocupa dos y la casilla de arriba se estira
+       hasta la de abajo. Las demás son una sola banda para todo el sistema. */
     const PASO_RENGLON = ALTO_ROMANO + 0.5 * SP;
+    const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;
     const yRenglon = r => Y_ROMANO + r * PASO_RENGLON;
     const Y_FIN_ROMANO = pedirRomano ? yRenglon(NUM_RENGLONES - 1) + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
-    const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
-    const Y_TON = Y_FIN_ROMANO + 0.8 * SP, ALTO_TON = 2.7 * SP;
-    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_ROMANO;
+    const Y_FUN = Y_FIN_ROMANO + 0.8 * SP;
+    const Y_FIN_FUN = filaFun ? Y_FUN + ALTO_FUN : Y_FIN_ROMANO;
+    const Y_TON = Y_FIN_FUN + 0.8 * SP;
+    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_FUN;
     const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
     const Y_MODELO = Y_FIN_CASILLAS + 2.4 * SP;            // centro de la respuesta modelo (tras corregir)
     /* Si hay errores de conducción de voces, se reserva al pie una banda para el globo de
@@ -667,7 +685,11 @@ const Partitura = (() => {
         const g = el('g', { 'data-indice': i, 'data-campo': 'cifra', tabindex: 0, role: 'button',
           'aria-label': 'Cifrado de la nota ' + (i + 1) + (sinBajo ? '' : ' (' + Teoria.nombreEs(n) + ')') });
         const clases = ['casilla', 'casilla-cifra'];
-        const otroCampo = ['romano', 'romano2', 'funcion', 'tonalidad'].includes(estado.campo);   // la casilla activa es otra de la misma nota
+        /* ¿La casilla activa es OTRA de la misma nota? Antes iba por lista y se le había
+           quedado fuera `funcion2` (llegó con la decisión 95), así que al bajar a la
+           función del segundo bloque se encendían dos casillas a la vez, esta y aquella.
+           Preguntando al revés no vuelve a pasar cuando aparezca un campo nuevo. */
+        const otroCampo = estado.campo !== 'cifra';
         if (activa && !bloq.cifra && !otroCampo) clases.push('activa');
         else if (activa && !bloq.cifra) clases.push('activa-nota');
         const resp = estado.respuestas[i];
@@ -740,7 +762,7 @@ const Partitura = (() => {
           svg.appendChild(g);
         });
         if (esPivote) {
-          // Las dos líneas verticales que unen los dos grados del pivote: | I | sobre | V |
+          // Las dos líneas verticales que unen los dos grados del pivote: | I | sobre | IV |
           const yA = yRenglon(rArriba), yB = yRenglon(rAbajo) + ALTO_ROMANO;
           [x0, x0 + ANCHO_CASILLA].forEach(x => svg.appendChild(el('line', { x1: x, x2: x, y1: yA - 0.3 * SP, y2: yB + 0.3 * SP, class: 'pivote-barra' })));
         }
@@ -797,6 +819,12 @@ const Partitura = (() => {
       if (filaTon) {
         const celda = filaTon.celdas[i] || {};
         const editable = filaTon.editable && i > 0 && !celda.fija;
+        /* Una casilla vacía que además no se responde no dice nada, y repartida por los
+           bloques de cada tonalidad llenaba la página de recuadros huecos. Cuando la
+           tonalidad viene DADA solo se dibujan las notas donde se declara una.
+           Ojo: aquí no vale un `return`, que se saltaría el botón ▶ y la solución modelo
+           de esta misma nota; la condición envuelve el dibujo y ya está. */
+        if (editable || celda.texto) {
         const g = el('g', { 'data-indice': i, 'data-campo': 'tonalidad', tabindex: editable ? 0 : -1, role: editable ? 'button' : 'note',
           'aria-label': 'Tonalidad desde la nota ' + (i + 1) });
         const clases = ['casilla', 'casilla-ton'];
@@ -813,6 +841,7 @@ const Partitura = (() => {
           g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, 'tonalidad'); } });
         }
         svg.appendChild(g);
+        }
       }
 
       // Botón ▶ encima del acorde: hace sonar ese acorde de la propuesta

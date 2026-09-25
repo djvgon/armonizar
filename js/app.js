@@ -299,18 +299,23 @@
   const atajo = k => (k < 9 ? String(k + 1) : k === 9 ? '0' : '');
 
   function pintarPaletas() {
-    // Paleta de funciones tonales (solo si se piden): T = 1, S = 2, D = 3 y, si el
-    // ejercicio lleva alguna dominante secundaria, DD = 4
+    /* Paleta de funciones tonales (solo si se piden). El número de cada tecla es el GRADO
+       de la escala que da nombre a la función (decisión 107, Diego): tónica 1,
+       subdominante 4, dominante 5. Así la tecla se aprende sola y no depende del sitio que
+       ocupe el botón. La dominante de la dominante lleva el 2, que es el grado sobre el
+       que se construye. */
+    const NUM_FUNCION = { T: '1', S: '4', D: '5', DD: '2' };
     const pf = $('#paleta-funciones');
     pf.innerHTML = '';
     $('#paleta-funciones-caja').hidden = estado.modoFun !== 'pedir';
     if (estado.modoFun === 'pedir') {
-      Ejercicios.funcionesDelEjercicio(estado.ejercicio).forEach((f, k) => {
+      Ejercicios.funcionesDelEjercicio(estado.ejercicio).forEach(f => {
+        const n = NUM_FUNCION[f] || '';
         const cont = document.createDocumentFragment();
         const txt = document.createElement('span'); txt.className = 'tecla-romano-texto'; txt.textContent = f; cont.appendChild(txt);
-        const num = document.createElement('span'); num.className = 'tecla-num'; num.textContent = String(k + 1); cont.appendChild(num);
-        const b = tecla('tecla-fun', cont, Teoria.NOMBRE_FUNCION[f] + ' (tecla ' + (k + 1) + ')', () => responderFuncion(f));
-        b.dataset.funcion = f; b.dataset.atajo = String(k + 1);
+        const num = document.createElement('span'); num.className = 'tecla-num'; num.textContent = n; cont.appendChild(num);
+        const b = tecla('tecla-fun', cont, Teoria.NOMBRE_FUNCION[f] + (n ? ' (tecla ' + n + ')' : ''), () => responderFuncion(f));
+        b.dataset.funcion = f; if (n) b.dataset.atajo = n;
         b.setAttribute('aria-label', 'Función ' + Teoria.NOMBRE_FUNCION[f]);
         pf.appendChild(b);
       });
@@ -355,10 +360,13 @@
         pr.appendChild(b);
       });
     }
-    // Paleta de cifras: el número pequeño es la posición en la paleta (1, 2, 3…)
+    /* Paleta de cifras: el número pequeño es la posición en la paleta (1, 2, 3…). El orden
+       lo pone `ordenarCifras` —tríadas, dominantes y séptimas diatónicas, cada familia por
+       inversiones (decisión 107)—, no el orden en que esté guardado el repertorio de la
+       lección; así las fichas ya repartidas también salen ordenadas. */
     const pc = $('#paleta');
     pc.innerHTML = '';
-    estado.ejercicio.repertorio.forEach((id, k) => {
+    Ejercicios.ordenarCifras(estado.ejercicio.repertorio).forEach((id, k) => {
       const c = Teoria.CIFRADOS[id];
       const cont = document.createDocumentFragment();
       cont.appendChild(Partitura.iconoCifra(id, 38));
@@ -714,8 +722,15 @@
      de estar a la vista para que las dos lecturas signifiquen algo (decisión 95). */
   const esDobleFun = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && !!estado.modoFun;
   const camposDe = j => (conFuncion() ? (esDobleFun(j) ? ['funcion', 'funcion2'] : ['funcion']) : []).concat(pideGrado() ? (esDoble(j) ? ['romano', 'romano2', 'cifra'] : ['romano', 'cifra']) : ['cifra']);
-  // Las mismas casillas en su orden VISUAL, de arriba abajo (para las flechas ↑ ↓)
-  const camposVisuales = j => (pideGrado() ? (esDoble(j) ? ['cifra', 'romano', 'romano2'] : ['cifra', 'romano']) : ['cifra']).concat(conFuncion() ? (esDobleFun(j) ? ['funcion', 'funcion2'] : ['funcion']) : []);
+  /* Las mismas casillas en su orden VISUAL, de arriba abajo, para las flechas ↑ ↓:
+     cifra · fundamental · función, y en el pivote cada una con su segunda lectura
+     debajo (decisión 106). */
+  const camposVisuales = j => {
+    const out = ['cifra'];
+    if (pideGrado()) { out.push('romano'); if (esDoble(j)) out.push('romano2'); }
+    if (conFuncion()) { out.push('funcion'); if (esDobleFun(j)) out.push('funcion2'); }
+    return out;
+  };
   const campoInicial = () => (conFuncion() ? 'funcion' : pideGrado() ? 'romano' : 'cifra');
   const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : campo === 'funcion2' ? estado.funciones2[j] : campo === 'funcion' ? estado.funciones[j] : estado.romanos[j]);
 

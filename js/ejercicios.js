@@ -71,8 +71,20 @@
 
 const Ejercicios = (() => {
 
-  // Repertorio de la Regla de la octava (9 botones): tríadas, séptimas diatónicas y V7 marcado (7/+ e inversiones).
-  const REPERTORIO_RO = ['53', '6', '65', '43', '42', '7', '7+', '+6', '65d', '+4'];
+  /* ---- El orden en que se presentan las cifras (decisión 107, Diego) ----
+     Por familias y, dentro de cada una, por inversiones: primero las TRÍADAS —estado
+     fundamental, 6 y 6/4—, después las de DOMINANTE —7/+ y sus tres inversiones— y por
+     último las de SÉPTIMA DIATÓNICA —7 y las suyas—. El 9 cierra. Manda sobre el orden en
+     que esté guardado el repertorio de cada lección: la paleta se ordena al pintarla, de
+     modo que los enlaces repartidos y los bancos viejos también salen ordenados. */
+  const ORDEN_CIFRAS = ['53', '6', '64', '7+', '65d', '+6', '+4', '7', '65', '43', '42', '9'];
+  const ordenarCifras = ids => (ids || []).slice().sort((a, b) => {
+    const ia = ORDEN_CIFRAS.indexOf(a), ib = ORDEN_CIFRAS.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+
+  // Repertorio de la Regla de la octava (10 botones): tríadas, V7 marcado (7/+ e inversiones) y séptimas diatónicas.
+  const REPERTORIO_RO = ordenarCifras(['53', '6', '65', '43', '42', '7', '7+', '+6', '65d', '+4']);
 
   const CORPUS = [
   {
@@ -808,7 +820,7 @@ const Ejercicios = (() => {
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, estadoGrados, gradoDado, sinFilaGrado, gradoDe, paletaGrados, inventario, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
+  return { CORPUS, REPERTORIO_RO, ORDEN_CIFRAS, ordenarCifras, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, campoGrado, estadoGrados, gradoDado, sinFilaGrado, gradoDe, paletaGrados, inventario, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
     funciones, funcionModelo, funcionModeloEn, funcionesAdmisibles, funcionesAdmisiblesEn, funcionesDelEjercicio, gradosBajo, bajosDe,
     modulaciones, modula, aviso, tonalidades, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();

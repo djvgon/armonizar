@@ -563,7 +563,7 @@ const Banco = (() => {
   }
 
   // Paleta del alumno: las cifras que de verdad hacen falta en ese fragmento, en el orden de siempre
-  const ORDEN = ['53', '6', '64', '65', '43', '42', '7', '9', '7+', '+6', '65d', '+4'];
+  const ORDEN = Ejercicios.ORDEN_CIFRAS;      // el orden por familias e inversiones (decisión 107)
   function repertorioDe(parte, modo) {
     const usadas = new Set();
     (parte.respuestas || []).forEach(adm => adm.forEach(id => {
