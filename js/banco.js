@@ -396,15 +396,44 @@ const Banco = (() => {
   }
   const filtrar = (entradas, filtro) => (entradas || []).filter(e => cumple(e, filtro));
 
-  // Baraja (Fisher-Yates) y toma N. Sin semilla: cada vez que se abre la ficha salen otros.
+  /* Cuántos compases ocupa un fragmento. La etiqueta la pone el configurador al
+     importarlo; si faltara, se cuentan las voces escritas. */
+  function compasesDe(e) {
+    const et = (e && e.etiquetas) || {};
+    if (et.compases) return et.compases;
+    return Math.max(((e.bajo || {}).compases || []).length,
+                    ((e.soprano || {}).compases || []).length) || 1;
+  }
+
+  /* Baraja (Fisher-Yates) y toma fragmentos. Sin semilla: cada vez que se abre la ficha
+     salen otros.
+
+     El tamaño de una ficha se mide en COMPASES, no en número de ejercicios (decisión 127):
+     lo que cansa al alumno es la música que tiene delante, y un fragmento de ocho compases
+     da el trabajo de tres de tres. Si el filtro trae `compases: [min, max]`, se van tomando
+     fragmentos hasta llegar al mínimo sin pasarse del máximo —el que no quepa se salta y se
+     prueba con el siguiente—, y `n` queda como tope de ejercicios. Sin `compases`, se hace
+     lo de siempre: los N primeros. */
   function elegir(entradas, filtro) {
     const lista = filtrar(entradas, filtro).slice();
     for (let i = lista.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [lista[i], lista[j]] = [lista[j], lista[i]];
     }
-    const n = Math.max(1, Math.min(lista.length, (filtro && filtro.n) || 8));
-    return lista.slice(0, n);
+    const f = filtro || {};
+    const tope = Math.max(1, Math.min(lista.length, f.n || 8));
+    const meta = Array.isArray(f.compases) && f.compases.length === 2 ? f.compases : null;
+    if (!meta) return lista.slice(0, tope);
+    const min = Math.max(1, meta[0]), max = Math.max(min, meta[1]);
+    const out = [];
+    let total = 0;
+    for (let i = 0; i < lista.length && out.length < tope; i++) {
+      const c = compasesDe(lista[i]);
+      if (out.length && total + c > max) continue;   // no cabe: que pruebe el siguiente
+      out.push(lista[i]); total += c;
+      if (total >= min) break;
+    }
+    return out.length ? out : lista.slice(0, 1);
   }
 
   /* ---------- Transportar un fragmento (decisión 102) ----------
@@ -656,7 +685,7 @@ const Banco = (() => {
     return out;
   }
 
-  return { VERSION, MODOS, modoDe, vozDeModo, paginaDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir,
+  return { VERSION, MODOS, modoDe, vozDeModo, paginaDeModo, entrada, nivel, nivelBase, cumple, filtrar, elegir, compasesDe,
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, comparaLecciones, etiquetar,
     transportarEntrada, transportada, tonicasDeFicha, tonicaEn,
     analizarVoz: analizar, companeraDe: companera,

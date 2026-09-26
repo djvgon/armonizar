@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armonía · abriendo el ejercicio</title>
+<!--
+  EL REDIRECTOR DE LOS CÓDIGOS QR (decisión 128)
+
+  Los códigos QR impresos en el cuadernillo NO llevan la dirección del ejercicio:
+  llevan una dirección corta y fija que pasa por aquí. Esta página traduce el código
+  —«a34-cifrar»— y manda al alumno a donde toque.
+
+  Por qué. Un papel impreso no se puede corregir. Si el QR llevara la dirección larga
+  de la ficha, cualquier cambio en el filtro, en el nombre de una lección o en la
+  dirección de un ejercicio de fuera dejaría muertas las hojas ya repartidas. Pasando
+  por aquí, lo que cambia es ESTE archivo, y todos los papeles impresos siguen valiendo.
+
+  Además la dirección corta cabe en un QR de versión baja: con módulos del doble de
+  tamaño, se lee sin esfuerzo en papel.
+
+  REGLAS PARA QUIEN LO TOQUE
+  · Un código que ya se ha impreso NO SE BORRA NUNCA. Si una lección cambia de nombre
+    o un ejercicio de sitio, se cambia su destino aquí; el código sigue igual.
+  · Añadir códigos nuevos, todos los que hagan falta.
+  · Si un código no existe, esta página lo dice con todas las letras en vez de dejar
+    una pantalla en blanco.
+-->
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#f7f4ee; color:#2f2a22; font:16px/1.5 Georgia,'Times New Roman',serif;
+         padding:24px; box-sizing:border-box; }
+  .caja { max-width:34rem; text-align:center; }
+  h1 { font-size:1.25rem; margin:0 0 .6rem; }
+  p { margin:.4rem 0; }
+  code { background:#eae4d8; padding:.1em .35em; border-radius:3px; font-size:.95em; }
+  a { color:#7a5c2e; }
+</style>
+</head>
+<body>
+<div class="caja" id="caja">
+  <h1>Abriendo el ejercicio…</h1>
+  <p>Si no se abre solo, <a id="manual" href="index.html">pulsa aquí</a>.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* Las lecciones, por su código corto. El código es lo que va impreso: no se cambia
+     nunca. El contenido de cada línea sí se puede cambiar. */
+  var LECCIONES = {
+    a31:  { leccion: 'A3-1',  rotulo: 'Tema 5' },
+    a32:  { leccion: 'A3-2',  rotulo: 'Tema 6' },
+    a33:  { leccion: 'A3-3',  rotulo: 'Tema 7' },
+    a34:  { leccion: 'A3-4',  rotulo: 'Tema 8' },
+    a35:  { leccion: 'A3-5',  rotulo: 'Tema 9' },
+    a36:  { leccion: 'A3-6',  rotulo: 'Tema 10' },
+    a37:  { leccion: 'A3-7',  rotulo: 'Tema 11' },
+    a38:  { leccion: 'A3-8',  rotulo: 'Tema 12' },
+    a410: { leccion: 'A4-10', rotulo: 'Modulación al V' },
+    a411: { leccion: 'A4-11', rotulo: 'Modulación al relativo' }
+  };
+
+  /* Los cuatro tipos de ejercicio: a qué página van y cuánta música lleva la ficha,
+     medida en compases (decisión 127). */
+  var MODOS = {
+    cifrar:    { pagina: 'analisis.html',              rotulo: 'Análisis armónico',        compases: [14, 18] },
+    audicion:  { pagina: 'audicion.html',              rotulo: 'Reconocimiento auditivo',  compases: [7, 10] },
+    armonizar: { pagina: 'armonizacion-bajo.html',     rotulo: 'Armonización de bajo',     compases: [7, 10] },
+    soprano:   { pagina: 'armonizacion-soprano.html',  rotulo: 'Armonización de soprano',  compases: [7, 10] }
+  };
+
+  /* Direcciones sueltas que también viajan impresas: los ejercicios de fuera. Si alguna
+     cambia, se cambia aquí y los papeles repartidos siguen sirviendo. */
+  var ENLACES = {
+    'mtn-clavefa':   'https://www.musictheory.net/exercises/note/ndzyryyynyybyy',
+    'mtn-int0':      'https://www.musictheory.net/exercises/fretboard-interval/yyyyyyy9by9by998ondyynbyd',
+    'mtn-int1':      'https://www.musictheory.net/exercises/interval/drwy9y99999bnyyrbe',
+    'mtn-int2':      'https://www.musictheory.net/exercises/interval/oyrwy9y99999bnyyrbe',
+    'mtn-int3':      'https://www.musictheory.net/exercises/interval-construction/drwy9yb99999ybnbnyrby',
+    'mtn-int4':      'https://www.musictheory.net/exercises/interval-construction/oyrwa9db99999ydybnyrby',
+    'mtn-nombrar1':  'https://www.musictheory.net/exercises/chord/drwy9yxyybnyynyb',
+    'mtn-nombrar2':  'https://www.musictheory.net/exercises/chord/drwo9bxyynnyynyb',
+    'mtn-nombrar3':  'https://www.musictheory.net/exercises/chord/drwh98xyydnyynyb',
+    'mtn-fund1':     'https://www.musictheory.net/exercises/chord-construction/drwy9yxyyyyynynyy',
+    'mtn-fund2':     'https://www.musictheory.net/exercises/chord-construction/drwo9bxyyyybnynyy',
+    'mtn-fund3':     'https://www.musictheory.net/exercises/chord-construction/drwa9dxyyyynnynyy',
+    'mtn-inv1':      'https://www.musictheory.net/exercises/chord-construction/drwy9yxyybyynynyy',
+    'mtn-inv2':      'https://www.musictheory.net/exercises/chord-construction/drwo9bxyybybnynyy',
+    'mtn-inv3':      'https://www.musictheory.net/exercises/chord-construction/drwa9dxyybynnynyy',
+    'mtn-inv4':      'https://www.musictheory.net/exercises/chord-construction/drwh98xyybydnynyy'
+  };
+
+  /* Lo que comparten todas las fichas: nivel, alteraciones y el tope de ejercicios. */
+  var COMUN = { n: 10, nivel: [1, 5], alteraciones: [0, 2] };
+
+  function base64url(txt) {
+    var b = btoa(unescape(encodeURIComponent(txt)));
+    return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function aviso(html) {
+    document.getElementById('caja').innerHTML = html;
+  }
+
+  var codigo = (location.hash || '').replace(/^#/, '').trim().toLowerCase();
+  if (!codigo) {
+    aviso('<h1>Falta el código</h1><p>Esta dirección se abre desde un código QR del ' +
+          'cuadernillo. <a href="index.html">Ir a la aplicación</a>.</p>');
+    return;
+  }
+
+  if (ENLACES[codigo]) { location.replace(ENLACES[codigo]); return; }
+
+  var partes = codigo.split('-');
+  var modo = partes.pop();
+  var lec = LECCIONES[partes.join('-')];
+  if (!lec || !MODOS[modo]) {
+    aviso('<h1>No encuentro este ejercicio</h1><p>El código <code>' +
+          codigo.replace(/[<>&]/g, '') + '</code> no está en la lista. ' +
+          'Díselo a tu profesor y, mientras tanto, entra por ' +
+          '<a href="index.html">la portada de la aplicación</a>.</p>');
+    return;
+  }
+
+  var m = MODOS[modo];
+  var filtro = {
+    n: COMUN.n, modo: modo, nivel: COMUN.nivel, alteraciones: COMUN.alteraciones,
+    leccion: lec.leccion, compases: m.compases,
+    titulo: lec.rotulo + ' · ' + m.rotulo
+  };
+  var destino = m.pagina + '#f=' + base64url(JSON.stringify(filtro));
+  document.getElementById('manual').setAttribute('href', destino);
+  location.replace(destino);
+})();
+</script>
+</body>
+</html>

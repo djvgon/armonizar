@@ -845,7 +845,7 @@
         fichaTonalidades: $('#ficha-tonalidades').value,
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
-          '#ficha-modula', '#ficha-n', '#ficha-titulo'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
+          '#ficha-modula', '#ficha-n', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
         funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
@@ -1198,6 +1198,11 @@
       nivel: niv,
       alteraciones: [0, alt]
     };
+    /* El tamaño, en compases (decisión 127). Con el mínimo en 0 se desactiva y manda el
+       número de ejercicios, como antes. */
+    const cmin = parseInt($('#ficha-compases-min').value, 10) || 0;
+    const cmax = parseInt($('#ficha-compases-max').value, 10) || 0;
+    if (cmin > 0 && cmax >= cmin) f.compases = [cmin, cmax];
     if ($('#ficha-leccion').value) f.leccion = $('#ficha-leccion').value;
     if ($('#ficha-modotonal').value) f.modoTonal = $('#ficha-modotonal').value;
     if (mod === 'si') f.modula = true; else if (mod === 'no') f.modula = false;
@@ -1759,7 +1764,15 @@
        toque decide con cuál de las dos listas se cuenta. */
     const p = $('#ficha-tonos-reparto');
     if (filtro.tonos || typeof filtro.maxAlt === 'number') {
-      const n = Math.max(1, Math.min(filtro.n || 8, lista.length));
+      /* Cuántos sitios tiene la ficha: con presupuesto de compases no se sabe de
+         antemano, así que se estima con la media de compases de los que cumplen el
+         filtro y se acota con el tope de ejercicios (decisión 127). */
+      let sitios = filtro.n || 8;
+      if (filtro.compases) {
+        const med = lista.reduce((t, e) => t + Banco.compasesDe(e), 0) / lista.length;
+        sitios = Math.min(sitios, Math.max(1, Math.round(filtro.compases[1] / Math.max(1, med))));
+      }
+      const n = Math.max(1, Math.min(sitios, lista.length));
       const paso = [];
       for (let k = 0; k < n; k++) {
         const may = Banco.tonicaEn(filtro, 'mayor', k), men = Banco.tonicaEn(filtro, 'menor', k);
@@ -1777,7 +1790,15 @@
        y es el nombre que vas a tener que reconocer dentro de tres meses. Se avisa aquí,
        con el nombre que le va a tocar, en vez de dejarlo a que uno se acuerde. */
     if (!filtro.titulo) {
-      const n = Math.max(1, Math.min(filtro.n || 8, lista.length));
+      /* Cuántos sitios tiene la ficha: con presupuesto de compases no se sabe de
+         antemano, así que se estima con la media de compases de los que cumplen el
+         filtro y se acota con el tope de ejercicios (decisión 127). */
+      let sitios = filtro.n || 8;
+      if (filtro.compases) {
+        const med = lista.reduce((t, e) => t + Banco.compasesDe(e), 0) / lista.length;
+        sitios = Math.min(sitios, Math.max(1, Math.round(filtro.compases[1] / Math.max(1, med))));
+      }
+      const n = Math.max(1, Math.min(sitios, lista.length));
       const auto = [filtro.leccion || 'Varias lecciones', Ejercicios.MODOS[filtro.modo] || 'Ejercicios',
         n + (n === 1 ? ' ejercicio' : ' ejercicios')].join(' · ');
       aviso('Esta ficha va sin título: en tu hoja de calificaciones saldrá como «' + auto
@@ -1934,6 +1955,7 @@
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n',
+     '#ficha-compases-min', '#ficha-compases-max',
      '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades'].forEach(id => {
       $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador(); });
     });

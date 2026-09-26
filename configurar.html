@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260927-2230">
-  <link rel="stylesheet" href="css/estilo.css?v=20260927-2230">
+  <link rel="stylesheet" href="css/bravura.css?v=20260928-0030">
+  <link rel="stylesheet" href="css/estilo.css?v=20260928-0030">
 </head>
 <body class="configurador">
 
@@ -99,14 +99,23 @@
             </select>
           </label>
           <label class="campo">
-            <span>Ejercicios por ficha</span>
-            <input id="ficha-n" type="number" min="1" max="30" value="8">
+            <span>Compases por ficha, de</span>
+            <input id="ficha-compases-min" type="number" min="0" max="120" value="20">
+          </label>
+          <label class="campo">
+            <span>… a</span>
+            <input id="ficha-compases-max" type="number" min="1" max="120" value="26">
+          </label>
+          <label class="campo">
+            <span>Como mucho, ejercicios</span>
+            <input id="ficha-n" type="number" min="1" max="30" value="10">
           </label>
           <label class="campo campo-ancho">
             <span>Título de la ficha</span>
             <input id="ficha-titulo" type="text" placeholder="Ficha 1 · El 6/4 cadencial">
           </label>
         </div>
+        <p class="ayuda">La ficha se mide en <b>compases</b>, no en número de ejercicios: lo que cansa al alumno es la música que tiene delante, y un fragmento de ocho compases da el trabajo de tres de tres. Se van tomando fragmentos al azar hasta llegar al mínimo sin pasarse del máximo, con el tope de ejercicios como red. Si pones el mínimo en 0, vuelve a mandar el número de ejercicios.</p>
         <p class="ayuda">Ponle <b>título</b>: es el nombre con el que vas a reconocer esta práctica en tu hoja de calificaciones. Sin él se construye uno automático con la lección, el tipo y cuántos ejercicios lleva.</p>
         </div>
 
@@ -478,17 +487,17 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260927-2230</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260928-0030</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260927-2230"></script>
-  <script src="js/reglas.js?v=20260927-2230"></script>
-  <script src="js/ejercicios.js?v=20260927-2230"></script>
-  <script src="js/partitura.js?v=20260927-2230"></script>
-  <script src="js/musicxml.js?v=20260927-2230"></script>
-  <script src="js/musescore.js?v=20260927-2230"></script>
-  <script src="js/banco.js?v=20260927-2230"></script>
-  <script src="js/realizacion.js?v=20260927-2230"></script>
-  <script src="js/configurador.js?v=20260927-2230"></script>
+  <script src="js/teoria.js?v=20260928-0030"></script>
+  <script src="js/reglas.js?v=20260928-0030"></script>
+  <script src="js/ejercicios.js?v=20260928-0030"></script>
+  <script src="js/partitura.js?v=20260928-0030"></script>
+  <script src="js/musicxml.js?v=20260928-0030"></script>
+  <script src="js/musescore.js?v=20260928-0030"></script>
+  <script src="js/banco.js?v=20260928-0030"></script>
+  <script src="js/realizacion.js?v=20260928-0030"></script>
+  <script src="js/configurador.js?v=20260928-0030"></script>
 </body>
 </html>

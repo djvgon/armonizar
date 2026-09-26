@@ -1595,7 +1595,7 @@
   }
   function nombreDeFicha(filtro, lista) {
     if (filtro.titulo) return filtro.titulo;
-    const n = filtro.n || (lista ? lista.length : 0);
+    const n = (lista ? lista.length : 0) || filtro.n || 0;
     return [filtro.leccion || 'Varias lecciones',
       Ejercicios.MODOS[filtro.modo] || 'Ejercicios',
       n + (n === 1 ? ' ejercicio' : ' ejercicios'),
