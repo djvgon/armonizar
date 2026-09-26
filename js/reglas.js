@@ -657,7 +657,11 @@ const Reglas = (() => {
 
   // Candidatos de la nota i (melodía s, tonalidad ton) dentro del repertorio de cifras o,
   // si el ejercicio trae una lista de acordes (ej.acordes = ['I|53', 'IV|6', …]), solo entre esos.
-  function candidatosSoprano(s, tonBase, repertorio, esUltima, acordes) {
+  /* `esBajo`: la nota que se da NO es la melodía, es el bajo (armonización de bajo). Las
+     comprobaciones de doblado miran la relación entre las dos voces extremas; si la nota
+     dada es la del bajo, `cs === cb` siempre y descartarían acordes buenísimos —el I6, el
+     VII6, el V4/2— por un doblado que nadie ha escrito. Ahí no se aplican. */
+  function candidatosSoprano(s, tonBase, repertorio, esUltima, acordes, esBajo = false) {
     const out = [];
     const cs = claseDe(s);
     const sensibleTon = (Teoria.clase(Teoria.nota(tonBase.tonica + '4')) + 11) % 12;
@@ -690,7 +694,7 @@ const Reglas = (() => {
         const sensibles = new Set([sensibleTon]);
         if (Teoria.DOMINANTES.includes(id)) { const t = sup.concat([bajo]).find(n => miembroDe(n) === 2); if (t) sensibles.add(Teoria.clase(t)); }
         const avisos = [];
-        if (cs === cb) {
+        if (cs === cb && !esBajo) {
           if (miembro === 6 || miembro === 1) return;                 // séptima (o novena) doblada
           if (sensibles.has(cs)) return;                               // sensible doblada
           if (id === '6' && (romano === 'I' || romano === 'IV' || romano === 'V')) return;   // tercera de una tríada mayor doblada en las voces extremas
@@ -746,10 +750,15 @@ const Reglas = (() => {
     // 6/4 cadencial: resuelve en V (— o 7/+) sobre el mismo bajo
     if (p.cifra === '64' && !(q.romano === 'V' && (q.cifra === '53' || q.cifra === '7+'))) return false;
     if (q.cifra === '64' && p.cifra === '64') return false;
-    // Octavas y quintas seguidas entre bajo y soprano
-    const csP = claseDe(sp), csQ = claseDe(sq);
-    const ivP = (csP - p.claseBajo + 12) % 12, ivQ = (csQ - q.claseBajo + 12) % 12;
-    if (p.claseBajo !== q.claseBajo && csP !== csQ && ivP === ivQ && (ivP === 0 || ivP === 7)) return false;
+    /* Octavas y quintas seguidas entre bajo y soprano. Solo cuando se CONOCE la melodía:
+       en la armonización de bajo, las notas del ejercicio son el propio bajo, y compararlo
+       consigo mismo daría octavas en todos los enlaces. Ahí la conducción de voces la
+       audita la realización a cuatro voces, no esta regla. */
+    if (sp != null && sq != null) {
+      const csP = claseDe(sp), csQ = claseDe(sq);
+      const ivP = (csP - p.claseBajo + 12) % 12, ivQ = (csQ - q.claseBajo + 12) % 12;
+      if (p.claseBajo !== q.claseBajo && csP !== csQ && ivP === ivQ && (ivP === 0 || ivP === 7)) return false;
+    }
     return true;
   }
 
@@ -935,18 +944,42 @@ const Reglas = (() => {
     const notas = notasDe(ej);
     const ton = Teoria.tonalidadesPorNota(ej)[i];
     const rom = Teoria.gradoInterno(romano);   // el alumno escribe V/V; por dentro es el II
-    return candidatosSoprano(notas[i], ton, [cifra], false, null).find(x => x.romano === rom) || null;
+    const esBajo = ej.modo !== 'soprano';
+    const cl = esBajo ? Teoria.clase(Teoria.nota(notas[i])) : null;
+    // En la armonización de bajo, además, el acorde ha de tener ESA nota en el bajo
+    return candidatosSoprano(notas[i], ton, [cifra], false, null, esBajo)
+      .find(x => x.romano === rom && (!esBajo || x.claseBajo === cl)) || null;
   }
 
-  // Enlace entre las respuestas del alumno en las notas i-1 e i: {ok, motivo}
+  /* Enlace entre las respuestas del alumno en las notas i-1 e i: {ok, motivo}.
+     Vale para las dos maneras. En la armonización de MELODÍA las notas del ejercicio son
+     la soprano, y se le pasan a `enlaceValido` para que mire también las octavas y quintas
+     seguidas con el bajo. En la armonización de BAJO esas notas son el propio bajo: no hay
+     melodía que comparar, así que van en nulo y la conducción de voces la audita aparte la
+     realización a cuatro voces. Lo que sí se dice en las dos es la SINTAXIS: qué función
+     sigue a cuál, cómo resuelven la sensible, la séptima y el 6/4 cadencial. */
   function enlaceAlumno(ej, i, parAnt, parAct) {
     const p = candidatoDe(ej, i - 1, parAnt.romano, parAnt.cifra), q = candidatoDe(ej, i, parAct.romano, parAct.cifra);
     if (!p || !q) return { ok: true, motivo: '' };
     const notas = notasDe(ej);
+    const esSop = ej.modo === 'soprano';
+    const sp = esSop ? notas[i - 1] : null, sq = esSop ? notas[i] : null;
     const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
     const reglas = { tst: ej.formulaTST !== false, esFinal: i === notas.length - 1,
       pideCambio: Teoria.pideCambio(fuerzas, i) && !cortesDe(ej)[i] };
-    if (enlaceValido(p, q, notas[i - 1], notas[i], null, null, reglas)) return { ok: true, motivo: '' };
+    if (enlaceValido(p, q, sp, sq, null, null, reglas)) return { ok: true, motivo: '' };
+    /* Cambio de tonalidad: el acorde que estrena el tono nuevo suena también en el
+       anterior —es la otra cara del pivote (decisión 116)— y su función no es la misma en
+       los dos. La sucesión vale si es correcta en cualquiera de las dos lecturas: el I de
+       Do que abre Sol mayor es su IV, y venir ahí de la dominante de Do no es volver de la
+       dominante a la subdominante, es resolverla. */
+    const tons = Teoria.tonalidadesPorNota(ej);
+    if (!Teoria.mismaTonalidad(tons[i - 1], tons[i])) {
+      const clBajo = Teoria.clase(Teoria.nota(notas[i]));
+      const antes = candidatosSoprano(notas[i], tons[i - 1], [parAct.cifra], false, null)
+        .filter(x => esSop || x.claseBajo === clBajo);
+      if (antes.some(x => enlaceValido(p, x, sp, sq, null, null, reglas))) return { ok: true, motivo: '' };
+    }
     const mismoAcorde = p.claseFund === q.claseFund;
     let motivo = 'el enlace con el acorde anterior no es correcto';
     if (mismoAcorde && reglas.pideCambio && p.claseBajo === q.claseBajo && p.cifra === q.cifra && p.cifra !== '64' && q.cifra !== '64') {
@@ -960,12 +993,11 @@ const Reglas = (() => {
     else if (p.septimaBajo && !mismoAcorde) motivo = 'la séptima en el bajo (' + Teoria.nombreEs(p.bajo) + ') ha de bajar de grado';
     else if (p.cifra === '64') motivo = 'el 6/4 cadencial resuelve en V sobre el mismo bajo';
     else if (!mismoAcorde && p.funciones.every(f => f === 'D') && q.funciones.every(f => f === 'S')) motivo = 'no se vuelve de la dominante a la subdominante';
-    else {
-      const csP = Teoria.clase(Teoria.nota(notas[i - 1])), csQ = Teoria.clase(Teoria.nota(notas[i]));
+    else if (esSop) {
+      const csP = Teoria.clase(Teoria.nota(notas[i - 1]));
       const iv = (csP - p.claseBajo + 12) % 12;
       if (iv === 0) motivo = 'octavas seguidas entre el bajo y la melodía';
       else if (iv === 7) motivo = 'quintas seguidas entre el bajo y la melodía';
-      void csQ;
     }
     return { ok: false, motivo };
   }

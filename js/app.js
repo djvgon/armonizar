@@ -956,6 +956,56 @@
     return { ok, info, correctas, faltan, sobrantes };
   }
 
+  /* POR QUÉ NO VALE LA CIFRA (decisión 119). «Falla la cifra» no enseña nada: el alumno
+     necesita saber cuál de las tres cosas ha pasado. O el acorde no se puede construir
+     sobre esa nota del bajo; o se puede, pero no es de su lección; o es de su lección y la
+     que no anda es la SUCESIÓN —y entonces se le dice con las palabras de la regla—.
+     Cuando no se sabe, no se inventa: se deja el mensaje de siempre. */
+  function porQueCifra(ej, i, ton, cifra) {
+    const notas = Teoria.notasDeCompases(ej.compases);
+    const et = c => (Teoria.CIFRADOS[c] ? Teoria.CIFRADOS[c].etiqueta : c);
+    let rom = null;
+    try { rom = Teoria.romano(cifra, notas[i], ton); } catch (e) { rom = null; }
+    if (!rom) return 'la cifra ' + et(cifra) + ' sobre esta nota no da ningún acorde de ' + Teoria.nombreCorto(ton);
+    const acorde = rom + ' ' + et(cifra);
+    const lista = ej.acordes;
+    if (lista && lista.length && !lista.includes(rom + '|' + cifra)) return 'el ' + acorde + ' no entra en esta lección';
+    const ultima = i === notas.length - 1;
+    if (ultima && (cifra !== '53' || (rom !== 'I' && rom !== 'V')))
+      return 'el fragmento acaba en cadencia o en semicadencia: el último acorde ha de ser la tónica o la dominante, en estado fundamental';
+    // La sintaxis: con el acorde de antes y con el de después
+    const par = { romano: rom, cifra };
+    const suyo = k => {
+      const res = estado.resultados[k];
+      if (res && res.okCifra && res.romanoReal) return { romano: res.romanoReal, cifra: res.cifra };
+      return modeloEn(ej, k);
+    };
+    try {
+      if (i > 0) {
+        const ant = suyo(i - 1);
+        if (ant && Reglas.sincopaBajo(ej, i, ant.cifra, cifra)) return 'el ' + acorde + ' ya sonaba en el acorde anterior y aquí cae en parte fuerte: en el tiempo fuerte la armonía ha de cambiar';
+        const e = ant ? Reglas.enlaceAlumno(ej, i, ant, par) : { ok: true };
+        if (!e.ok) return e.motivo;
+      }
+      if (!ultima) {
+        const sig = modeloEn(ej, i + 1);
+        const e = sig ? Reglas.enlaceAlumno(ej, i + 1, par, sig) : { ok: true };
+        if (!e.ok) return 'con el acorde que viene después, ' + e.motivo;
+      }
+    } catch (e) { /* si algo no se puede leer, no se dice nada */ }
+    return null;
+  }
+  // El acorde modelo de la nota k, como pareja {romano, cifra}
+  function modeloEn(ej, k) {
+    const id = (ej.respuestas[k] || [])[0];
+    if (!id) return null;
+    if (String(id).indexOf('|') >= 0) return Ejercicios.par(id);
+    try {
+      const rom = Teoria.romano(id, Teoria.notasDeCompases(ej.compases)[k], Ejercicios.tonalidadEn(ej, k));
+      return rom ? { romano: rom, cifra: id } : null;
+    } catch (e) { return null; }
+  }
+
   function corregir() {
     const ej = estado.ejercicio;
     // Sin fila de tonalidades no hay nada que corregir ahí: el alumno no marcó nada
@@ -1019,26 +1069,44 @@
       const modeloFuncion = dobleFun
         ? Ejercicios.funcionModeloEn(ej, i, tonAntes) + ' = ' + Ejercicios.funcionModelo(ej, i)
         : Ejercicios.funcionModelo(ej, i);
-      return { ok: okCifra && okRomano && okRomano2 && okFuncion && okFuncion2, okCifra, okRomano, okRomano2, okFuncion, okFuncion2, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion, cifra, romano: rom, romano2: rom2, funcion: fun, funcion2: fun2 };
+      /* El grado del acorde que el alumno ha escrito DE VERDAD. En la armonización de bajo
+         la cifra y la nota ya determinan el acorde, así que sale aunque no se le pida el
+         grado; hace falta para juzgar la sintaxis del enlace. */
+      const propio = okCifra ? cand(parejas)[0] : null;
+      return { ok: okCifra && okRomano && okRomano2 && okFuncion && okFuncion2, okCifra, okRomano, okRomano2, okFuncion, okFuncion2, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion, cifra, romano: rom, romano2: rom2, romanoReal: propio ? propio.romano : null, funcion: fun, funcion2: fun2 };
     });
-    /* Síncopa armónica: al pasar a una parte más fuerte la armonía ha de cambiar. Un acorde
-       que entra en parte débil y se prolonga sobre la fuerte es un error de enlace, y se
-       corrige como los demás. Solo donde el alumno construye la armonía. */
-    if (enlacesCuentan() && estado.modoEj !== 'soprano') estado.resultados.forEach((r, i) => {
-      if (i === 0 || !r.okCifra || !estado.resultados[i - 1].okCifra) return;
-      if (!Reglas.sincopaBajo(ej, i, estado.resultados[i - 1].cifra, r.cifra)) return;
-      r.okEnlace = false;
-      r.enlace = 'síncopa armónica: el acorde entra en parte débil y se prolonga sobre la fuerte; en el tiempo fuerte la armonía ha de cambiar';
-      r.ok = false;
-    });
-    // Melodía de soprano: el enlace entre dos respuestas correctas también ha de serlo
-    // (sensible o séptima en el bajo que no resuelven, octavas con la melodía, D → S)
-    if (estado.modoEj === 'soprano') estado.resultados.forEach((r, i) => {
-      if (i === 0 || !r.okCifra || !r.okRomano) return;
+    /* LA SINTAXIS DEL ENLACE (decisión 119). Dos acordes pueden ser los dos correctos
+       sobre sus notas y no poder ir seguidos: la subdominante no vuelve a la tónica, la
+       sensible del bajo sube, la séptima baja, el 6/4 cadencial resuelve en V, no se
+       vuelve de la dominante a la subdominante. `enlaceAlumno` lo dice con esas palabras,
+       y es lo que el alumno necesita oír: no «tocaba el V», sino por qué lo suyo no anda.
+       Antes solo se miraba en la armonización de melodía; ahora también en la de bajo, que
+       es donde el alumno construye la armonía y donde «(falla la cifra)» no explicaba
+       nada. La síncopa armónica va aparte porque `sincopaBajo` la ve también cuando el
+       bajo se mueve dentro del mismo acorde. */
+    if (enlacesCuentan()) estado.resultados.forEach((r, i) => {
+      if (i === 0 || !r.okCifra) return;
       const ant = estado.resultados[i - 1];
-      if (!ant.okCifra || !ant.okRomano) return;
-      const e = Reglas.enlaceAlumno(ej, i, { romano: ant.romano, cifra: ant.cifra }, { romano: r.romano, cifra: r.cifra });
+      if (!ant.okCifra) return;
+      const esSop = estado.modoEj === 'soprano';
+      if (!esSop && Reglas.sincopaBajo(ej, i, ant.cifra, r.cifra)) {
+        r.okEnlace = false; r.ok = false;
+        r.enlace = 'síncopa armónica: el acorde entra en parte débil y se prolonga sobre la fuerte; en el tiempo fuerte la armonía ha de cambiar';
+        return;
+      }
+      /* En la melodía manda el grado que ha escrito el alumno —la misma cifra puede ser de
+         dos acordes distintos—; en el bajo, el que sale de su cifra sobre esa nota, que es
+         uno solo y no depende de que se le pida el grado. */
+      const grado = res => (esSop ? res.romano : res.romanoReal);
+      if (!grado(ant) || !grado(r)) return;
+      if (esSop && (!ant.okRomano || !r.okRomano)) return;
+      const e = Reglas.enlaceAlumno(ej, i, { romano: grado(ant), cifra: ant.cifra }, { romano: grado(r), cifra: r.cifra });
       if (!e.ok) { r.okEnlace = false; r.enlace = e.motivo; r.ok = false; }
+    });
+    // Y, cuando la cifra no vale, por qué no vale (decisión 119)
+    if (estado.modoEj !== 'soprano') estado.resultados.forEach((r, i) => {
+      if (r.okCifra || r.cifra === null) return;
+      r.porQue = porQueCifra(ej, i, lectura[i].ton, r.cifra);
     });
     estado.intento += 1;
     const aciertos = estado.resultados.filter(r => r.ok).length;
@@ -1176,7 +1244,7 @@
         let que = '';
         if (!r.okEnlace) que = ' (falla el enlace: ' + r.enlace + ')';
         else if (!(r.okFuncion && r.okFuncion2) && r.okCifra && r.okRomano && r.okRomano2) que = ' (falla la función)';
-        else if (!(!r.okCifra && !(r.okRomano && r.okRomano2))) que = !r.okCifra ? ' (falla la cifra)' : !(r.okRomano && r.okRomano2) ? ' (falla el grado)' : '';
+        else if (!(!r.okCifra && !(r.okRomano && r.okRomano2))) que = !r.okCifra ? ' (falla la cifra' + (r.porQue ? ': ' + r.porQue : '') + ')' : !(r.okRomano && r.okRomano2) ? ' (falla el grado)' : '';
         html += '<li><b>Nota ' + (i + 1) + ' (' + nombre + ')</b>' + que + ': has puesto <span class="cif mal">' + dada + '</span>; '
           + 'la respuesta modelo es <span class="cif bien">' + modelo + '</span>'
           + (otras.length ? ' (también se admite ' + otras.join(', ') + ')' : '') + '.'
