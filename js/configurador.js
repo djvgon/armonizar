@@ -1610,7 +1610,7 @@
       caja.dataset.estado = 'rojo';
       txt.textContent = 'Esta copia va por detrás: le faltan ' + cuenta(d.faltan.length)
         + ' que sí están publicados. No la subas (' + pub + ').';
-      bIg.textContent = 'Traer el banco publicado';
+      bIg.textContent = 'Traer el banco publicado en GitHub';
       bIg.hidden = false;
       bIg.onclick = () => cargarPublicado();
     } else if (dir === 'adelantado') {
@@ -1855,7 +1855,7 @@
         + (d.faltan.length > 1 ? ' fragmentos que aquí no están (' : ' fragmento que aquí no está (')
         + listaCorta(d.faltan) + ').\n\nSi subes este archivo a GitHub, '
         + (d.faltan.length > 1 ? 'desaparecerán' : 'desaparecerá') + ' para los alumnos.'
-        + '\n\nSi lo que querías era ponerte al día, cancela y pulsa «Cargar el banco publicado».'
+        + '\n\nSi lo que querías era ponerte al día, cancela y pulsa «Cargar el banco publicado en GitHub».'
         + '\n\n¿Descargar de todas formas?';
       if (!confirm(msg)) return;
     }
