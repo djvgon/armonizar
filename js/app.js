@@ -60,7 +60,8 @@
     ficha: null,              // ficha en curso: {filtro, lista, k, marcador} (varios ejercicios encadenados)
     avisosRespuesta: [],      // avisos de conducción de voces de lo que el alumno ha escrito (al corregir)
     notasAviso: null,         // Set con las notas implicadas en esos avisos: quedan editables
-    verEnlaces: false         // una vez han salido avisos, la realización se queda a la vista para poder arreglarlos
+    verEnlaces: false,        // una vez han salido avisos, la realización se queda a la vista para poder arreglarlos
+    leerErrores: false        // leer en voz alta la explicación de los errores al corregir (decisión 121)
   };
 
   /* ---------- Carga ---------- */
@@ -884,7 +885,7 @@
     } catch (e) { aviso('No se ha podido reproducir el sonido: ' + e.message); }
   }
 
-  function parar() { Sonido.parar(); marcarSonando(null); $('#btn-parar').hidden = true; }
+  function parar() { Sonido.parar(); Voz.parar(); marcarSonando(null); $('#btn-parar').hidden = true; }
 
   function responderRomano(r) {
     if (estado.corregido || !pideGrado()) return;
@@ -1006,6 +1007,49 @@
     } catch (e) { return null; }
   }
 
+  /* ---------- La explicación hablada (decisión 121) ----------
+     El texto que se lee no es un resumen aparte: son los mismos motivos que la
+     corrección escribe. Lo que NO se dice es la respuesta modelo, para no cantarle la
+     solución al alumno mientras aún puede volver a intentarlo; el modelo lo tiene en
+     pantalla cuando pulsa «Ver la solución». */
+  const MAX_DICHOS = 5;         // errores que se leen antes de resumir «y N más»
+  function textoDeLosErrores() {
+    const res = estado.resultados || [];
+    if (!res.length) return '';
+    const notas = Reglas.notasDe(estado.ejercicio);
+    const n = res.length;
+    const aciertos = res.filter(r => r.ok).length;
+    const partes = [aciertos + ' de ' + n + ' notas correctas.'];
+    const rm = estado.resultadoMod;
+    if (rm && !rm.ok) partes.push(rm.faltan.length ? 'Falta marcar el cambio de tonalidad.' : 'El cambio de tonalidad no está bien marcado.');
+    const malas = [];
+    res.forEach((r, i) => {
+      if (r.ok) return;
+      let que;
+      if (!r.okEnlace) que = r.enlace;
+      else if (!r.okCifra) que = r.porQue || 'el acorde que has puesto no vale aquí';
+      else if (!(r.okRomano && r.okRomano2)) que = 'el acorde está bien, pero no el grado de su fundamental';
+      else if (!(r.okFuncion && r.okFuncion2)) que = 'el acorde está bien, pero no su función tonal';
+      else return;
+      malas.push('Nota ' + (i + 1) + ', ' + Teoria.nombreEs(Teoria.nota(notas[i])) + ': ' + que + '.');
+    });
+    malas.slice(0, MAX_DICHOS).forEach(x => partes.push(x));
+    if (malas.length > MAX_DICHOS) partes.push('Y ' + (malas.length - MAX_DICHOS) + ' notas más con algún error.');
+    const avisos = (estado.avisosRespuesta || []).map(a => a.texto).filter(x => x);
+    if (avisos.length) {
+      partes.push('En la conducción de voces:');
+      avisos.slice(0, 3).forEach(x => partes.push(x.replace(/\s*\(\d+→\d+\)/, '') + '.'));
+      if (avisos.length > 3) partes.push('Y ' + (avisos.length - 3) + ' avisos más.');
+    }
+    if (aciertos === n && !avisos.length && (!rm || rm.ok)) partes.push('Está todo bien.');
+    return partes.join(' ');
+  }
+  function leerErrores() {
+    if (!Voz.hay()) return;
+    parar();                       // que no se pisen la voz y el instrumento
+    Voz.decir(textoDeLosErrores());
+  }
+
   function corregir() {
     const ej = estado.ejercicio;
     // Sin fila de tonalidades no hay nada que corregir ahí: el alumno no marcó nada
@@ -1124,6 +1168,7 @@
     estado.mostrarSolucion = todoBien || !estado.reintentos;
     pintar();
     pintarResultado();
+    if (estado.leerErrores) leerErrores();
     anotarFicha();
   }
 
@@ -1194,6 +1239,9 @@
       + (vocesMal ? ' · Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso') + (porArreglar ? ' (' + porArreglar + ' por arreglar)' : '') + ' (notas en rojo)' : '')
       + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
     else if (estado.intento > 1 && estado.primerIntento !== null) html += '<p class="desglose">Al primer intento: ' + estado.primerIntento + ' de ' + n + '</p>';
+    // Que lo lea en voz alta, se haya marcado o no la casilla (decisión 121)
+    if (Voz.hay() && (aciertos < n || porArreglar))
+      html += '<p class="botonera-voz"><button type="button" id="btn-leer" class="boton-pequeno" title="Lee en voz alta por qué falla cada nota">▶ Leer los errores</button></p>';
     // Modulación
     const rm = estado.resultadoMod;
     if (rm) {
@@ -1270,6 +1318,8 @@
     const be = $('#btn-errores'), bs = $('#btn-solucion');
     if (be) be.addEventListener('click', corregirErrores);
     if (bs) bs.addEventListener('click', verSolucion);
+    const bv = $('#btn-leer');
+    if (bv) bv.addEventListener('click', () => { if (Voz.hablando()) Voz.parar(); else leerErrores(); });
     const bf = $('#btn-ficha-sig');
     if (bf) bf.addEventListener('click', siguienteDeFicha);
     caja.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1607,6 +1657,20 @@
     $('#ver-realizacion').addEventListener('change', ev => { estado.verRealizacion = ev.target.checked; pintar(); });
     $('#ver-grados').addEventListener('change', ev => { estado.verGrados = ev.target.checked; pintar(); });
     $('#sonar').addEventListener('change', ev => { estado.sonar = ev.target.checked; });
+    /* La voz: la casilla solo aparece si el navegador tiene sintetizador, y se recuerda.
+       No se enciende sola: en el iPhone y en el iPad la voz solo arranca después de que el
+       alumno toque algo, y de todos modos empezar a hablar sin que nadie lo haya pedido
+       asusta más que ayuda. */
+    if (Voz.hay()) {
+      $('#control-voz').hidden = false;
+      try { estado.leerErrores = localStorage.getItem('armonizar.voz') === '1'; } catch (e) { /* sin almacenamiento */ }
+      $('#leer-errores').checked = estado.leerErrores;
+      $('#leer-errores').addEventListener('change', ev => {
+        estado.leerErrores = ev.target.checked;
+        try { localStorage.setItem('armonizar.voz', estado.leerErrores ? '1' : '0'); } catch (e) { /* nada */ }
+        if (estado.leerErrores && estado.corregido) leerErrores();
+      });
+    }
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.addEventListener('click', () => { estado.rotacion = Number(b.dataset.pos); pintar(); }));
     // Instrumento: lista, elección guardada y aviso de carga
     const selInst = $('#instrumento');
