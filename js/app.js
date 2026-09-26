@@ -1007,6 +1007,74 @@
     } catch (e) { return null; }
   }
 
+  /* ---------- El esquema de lo que ha escrito el alumno (decisión 122) ----------
+     Dos líneas que resumen SU armonización, no la del modelo: la cadena de funciones
+     —T – S – D – T, que es como se ve de un vistazo si la sintaxis anda— y el nombre de
+     la cadencia con la que cierra. Enseñar aquí el esquema del modelo sería cantarle la
+     solución; el suyo, en cambio, es un espejo. */
+  const ET = c => (Teoria.CIFRADOS[c] ? Teoria.CIFRADOS[c].etiqueta : c);
+  function nombreAcorde(rom, cif) {
+    if (!rom) return '';
+    if (cif === '53') return rom;
+    if (rom === 'V' && cif === '7+') return 'V7';
+    return rom + ' ' + ET(cif);
+  }
+  /* Un acorde de dos funciones —el VI es tónica o subdominante (decisión 88)— se lee por
+     el contexto: subdominante si va a una dominante, tónica si viene de ella. */
+  function cadenaDeFunciones(res) {
+    const fs = res.map(r => (r.funcionReal || []).slice());
+    return fs.map((f, i) => {
+      if (!f.length) return null;
+      if (f.length === 1) return f[0];
+      const sig = fs[i + 1] || [], ant = fs[i - 1] || [];
+      if (sig.length === 1 && sig[0] === 'D' && f.indexOf('S') >= 0) return 'S';
+      if (ant.length === 1 && ant[0] === 'D' && f.indexOf('T') >= 0) return 'T';
+      return f[0];
+    });
+  }
+  function nombreDeLaCadencia(res, cadena) {
+    const n = res.length;
+    if (n < 2) return null;
+    const u = res[n - 1], p = res[n - 2];
+    const gu = u.gradoReal, gp = p.gradoReal;
+    if (!gu || !gp) return null;
+    const par = nombreAcorde(gp, p.cifra) + ' – ' + nombreAcorde(gu, u.cifra);
+    let menor = false;
+    try { menor = Ejercicios.tonalidadEn(estado.ejercicio, n - 1).modo === 'menor'; } catch (e) { menor = false; }
+    const vRaiz = gp === 'V' && (p.cifra === '53' || p.cifra === '7+');
+    if (gu === 'I' && u.cifra === '53') {
+      if (vRaiz) return 'cadencia auténtica (' + par + ')';
+      if (gp === 'VII' && p.cifra === '6') return 'cadencia auténtica, con el VII6 (' + par + ')';
+      if (cadena[n - 2] === 'D') return 'acaba en la tónica, con la dominante invertida (' + par + ')';
+      if (cadena[n - 2] === 'S') return 'cadencia plagal (' + par + ')';
+    }
+    if (gu === 'I' && u.cifra === '6') return 'acaba en la tónica en primera inversión (' + par + ')';
+    if (gu === 'V') {
+      if (menor && gp === 'IV' && p.cifra === '6') return 'semicadencia frigia (' + par + ')';
+      return 'semicadencia: acaba en la dominante (' + par + ')';
+    }
+    if (cadena[n - 2] === 'D' && (gu === 'VI' || (gu === 'IV' && u.cifra === '6'))) return 'cadencia rota (' + par + ')';
+    return null;
+  }
+  function esquemaDelAlumno() {
+    const res = estado.resultados || [];
+    if (!res.length) return null;
+    const cadena = cadenaDeFunciones(res);
+    if (!cadena.some(f => f)) return null;
+    /* Una barra donde cambia el tono: las funciones de después ya no son del mismo tono
+       que las de antes, y sin la marca el esquema engaña. */
+    let tons = null;
+    try { tons = res.map((x, i) => Ejercicios.tonalidadEn(estado.ejercicio, i)); } catch (e) { tons = null; }
+    const nuevo = i => !!(tons && i > 0 && !Teoria.mismaTonalidad(tons[i - 1], tons[i]));
+    const une = (lista, sep) => lista.reduce((a, x, i) => a + (i ? (nuevo(i) ? ' | ' : sep) : '') + x, '');
+    return {
+      cadena,
+      texto: une(cadena.map(f => (f ? Teoria.textoFuncion(f) : '·')), ' – '),
+      dicho: une(cadena.map(f => (f ? (Teoria.NOMBRE_FUNCION[f] || f) : 'sin contestar')), ', ').replace(/ \| /g, '; y en el tono nuevo, '),
+      cadencia: nombreDeLaCadencia(res, cadena)
+    };
+  }
+
   /* ---------- La explicación hablada (decisión 121) ----------
      El texto que se lee no es un resumen aparte: son los mismos motivos que la
      corrección escribe. Lo que NO se dice es la respuesta modelo, para no cantarle la
@@ -1020,6 +1088,8 @@
     const n = res.length;
     const aciertos = res.filter(r => r.ok).length;
     const partes = [aciertos + ' de ' + n + ' notas correctas.'];
+    const esq = esquemaDelAlumno();
+    if (esq) partes.push('Tu armonización hace ' + esq.dicho + '.' + (esq.cadencia ? ' Es una ' + esq.cadencia.split(' (')[0] + '.' : ''));
     const rm = estado.resultadoMod;
     if (rm && !rm.ok) partes.push(rm.faltan.length ? 'Falta marcar el cambio de tonalidad.' : 'El cambio de tonalidad no está bien marcado.');
     const malas = [];
@@ -1117,7 +1187,15 @@
          la cifra y la nota ya determinan el acorde, así que sale aunque no se le pida el
          grado; hace falta para juzgar la sintaxis del enlace. */
       const propio = okCifra ? cand(parejas)[0] : null;
-      return { ok: okCifra && okRomano && okRomano2 && okFuncion && okFuncion2, okCifra, okRomano, okRomano2, okFuncion, okFuncion2, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion, cifra, romano: rom, romano2: rom2, romanoReal: propio ? propio.romano : null, funcion: fun, funcion2: fun2 };
+      /* El acorde que el alumno ha escrito de verdad, para el esquema (decisión 122). En la
+         melodía manda el grado que él ha puesto —la misma cifra puede ser de dos acordes—;
+         en el bajo, el que sale de su cifra sobre esa nota. */
+      const suyo = estado.modoEj === 'soprano'
+        ? (okCifra && okRomano && rom ? (cand(parejas).find(x => gr(x) === rom) || null) : null)
+        : propio;
+      return { ok: okCifra && okRomano && okRomano2 && okFuncion && okFuncion2, okCifra, okRomano, okRomano2, okFuncion, okFuncion2, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion, cifra, romano: rom, romano2: rom2, romanoReal: propio ? propio.romano : null,
+        gradoReal: suyo ? suyo.romano : null, funcionReal: suyo ? Teoria.funcionesDeAcorde(suyo.romano, suyo.cifra) : null,
+        funcion: fun, funcion2: fun2 };
     });
     /* LA SINTAXIS DEL ENLACE (decisión 119). Dos acordes pueden ser los dos correctos
        sobre sus notas y no poder ir seguidos: la subdominante no vuelve a la tónica, la
@@ -1239,6 +1317,10 @@
       + (vocesMal ? ' · Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso') + (porArreglar ? ' (' + porArreglar + ' por arreglar)' : '') + ' (notas en rojo)' : '')
       + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
     else if (estado.intento > 1 && estado.primerIntento !== null) html += '<p class="desglose">Al primer intento: ' + estado.primerIntento + ' de ' + n + '</p>';
+    // El esquema de lo que ha escrito el alumno (decisión 122)
+    const esq = esquemaDelAlumno();
+    if (esq) html += '<p class="desglose esquema">Tu armonización: <b>' + esq.texto + '</b>'
+      + (esq.cadencia ? ' · ' + esq.cadencia : '') + '</p>';
     // Que lo lea en voz alta, se haya marcado o no la casilla (decisión 121)
     if (Voz.hay() && (aciertos < n || porArreglar))
       html += '<p class="botonera-voz"><button type="button" id="btn-leer" class="boton-pequeno" title="Lee en voz alta por qué falla cada nota">▶ Leer los errores</button></p>';
