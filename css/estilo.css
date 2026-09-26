@@ -582,6 +582,12 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .configurador .plegable > summary:hover { background: rgba(160, 120, 60, .12); }
 .configurador .plegable > *:not(summary) { margin-left: 1rem; margin-right: 1rem; }
 .configurador .plegable > *:last-child { margin-bottom: 1rem; }
+/* Un plegable DENTRO de otro: el mismo mecanismo, pero más discreto, para que no
+   parezca un apartado del mismo rango que los de fuera. */
+.configurador .plegable-interior { margin-top: .9rem; border-radius: 8px; }
+.configurador .plegable-interior > summary { padding: .45rem .8rem; font-size: .95rem; }
+.configurador .plegable-interior > *:not(summary) { margin-left: .8rem; margin-right: .8rem; }
+.configurador .sumario-cuenta { color: var(--tinta-suave); font-size: .85rem; font-weight: 400; }
 .configurador .botonera-banco button.secundario { margin-left: 0; }
 /* Las dos mitades de «Preparar una ficha», sombreadas para separarlas a la vista sin
    ocupar más sitio: el relleno es el justo para que el color no toque los controles. */

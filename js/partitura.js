@@ -685,7 +685,8 @@ const Partitura = (() => {
       const cx = xN + ancho * SP / 2;
       const res = estado.corregido && estado.resultados ? estado.resultados[i] : null;
       const activa = estado.activa === i && !estado.corregido && !soloLectura;
-      const bloq = estado.bloqueadas && estado.bloqueadas[i] ? estado.bloqueadas[i] : { cifra: false, romano: false };
+      // Verde = acertado en la corrección anterior; se sigue pudiendo tocar (decisión 126)
+      const bloq = estado.acertadas && estado.acertadas[i] ? estado.acertadas[i] : { cifra: false, romano: false };
 
       // Casilla de cifrado (bajo la nota)
       {
@@ -697,11 +698,11 @@ const Partitura = (() => {
            función del segundo bloque se encendían dos casillas a la vez, esta y aquella.
            Preguntando al revés no vuelve a pasar cuando aparezca un campo nuevo. */
         const otroCampo = estado.campo !== 'cifra';
-        if (activa && !bloq.cifra && !otroCampo) clases.push('activa');
-        else if (activa && !bloq.cifra) clases.push('activa-nota');
+        if (activa && !otroCampo) clases.push('activa');
+        else if (activa) clases.push('activa-nota');
         const resp = estado.respuestas[i];
         if (res) clases.push(res.okCifra ? 'bien' : 'mal');
-        else if (bloq.cifra) clases.push('bien', 'fija');
+        else if (bloq.cifra) clases.push('bien');
         else if (resp) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
         g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.8 * SP, class: 'fondo' }));
@@ -740,11 +741,11 @@ const Partitura = (() => {
           const bloqueadaAqui = !!bloq[campo];
           const lista = campo === 'romano2' ? estado.romanos2 : estado.romanos;
           const rom = lista ? lista[i] : null;
-          if (activa && !bloqueadaAqui && estado.campo === campo) clases.push('activa');
-          else if (activa && !bloqueadaAqui) clases.push('activa-nota');
+          if (activa && estado.campo === campo) clases.push('activa');
+          else if (activa) clases.push('activa-nota');
           const okAqui = res ? (campo === 'romano2' ? res.okRomano2 : res.okRomano) : null;
           if (res) clases.push(okAqui ? 'bien' : 'mal');
-          else if (bloqueadaAqui) clases.push('bien', 'fija');
+          else if (bloqueadaAqui) clases.push('bien');
           else if (rom) clases.push('llena');
           g.setAttribute('class', clases.join(' '));
           g.appendChild(el('rect', { x: x0, y: y0, width: ANCHO_CASILLA, height: alto, rx: esPivote ? 0 : 0.7 * SP, class: 'fondo' }));

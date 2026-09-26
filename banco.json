@@ -8688,7 +8688,6 @@
       "6"
      ],
      [
-      "6",
       "53"
      ],
      [
@@ -8724,7 +8723,7 @@
      ],
      [
       [
-       "D5",
+       "F5",
        4
       ]
      ]
@@ -8750,13 +8749,14 @@
       "V|+4",
       "VII|6"
      ],
-     []
+     [
+      "I|53",
+      "I|6"
+     ]
     ]
    },
    "nivelManual": null,
-   "avisos": [
-    "alguna nota de la melodía se queda sin acorde posible"
-   ],
+   "avisos": [],
    "etiquetas": {
     "voces": "ambas",
     "notas": 5,

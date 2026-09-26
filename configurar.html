@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260927-1740">
-  <link rel="stylesheet" href="css/estilo.css?v=20260927-1740">
+  <link rel="stylesheet" href="css/bravura.css?v=20260927-2230">
+  <link rel="stylesheet" href="css/estilo.css?v=20260927-2230">
 </head>
 <body class="configurador">
 
@@ -305,14 +305,21 @@
         <h3>Repertorio de la lección</h3>
         <p class="ayuda" id="ayuda-repertorio">Las cifras marcadas forman la paleta del alumno y limitan las respuestas admisibles. <b>Se guardan con cada fragmento</b> al añadirlo: por eso una ficha puede mezclar lecciones y cada fragmento se juega con los acordes de la suya.</p>
         <div id="repertorio-opciones" class="repertorio-opciones"></div>
-        <div id="acordes-funciones" class="acordes-funciones" hidden>
-          <p class="ayuda">Acordes disponibles, por función tonal. Solo estos entran en el análisis de la melodía; la paleta de cifrados del alumno se forma con las cifras de los acordes marcados.</p>
-          <div id="acordes-lista"></div>
-          <label class="campo campo-linea formula-tst">
-            <input id="formula-tst" type="checkbox" checked>
-            <span>Fórmula <b>T S T</b>: se admite la bordadura I – IV – I (el II nunca vuelve a la tónica)</span>
-          </label>
-        </div>
+        <!-- Los acordes de la lección se tocan pocas veces —al montar una lección nueva o al
+             corregir la que ya está—, pero se necesitan en los DOS tipos de ejercicio, no solo
+             en la armonización de soprano: son los que el alumno ve en «En este ejercicio
+             entran» y los que la corrección admite. Por eso están siempre, pero plegados. -->
+        <details class="plegable plegable-interior" id="acordes-plegable">
+          <summary>Acordes de la lección <span class="sumario-cuenta" id="acordes-cuenta"></span></summary>
+          <div id="acordes-funciones" class="acordes-funciones">
+            <p class="ayuda">Los acordes que esta lección autoriza, por función tonal. <b>Se guardan con cada fragmento</b> al añadirlo: son los que el alumno ve como inventario y los que la corrección admite. En la <b>armonización de soprano</b>, además, son los únicos que entran en el análisis de la melodía, y con sus cifras se forma la paleta.</p>
+            <div id="acordes-lista"></div>
+            <label class="campo campo-linea formula-tst">
+              <input id="formula-tst" type="checkbox" checked>
+              <span>Fórmula <b>T S T</b>: se admite la bordadura I – IV – I (el II nunca vuelve a la tónica)</span>
+            </label>
+          </div>
+        </details>
 
         <div class="banco-anadir" id="banco-anadir" hidden>
           <label class="campo">
@@ -471,17 +478,17 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260927-1740</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260927-2230</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
 
-  <script src="js/teoria.js?v=20260927-1740"></script>
-  <script src="js/reglas.js?v=20260927-1740"></script>
-  <script src="js/ejercicios.js?v=20260927-1740"></script>
-  <script src="js/partitura.js?v=20260927-1740"></script>
-  <script src="js/musicxml.js?v=20260927-1740"></script>
-  <script src="js/musescore.js?v=20260927-1740"></script>
-  <script src="js/banco.js?v=20260927-1740"></script>
-  <script src="js/realizacion.js?v=20260927-1740"></script>
-  <script src="js/configurador.js?v=20260927-1740"></script>
+  <script src="js/teoria.js?v=20260927-2230"></script>
+  <script src="js/reglas.js?v=20260927-2230"></script>
+  <script src="js/ejercicios.js?v=20260927-2230"></script>
+  <script src="js/partitura.js?v=20260927-2230"></script>
+  <script src="js/musicxml.js?v=20260927-2230"></script>
+  <script src="js/musescore.js?v=20260927-2230"></script>
+  <script src="js/banco.js?v=20260927-2230"></script>
+  <script src="js/realizacion.js?v=20260927-2230"></script>
+  <script src="js/configurador.js?v=20260927-2230"></script>
 </body>
 </html>

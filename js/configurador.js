@@ -29,6 +29,10 @@
     { fun: 'T', id: 'VI|53', rom: 'VI', nota: 'también S ante la dominante', defecto: false },
     { fun: 'S', id: 'IV|53', rom: 'IV', defecto: true },
     { fun: 'S', id: 'IV|6', rom: 'IV', defecto: true },
+    { fun: 'S', id: 'IV|7', rom: 'IV', nota: 'IV7 en estado fundamental', defecto: false },
+    { fun: 'S', id: 'IV|65', rom: 'IV', nota: 'IV7, primera inversión (sobre el 6.º grado)', defecto: false },
+    { fun: 'S', id: 'IV|43', rom: 'IV', nota: 'IV7, segunda inversión (sobre la tónica)', defecto: false },
+    { fun: 'S', id: 'IV|42', rom: 'IV', nota: 'IV7, tercera inversión (sobre el 3.er grado)', defecto: false },
     { fun: 'S', id: 'II|53', rom: 'II', defecto: true },
     { fun: 'S', id: 'II|6', rom: 'II', defecto: true },
     { fun: 'S', id: 'II|7', rom: 'II', defecto: true },
@@ -81,6 +85,13 @@
   function acordesElegidos() { return [...document.querySelectorAll('#acordes-lista input:checked')].map(i => i.value); }
   function marcarAcordes(lista) {
     document.querySelectorAll('#acordes-lista input').forEach(i => { i.checked = lista.includes(i.value); });
+    contarAcordes();
+  }
+  // Con el panel plegado hay que poder ver de un vistazo cuántos acordes lleva la lección
+  function contarAcordes() {
+    const e = $('#acordes-cuenta'); if (!e) return;
+    const n = acordesElegidos().length;
+    e.textContent = n ? '· ' + n + (n === 1 ? ' marcado' : ' marcados') : '· ninguno marcado';
   }
   const modoElegido = () => (document.querySelector('input[name="modo-ej"]:checked') || {}).value || 'armonizar';
   const elegirModo = m => { const r = document.querySelector('input[name="modo-ej"][value="' + m + '"]'); if (r) r.checked = true; };
@@ -113,7 +124,9 @@
     $('#btn-analizar').textContent = sop ? 'Analizar la melodía' : 'Analizar el bajo';
     $('#th-admisibles').textContent = sop ? 'Acordes admisibles (● modelo)' : 'Cifras admisibles (● modelo)';
     $('#repertorio-opciones').hidden = sop; $('#ayuda-repertorio').hidden = sop;
-    $('#acordes-funciones').hidden = !sop;
+    // El panel de acordes está siempre (plegado); en la soprano se abre solo, porque allí
+    // no hay otra manera de decidir el repertorio.
+    if (sop) $('#acordes-plegable').open = true;
     $('#pedir-romano').closest('label').hidden = sop;   // en la soprano el grado siempre se pide: de él sale el bajo
     document.querySelectorAll('#tabla-revision .col-fun').forEach(e => { e.hidden = !opciones().funciones; });
   }
@@ -933,7 +946,7 @@
         lab.title = a.rom + ' ' + c.nombre + ' — ' + c.descripcion + (a.nota ? ' (' + a.nota + ')' : '');
         const cb = document.createElement('input');
         cb.type = 'checkbox'; cb.value = a.id; cb.checked = a.defecto;
-        cb.addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true, true); });
+        cb.addEventListener('change', () => { contarAcordes(); guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true, true); });
         lab.appendChild(cb);
         const r = document.createElement('span'); r.className = 'acorde-rom'; r.textContent = a.rom; lab.appendChild(r);
         lab.appendChild(Partitura.iconoCifra(p.cifra, 30));
@@ -943,6 +956,7 @@
       cont.appendChild(fila);
     });
     $('#formula-tst').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true, true); });
+    contarAcordes();
   }
 
   function arranque() {

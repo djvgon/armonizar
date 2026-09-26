@@ -701,11 +701,16 @@ const Reglas = (() => {
           if (id === '6' || id === '65' || id === '65d') avisos.push('dobla la tercera');
         }
         if (id === '64' && !(romano === 'I' && !esUltima)) return;     // solo el 6/4 cadencial (I6/4 sobre el 5.º grado)
-        if (esUltima && id !== '53') return;                           // final: estado fundamental
+        /* Final: solo tónica o dominante. La TÓNICA puede acabar en estado fundamental o
+           en primera inversión —el I6 final es una cadencia auténtica imperfecta, y en un
+           fragmento que no cierra del todo es lo que se quiere—; la dominante de una
+           semicadencia, solo en estado fundamental (decisión 123). */
         if (esUltima && romano !== 'I' && romano !== 'V') return;
+        if (esUltima && id !== '53' && !(romano === 'I' && id === '6')) return;
         const gradoBajo = Teoria.grado(bajo, ton).grado;
         const pref = RO_PREF[gradoBajo] || [];
         let coste = pref.includes(id) ? 3 * pref.indexOf(id) : 8;
+        if (esUltima && id !== '53') coste += 4;    // el final MODELO sigue siendo el estado fundamental
         if (avisos.length) coste += 6;
         if (romano === 'VII' || romano === 'III') coste += 3;
         if (id === '64') coste += 2;

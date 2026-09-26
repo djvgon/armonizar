@@ -43,7 +43,12 @@
     propuesta: null,          // salida del motor de reglas (para explicaciones)
     intento: 0,               // número de correcciones hechas
     primerIntento: null,      // aciertos en la primera corrección
-    bloqueadas: [],           // por nota: {cifra:bool, romano:bool} — casillas acertadas que ya no se editan
+    /* Por nota: {cifra:bool, romano:bool…} — las casillas que ya estaban bien en la
+       corrección anterior. Se pintan en verde, pero SIGUEN EDITÁNDOSE (decisión 126):
+       bloquearlas dejaba al alumno sin salida, porque a veces el error de una casilla
+       solo se arregla tocando otra que estaba bien —cambiar el cifrado obliga a menudo a
+       cambiar la fundamental, y al revés—. */
+    acertadas: [],
     mostrarSolucion: false,   // si se enseñan las respuestas modelo y las explicaciones
     reintentos: true,         // si el alumno puede corregir solo los errores antes de ver la solución
     modoEj: 'armonizar',      // 'armonizar' | 'cifrar' (Análisis: se muestra la realización modelo) | 'audicion' | 'soprano' (melodía dada; el bajo se deduce)
@@ -121,7 +126,7 @@
     estado.resultadoMod = null;
     estado.intento = 0;
     estado.primerIntento = null;
-    estado.bloqueadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false, funcion2: false }));
+    estado.acertadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false, funcion2: false }));
     // Modulación: en modo 'completo' las marcas vienen dadas; en 'existe' las pone el alumno
     estado.modoTon = Ejercicios.tonalidades(ej);
     /* Sin fila y con modulación, el fragmento se cifra igualmente en sus tonalidades
@@ -441,7 +446,7 @@
         c.texto = Teoria.nombreCorto(estado.marcas[i]);
         if (estado.modoTon === 'dadas') { c.clase = 'dada'; c.fija = true; }
         else if (resMarcas) c.clase = resMarcas.correctas.includes(i) ? 'bien' : 'mal';
-        else if (estado.tonalidadBloqueada) c.clase = 'bien fija';
+        else if (estado.tonalidadBloqueada) c.clase = 'bien fija';   // 'dadas' o 'completo': esta sí es fija de verdad
       } else if (resMarcas && resMarcas.faltan.includes(i)) { c.clase = 'mal'; c.texto = '¿?'; }
       celdas.push(c);
     }
@@ -463,7 +468,7 @@
       const c = { texto: Teoria.textoFuncion(lista[i]), clase: '', fija: false };
       if (estado.modoFun === 'dadas') { c.clase = 'dada'; c.fija = true; }
       else if (estado.corregido && estado.resultados) c.clase = ok(estado.resultados[i]) ? 'bien' : 'mal';
-      else if (bloqueada(i, campo)) c.clase = 'bien fija';
+      else if (acertada(i, campo)) c.clase = 'bien';
       if (estado.corregido && estado.mostrarSolucion && !c.texto) {
         c.texto = Teoria.textoFuncion(campo === 'funcion2'
           ? Ejercicios.funcionModelo(ej, i)
@@ -488,7 +493,7 @@
 
   function responderFuncion(f) {
     const campo = estado.campo === 'funcion2' && esDobleFun(estado.activa) ? 'funcion2' : 'funcion';
-    if (estado.corregido || estado.modoFun !== 'pedir' || bloqueada(estado.activa, campo)) return;
+    if (estado.corregido || estado.modoFun !== 'pedir') return;
     const i = estado.activa;
     estado.campo = campo;
     if (campo === 'funcion2') estado.funciones2[i] = f; else estado.funciones[i] = f;
@@ -508,7 +513,7 @@
        en el orden en que se rellenan, para no pasar al acorde siguiente con el pivote a
        medias (Diego, 25/9). Antes solo se miraba el grado, así que con las funciones
        pedidas la segunda función se quedaba sin visitar. */
-    const pendiente = camposDe(i).find(c => !bloqueada(i, c) && !valorDe(i, c));
+    const pendiente = camposDe(i).find(c => !acertada(i, c) && !valorDe(i, c));
     if (pendiente) estado.campo = pendiente;
     pintar();
   }
@@ -732,26 +737,22 @@
     if (campo === 'tonalidad') { if (!tonalidadEditable() || i === 0) return; }
     else if ((campo === 'funcion' || campo === 'funcion2') && !conFuncion()) return;
     else if (!camposDe(i).includes(campo)) campo = campoInicial();
-    if (campo !== 'tonalidad' && bloqueada(i, campo)) {
-      // Si la casilla pulsada está bloqueada, ir a otra editable de la misma nota
-      const otra = camposDe(i).find(c => !bloqueada(i, c));
-      if (otra) campo = otra; else return;
-    }
+    // (Antes, si la casilla estaba acertada se saltaba a otra; ahora se entra en todas.)
     estado.activa = i;
     estado.campo = campo;
     pintar();
   }
 
-  const bloqueada = (j, campo) => estado.bloqueadas[j] && estado.bloqueadas[j][campo];
+  const acertada = (j, campo) => !!(estado.acertadas[j] && estado.acertadas[j][campo]);
 
   // Tras responder, pasa a la siguiente casilla pendiente: primero las otras casillas
   // de la misma nota, después las de las notas siguientes. Pendiente = editable y vacía;
-  // en un reintento (hay casillas bloqueadas), pendiente = editable y aún no tocada
+  // en un reintento, pendiente = aún no acertada y aún no tocada
   // desde la corrección.
   function avanzar() {
     const n = estado.respuestas.length, i = estado.activa;
     const enReintento = estado.intento > 0;
-    const pendiente = (j, campo) => !bloqueada(j, campo) && (enReintento ? !estado.tocadas[j][campo] : !valorDe(j, campo));
+    const pendiente = (j, campo) => !acertada(j, campo) && (enReintento ? !estado.tocadas[j][campo] : !valorDe(j, campo));
     const campos = camposDe(i);
     const posicion = campos.indexOf(estado.campo);
     for (const c of campos.slice(posicion + 1)) if (pendiente(i, c)) { estado.campo = c; return; }
@@ -763,7 +764,7 @@
   }
 
   function responderCifra(id) {
-    if (estado.corregido || bloqueada(estado.activa, 'cifra')) return;
+    if (estado.corregido) return;
     estado.campo = 'cifra';
     const i = estado.activa;
     estado.respuestas[i] = id;
@@ -892,7 +893,6 @@
     const i = estado.activa;
     // El grado va a la mitad activa de la casilla (en un pivote hay dos: anterior y nueva)
     const campo = estado.campo === 'romano2' && esDoble(i) ? 'romano2' : 'romano';
-    if (bloqueada(i, campo)) return;
     estado.campo = campo;
     if (campo === 'romano2') estado.romanos2[i] = r; else estado.romanos[i] = r;
     if (estado.tocadas) estado.tocadas[i][campo] = true;
@@ -911,7 +911,6 @@
       pintar();
       return;
     }
-    if (bloqueada(i, estado.campo)) return;
     if (estado.campo === 'romano2') estado.romanos2[i] = null;
     else if (estado.campo === 'romano') estado.romanos[i] = null;
     else if (estado.campo === 'funcion2') estado.funciones2[i] = null;
@@ -1020,16 +1019,24 @@
     return rom + ' ' + ET(cif);
   }
   /* Un acorde de dos funciones —el VI es tónica o subdominante (decisión 88)— se lee por
-     el contexto: subdominante si va a una dominante, tónica si viene de ella. */
+     el contexto, y quien sabe leerlo es `Teoria.funcionDe`: el MISMO juez que marca la
+     función bajo cada nota del fragmento y el que usa el motor, de modo que el esquema y
+     lo que está escrito en la partitura no pueden discrepar (decisión 125).
+
+     Antes esto se resolvía aquí con una regla propia y más corta —subdominante solo si lo
+     siguiente era dominante—, y tenía dos fallos: el VI que va a OTRA subdominante
+     (I – VI – II – V) salía como tónica, cuando el criterio de Diego es que subdominante
+     es toda sonoridad que prepara la dominante, aunque entre medias haya otra; y el
+     esquema podía contradecir a las etiquetas de la propia partitura. */
   function cadenaDeFunciones(res) {
-    const fs = res.map(r => (r.funcionReal || []).slice());
-    return fs.map((f, i) => {
-      if (!f.length) return null;
-      if (f.length === 1) return f[0];
-      const sig = fs[i + 1] || [], ant = fs[i - 1] || [];
-      if (sig.length === 1 && sig[0] === 'D' && f.indexOf('S') >= 0) return 'S';
-      if (ant.length === 1 && ant[0] === 'D' && f.indexOf('T') >= 0) return 'T';
-      return f[0];
+    const cif = r => (r ? (r.cifraReal || r.cifra) : null);
+    return res.map((r, i) => {
+      if (!r.gradoReal) return null;
+      const sig = res[i + 1], ant = res[i - 1];
+      const rSig = sig && sig.gradoReal ? sig.gradoReal : null;
+      const rAnt = ant && ant.gradoReal ? { romano: ant.gradoReal, cifra: cif(ant) } : null;
+      try { return Teoria.funcionDe(r.gradoReal, rSig, cif(r), rSig ? cif(sig) : null, rAnt); }
+      catch (e) { return (r.funcionReal || [])[0] || null; }
     });
   }
   function nombreDeLaCadencia(res, cadena) {
@@ -1194,7 +1201,8 @@
         ? (okCifra && okRomano && rom ? (cand(parejas).find(x => gr(x) === rom) || null) : null)
         : propio;
       return { ok: okCifra && okRomano && okRomano2 && okFuncion && okFuncion2, okCifra, okRomano, okRomano2, okFuncion, okFuncion2, okEnlace: true, enlace: '', modelo: parejas[0].cifra, modeloRomano, modeloFuncion, cifra, romano: rom, romano2: rom2, romanoReal: propio ? propio.romano : null,
-        gradoReal: suyo ? suyo.romano : null, funcionReal: suyo ? Teoria.funcionesDeAcorde(suyo.romano, suyo.cifra) : null,
+        gradoReal: suyo ? suyo.romano : null, cifraReal: suyo ? suyo.cifra : null,
+        funcionReal: suyo ? Teoria.funcionesDeAcorde(suyo.romano, suyo.cifra) : null,
         funcion: fun, funcion2: fun2 };
     });
     /* LA SINTAXIS DEL ENLACE (decisión 119). Dos acordes pueden ser los dos correctos
@@ -1250,7 +1258,10 @@
     anotarFicha();
   }
 
-  // Deja editables solo las casillas erróneas; las acertadas quedan fijas y en verde.
+  /* Anota en verde lo que ya estaba bien y deja TODO editable (decisión 126). Antes las
+     casillas acertadas quedaban fijas, y eso dejaba callejones sin salida: con la
+     fundamental acertada y el cifrado mal, no había manera de escribir un cifrado que
+     pertenece a otra fundamental. El verde es información, no una puerta cerrada. */
   function corregirErrores() {
     if (!estado.corregido || estado.mostrarSolucion) return;
     estado.avisosRespuesta = [];
@@ -1259,30 +1270,29 @@
       // Con un enlace incorrecto —de sucesión o de conducción de voces— el acorde sigue
       // editable aunque sus dos casillas estén entre las admisibles
       const enlaceOk = r.okEnlace && !conAviso.has(i);
-      if (r.okCifra && enlaceOk) estado.bloqueadas[i].cifra = true;
-      if (!pideGrado() || (r.okRomano && enlaceOk)) estado.bloqueadas[i].romano = true;
-      if (!pideGrado() || !esDoble(i) || r.okRomano2) estado.bloqueadas[i].romano2 = true;
-      if (estado.modoFun !== 'pedir' || r.okFuncion) estado.bloqueadas[i].funcion = true;
-      if (estado.modoFun !== 'pedir' || !esDobleFun(i) || r.okFuncion2) estado.bloqueadas[i].funcion2 = true;
+      if (r.okCifra && enlaceOk) estado.acertadas[i].cifra = true;
+      if (!pideGrado() || (r.okRomano && enlaceOk)) estado.acertadas[i].romano = true;
+      if (!pideGrado() || !esDoble(i) || r.okRomano2) estado.acertadas[i].romano2 = true;
+      if (estado.modoFun !== 'pedir' || r.okFuncion) estado.acertadas[i].funcion = true;
+      if (estado.modoFun !== 'pedir' || !esDobleFun(i) || r.okFuncion2) estado.acertadas[i].funcion2 = true;
     });
-    if (estado.resultadoMod) {
-      if (estado.resultadoMod.ok) estado.tonalidadBloqueada = true;
-      else {
-        // Marcas equivocadas: se quitan las sobrantes y se dejan las demás para corregirlas
-        estado.resultadoMod.sobrantes.forEach(k => { delete estado.marcas[k]; estado.romanos2[k] = null; });
-        estado.resultadoMod.info.forEach(x => { if (x.idx !== undefined && !x.bien) { delete estado.marcas[x.idx]; estado.romanos2[x.idx] = null; } });
-      }
+    /* La tonalidad acertada tampoco se bloquea (decisión 126): mover el pivote puede ser
+       justo la salida cuando los acordes de alrededor no cuadran. */
+    if (estado.resultadoMod && !estado.resultadoMod.ok) {
+      // Marcas equivocadas: se quitan las sobrantes y se dejan las demás para corregirlas
+      estado.resultadoMod.sobrantes.forEach(k => { delete estado.marcas[k]; estado.romanos2[k] = null; });
+      estado.resultadoMod.info.forEach(x => { if (x.idx !== undefined && !x.bien) { delete estado.marcas[x.idx]; estado.romanos2[x.idx] = null; } });
     }
-    estado.tocadas = estado.bloqueadas.map(() => ({ cifra: false, romano: false, romano2: false, funcion: false, tonalidad: false }));
+    estado.tocadas = estado.acertadas.map(() => ({ cifra: false, romano: false, romano2: false, funcion: false, tonalidad: false }));
     estado.corregido = false;
     estado.resultados = null;
     // Primera casilla editable
     estado.activa = 0; estado.campo = campoInicial();
     busqueda: for (let j = 0; j < estado.respuestas.length; j++)
-      for (const c of camposDe(j)) if (!bloqueada(j, c)) { estado.activa = j; estado.campo = c; break busqueda; }
+      for (const c of camposDe(j)) if (!acertada(j, c)) { estado.activa = j; estado.campo = c; break busqueda; }
     $('#resultado').hidden = true;
     pintar();
-    aviso('Corrige solo las casillas que quedan editables y vuelve a pulsar «Corregir».');
+    aviso('En verde, lo que ya estaba bien; en rojo, lo que hay que cambiar. Puedes tocar cualquier casilla —también las verdes— y vuelve a pulsar «Corregir».');
   }
 
   function verSolucion() {
