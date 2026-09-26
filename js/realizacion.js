@@ -254,14 +254,22 @@ const Realizacion = (() => {
     if (midi(s) > SOP_MAX) coste += 2 * (midi(s) - SOP_MAX);
     if (midi(t) - midi(d.bajo) < 3) coste += 10;                     // tenor pegado al bajo
     if (c.incompleta) coste += 8;
-    if (c.unisono) coste += 5;
+    /* El unísono, en el acorde final, pesa más que la tónica en la soprano: no vale
+       cerrar en la octava a base de juntar dos voces en la misma nota. */
+    if (c.unisono) coste += esFinal ? 60 : 5;
     if (c.abierta) coste += 30;        // soprano y tenor a más de una octava: solo si no hay otra
     if (d.superiores.length < 3 && !c.doblaBajo) coste += 3;         // tríada sin doblar el bajo
+    /* El acorde final, con la tónica en la soprano siempre que se pueda (decisión 120,
+       Diego). Es la posición de octava, la que cierra de verdad: la tercera deja la
+       cadencia abierta y la quinta, más aún. Los números son grandes a propósito —el
+       movimiento de una voz cuesta un punto por semitono— para que la tónica gane a
+       cualquier comodidad de conducción; siguen muy por debajo de las paralelas (120),
+       que nunca se admiten por acabar mejor. */
     if (esFinal && d.id === '53' && clase(d.bajo) === claseTonica(ton)) {
       const cs = clase(s);
       if (cs === claseTonica(ton)) coste += 0;
-      else if (d.quinta !== null && cs === d.quinta) coste += 25;   // la quinta en la soprano final: lo último
-      else coste += 12;                                              // la tercera
+      else if (d.quinta !== null && cs === d.quinta) coste += 90;   // la quinta en la soprano final: lo último
+      else coste += 45;                                              // la tercera
     }
     return coste;
   }
