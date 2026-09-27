@@ -53,15 +53,56 @@
       ej.modulaciones = p.modulaciones.map(m => ({
         nota: m.nota, tonalidad: { tonica: m.tonica, modo: m.modo } }));
     }
+    /* La cifra de cada acorde, en la forma en que la espera `Ejercicios`: hace falta para
+       poder leer el ACORDE COMÚN en las dos tonalidades (véase `comunes`). */
+    ej.respuestas = p.cifras.map(c => [c]);
     return ej;
   }
 
-  function estadoDe(p) {
+  /* ---------- El acorde común (Diego, 27/9/2026) ----------
+     En una modulación diatónica la bisagra es un acorde que pertenece a las DOS
+     tonalidades: el VI de Do que en Sol es el II. Eso es lo que hay que ver, y es tan de la
+     música clásica como del jazz. Se dibuja con sus dos lecturas apiladas —grado y función
+     en el tono de partida arriba, en el de llegada abajo— unidas por las dos barras
+     verticales que ya sabe trazar la partitura (decisión 83 y 95).
+
+     Aquí no se calcula nada nuevo: se le preguntan al propio motor de la aplicación, que es
+     quien sabe leer un acorde en una tonalidad dada. Si el acorde no fuera común a las dos
+     —una modulación cromática—, no se dobla y se queda con su lectura única. */
+  function comunes(p, ej) {
+    const fuera = [];
+    (p.modulaciones || []).forEach(m => {
+      const i = m.nota;
+      if (!(i > 0 && i < p.bajos.length)) return;
+      try {
+        const tonAntes = Ejercicios.tonalidadAntes(ej, i);
+        const par = (Ejercicios.parejasEn(ej, i, tonAntes) || [])[0];
+        if (!par || !par.romano) return;
+        fuera[i] = { romano: par.romano, funcion: Ejercicios.funcionModeloEn(ej, i, tonAntes) || '' };
+      } catch (e) { /* si no se deja leer en el tono anterior, no es común */ }
+    });
+    return fuera;
+  }
+
+  function estadoDe(p, ej) {
     const n = p.bajos.length;
     const vacio = v => new Array(n).fill(v);
+    const comun = comunes(p, ej || ejercicioDe(p));
+    const romanos = (p.romanos || vacio(null)).slice();
+    const romanos2 = vacio(null);
+    const dobles = vacio(false);
+    const funciones = Array.isArray(p.funciones) ? p.funciones.slice() : null;
+    const funciones2 = vacio(null);
+    comun.forEach((c, i) => {
+      if (!c) return;
+      dobles[i] = true;
+      romanos2[i] = romanos[i];            // abajo, el grado en la tonalidad NUEVA
+      romanos[i] = c.romano;               // arriba, el de la tonalidad de partida
+      if (funciones) { funciones2[i] = funciones[i]; funciones[i] = c.funcion; }
+    });
     return {
       respuestas: p.cifras.slice(),        // la cifra de cada acorde, ya puesta
-      romanos: (p.romanos || vacio(null)).slice(), romanos2: vacio(null), dobles: vacio(false),
+      romanos, romanos2, dobles,
       /* La tonalidad va DEBAJO, en su propia banda —la última, bajo la función—, no
          encima del pentagrama: ahí arriba va el análisis motívico, melódico y formal
          (Diego, 27/9/2026). La aplicación ya tiene esa fila hecha (decisión 106). */
@@ -90,10 +131,11 @@
           return c;
         })()
       },
-      filaFunciones: Array.isArray(p.funciones) ? {
+      filaFunciones: funciones ? {
         visible: true, editable: false,
-        celdas: p.funciones.map(t => ({ texto: t || '', clase: 'dada', fija: true })),
-        celdas2: vacio(null), dobles: vacio(false)
+        celdas: funciones.map(t => ({ texto: t || '', clase: 'dada', fija: true })),
+        celdas2: funciones2.map(t => (t ? { texto: t, clase: 'dada', fija: true } : null)),
+        dobles: dobles.slice()
       } : null
     };
   }
@@ -135,6 +177,7 @@
 
   function pieza(p) {
     const caja = el('div', 'pieza');
+    caja.dataset.compases = String((p.compases || []).length);   // decide cuántos caben por renglón
     /* El botón va ENCIMA y a la izquierda, donde empieza el fragmento: así se pulsa
        mirando el primer acorde y no hay que bajar la vista (Diego, 27/9/2026). */
     const cabeza = el('div', 'cabeza-pieza');
@@ -148,7 +191,8 @@
 
     const pent = el('div', 'pent');
     caja.appendChild(pent);
-    Partitura.dibujar(pent, ejercicioDe(p), estadoDe(p), () => {});
+    const ej = ejercicioDe(p);
+    Partitura.dibujar(pent, ej, estadoDe(p, ej), () => {});
 
     if (p.variante) {
       const pie = el('div', 'pie-pieza');
@@ -186,32 +230,77 @@
 
   /* ---------- Todos los fragmentos, del mismo tamaño (Diego, 27/9/2026) ----------
      Antes cada fragmento se dibujaba a su tamaño natural y el navegador encogía solo los
-     que no cabían: un fragmento de dos compases salía con la música y las casillas más
-     grandes que uno de cuatro, lo que es inadmisible en un cuadro que se mira de un golpe.
+     que no cabían: uno de dos compases salía con la música y las casillas más grandes que
+     uno de cuatro, lo que es inadmisible en un cuadro que se mira de un golpe.
 
-     Ahora manda UNA escala para todo el cuadro, la mayor con la que quepa el fragmento más
-     ancho —y nunca mayor que el tamaño natural, que agrandar no mejora nada—. Si además,
-     encogiendo menos de un 15 %, caben de dos en dos, se encoge: un cuadro denso se abarca
-     mejor que una columna larguísima. */
+     Ahora manda UNA escala para TODO —no solo dentro de un tema, sino entre temas: un
+     fragmento no es más música que otro, y cambiar de lección no puede cambiar el tamaño de
+     la música (Diego, 27/9/2026)—. Se calcula una vez, midiendo los cincuenta y nueve
+     prototipos, y es la mayor con la que cabe en el renglón el MÁS ANCHO de todos (el de
+     ocho compases del tema 13), nunca mayor que el tamaño natural.
+
+     Y hay una segunda condición: los fragmentos BREVES de una misma estructura tienen que
+     caber en el MISMO renglón, porque son variantes de lo mismo y separarlos rompe la
+     comparación (Diego, 27/9/2026). Así que la escala se baja, si hace falta, hasta que
+     cualquier grupo de hasta tres fragmentos cortos quepa entero de una tirada. Los grupos
+     de cuatro o cinco, y los que llevan un fragmento largo, no caben de ninguna manera a un
+     tamaño legible: esos piden la otra solución —un solo sistema con dobles barras, como en
+     el papel—, que aún está por hacer. */
+  const HUECO = 20;                                   // el mismo que el gap de .piezas
+  const CORTO = 4;                                    // «breve» = hasta cuatro compases
+  let medidos = null;                                 // ancho en unidades de CADA prototipo
+
+  /* Los anchos se miden una sola vez, dibujando cada prototipo en un cajón suelto que no
+     llega a la página: solo hace falta el viewBox, no el trazado en pantalla. */
+  function medirTodos() {
+    if (medidos) return medidos;
+    const cajon = document.createElement('div');
+    medidos = datos.prototipos.map(p => {
+      let u = 0;
+      try {
+        const ej = ejercicioDe(p);
+        Partitura.dibujar(cajon, ej, estadoDe(p, ej), () => {});
+        const s = cajon.querySelector('svg');
+        u = s ? Number((s.getAttribute('viewBox') || '0 0 0 0').split(/\s+/)[2]) || 0 : 0;
+      } catch (e) { u = 0; }
+      return { u, c: (p.compases || []).length || 1,
+               grupo: p.tema + '\u0000' + (p.esquema || '') + '\u0000' + p.grupo };
+    }).filter(m => m.u > 0);
+    return medidos;
+  }
+
+  /* La escala común: la mayor (y nunca más que el tamaño natural) con la que cabe el
+     fragmento más ancho y con la que cada grupo de hasta tres fragmentos breves cabe
+     entero en su renglón. */
+  function escalaComun(W) {
+    const m = medirTodos();
+    if (!m.length || W <= 0) return 1;
+    let e = W / Math.max(...m.map(x => x.u));
+    const grupos = new Map();
+    m.forEach(x => { if (!grupos.has(x.grupo)) grupos.set(x.grupo, []); grupos.get(x.grupo).push(x); });
+    grupos.forEach(g => {
+      if (g.length < 2 || g.length > 3 || g.some(x => x.c > CORTO)) return;
+      const suma = g.reduce((s, x) => s + x.u, 0);
+      e = Math.min(e, (W - (g.length - 1) * HUECO) / suma);
+    });
+    return Math.min(1, e);
+  }
+
   function igualarTamano() {
     const cont = $('#cuadro');
-    const svgs = [...cont.querySelectorAll('.pent svg')];
-    // El ancho útil es el de la fila de fragmentos, no el del cuadro (que incluye su margen)
     const fila = cont.querySelector('.piezas');
-    const W = fila ? fila.clientWidth : cont.clientWidth;
-    if (!svgs.length || !W) return;
-    const HUECO = 20;                                   // el mismo que el gap de .piezas
-    const anchos = svgs.map(s => Number((s.getAttribute('viewBox') || '0 0 0 0').split(/\s+/)[2]) || 0);
-    const maxU = Math.max(...anchos);
-    if (!maxU) return;
-    let escala = Math.min(1, (W - 2) / maxU);
-    const deDos = (W - HUECO) / (2 * maxU);
-    if (2 * maxU * escala + HUECO > W && deDos >= escala * 0.85) escala = deDos;
-    svgs.forEach((s, k) => {
-      const ancho = Math.round(anchos[k] * escala);
+    // El ancho útil es el de la fila de fragmentos, no el del cuadro (que incluye su margen)
+    const W = (fila ? fila.clientWidth : cont.clientWidth) - 4;   // un pelo de holgura
+    const escala = escalaComun(W);
+    if (!escala) return;
+    cont.querySelectorAll('.pieza').forEach(caja => {
+      const s = caja.querySelector('.pent svg');
+      if (!s) return;
+      const u = Number((s.getAttribute('viewBox') || '0 0 0 0').split(/\s+/)[2]) || 0;
+      if (!u) return;
+      const ancho = Math.round(u * escala);
       s.setAttribute('width', ancho);
-      const caja = s.closest('.pieza');
-      if (caja) caja.style.width = ancho + 'px';
+      caja.style.width = ancho + 'px';
     });
   }
 

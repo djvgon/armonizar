@@ -583,8 +583,13 @@
     if (!t) return;
     /* Sin `noopener`: la ventana de ayuda necesita poder devolver el foco a esta para su
        botón de «Volver a la práctica» (Diego, 27/9/2026). Es una página nuestra. */
+    /* Ancha: la música de todos los cuadros va a una misma escala, y esa escala la fija el
+       fragmento más largo (ocho compases en un solo sistema). Cuanto más ancha la ventana,
+       más grande se ve la música en TODOS los temas. */
+    const an = Math.min(1240, (window.screen && screen.availWidth) || 1240);
+    const al = Math.min(900, (window.screen && screen.availHeight) || 900);
     const v = window.open('estructuras.html?tema=' + t, 'estructuras-armonicas',
-                          'width=980,height=860');
+                          'width=' + an + ',height=' + al);
     if (v) v.focus();
   }
 
