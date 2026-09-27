@@ -119,10 +119,13 @@ const Realizacion = (() => {
     const tercera = todos.find(t => miembro(t, 2));
     const sensibles = new Set([claseSensible(ton)]);
     if (Teoria.DOMINANTES.includes(id) && tercera) sensibles.add(clase(tercera));
+    const novena = todos.find(t => miembro(t, 1));
     return {
       id, bajo, fund: pc(fund), tonos: todos, superiores: sup,
       septima: septima ? clase(septima) : null,
       quinta: quinta ? clase(quinta) : null,
+      tercera: tercera ? clase(tercera) : null,
+      novena: novena ? clase(novena) : null,
       sensibles,
       enFundamental: clase(fund) === clase(bajo)
     };
@@ -258,6 +261,17 @@ const Realizacion = (() => {
        cerrar en la octava a base de juntar dos voces en la misma nota. */
     if (c.unisono) coste += esFinal ? 60 : 5;
     if (c.abierta) coste += 30;        // soprano y tenor a más de una octava: solo si no hay otra
+    /* LA NOVENA, POR ENCIMA DE LA SENSIBLE (Diego, 27/9/2026). En el acorde de novena la
+       tercera del acorde —la sensible— ha de sonar POR DEBAJO de la novena. Puestas al
+       revés chocan en segunda con la sensible arriba, y esa nota pierde su tendencia. La
+       única excepción es que la novena venga preparada del acorde anterior, que se oye
+       entonces como retardo; eso se mira en el enlace, no aquí. */
+    if (d.novena !== null && d.tercera !== null) {
+      const todas = [d.bajo, ...c.voces];
+      const nov = todas.filter(n => clase(n) === d.novena).map(midi);
+      const ter = todas.filter(n => clase(n) === d.tercera).map(midi);
+      if (nov.length && ter.length && Math.max(...ter) > Math.min(...nov)) coste += 90;
+    }
     if (d.superiores.length < 3 && !c.doblaBajo) coste += 3;         // tríada sin doblar el bajo
     /* El acorde final, con la tónica en la soprano siempre que se pueda (decisión 120,
        Diego). Es la posición de octava, la que cierra de verdad: la tercera deja la
@@ -313,6 +327,36 @@ const Realizacion = (() => {
         if (clase(ahora[q]) === dc.septima && midi(ahora[q]) === midi(antes[q])) { preparada = true; break; }
       }
       if (!preparada) coste += calidad === 11 ? 110 : 20;
+      /* Y si no viene preparada, al menos que se LLEGUE A ELLA POR GRADO CONJUNTO: a la
+         séptima no se entra por salto (Diego, 27/9/2026). Lo ideal es la preparación —la
+         nota ya sonando en la misma voz—; el grado conjunto es la salida aceptable; el
+         salto directo, no, y menos aún en dos voces a la vez. Se mira en las tres voces
+         superiores: el bajo viene dado por el fragmento.
+
+         EXCEPCIÓN: la séptima menor de la DOMINANTE, como en los tratados. En II6/5 – V7
+         no hay manera de cumplirlo a cuatro voces —el II6/5 no tiene ni sol ni mi en las
+         voces superiores—, y esa fórmula es de las centrales del lenguaje. Se sigue
+         prefiriendo el grado conjunto, pero muy poco: no vale romper otra cosa por esto. */
+      const domMenor = Teoria.DOMINANTES.includes(dc.id) && calidad === 10;
+      for (let q = 1; q < 4; q++) {
+        if (clase(ahora[q]) !== dc.septima) continue;
+        const salto = Math.abs(midi(ahora[q]) - midi(antes[q]));
+        if (salto > 2) coste += domMenor ? 4 : 70;
+      }
+    }
+    /* LA NOVENA, POR ENCIMA DE LA SENSIBLE (Diego, 27/9/2026). En el acorde de novena, la
+       tercera del acorde —la sensible— ha de sonar POR DEBAJO de la novena: si se pone
+       encima, las dos chocan en segunda con la sensible arriba y esta pierde su tendencia.
+       La excepción es que la novena venga PREPARADA del acorde anterior: entonces se oye
+       como retardo y puede colocarse donde la lleve su voz. */
+    if (dc.novena !== null && dc.tercera !== null) {
+      const enNovena = [0, 1, 2, 3].filter(q => clase(ahora[q]) === dc.novena);
+      const enTercera = [0, 1, 2, 3].filter(q => clase(ahora[q]) === dc.tercera);
+      const preparada9 = enNovena.some(q => midi(ahora[q]) === midi(antes[q]));
+      if (!preparada9 && enNovena.length && enTercera.length
+          && Math.max(...enTercera.map(q => midi(ahora[q]))) > Math.min(...enNovena.map(q => midi(ahora[q])))) {
+        coste += 90;
+      }
     }
     /* SEGUNDA AUMENTADA MELÓDICA (decisión 71). Prohibición dura en este lenguaje: pesa casi
        tanto como las paralelas. Solo se mira en las tres voces superiores: el bajo viene dado
@@ -559,17 +603,57 @@ const Realizacion = (() => {
       const dAhora = describirDesde(ej, i, bajos, acordes, tons);
       if (dAhora && dAhora.septima !== null && dAhora.fund && !mismoAcorde) {
         const calidad = (dAhora.septima - clase(dAhora.fund) + 12) % 12;
-        if (calidad === 11) {
-          let voz = -1, preparada = false;
-          for (let q = 0; q < 4; q++) {
-            if (clase(ahora[q]) !== dAhora.septima) continue;
-            if (voz < 0) voz = q;
-            if (midi(ahora[q]) === midi(antes[q])) { preparada = true; break; }
-          }
-          if (!preparada && voz >= 0) avisos.push({ i, tipo: 'preparacion', notas: [{ i: i - 1, voz }, { i, voz }],
+        // ¿La trae alguna voz preparada —la misma nota, ya sonando en el acorde anterior—?
+        let preparada = false;
+        for (let q = 0; q < 4; q++) {
+          if (clase(ahora[q]) === dAhora.septima && midi(ahora[q]) === midi(antes[q])) { preparada = true; break; }
+        }
+        if (calidad === 11 && !preparada) {
+          const voz = [0, 1, 2, 3].find(q => clase(ahora[q]) === dAhora.septima);
+          if (voz !== undefined) avisos.push({ i, tipo: 'preparacion', notas: [{ i: i - 1, voz }, { i, voz }],
             texto: 'La séptima mayor del acorde (' + nombre(ahora[voz]) + ', en ' + NOMBRE_VOZ_N[voz]
               + ') entra sin preparar: una séptima mayor ha de venir sonando ya en la misma voz en el acorde anterior. '
               + '(La séptima menor sí puede entrar libremente; la mayor, no.)' });
+        }
+        /* A LA SÉPTIMA NO SE ENTRA POR SALTO (Diego, 27/9/2026). Lo ortodoxo es que venga
+           preparada, sonando ya en la misma voz en el acorde anterior; si no puede ser, que
+           se llegue a ella por grado conjunto. Por salto directo, nunca —y menos en dos
+           voces a la vez—. Solo se mira en las voces superiores: el bajo viene dado.
+
+           EXCEPCIÓN, como en los tratados: la séptima MENOR DE LA DOMINANTE entra libre.
+           No es una concesión, es que no puede ser de otro modo: en II6/5 – V7 las voces
+           superiores del II6/5 son la, do y re, de modo que al fa del V7 se llega por
+           fuerza saltando una tercera, y esa fórmula es de las centrales del lenguaje
+           (Diego, 27/9/2026). */
+        if (!preparada && !dAhora.dominante) {
+          for (let q = 1; q < 4; q++) {
+            if (clase(ahora[q]) !== dAhora.septima) continue;
+            const salto = Math.abs(midi(ahora[q]) - midi(antes[q]));
+            if (salto <= 2) continue;
+            avisos.push({ i, tipo: 'septima-por-salto', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
+              texto: 'A la séptima del acorde (' + nombre(ahora[q]) + ', en ' + NOMBRE_VOZ_N[q]
+                + ') se llega por salto, desde ' + nombre(antes[q]) + '. La séptima ha de venir PREPARADA —sonando ya '
+                + 'en la misma voz en el acorde anterior— y, si no puede ser, se llega a ella por grado conjunto; '
+                + 'nunca por salto.' });
+          }
+        }
+      }
+      /* La novena por encima de la sensible (Diego, 27/9/2026): si la sensible se pone
+         encima de la novena, las dos chocan en segunda con la sensible arriba, que es lo que
+         no puede ser. Salvo que la novena venga preparada del acorde anterior. */
+      if (dAhora && dAhora.novena !== null && dAhora.tercera !== null && !mismoAcorde) {
+        const enNovena = [0, 1, 2, 3].filter(q => clase(ahora[q]) === dAhora.novena);
+        const enTercera = [0, 1, 2, 3].filter(q => clase(ahora[q]) === dAhora.tercera);
+        const preparada9 = enNovena.some(q => midi(ahora[q]) === midi(antes[q]));
+        if (!preparada9 && enNovena.length && enTercera.length) {
+          const vNov = enNovena.reduce((a, q) => (midi(ahora[q]) < midi(ahora[a]) ? q : a), enNovena[0]);
+          const vTer = enTercera.reduce((a, q) => (midi(ahora[q]) > midi(ahora[a]) ? q : a), enTercera[0]);
+          if (midi(ahora[vTer]) > midi(ahora[vNov])) {
+            avisos.push({ i, tipo: 'novena', notas: [{ i, voz: vTer }, { i, voz: vNov }],
+              texto: 'En el acorde de novena la sensible (' + nombre(ahora[vTer]) + ', en ' + NOMBRE_VOZ_N[vTer]
+                + ') ha de ir POR DEBAJO de la novena (' + nombre(ahora[vNov]) + ', en ' + NOMBRE_VOZ_N[vNov]
+                + '). Solo se admite al revés si la novena viene preparada del acorde anterior.' });
+          }
         }
       }
       // Notas tendenciales: la séptima baja, la sensible sube (XS4c)
@@ -625,8 +709,17 @@ const Realizacion = (() => {
     const tercera = todas.find(n => miembro(n, 2));
     const sensibles = new Set([claseSensible(ton)]);
     // Tercera mayor de un acorde con séptima menor: sensible (dominante, también secundaria)
-    if (septima && tercera && ((clase(septima) - clase(fund) + 12) % 12) === 10 && ((clase(tercera) - clase(fund) + 12) % 12) === 4) sensibles.add(clase(tercera));
-    return { septima: septima ? clase(septima) : null, fund: fund || null, sensibles };
+    /* Acorde de DOMINANTE por su hechura: tercera mayor y séptima menor. Vale para el V7
+       y para las dominantes secundarias, y es lo que distingue su séptima —que entra libre,
+       como en los tratados— de las demás séptimas (Diego, 27/9/2026). */
+    const dominante = !!(septima && tercera
+      && ((clase(septima) - clase(fund) + 12) % 12) === 10
+      && ((clase(tercera) - clase(fund) + 12) % 12) === 4);
+    if (dominante) sensibles.add(clase(tercera));
+    const novena = todas.find(n => miembro(n, 1));
+    return { septima: septima ? clase(septima) : null, fund: fund || null, sensibles, dominante,
+             tercera: tercera ? clase(tercera) : null,
+             novena: novena ? clase(novena) : null };
   }
 
   return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, disposicionForzada, paralelasEntre, auditar, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };

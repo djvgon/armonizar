@@ -21,15 +21,18 @@
   /* Qué bajo lleva cada cifra para que el acorde salga diatónico de Do mayor. Dentro de
      cada familia es siempre el mismo acorde: la tónica, la dominante con séptima y el II7. */
   const CUADRO = [
-    { familia: 'triada', titulo: 'Tríada',
+    { titulo: 'Tríadas',
       acorde: 'el acorde de tónica, do – mi – sol, desde sus tres bajos',
       cifras: [['53', 'C3'], ['6', 'E3'], ['64', 'G3']] },
-    { familia: 'dominante', titulo: 'Séptima de dominante',
+    { titulo: 'Séptimas con función de dominante',
       acorde: 'la dominante con séptima, sol – si – re – fa, desde sus cuatro bajos',
       cifras: [['7+', 'G3'], ['65d', 'B2'], ['+6', 'D3'], ['+4', 'F3']] },
-    { familia: 'septima', titulo: 'Otras séptimas diatónicas',
+    { titulo: 'Séptimas diatónicas (sin función de dominante)',
       acorde: 'la séptima del II, re – fa – la – do, desde sus cuatro bajos',
-      cifras: [['7', 'D3'], ['65', 'F3'], ['43', 'A2'], ['42', 'C3']] }
+      cifras: [['7', 'D3'], ['65', 'F3'], ['43', 'A2'], ['42', 'C3']] },
+    { titulo: 'Novenas',
+      acorde: 'la de dominante sobre el ⑤ y una sin función de dominante, la del II',
+      cifras: [['9', 'G3'], ['9', 'D3']] }
   ];
 
   let rotacion = 0;                      // 1.ª, 2.ª o 3.ª posición
@@ -37,30 +40,46 @@
 
   /* ---------- Un acorde suelto, realizado por el motor ---------- */
 
-  function ejercicioDe(bajo) {
-    return { tonalidad: DO, compas: [4, 4], compases: [[[bajo, 4]]], respuestas: [[null]] };
+  /* Toda la familia en UN SOLO sistema, con cada acorde en su compás y una barra doble
+     fina entre ellos: se lee de una tirada, la clave y el compás se escriben una sola vez y
+     en una pantalla pequeña cabe (Diego, 27/9/2026). */
+  function ejercicioDe(bajos) {
+    return { tonalidad: DO, compas: [4, 4],
+             compases: bajos.map(b => [[b, 4]]),
+             respuestas: bajos.map(() => [null]) };
   }
 
+  /* Las disposiciones se piden al motor y se ORDENAN POR SU COSTE, que es el que sabe de
+     conducción: así las tres posiciones del cuadro son tres disposiciones correctas y no la
+     rotación mecánica del trío, que en el acorde de novena colocaba la sensible por encima
+     de la novena —que es justo lo que no puede ser— (Diego, 27/9/2026). */
   function vocesDe(id, bajo) {
-    const ej = ejercicioDe(bajo);
-    ej.respuestas = [[id]];
     try {
-      const r = Realizacion.realizar(ej, [id], { modo: 'auto', rotacion });
-      const a = r && r.acordes && r.acordes[0];
-      if (a && a.length === 3) return a;
+      const d = Realizacion.describir(id, Teoria.nota(bajo), DO);
+      const cands = Realizacion.candidatas(d)
+        .map(c => ({ c, coste: Realizacion.costeLocal(c, d, false, DO) }))
+        .sort((a, b) => a.coste - b.coste);
+      if (!cands.length) return null;
+      const limpias = cands.filter(x => x.coste < 60);
+      const lista = limpias.length ? limpias : cands;
+      return lista[rotacion % lista.length].c.voces;
     } catch (e) { /* si el motor no puede, se dibuja solo el bajo */ }
     return null;
   }
 
-  function estadoDe(id, bajo, voces) {
-    const rom = (() => { try { return Teoria.romano(id, Teoria.nota(bajo), DO); } catch (e) { return null; } })();
+  function estadoDe(cifras, bajos, voces) {
+    const rom = cifras.map((id, k) => {
+      try { return Teoria.romano(id, Teoria.nota(bajos[k]), DO); } catch (e) { return null; }
+    });
+    const vacio = v => cifras.map(() => v);
     return {
-      respuestas: [id],
-      romanos: [rom], romanos2: [null], dobles: [false],
-      pedirRomano: !!rom,
+      respuestas: cifras.slice(),
+      romanos: rom, romanos2: vacio(null), dobles: vacio(false),
+      pedirRomano: rom.some(Boolean),
       etiquetas: [], activa: -1, campo: 'cifra', corregido: false, resultados: null,
       soloLectura: true, gradosBajo: true,
-      realizacion: voces ? [voces] : null,
+      realizacion: voces.every(Boolean) ? voces : null,
+      barrasDobles: cifras.map((x, k) => k).slice(0, -1),   // doble fina tras cada acorde menos el último
       filaTonalidad: null, filaFunciones: null
     };
   }
@@ -97,23 +116,28 @@
     return n;
   }
 
-  function ficha(id, bajo) {
+  function familia(g) {
     const caja = el('div', 'pieza');
-    const voces = vocesDe(id, bajo);
+    const cifras = g.cifras.map(x => x[0]), bajos = g.cifras.map(x => x[1]);
+    const voces = cifras.map((id, k) => vocesDe(id, bajos[k]));
+
+    // Un botón por acorde, con su nombre: se oye cada cifra por separado
     const cabeza = el('div', 'cabeza-pieza');
-    const btn = el('button', 'btn-sonar');
-    btn.type = 'button';
-    btn.innerHTML = '<span aria-hidden="true">▶</span> Escuchar';
-    btn.setAttribute('aria-label', 'Escuchar el acorde de ' + (Teoria.CIFRADOS[id] || {}).nombre);
-    btn.addEventListener('click', () => tocar(bajo, voces, btn));
-    cabeza.appendChild(btn);
-    const c = Teoria.CIFRADOS[id] || {};
-    if (c.nombre) cabeza.appendChild(el('span', 'var', c.nombre));
+    cifras.forEach((id, k) => {
+      const btn = el('button', 'btn-sonar');
+      btn.type = 'button';
+      const c = Teoria.CIFRADOS[id] || {};
+      btn.innerHTML = '<span aria-hidden="true">▶</span> ';
+      btn.appendChild(document.createTextNode(c.nombre || id));
+      btn.setAttribute('aria-label', 'Escuchar el acorde de ' + (c.nombre || id));
+      btn.addEventListener('click', () => tocar(bajos[k], voces[k], btn));
+      cabeza.appendChild(btn);
+    });
     caja.appendChild(cabeza);
 
     const pent = el('div', 'pent');
     caja.appendChild(pent);
-    Partitura.dibujar(pent, ejercicioDe(bajo), estadoDe(id, bajo, voces), () => {});
+    Partitura.dibujar(pent, ejercicioDe(bajos), estadoDe(cifras, bajos, voces), () => {});
     return caja;
   }
 
@@ -121,18 +145,20 @@
     parar();
     const cont = $('#cuadro');
     cont.textContent = '';
+    /* Los cuatro grupos fluyen en el mismo renglón mientras quepan: en un ordenador o una
+       tableta caben dos y dos, y el cuadro entero se ve de un golpe sin desplazar la
+       página, como el cuadro impreso (Diego, 27/9/2026). */
+    const piezas = el('div', 'piezas');
     CUADRO.forEach(g => {
+      const grupo = familia(g);
       const banda = el('div', 'esquema');
       banda.innerHTML = '<b></b> <span class="acorde-familia"></span>';
       banda.querySelector('b').textContent = g.titulo;
       banda.querySelector('.acorde-familia').textContent = '· ' + g.acorde;
-      cont.appendChild(banda);
-      const r = el('div', 'renglon');
-      const piezas = el('div', 'piezas');
-      g.cifras.forEach(([id, bajo]) => piezas.appendChild(ficha(id, bajo)));
-      r.appendChild(piezas);
-      cont.appendChild(r);
+      grupo.insertBefore(banda, grupo.firstChild);
+      piezas.appendChild(grupo);
     });
+    cont.appendChild(piezas);
     igualarTamano();
   }
 
@@ -147,7 +173,9 @@
     const fila = cont.querySelector('.piezas');
     const W = (fila ? fila.clientWidth : cont.clientWidth) - 4;
     if (!maxU || W <= 0) return;
-    const escala = Math.max(0.74, Math.min(1, W / (4 * maxU + 60)));
+    /* Dos grupos por renglón: la escala es la mayor con la que caben los dos más anchos
+       uno al lado del otro, y nunca mayor que el tamaño natural. */
+    const escala = Math.max(0.5, Math.min(1, (W - 30) / (2 * maxU)));
     svgs.forEach((s, k) => {
       const ancho = Math.round(anchos[k] * escala);
       s.setAttribute('width', ancho);

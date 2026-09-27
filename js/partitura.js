@@ -417,7 +417,16 @@ const Partitura = (() => {
     }
     // Barras (de todo el sistema); sin sistema no hay barras
     const Y_SISTEMA_BOT = sinBajo ? Y_BOT_SOL : Y_BOT;
-    if (!sinSistema) barras.forEach(b => {
+    /* Barra doble FINA entre compases: la que separa dos cosas distintas dentro del mismo
+       sistema —dos fragmentos en el cuadro del papel, dos cifras en el cuadro de cifrados—.
+       Se pide con `estado.barrasDobles`, una lista de índices de compás (Diego, 27/9/2026). */
+    const dobleBarra = new Set(Array.isArray(estado.barrasDobles) ? estado.barrasDobles : []);
+    if (!sinSistema) barras.forEach((b, ci) => {
+      if (!b.final && dobleBarra.has(ci)) {
+        svg.appendChild(el('line', { x1: b.x - 0.32 * SP, x2: b.x - 0.32 * SP, y1: Y_SISTEMA_TOP, y2: Y_SISTEMA_BOT, class: 'barra' }));
+        svg.appendChild(el('line', { x1: b.x + 0.32 * SP, x2: b.x + 0.32 * SP, y1: Y_SISTEMA_TOP, y2: Y_SISTEMA_BOT, class: 'barra' }));
+        return;
+      }
       if (b.final) {
         svg.appendChild(el('line', { x1: b.x - 0.5 * SP, x2: b.x - 0.5 * SP, y1: Y_SISTEMA_TOP, y2: Y_SISTEMA_BOT, class: 'barra' }));
         svg.appendChild(el('line', { x1: b.x + 0.1 * SP, x2: b.x + 0.1 * SP, y1: Y_SISTEMA_TOP, y2: Y_SISTEMA_BOT, class: 'barra gruesa' }));
