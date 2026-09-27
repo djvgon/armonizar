@@ -62,9 +62,10 @@
     return {
       respuestas: p.cifras.slice(),        // la cifra de cada acorde, ya puesta
       romanos: (p.romanos || vacio(null)).slice(), romanos2: vacio(null), dobles: vacio(false),
-      etiquetas: (p.modulaciones || []).map(m => ({
-        i: m.nota, texto: '→ ' + Teoria.nombreCorto({ tonica: m.tonica, modo: m.modo }),
-        clase: 'dada' })),
+      /* La tonalidad va DEBAJO, en su propia banda —la última, bajo la función—, no
+         encima del pentagrama: ahí arriba va el análisis motívico, melódico y formal
+         (Diego, 27/9/2026). La aplicación ya tiene esa fila hecha (decisión 106). */
+      etiquetas: [],
       /* Debajo de la cifra, el grado de la fundamental y la función tonal: las tres
          lecturas del mismo acorde, como en el ejercicio (Diego, 27/9/2026). */
       pedirRomano: Array.isArray(p.romanos),
@@ -72,6 +73,20 @@
       soloLectura: true,
       realizacion: p.voces.map(v => v.map(x => Teoria.nota(x))),
       gradosBajo: true,                    // el circulito del grado sobre el bajo
+      filaTonalidad: {
+        visible: true, editable: false,
+        celdas: (() => {
+          const c = vacio(null).map(() => ({}));
+          c[0] = { texto: Teoria.nombreCorto(p.ton), clase: 'dada', fija: true };
+          (p.modulaciones || []).forEach(m => {
+            if (m.nota >= 0 && m.nota < n) {
+              c[m.nota] = { texto: Teoria.nombreCorto({ tonica: m.tonica, modo: m.modo }),
+                            clase: 'dada', fija: true };
+            }
+          });
+          return c;
+        })()
+      },
       filaFunciones: Array.isArray(p.funciones) ? {
         visible: true, editable: false,
         celdas: p.funciones.map(t => ({ texto: t || '', clase: 'dada', fija: true })),
