@@ -204,7 +204,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 /* ---- Paletas ---- */
 .paleta-caja {
   display: flex; align-items: flex-start; gap: 12px;
-  margin-top: 8px; padding: 7px 12px 8px;
+  margin-top: 5px; padding: 4px 12px 5px;
   border: 1px solid transparent; border-radius: 12px;
   transition: border-color .15s, background .15s;
 }
@@ -693,16 +693,15 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
    La lista de cifras de una lección es larga; encerrada en tres recuadros —tríada,
    séptima de dominante y demás séptimas diatónicas— se lee de un vistazo. El rótulo va
    montado sobre el borde, como en un marco de formulario. */
+/* Los rótulos de familia sobraban: con separar los grupos basta, y el marco con su
+   etiqueta encima gastaba un renglón de alto y desplazaba las teclas del cifrado a la
+   derecha, con lo que las tres paletas no empezaban a la misma vertical
+   (Diego, 27/9/2026). Ahora los grupos se distinguen por el hueco entre ellos. */
 .paleta .familia-cifras {
-  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;
-  border: 1px solid var(--linea); border-radius: 9px;
-  padding: 5px 6px 4px; margin: 9px 5px 2px; position: relative;
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px;
 }
-.paleta .familia-nombre {
-  position: absolute; top: -.62em; left: 9px; padding: 0 5px;
-  background: var(--papel); color: var(--tinta-suave);
-  font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap;
-}
+.paleta .familia-cifras + .familia-cifras { margin-left: 20px; }
+.paleta .familia-nombre { display: none; }
 
 /* Los símbolos de Berklee bajo los grados: flecha de resolución (dominante que baja una
    quinta) y corchete del II emparentado con su dominante. Prueba del 27/9/2026. */

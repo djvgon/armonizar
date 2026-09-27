@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Práctica armónica · Cuadro de cifrados</title>
+  <meta name="description" content="Cada cifra con el acorde que produce en Do mayor, a cuatro voces y con sonido.">
+  <meta property="og:title" content="Práctica armónica · Cuadro de cifrados">
+  <meta property="og:description" content="Cada cifra con el acorde que produce en Do mayor.">
+  <link rel="stylesheet" href="css/bravura.css?v=20260927-2010">
+  <link rel="stylesheet" href="css/estilo.css?v=20260927-2010">
+  <style>
+    body { max-width: 1500px; }
+    .cuadro { padding: 0 14px 26px; max-width: 1500px; margin: 0 auto; font-size: .92rem; }
+    /* La cabecera se queda pegada arriba, como en la ventana de estructuras */
+    .cabecera { position: sticky; top: 0; z-index: 30; background: #faf8f3;
+                box-shadow: 0 1px 0 #e6dfd2; align-items: flex-start; gap: 16px; }
+    .mandos-ayuda { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; flex-wrap: wrap;
+                    justify-content: flex-end; }
+    .mandos-ayuda label { display: flex; align-items: center; gap: 6px;
+                          font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;
+                          color: var(--tinta-suave); }
+    #posicion { display: flex; gap: 0; }
+    #posicion button { font: inherit; font-size: .82rem; padding: 4px 9px; cursor: pointer;
+                       border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); }
+    #posicion button:first-child { border-radius: 8px 0 0 8px; }
+    #posicion button:last-child { border-radius: 0 8px 8px 0; }
+    #posicion button.elegida { background: var(--acento); border-color: var(--acento); color: #fff; }
+    .btn-volver { font: inherit; font-size: .86rem; padding: 6px 14px; border-radius: 999px;
+                  border: 1px solid #b9ad99; background: #fff; cursor: pointer; white-space: nowrap; }
+    .btn-volver:hover { background: #2f2a22; color: #fff; border-color: #2f2a22; }
+    #titulo { margin: 0; }
+    #titulo .quees { font-weight: 400; font-size: .72em; letter-spacing: .02em; }
+    .esquema { margin: 16px 0 6px; padding: 5px 12px; background: #f2ede3; border-radius: 4px;
+               font-size: 1rem; letter-spacing: .02em; }
+    .esquema .acorde-familia { font-size: .78rem; font-style: italic; color: #7a6a55; }
+    .renglon { padding: 7px 0 2px; }
+    .piezas { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: flex-start; }
+    .pieza { display: flex; flex-direction: column; flex: 0 0 auto; min-width: 0; max-width: 100%; }
+    .cabeza-pieza { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px; min-width: 0; }
+    .cabeza-pieza .var { font-style: italic; color: #7a6a55; font-size: .78rem; }
+    .pieza .pent { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .pieza .pent svg { max-width: none; height: auto; }
+    .btn-sonar { font: inherit; font-size: .74rem; line-height: 1.5; padding: 1px 9px;
+                 border-radius: 999px; border: 1px solid #b9ad99; background: #fff;
+                 cursor: pointer; flex: 0 0 auto; white-space: nowrap; align-self: flex-start; }
+    .btn-sonar:hover { background: #f4efe6; }
+    .btn-sonar.sonando { background: #2f2a22; color: #fff; border-color: #2f2a22; }
+    #aviso { margin: 16px; color: #8a2b2b; }
+  </style>
+</head>
+<body>
+
+  <header class="cabecera">
+    <div class="cabecera-texto">
+      <h1 id="titulo">Cuadro de cifrados <span class="quees">— cada cifra y el acorde que manda escribir, en Do mayor</span></h1>
+      <p class="instruccion">Dentro de cada familia es siempre el mismo acorde, visto desde cada uno de sus bajos. Pulsa <b>Escuchar</b> para oírlo.</p>
+    </div>
+    <div class="mandos-ayuda">
+      <label>Posición
+        <span id="posicion">
+          <button type="button" data-rot="0" class="elegida">1.ª</button>
+          <button type="button" data-rot="1">2.ª</button>
+          <button type="button" data-rot="2">3.ª</button>
+        </span>
+      </label>
+      <label>Instrumento
+        <select id="instrumento" aria-label="Elegir instrumento"></select>
+      </label>
+      <button type="button" id="btn-volver" class="btn-volver" title="Volver a la práctica">Cerrar &#10005;</button>
+    </div>
+  </header>
+
+  <p id="aviso" hidden></p>
+  <main class="cuadro" id="cuadro"></main>
+
+  <noscript><p class="instruccion" style="margin:24px 16px">Esta página necesita JavaScript.</p></noscript>
+
+  <script src="js/teoria.js?v=20260927-2010"></script>
+  <script src="js/reglas.js?v=20260927-2010"></script>
+  <script src="js/ejercicios.js?v=20260927-2010"></script>
+  <script src="js/partitura.js?v=20260927-2010"></script>
+  <script src="js/realizacion.js?v=20260927-2010"></script>
+  <script src="js/sonido.js?v=20260927-2010"></script>
+  <script src="js/cifrados.js?v=20260927-2010"></script>
+</body>
+</html>

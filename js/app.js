@@ -593,6 +593,15 @@
     if (v) v.focus();
   }
 
+  /* El cuadro de cifrados: la misma ventana de ayuda que las estructuras, con cada cifra
+     y el acorde que manda escribir (Diego, 27/9/2026). */
+  function abrirCifrados() {
+    const an = Math.min(1240, (window.screen && screen.availWidth) || 1240);
+    const al = Math.min(900, (window.screen && screen.availHeight) || 900);
+    const v = window.open('cifrados.html', 'cuadro-cifrados', 'width=' + an + ',height=' + al);
+    if (v) v.focus();
+  }
+
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];
 
   function calcularRealizacion() {
@@ -1808,6 +1817,7 @@
     Envio.preparar();            // lee envio.json en segundo plano; si no está, no pasa nada
     rellenarSelector();
     if ($('#btn-estructuras')) $('#btn-estructuras').addEventListener('click', abrirEstructuras);
+    if ($('#btn-cifrados')) $('#btn-cifrados').addEventListener('click', abrirCifrados);
     $('#btn-corregir').addEventListener('click', corregir);
     $('#btn-reiniciar').addEventListener('click', reiniciar);
     $('#btn-siguiente').addEventListener('click', siguiente);
