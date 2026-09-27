@@ -361,8 +361,26 @@
        lección; así las fichas ya repartidas también salen ordenadas. */
     const pc = $('#paleta');
     pc.innerHTML = '';
+    /* Las cifras van dentro del recuadro de su familia —tríada, séptima de dominante y
+       demás séptimas diatónicas—, que es como se explican en clase; la lista entera
+       seguida era demasiado larga para leerla de un vistazo (Diego, 27/9/2026). */
+    let familia = null, caja = null;
     Ejercicios.ordenarCifras(estado.ejercicio.repertorio).forEach((id, k) => {
       const c = Teoria.CIFRADOS[id];
+      const f = Ejercicios.familiaCifra(id);
+      if (f !== familia) {
+        familia = f;
+        caja = document.createElement('span');
+        caja.className = 'familia-cifras';
+        const nom = document.createElement('span');
+        nom.className = 'familia-nombre';
+        const nombres = (Ejercicios.FAMILIAS && Ejercicios.FAMILIAS[f]) || { larga: '', corta: '' };
+        nom.innerHTML = '<span class="etq-larga"></span><span class="etq-corta"></span>';
+        nom.querySelector('.etq-larga').textContent = nombres.larga;
+        nom.querySelector('.etq-corta').textContent = nombres.corta;
+        caja.appendChild(nom);
+        pc.appendChild(caja);
+      }
       const cont = document.createDocumentFragment();
       cont.appendChild(Partitura.iconoCifra(id, 38));
       const num = document.createElement('span');
@@ -373,7 +391,7 @@
       b.dataset.id = id;
       b.dataset.atajo = atajo(k);
       b.setAttribute('aria-label', 'Cifra ' + c.nombre);
-      pc.appendChild(b);
+      caja.appendChild(b);
     });
     pc.appendChild(tecla('tecla-borrar', 'Borrar', 'Vaciar la casilla activa (Retroceso)', borrar));
     pintarPaletaTonalidades();

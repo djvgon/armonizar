@@ -678,3 +678,19 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 /* El desfase en el que la copia local va por detrás: rojo, porque ahí descargar y subir
    borra fragmentos para los alumnos (decisión 79). */
 .configurador .desfase.peligro { background: #fdf1ef; border-color: #e0a89f; border-left-color: #c0564a; }
+
+
+/* ---------- Las cifras, agrupadas por familia (Diego, 27/9/2026) ----------
+   La lista de cifras de una lección es larga; encerrada en tres recuadros —tríada,
+   séptima de dominante y demás séptimas diatónicas— se lee de un vistazo. El rótulo va
+   montado sobre el borde, como en un marco de formulario. */
+.paleta .familia-cifras {
+  display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px;
+  border: 1px solid var(--linea); border-radius: 9px;
+  padding: 5px 6px 4px; margin: 9px 5px 2px; position: relative;
+}
+.paleta .familia-nombre {
+  position: absolute; top: -.62em; left: 9px; padding: 0 5px;
+  background: var(--papel); color: var(--tinta-suave);
+  font-size: .62rem; letter-spacing: .05em; text-transform: uppercase; white-space: nowrap;
+}

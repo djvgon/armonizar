@@ -590,9 +590,12 @@ const Teoria = (() => {
       voces: vocesDiatonicas([3, 4, 6])
     },
     '42': {
-      etiqueta: '4/2', nombre: '4/2',
-      filas: [[{ num: '4' }], [{ num: '2' }]],
-      descripcion: 'Acorde de séptima en tercera inversión (2ª, 4ª y 6ª diatónicas): la séptima en el bajo, preparada, que baja de grado. Por ejemplo II4/2 sobre la tónica.',
+      /* Basta con el 2: en la séptima diatónica en tercera inversión, la 4ª y la 6ª se
+         dan por supuestas y no se escriben (Diego, 27/9/2026). El V7 en esa misma
+         inversión sí lleva su signo, +4, porque ahí la cuarta es aumentada. */
+      etiqueta: '2', nombre: '2',
+      filas: [[{ num: '2' }]],
+      descripcion: 'Acorde de séptima en tercera inversión (2ª, 4ª y 6ª diatónicas): la séptima en el bajo, preparada, que baja de grado. Se cifra solo con el 2. Por ejemplo II4/2 sobre la tónica.',
       voces: vocesDiatonicas([2, 4, 6])
     },
     '65d': {

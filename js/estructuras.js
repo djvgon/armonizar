@@ -61,15 +61,22 @@
     const vacio = v => new Array(n).fill(v);
     return {
       respuestas: p.cifras.slice(),        // la cifra de cada acorde, ya puesta
-      romanos: vacio(null), romanos2: vacio(null), dobles: vacio(false),
+      romanos: (p.romanos || vacio(null)).slice(), romanos2: vacio(null), dobles: vacio(false),
       etiquetas: (p.modulaciones || []).map(m => ({
         i: m.nota, texto: '→ ' + Teoria.nombreCorto({ tonica: m.tonica, modo: m.modo }),
         clase: 'dada' })),
-      pedirRomano: false,
+      /* Debajo de la cifra, el grado de la fundamental y la función tonal: las tres
+         lecturas del mismo acorde, como en el ejercicio (Diego, 27/9/2026). */
+      pedirRomano: Array.isArray(p.romanos),
       activa: -1, campo: 'cifra', corregido: false, resultados: null,
       soloLectura: true,
       realizacion: p.voces.map(v => v.map(x => Teoria.nota(x))),
-      gradosBajo: true                     // el circulito del grado sobre el bajo
+      gradosBajo: true,                    // el circulito del grado sobre el bajo
+      filaFunciones: Array.isArray(p.funciones) ? {
+        visible: true, editable: false,
+        celdas: p.funciones.map(t => ({ texto: t || '', clase: 'dada', fija: true })),
+        celdas2: vacio(null), dobles: vacio(false)
+      } : null
     };
   }
 
@@ -110,19 +117,29 @@
 
   function pieza(p) {
     const caja = el('div', 'pieza');
-    const pent = el('div', 'pent');
-    caja.appendChild(pent);
-    Partitura.dibujar(pent, ejercicioDe(p), estadoDe(p), () => {});
-
-    const pie = el('div', 'pie-pieza');
+    /* Los fragmentos cortos se encogen para que quepan dos por renglón; los largos se
+       quedan con su ancho y ocupan el renglón entero, que si no se vuelven ilegibles. */
+    if ((p.compases || []).length > 4) caja.classList.add('larga');
+    /* El botón va ENCIMA y a la izquierda, donde empieza el fragmento: así se pulsa
+       mirando el primer acorde y no hay que bajar la vista (Diego, 27/9/2026). */
+    const cabeza = el('div', 'cabeza-pieza');
     const btn = el('button', 'btn-sonar');
     btn.type = 'button';
     btn.setAttribute('aria-label', 'Escuchar esta estructura');
     btn.innerHTML = '<span aria-hidden="true">▶</span> Escuchar';
     btn.addEventListener('click', () => tocar(p, btn));
-    pie.appendChild(btn);
-    if (p.variante) pie.appendChild(el('span', 'var', p.variante));
-    caja.appendChild(pie);
+    cabeza.appendChild(btn);
+    caja.appendChild(cabeza);
+
+    const pent = el('div', 'pent');
+    caja.appendChild(pent);
+    Partitura.dibujar(pent, ejercicioDe(p), estadoDe(p), () => {});
+
+    if (p.variante) {
+      const pie = el('div', 'pie-pieza');
+      pie.appendChild(el('span', 'var', p.variante));
+      caja.appendChild(pie);
+    }
     return caja;
   }
 

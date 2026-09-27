@@ -78,6 +78,21 @@ const Ejercicios = (() => {
      que esté guardado el repertorio de cada lección: la paleta se ordena al pintarla, de
      modo que los enlaces repartidos y los bancos viejos también salen ordenados. */
   const ORDEN_CIFRAS = ['53', '6', '64', '7+', '65d', '+6', '+4', '7', '65', '43', '42', '9'];
+  /* Las tres familias de la paleta, para poder encerrarlas en su recuadro: la tríada, el
+     acorde de séptima de dominante y las demás séptimas diatónicas (Diego, 27/9/2026).
+     La lista de cifras de una lección es larga, y agrupada se lee de un vistazo. */
+  const FAMILIA_CIFRA = {
+    '53': 'triada', '6': 'triada', '64': 'triada',
+    '7+': 'dominante', '65d': 'dominante', '+6': 'dominante', '+4': 'dominante',
+    '7': 'septima', '65': 'septima', '43': 'septima', '42': 'septima', '9': 'septima'
+  };
+  const FAMILIAS = {
+    triada: { larga: 'Tríada', corta: 'Tríada' },
+    dominante: { larga: 'Séptima de dominante', corta: '7.ª dom.' },
+    septima: { larga: 'Otras séptimas diatónicas', corta: '7.ª diat.' }
+  };
+  const familiaCifra = id => FAMILIA_CIFRA[id] || 'septima';
+
   const ordenarCifras = ids => (ids || []).slice().sort((a, b) => {
     const ia = ORDEN_CIFRAS.indexOf(a), ib = ORDEN_CIFRAS.indexOf(b);
     return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
@@ -808,7 +823,7 @@ const Ejercicios = (() => {
     return errores;
   }
 
-  return { CORPUS, REPERTORIO_RO, ORDEN_CIFRAS, ordenarCifras, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, estadoGrados, gradoDe, paletaGrados, inventario, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
+  return { CORPUS, REPERTORIO_RO, ORDEN_CIFRAS, ordenarCifras, familiaCifra, FAMILIAS, MODOS, porId, colecciones, numNotas, pideRomano, ayudaGrados, estadoGrados, gradoDe, paletaGrados, inventario, modo, esSoprano, par, cifraDe, realizacion, verBajo, admisibles, parejas, parejasEn, grados,
     funciones, funcionModelo, funcionModeloEn, funcionesAdmisibles, funcionesAdmisiblesEn, funcionesDelEjercicio, gradosBajo, bajosDe,
     modulaciones, modula, aviso, tonalidades, tonalidadEn, tonalidadAntes, esPivote, primeraAjena, codificar, decodificar, validar };
 })();
