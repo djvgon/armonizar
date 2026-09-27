@@ -955,10 +955,12 @@ body { padding: 0; max-width: none; }
 .cabecera .enlace-boton:hover { background: var(--marca-texto); color: var(--marca); border-color: var(--marca-texto); }
 .cabecera .quees { font-size: .84rem; opacity: .82; }
 
-/* «Leer los errores», junto a Comprobar: no es un ajuste de sonido sino lo que ocurre
-   después de comprobar, y ahí es donde el alumno lo va a buscar (Diego, 28/9/2026). */
-.botonera .junto-a-comprobar { display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--fuente-ui); font-size: .9rem; color: var(--tinta-suave); }
+/* El comentario hablado: el botón que lo pide y la casilla que lo pone automático viven
+   JUNTOS en el informe. Son la misma cosa —una a petición, la otra sola—, y tenerlas en
+   sitios distintos obligaba a buscar la casilla (Diego, 28/9/2026). */
+.botonera-voz { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 10px 0 0; }
+.botonera-voz .junto-a-voz { display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--fuente-ui); font-size: .88rem; color: var(--tinta-suave); }
 
 /* =======================================================================================
    LOS RÓTULOS DE LA BARRA, TODOS IGUALES  (Diego, 28/9/2026)
@@ -987,4 +989,52 @@ body { padding: 0; max-width: none; }
 #posicion-control .segmentos button { min-width: 3.6rem; text-align: center; }
 @media (max-width: 719px), (max-height: 559px) {
   #control-realizacion { border-left: none; padding-left: 0; margin-left: 10px; }
+}
+
+/* =======================================================================================
+   AJUSTES DE LA PANTALLA DEL ALUMNO  (Diego, 28/9/2026)
+   ======================================================================================= */
+
+/* Los rótulos de las paletas, alineados A LA IZQUIERDA con el primer botón de la barra.
+   Iban alineados a la derecha contra las teclas y no cuadraban con nada. */
+.paleta-etiqueta { text-align: left; }
+
+/* Menos aire: entre los renglones de teclas, y entre las paletas y el recuadro de la
+   partitura, que estaban demasiado sueltos. */
+.paleta-caja { margin-top: 1px; padding: 2px 0 3px; }
+.paletas { margin-top: 6px; }
+.partitura-caja + .paletas, #paletas { padding-top: 0; }
+
+/* El acceso al cuadro de cifrados, al final de la paleta de cifrados */
+.btn-junto-paleta { align-self: center; margin-left: 10px; white-space: nowrap; }
+
+/* Lo elegido, en el morado apagado: pertenece a la familia de la marca sin gritar como la
+   banda ni desaparecer como el ciruela (Diego, 28/9/2026). */
+:root { --marca-apagada: #A169C2; --marca-tenue: #F3EEF6; --marca-texto: #7B00C2; }
+.segmentos button.activo { background: var(--marca-apagada); border-color: var(--marca-apagada); color: #fff; }
+.tecla.elegida { border-color: var(--marca-apagada); background: var(--marca-tenue); color: var(--tinta); }
+
+/* El logotipo: una cifra suya, «+6», en la serif de la música. Es notación, no una palabra,
+   y a un músico le dice de qué va esto antes de leer nada (Diego, 28/9/2026). */
+.barra-app .logo-cifra {
+  font-family: var(--fuente-texto); font-size: 1.28rem; font-weight: 700;
+  letter-spacing: -.02em; line-height: 1; display: inline-block; padding: 2px 0;
+}
+
+/* Las dos ayudas, a continuación de los grados del ejercicio */
+.ayudas-fila { display: contents; }
+
+/* =======================================================================================
+   LOS DOS RENGLONES DE LA BARRA  (Diego, 28/9/2026)
+   Arriba, la ESCUCHA, alineada a la derecha con el borde de la partitura. Abajo, cómo se
+   ve y se escribe la música, a la izquierda: primero la posición melódica y luego los
+   grados del bajo.
+   ======================================================================================= */
+.realizacion-barra .control-sonido { order: 0; margin-left: auto; }
+.realizacion-barra::after { content: ""; flex-basis: 100%; height: 0; order: 1; }
+#control-realizacion { order: 2; margin-left: 0; border-left: none; padding-left: 0; }
+#control-grados { order: 3; margin-left: 0; margin-right: auto;
+  border-left: 1px solid var(--linea); padding-left: 18px; }
+@media (max-width: 719px), (max-height: 559px) {
+  #control-grados { border-left: none; padding-left: 0; }
 }

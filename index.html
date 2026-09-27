@@ -7,12 +7,12 @@
   <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
   <meta property="og:title" content="Práctica armónica">
   <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
-  <link rel="stylesheet" href="css/bravura.css?v=20260928-0940">
-  <link rel="stylesheet" href="css/estilo.css?v=20260928-0940">
+  <link rel="stylesheet" href="css/bravura.css?v=20260928-1410">
+  <link rel="stylesheet" href="css/estilo.css?v=20260928-1410">
 </head>
 <body>
   <nav class="barra-app" aria-label="Secciones">
-    <span class="marca">Práctica armónica</span>
+    <span class="marca" title="Práctica armónica"><span class="logo-cifra">+6</span></span>
     <a href="index.html" class="aqui">Ejercicio</a>
     <a href="estructuras.html">Estructuras</a>
     <a href="cifrados.html">Cifrados</a>
@@ -37,27 +37,28 @@
 
 
   <section class="repertorio-caja" aria-label="Cifras y grados del ejercicio">
-    <div class="repertorio-fila" id="leccion-fila" hidden>
-      <span class="repertorio-etiqueta">Lección</span>
-      <div id="leccion" class="repertorio repertorio-texto"></div>
-      <!-- La ayuda con las estructuras armónicas de la lección: se abre en otra ventana
-           para poder dejarla al lado mientras se trabaja (Diego, 27/9/2026). -->
-      <button type="button" id="btn-estructuras" class="boton-pequeno boton-lleno" hidden>Estructuras armónicas que incluye esta lección</button>
-      <!-- El cuadro de cifrados: cada cifra con el acorde que manda escribir, en Do
-           mayor, con sonido y en las tres posiciones (Diego, 27/9/2026). -->
-      <button type="button" id="btn-cifrados" class="boton-pequeno">Cuadro de cifrados</button>
-    </div>
     <div class="repertorio-fila">
       <span class="repertorio-etiqueta">Tonalidad</span>
       <div id="tonalidad-fragmento" class="repertorio repertorio-texto"></div>
     </div>
+    <!-- El inventario de cifrados del ejercicio se retira de la vista (Diego, 28/9/2026):
+         lo que entra ya se ve en la paleta de abajo, y el renglón ocupaba sitio repitiéndolo.
+         Los elementos siguen en el documento, ocultos, porque `app.js` los rellena. -->
+    <div class="repertorio-fila" id="cifrados-fila" hidden>
+      <span class="repertorio-etiqueta" id="etiqueta-repertorio"></span>
+      <div id="repertorio" class="repertorio"></div>
+    </div>
     <div class="repertorio-fila" id="grados-fila">
       <span class="repertorio-etiqueta" id="etiqueta-grados">Grados en este ejercicio</span>
       <div id="grados" class="repertorio"></div>
-    </div>
-    <div class="repertorio-fila" id="cifrados-fila">
-      <span class="repertorio-etiqueta" id="etiqueta-repertorio">Cifrados en este ejercicio</span>
-      <div id="repertorio" class="repertorio"></div>
+      <!-- Las dos ayudas, a continuación de los grados: son material de consulta del mismo
+           nivel que lo que hay en este renglón, no acciones (Diego, 28/9/2026).
+           El nombre de la lección ya lo dice la banda, así que su renglón desapareció. -->
+      <span id="leccion-fila" class="ayudas-fila" hidden>
+        <span id="leccion" hidden></span>
+        <button type="button" id="btn-estructuras" class="boton-pequeno" hidden>Estructuras armónicas que incluye esta lección</button>
+      </span>
+      <button type="button" id="btn-cifrados" class="boton-pequeno">Cuadro de cifrados</button>
     </div>
     <!-- Solo aparece en ventana BAJA (el móvil en horizontal): allí las dos filas de
          referencia —grados y cifrados— se pliegan detrás de este botón, porque son
@@ -118,9 +119,6 @@
 
     <div class="botonera">
       <button id="btn-corregir" type="button" class="primario">Comprobar</button>
-      <!-- «Leer los errores» vive aquí y no en la barra de sonido: no es un ajuste de cómo
-           suena la música, es lo que pasa DESPUÉS de comprobar (Diego, 28/9/2026). -->
-      <label class="control junto-a-comprobar" id="control-voz" hidden title="Al comprobar, el ordenador lee en voz alta por qué falla cada nota"><input id="leer-errores" type="checkbox"><span>leer los errores</span></label>
       <button id="btn-siguiente" type="button">Otro ejercicio</button>
       <!-- «Reiniciar» se va al extremo derecho, al sitio que dejó «Copiar enlace»: es la
            acción destructiva y conviene lejos de la que se pulsa a cada rato. El enlace lo
@@ -144,16 +142,16 @@
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20260928-0940"></script>
-  <script src="js/reglas.js?v=20260928-0940"></script>
-  <script src="js/ejercicios.js?v=20260928-0940"></script>
-  <script src="js/partitura.js?v=20260928-0940"></script>
-  <script src="js/realizacion.js?v=20260928-0940"></script>
-  <script src="js/banco.js?v=20260928-0940"></script>
-  <script src="js/registro.js?v=20260928-0940"></script>
-  <script src="js/envio.js?v=20260928-0940"></script>
-  <script src="js/sonido.js?v=20260928-0940"></script>
-  <script src="js/voz.js?v=20260928-0940"></script>
-  <script src="js/app.js?v=20260928-0940"></script>
+  <script src="js/teoria.js?v=20260928-1410"></script>
+  <script src="js/reglas.js?v=20260928-1410"></script>
+  <script src="js/ejercicios.js?v=20260928-1410"></script>
+  <script src="js/partitura.js?v=20260928-1410"></script>
+  <script src="js/realizacion.js?v=20260928-1410"></script>
+  <script src="js/banco.js?v=20260928-1410"></script>
+  <script src="js/registro.js?v=20260928-1410"></script>
+  <script src="js/envio.js?v=20260928-1410"></script>
+  <script src="js/sonido.js?v=20260928-1410"></script>
+  <script src="js/voz.js?v=20260928-1410"></script>
+  <script src="js/app.js?v=20260928-1410"></script>
 </body>
 </html>

@@ -166,8 +166,12 @@
   function pintarCabecera() {
     const ej = estado.ejercicio;
     const f = estado.ficha;
-    $('#titulo').textContent = (f ? (f.filtro.titulo || 'Ficha') + ' · ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ' · ' : (ej.coleccion ? ej.coleccion + ' · ' : ''))
-      + (ej.titulo || '');
+    /* El título de la banda dice DE DÓNDE viene este ejercicio —la lección— y por dónde va,
+       y nada más. La palabra «Ficha» no aportaba nada, y el renglón «Lección …» que había
+       debajo era la misma información ocupando sitio (Diego, 28/9/2026). */
+    const deDonde = ej.leccion || ej.coleccion || (f && f.filtro.titulo) || '';
+    const porDonde = f ? ' (Ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ')' : '';
+    $('#titulo').textContent = (deDonde ? deDonde + (ej.titulo ? ' · ' : '') : '') + (ej.titulo || '') + porDonde;
     /* ---- El enunciado ----
        Una sola cosa clara —qué hay que hacer— y, debajo, cómo responde la aplicación. Los
        botones de sonido y la tonalidad del fragmento no se explican: están a la vista, se
@@ -703,20 +707,22 @@
     estado.ocultarBajo = !bajoVisible();
     Partitura.dibujar($('#partitura'), estado.ejercicio, estado, seleccionar);
     pintarPaletaTonalidades();
-    const n = estado.respuestas.length;
-    const hechas = estado.respuestas.filter((r, i) => notaRespondida(i)).length;
     // Tras corregir, el número de intento solo tiene sentido si el ejercicio sigue abierto (hay errores que corregir)
     const enCurso = estado.intento > 0 && !estado.mostrarSolucion;
     /* En una ficha, el progreso dice también por dónde va y que el envío espera al
        final: el alumno tiene que saber desde el principio que enviar exige terminar,
        no descubrirlo cuando ya no le queda tiempo. */
-    let texto = hechas + ' de ' + n + ' notas completas' + (enCurso ? ' · intento ' + (estado.intento + 1) : '');
-    if (estado.ficha) {
-      const f = estado.ficha;
-      texto = 'Ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ' · ' + texto;
-      if (Envio.disponible()) texto += ' · podrás enviar el resultado al terminar los ' + f.lista.length;
-    }
+    /* El renglón de progreso se queda con lo que NO se ve solo (Diego, 28/9/2026): el
+       recuento de notas es redundante —basta mirar las casillas— y el «Ejercicio k de n»
+       ya lo dice la banda. Sobreviven el número de intento y el aviso del envío, que son
+       cosas que el alumno no puede deducir de la pantalla. */
+    const partes = [];
+    if (enCurso) partes.push('Intento ' + (estado.intento + 1));
+    if (estado.ficha && Envio.disponible())
+      partes.push('podrás enviar el resultado al terminar los ' + estado.ficha.lista.length + ' ejercicios');
+    const texto = partes.join(' · ');
     $('#progreso').textContent = texto;
+    $('#progreso').hidden = !texto;
     $('#btn-corregir').disabled = estado.corregido;
     /* El botón dice lo que el alumno ha hecho, no una abreviatura: en los modos en que
        escribe las voces es su ARMONIZACIÓN; en los que solo pone cifras y grados, su
@@ -1370,7 +1376,7 @@
       for (const c of camposDe(j)) if (!acertada(j, c)) { estado.activa = j; estado.campo = c; break busqueda; }
     $('#resultado').hidden = true;
     pintar();
-    aviso('En verde, lo que ya estaba bien. Puedes cambiar cualquier casilla —también las verdes— y volver a pulsar «Corregir».');
+    aviso('En verde, lo que ya estaba bien. Puedes cambiar cualquier casilla —también las verdes— y volver a pulsar «Comprobar».');
   }
 
   function verSolucion() {
@@ -1411,7 +1417,14 @@
       + (esq.cadencia ? ' · ' + esq.cadencia : '') + '</p>';
     // Que lo lea en voz alta, se haya marcado o no la casilla (decisión 121)
     if (Voz.hay() && (aciertos < n || porArreglar))
-      html += '<p class="botonera-voz"><button type="button" id="btn-leer" class="boton-pequeno" title="Lee en voz alta por qué falla cada nota">▶ Leer los errores</button></p>';
+      html += '<p class="botonera-voz">'
+        + '<button type="button" id="btn-leer" class="boton-pequeno" title="Lee en voz alta el comentario de cada nota que falla">▶ Escuchar el comentario</button>'
+        /* La casilla, JUNTO A SU BOTÓN y no en la botonera de arriba: es la misma cosa
+           —una automática y la otra a petición— y separarlas obligaba a buscarla
+           (Diego, 28/9/2026). */
+        + '<label class="control junto-a-voz" title="Al comprobar, el comentario se escucha solo, sin tener que pedirlo">'
+        + '<input id="leer-errores" type="checkbox"' + (estado.leerErrores ? ' checked' : '') + '><span>comentar al comprobar</span></label>'
+        + '</p>';
     // Modulación
     const rm = estado.resultadoMod;
     if (rm) {
@@ -1440,7 +1453,7 @@
       const queArreglar = (porArreglar > 1 ? 'hay ' + porArreglar + ' errores de conducción de voces' : 'hay un error de conducción de voces') + ' en ' + listaNotas;
       html += '<p>' + (respuestasBien
         ? 'Los grados y los cifrados están bien, pero en la armonización que producen ' + queArreglar + '. Pulsa esas notas en el pentagrama (están en <span class="ref-mal">rojo</span>) para ver por qué, y prueba otra de las cifras admisibles.'
-        : 'Las casillas en rojo tienen algún error' + (hayQueArreglar ? ', y en la armonización ' + queArreglar : '') + '. Toca cualquier casilla —también las verdes— para cambiarla, y vuelve a pulsar «Corregir».')
+        : 'Las casillas en rojo tienen algún error' + (hayQueArreglar ? ', y en la armonización ' + queArreglar : '') + '. Toca cualquier casilla —también las verdes— para cambiarla, y vuelve a pulsar «Comprobar».')
         + '</p>'
         + '<div class="botonera botonera-resultado">'
         + '<button type="button" id="btn-solucion">Ver la solución</button></div>';
@@ -1490,6 +1503,14 @@
     if (bs) bs.addEventListener('click', verSolucion);
     const bv = $('#btn-leer');
     if (bv) bv.addEventListener('click', () => { if (Voz.hablando()) Voz.parar(); else leerErrores(); });
+    /* La casilla vive dentro del informe, así que nace y muere con él: su escucha se
+       conecta aquí cada vez, no una sola vez al arrancar. */
+    const cv = $('#leer-errores');
+    if (cv) cv.addEventListener('change', ev => {
+      estado.leerErrores = ev.target.checked;
+      try { localStorage.setItem('armonizar.voz', estado.leerErrores ? '1' : '0'); } catch (e) { /* nada */ }
+      if (estado.leerErrores && estado.corregido) leerErrores();
+    });
     const bf = $('#btn-ficha-sig');
     if (bf) bf.addEventListener('click', siguienteDeFicha);
     caja.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1823,14 +1844,7 @@
        alumno toque algo, y de todos modos empezar a hablar sin que nadie lo haya pedido
        asusta más que ayuda. */
     if (Voz.hay()) {
-      $('#control-voz').hidden = false;
       try { estado.leerErrores = localStorage.getItem('armonizar.voz') === '1'; } catch (e) { /* sin almacenamiento */ }
-      $('#leer-errores').checked = estado.leerErrores;
-      $('#leer-errores').addEventListener('change', ev => {
-        estado.leerErrores = ev.target.checked;
-        try { localStorage.setItem('armonizar.voz', estado.leerErrores ? '1' : '0'); } catch (e) { /* nada */ }
-        if (estado.leerErrores && estado.corregido) leerErrores();
-      });
     }
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.addEventListener('click', () => { estado.rotacion = Number(b.dataset.pos); pintar(); }));
     // Instrumento: lista, elección guardada y aviso de carga
