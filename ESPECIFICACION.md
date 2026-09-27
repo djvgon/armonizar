@@ -2971,6 +2971,65 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       «Escuchar tono», es lo que hacen esas teclas al pulsarlas.
     - **El informe cuenta ACORDES, no notas**: «4 de 4 acordes correctos». Lo que se juzga
       en cada casilla es el acorde, no la nota del bajo.
+    - **Fuera el recuento por casillas** («Funciones: x de n · Grados: y de n · Cifrados: z
+      de n»): cada casilla ya lleva su contorno y su ✓ o ✗ en la partitura, así que contarlas
+      otra vez era decir dos veces lo mismo. Queda lo que no se ve de un vistazo: enlaces,
+      avisos de conducción de voces y cómo fue el primer intento.
+
+135. **La subdominante, amarilla; la dominante, roja** (28/9/2026, Diego).
+    Corrige el reparto de la decisión 132, que daba el rojo a la subdominante y el amarillo
+    a la dominante. Los tres colores y su papel siguen siendo los mismos; cambia a qué
+    función va cada uno:
+
+        T  azul #0B5CD5        S  amarillo #F2C200        D  rojo #D62828
+
+    - La tinta de cada bloque sigue al color: blanco sobre el azul y el rojo, oscuro sobre
+      el amarillo. La función **hueca** —la de otro tono, la DD y las V/x— pasa a contorno
+      rojo con la letra en rojo oscuro `#9B1C1C`.
+    - **El VI, que es mitad tónica y mitad subdominante**, ya no puede llevar la letra
+      blanca en sus dos mitades: sobre el amarillo desaparecía. Se dibuja **dos veces**, la
+      segunda recortada a la mitad derecha y en tinta oscura, de modo que la «V» sale blanca
+      sobre el azul y la «I» oscura sobre el amarillo.
+
+136. **El techo de la soprano: el la5 (el la4 del índice español)** (28/9/2026, Diego).
+    La voz superior no se escribe por encima de esa nota, que es el tope clásico de la
+    soprano en la escritura a cuatro voces. No es un coste sino un **filtro**: las
+    disposiciones que lo pasan ni siquiera se consideran. Solo se cede si con el techo no
+    hay **ninguna** disposición posible para el acorde, y aun entonces se prueba antes a
+    abrir el trío hasta la novena (que el coste relega) que a subir la soprano.
+    - **Medido sobre el banco** (378 combinaciones fragmento × posición, 1 971 acordes): sin
+      techo, 15 acordes pasaban del la5 en 8 fragmentos, y el más agudo llegaba al do6. Con
+      el techo, **0 acordes por encima** y ninguno se queda sin realizar. El precio son tres
+      combinaciones más con aviso de la pauta (de 28 a 31, todas por movimiento directo).
+    - En la armonización de **soprano** el techo no interviene: allí la voz superior es la
+      melodía que da el ejercicio.
+
+137. **Oscuro solo lo que es una acción; y el reparto de los dos renglones**
+    (28/9/2026, Diego). Corrige la decisión 133, que había rellenado de negro ciruela todos
+    los botones: en la pantalla del alumno había demasiado negro y pesaba.
+    - **Rellenos y con la letra en blanco**, solo las **acciones con consecuencias**:
+      «Comprobar» (en el morado), «Otro ejercicio», «Reiniciar», «Ver la solución»,
+      «Escuchar el comentario» y los del configurador.
+    - **Claras las HERRAMIENTAS**: los ▶ de escuchar —también los de las dos ventanas de
+      ayuda—, «Cuadro de cifrados», «Estructuras armónicas» y los segmentos de la posición
+      melódica, que vuelven al botón de contorno con lo elegido en el morado apagado.
+      «Parar» se queda en contorno rojo y se rellena al pasar por encima.
+    - **Los dos renglones de la barra**, a ras del recuadro de la partitura y cada uno a su
+      lado: arriba la **escucha, a la izquierda**; abajo, a la **derecha**, «Grados del
+      bajo» y a continuación la **posición melódica inicial**.
+    - **El pie de las paletas**: «sonar al elegir» a la izquierda, en la misma columna que
+      los rótulos de las paletas, y el **«Cuadro de cifrados» centrado** debajo, junto a las
+      teclas de cifrado que es lo que explica.
+    - **Los grados del ejercicio, con el color de su función** (las mismas tintas que sus
+      teclas, VI incluido a dos tintas): el alumno ve de un vistazo qué funciones entran.
+
+138. **Los rótulos del configurador, en morado y por encima del valor** (28/9/2026, Diego).
+    «Tipo de ejercicio», «Lección», «Modo»… iban en 13,6 px y en gris, **más pequeños que el
+    texto del propio desplegable** (16 px): el rótulo, que dice qué se está eligiendo, pesaba
+    menos que el valor elegido y el bloque costaba de leer. Pasan a la sans, en negrita, a
+    14,7 px y en un morado de la familia de la marca, `#8B3FB0` —más hondo que el
+    `--marca-apagada`, que sobre el gris del panel se quedaba en 4,2:1; este da 5,9:1—, con
+    el valor en tinta normal debajo. Dos niveles claros: rótulo morado, valor negro.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

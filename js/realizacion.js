@@ -67,6 +67,12 @@ const Realizacion = (() => {
 
   const SOP_MIN = 67, SOP_MAX = 81;        // sol4 … la5, registro preferido de la voz superior
   const SOP_MIN_DURO = 62, SOP_MAX_DURO = 86;
+  /* EL TECHO DE LA SOPRANO (Diego, 28/9/2026): la nota más alta que se le escribe es el
+     la5 —el la4 del índice español, 880 Hz—, que es el tope clásico de la soprano en la
+     escritura a cuatro voces. No es un coste: es un filtro. Solo se pasa de ahí si con el
+     techo no hay NINGUNA disposición posible para el acorde, y entonces el coste de
+     registro que ya existía lo relega igualmente al último lugar. */
+  const SOP_TECHO = 81;
   /* Abertura de las tres voces superiores: de la soprano al tenor, como mucho una OCTAVA,
      para que la mano derecha las toque de una vez en el piano (decisión 50). Es la regla
      clásica de disposición —las tres voces agudas dentro de la octava— y solo el salto del
@@ -184,14 +190,22 @@ const Realizacion = (() => {
   /* ---- Disposiciones candidatas de un acorde ----
      Devuelve [{voces:[t,a,s], incompleta, doblaBajo, unisono}] con las voces de grave a agudo. */
   function candidatas(d, sopranoFija = null) {
-    // Primero con la octava; si no sale nada, se afloja a la novena antes que quedarse
-    // sin acorde (las que salen así van marcadas con `abierta`)
-    const estrictas = candidatasCon(d, sopranoFija, ABERTURA_MAX);
+    /* Se prueba en cuatro escalones, y se para en el primero que dé algo:
+         1 · octava de abertura y la soprano bajo el techo  → lo normal;
+         2 · novena de abertura y la soprano bajo el techo  → antes ceder en la abertura…
+         3 · octava de abertura, la soprano por encima      → …que en el techo;
+         4 · novena de abertura, la soprano por encima      → último recurso.
+       Las de abertura de novena van marcadas `abierta`, que el coste relega. */
+    const conTecho = candidatasCon(d, sopranoFija, ABERTURA_MAX, SOP_TECHO);
+    if (conTecho.length) return conTecho;
+    const anchasConTecho = candidatasCon(d, sopranoFija, ABERTURA_TOPE, SOP_TECHO);
+    if (anchasConTecho.length) return anchasConTecho.map(c => Object.assign(c, { abierta: true }));
+    const estrictas = candidatasCon(d, sopranoFija, ABERTURA_MAX, SOP_MAX_DURO);
     if (estrictas.length) return estrictas;
-    return candidatasCon(d, sopranoFija, ABERTURA_TOPE).map(c => Object.assign(c, { abierta: true }));
+    return candidatasCon(d, sopranoFija, ABERTURA_TOPE, SOP_MAX_DURO).map(c => Object.assign(c, { abierta: true }));
   }
 
-  function candidatasCon(d, sopranoFija, aberturaMax) {
+  function candidatasCon(d, sopranoFija, aberturaMax, techo = SOP_MAX_DURO) {
     const bajo = d.bajo;
     const conjuntos = [];                  // multiconjuntos de tres clases (como {letra, alt})
     let sup = d.superiores.slice();
@@ -236,7 +250,7 @@ const Realizacion = (() => {
               if (midi(s) - midi(a) > 12) return;
               if (midi(s) - midi(t) > aberturaMax) return;         // soprano y tenor, dentro de la octava
               if (sopranoFija !== null) { if (midi(s) !== sopranoFija) return; }
-              else if (midi(s) < SOP_MIN_DURO || midi(s) > SOP_MAX_DURO) return;
+              else if (midi(s) < SOP_MIN_DURO || midi(s) > techo) return;
               const clave = [midi(t), midi(a), midi(s)].join(',');
               if (vistas.has(clave)) return;
               vistas.add(clave);

@@ -288,6 +288,9 @@
     if (pideGrado() && ayuda !== 'ninguna') Ejercicios.grados(ej).forEach(r => {
       const s = document.createElement('span');
       s.className = 'ficha ficha-romano';
+      /* El grado, con el color de su función tonal, igual que su tecla (Diego, 28/9/2026):
+         el alumno ve de un vistazo qué funciones entran en el ejercicio. */
+      s.dataset.romano = r;
       s.textContent = r;
       gr.appendChild(s);
     });
@@ -1397,23 +1400,25 @@
     const res = estado.resultados;
     const n = res.length;
     const aciertos = res.filter(r => r.ok).length;
-    const aciertosCifra = res.filter(r => r.okCifra).length;
-    const aciertosRomano = res.filter(r => r.okRomano).length;
     const notas = Reglas.notasDe(ej);
     const caja = $('#resultado');
     const pct = Math.round(100 * aciertos / n);
     let html = '<h2>' + aciertos + ' de ' + n + ' acordes correctos <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
-    const aciertosFun = res.filter(r => r.okFuncion && r.okFuncion2).length;
     const enlacesMal = res.filter(r => !r.okEnlace).length;
     const porArreglar = (estado.avisosRespuesta || []).length;          // los que ha causado el alumno
     const vocesMal = Math.max((estado.avisosVoces || []).length, porArreglar);   // los que se dibujan en rojo
     const notasArreglar = [...(estado.notasAviso || new Set())].sort((a, b) => a - b).map(k => k + 1);
     const hayQueArreglar = notasArreglar.length > 0;
-    if (pideGrado()) html += '<p class="desglose">' + (estado.modoFun === 'pedir' ? 'Funciones: ' + aciertosFun + ' de ' + n + ' · ' : '') + 'Grados: ' + aciertosRomano + ' de ' + n + ' · Cifrados: ' + aciertosCifra + ' de ' + n
-      + (enlacesMal ? ' · Enlaces incorrectos: ' + enlacesMal : '')
-      + (vocesMal ? ' · Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso') + (porArreglar ? ' (' + porArreglar + ' por arreglar)' : '') + ' (notas en rojo)' : '')
-      + (estado.intento > 1 && estado.primerIntento !== null ? ' · Al primer intento: ' + estado.primerIntento + ' de ' + n : '') + '</p>';
-    else if (estado.intento > 1 && estado.primerIntento !== null) html += '<p class="desglose">Al primer intento: ' + estado.primerIntento + ' de ' + n + '</p>';
+    /* El recuento por casillas —funciones, grados y cifrados— se quitó (Diego, 28/9/2026):
+       cada casilla ya lleva su contorno y su ✓ o ✗ en la partitura, así que contarlas otra
+       vez aquí es decir dos veces lo mismo. Queda lo que NO se ve de un vistazo: los
+       enlaces, los avisos de conducción de voces y cómo fue el primer intento. */
+    const trozos = [];
+    if (enlacesMal) trozos.push('Enlaces incorrectos: ' + enlacesMal);
+    if (vocesMal) trozos.push('Conducción de voces: ' + vocesMal + (vocesMal > 1 ? ' avisos' : ' aviso')
+      + (porArreglar ? ' (' + porArreglar + ' por arreglar)' : '') + ' (notas en rojo)');
+    if (estado.intento > 1 && estado.primerIntento !== null) trozos.push('Al primer intento: ' + estado.primerIntento + ' de ' + n);
+    if (trozos.length) html += '<p class="desglose">' + trozos.join(' · ') + '</p>';
     // El esquema de lo que ha escrito el alumno (decisión 122)
     const esq = esquemaDelAlumno();
     if (esq) html += '<p class="desglose esquema">Tu armonización: <b>' + esq.texto + '</b>'

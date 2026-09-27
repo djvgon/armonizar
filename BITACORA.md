@@ -468,6 +468,8 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-0300 | Oscuro solo lo que es una acción: las herramientas vuelven al botón claro; la escucha a la izquierda y la vista a la derecha, a ras de la partitura; «sonar al elegir» y «Cuadro de cifrados» al pie de las paletas; los grados del ejercicio con el color de su función (137); rótulos del configurador en morado y por encima del valor (138) |
+| 20260929-0215 | La subdominante en amarillo y la dominante en roja, con el VI a dos tintas (135); techo de la soprano en el la5 —el la4 del índice español— como filtro, no como coste (136); el informe deja de contar funciones, grados y cifrados por separado (134) |
 | 20260929-0130 | Sobre el morado, la letra en blanco —se elimina el `--marca-texto` morado que teñía de oscuro la banda y «Comprobar»—; la misma cabecera y los mismos mandos en las cuatro ventanas; todos los botones rellenos con la letra en blanco (133). Ajustes del alumno (134): fuera el renglón «Tonalidad», «Escuchar tono», el aviso del envío al enunciado, «sonar al elegir» con las paletas y el informe contando acordes |
 | 20260928-0030 | `f.html`, el redirector de los códigos QR: lo impreso lleva una dirección corta y fija (128) |
 | 20260928-0940 | Funciones en color plano según Kandinsky —azul la tónica, rojo la subdominante, amarillo la dominante— y la corrección por contorno y símbolo, no por relleno (132); rótulos de la barra unificados y la posición melódica dicha por la nota de la soprano |

@@ -7,8 +7,8 @@
   <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
   <meta property="og:title" content="Práctica armónica">
   <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
-  <link rel="stylesheet" href="css/bravura.css?v=20260929-0130">
-  <link rel="stylesheet" href="css/estilo.css?v=20260929-0130">
+  <link rel="stylesheet" href="css/bravura.css?v=20260929-0300">
+  <link rel="stylesheet" href="css/estilo.css?v=20260929-0300">
 </head>
 <body>
   <nav class="barra-app" aria-label="Secciones">
@@ -62,7 +62,6 @@
         <span id="leccion" hidden></span>
         <button type="button" id="btn-estructuras" class="boton-pequeno" hidden>Estructuras armónicas que incluye esta lección</button>
       </span>
-      <button type="button" id="btn-cifrados" class="boton-pequeno">Cuadro de cifrados</button>
     </div>
     <!-- Solo aparece en ventana BAJA (el móvil en horizontal): allí las dos filas de
          referencia —grados y cifrados— se pliegan detrás de este botón, porque son
@@ -117,9 +116,14 @@
         <span class="paleta-etiqueta"><span class="etq-larga">Tonalidad nueva desde la nota activa</span><span class="etq-corta">Tono</span></span>
         <div id="paleta-tonalidades" class="paleta" role="group" aria-label="Paleta de tonalidades"></div>
       </div>
-      <!-- «Sonar al elegir» no es una herramienta de audio como las de arriba: es lo que
-           hacen ESTAS teclas al pulsarlas, así que vive con ellas (Diego, 28/9/2026). -->
-      <label class="control control-sonar" title="Al pulsar una tecla de estas paletas, oír el acorde que produce"><input id="sonar" type="checkbox" checked><span>sonar al elegir</span></label>
+      <!-- El pie de las paletas (Diego, 28/9/2026). A la izquierda, en la misma columna que
+           los rótulos, «sonar al elegir»: no es una herramienta de audio como las de
+           arriba, es lo que hacen ESTAS teclas al pulsarlas. Y en el centro, el acceso al
+           cuadro de cifrados, junto a las teclas de cifrado que es lo que explica. -->
+      <div class="paletas-pie">
+        <label class="control control-sonar" title="Al pulsar una tecla de estas paletas, oír el acorde que produce"><input id="sonar" type="checkbox" checked><span>sonar al elegir</span></label>
+        <button type="button" id="btn-cifrados" class="boton-pequeno">Cuadro de cifrados</button>
+      </div>
     </div>
     <p id="progreso" class="progreso"></p>
 
@@ -144,20 +148,20 @@
        vistazo qué versión está publicada. -->
   <footer class="pie">
     <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
-    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260929-0130</span></p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260929-0300</span></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20260929-0130"></script>
-  <script src="js/reglas.js?v=20260929-0130"></script>
-  <script src="js/ejercicios.js?v=20260929-0130"></script>
-  <script src="js/partitura.js?v=20260929-0130"></script>
-  <script src="js/realizacion.js?v=20260929-0130"></script>
-  <script src="js/banco.js?v=20260929-0130"></script>
-  <script src="js/registro.js?v=20260929-0130"></script>
-  <script src="js/envio.js?v=20260929-0130"></script>
-  <script src="js/sonido.js?v=20260929-0130"></script>
-  <script src="js/voz.js?v=20260929-0130"></script>
-  <script src="js/app.js?v=20260929-0130"></script>
+  <script src="js/teoria.js?v=20260929-0300"></script>
+  <script src="js/reglas.js?v=20260929-0300"></script>
+  <script src="js/ejercicios.js?v=20260929-0300"></script>
+  <script src="js/partitura.js?v=20260929-0300"></script>
+  <script src="js/realizacion.js?v=20260929-0300"></script>
+  <script src="js/banco.js?v=20260929-0300"></script>
+  <script src="js/registro.js?v=20260929-0300"></script>
+  <script src="js/envio.js?v=20260929-0300"></script>
+  <script src="js/sonido.js?v=20260929-0300"></script>
+  <script src="js/voz.js?v=20260929-0300"></script>
+  <script src="js/app.js?v=20260929-0300"></script>
 </body>
 </html>
