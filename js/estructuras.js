@@ -189,6 +189,30 @@
     sel.addEventListener('change', () => pintar(parseInt(sel.value, 10)));
     pintar(inicial);
     document.addEventListener('visibilitychange', () => { if (document.hidden) parar(); });
+    vigilarActividad();
+  }
+
+  /* ---------- La señal de actividad (Diego, 27/9/2026) ----------
+     El tiempo de trabajo del alumno tiene que seguir corriendo mientras lee aquí, pero
+     no mientras esta ventana está abierta y olvidada. Así que se avisa a la ventana del
+     ejercicio —por el almacenamiento del navegador, que las dos comparten— solo cuando
+     esta tiene el foco y se ha tocado algo en el último minuto. Esta ventana es de
+     LEER, por eso el margen es mayor que los treinta segundos del ejercicio.
+
+     La señal es un sello de tiempo que caduca en un par de segundos: si esta ventana se
+     cierra, pierde el foco o se queda quieta, el reloj del ejercicio se para solo. */
+  const MARGEN_MS = 60000;
+  const CLAVE_ACTIVA = 'armonizar.ayuda.activa';
+  let ultimaAqui = Date.now();
+
+  function vigilarActividad() {
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, () => { ultimaAqui = Date.now(); }, { passive: true }));
+    setInterval(() => {
+      const conFoco = typeof document.hasFocus === 'function' ? document.hasFocus() : true;
+      if (document.hidden || !conFoco || (Date.now() - ultimaAqui) >= MARGEN_MS) return;
+      try { localStorage.setItem(CLAVE_ACTIVA, String(Date.now())); } catch (e) { /* sin almacenamiento */ }
+    }, 1000);
   }
 
   document.addEventListener('DOMContentLoaded', arrancar);

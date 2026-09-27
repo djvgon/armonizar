@@ -629,12 +629,27 @@ const Partitura = (() => {
       }
       const xIzq = xN + Math.min(0, ...dx), xDer = xN + Math.max(0, ...dx) + ancho * SP;
       const extra = 0.4 * SP;
+      /* Las líneas adicionales van SOLO alrededor de las cabezas que las piden. Antes se
+         dibujaban de punta a punta del acorde, de modo que, cuando había una segunda, la
+         cabeza corrida alargaba también la línea de las demás y el do de abajo salía con
+         una raya larguísima (Diego, 27/9/2026). Si dos cabezas comparten línea —una
+         segunda por debajo del pentagrama—, la línea abarca las dos. */
+      const adicionales = new Map();                       // paso de la línea → [xMin, xMax]
+      pasos.forEach((p, k) => {
+        const x1 = xN + dx[k], x2 = x1 + ancho * SP;
+        const anota = q => {
+          const v = adicionales.get(q);
+          if (v) { v[0] = Math.min(v[0], x1); v[1] = Math.max(v[1], x2); }
+          else adicionales.set(q, [x1, x2]);
+        };
+        if (p >= 10) for (let q = 10; q <= p; q += 2) anota(q);
+        if (p <= -2) for (let q = -2; q >= p; q -= 2) anota(q);
+      });
+      adicionales.forEach((x, q) => g.appendChild(el('line', {
+        x1: x[0] - extra, x2: x[1] + extra,
+        y1: Y_BOT_SOL - q * SP / 2, y2: Y_BOT_SOL - q * SP / 2, class: 'linea' })));
       pasos.forEach((p, k) => {
         const y = Y_BOT_SOL - p * SP / 2;
-        if (p >= 10) for (let q = 10; q <= p; q += 2)
-          g.appendChild(el('line', { x1: xIzq - extra, x2: xDer + extra, y1: Y_BOT_SOL - q * SP / 2, y2: Y_BOT_SOL - q * SP / 2, class: 'linea' }));
-        if (p <= -2) for (let q = -2; q >= p; q -= 2)
-          g.appendChild(el('line', { x1: xIzq - extra, x2: xDer + extra, y1: Y_BOT_SOL - q * SP / 2, y2: Y_BOT_SOL - q * SP / 2, class: 'linea' }));
         const cabeza = glifo(xN + dx[k], y, f.cabeza, EM, { class: 'nota' });
         g.appendChild(cabeza);
         señalar(cabeza, i, k + 1, xN + dx[k] + ancho * SP / 2, y);

@@ -38,10 +38,47 @@ const Registro = (() => {
   function seguir(r) { if (r && r.desde === null) r.desde = Date.now(); }
   const leer = r => (r ? Math.round((r.ms + (r.desde !== null ? Date.now() - r.desde : 0)) / 1000) : 0);
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { pausar(reloj); pausar(p && p.reloj); }
-    else { seguir(reloj); seguir(p && p.reloj); }
-  });
+  /* ---------- Cuándo corre el reloj (Diego, 27/9/2026) ----------
+     No basta con que la pestaña se vea: el tiempo de trabajo es el que se pasa DELANTE de
+     ella haciendo algo. El reloj corre mientras la ventana tenga el FOCO y haya habido
+     alguna interacción hace poco: treinta segundos en el ejercicio, que es de pulsar
+     botones, y un minuto en la ventana de ayuda, que es más de leer. Cada ventana mide lo
+     suyo; la de ayuda deja su señal en el almacenamiento del navegador y esta la lee.
+
+     Elegir el foco y no solo la visibilidad es deliberado: con dos ventanas abiertas al
+     lado, las dos se VEN, pero el alumno solo está en una. Así el tiempo no se cuenta dos
+     veces ni corre mientras la pantalla está puesta y nadie delante. */
+  const MARGEN_MS = 30000;                       // aquí: medio minuto sin tocar nada
+  const CLAVE_AYUDA = 'armonizar.ayuda.activa';  // la señal que deja la ventana de ayuda
+  const VIGENCIA_AYUDA_MS = 2500;                // la señal caduca enseguida
+
+  let ultimaAqui = Date.now();
+
+  function ayudaActiva() {
+    try {
+      const t = parseInt(localStorage.getItem(CLAVE_AYUDA), 10);
+      return !isNaN(t) && (Date.now() - t) < VIGENCIA_AYUDA_MS;
+    } catch (e) { return false; }                // sin almacenamiento, no hay señal
+  }
+
+  function activaAqui() {
+    const conFoco = typeof document.hasFocus === 'function' ? document.hasFocus() : true;
+    return !document.hidden && conFoco && (Date.now() - ultimaAqui) < MARGEN_MS;
+  }
+
+  function repasarReloj() {
+    if (activaAqui() || ayudaActiva()) { seguir(reloj); seguir(p && p.reloj); }
+    else { pausar(reloj); pausar(p && p.reloj); }
+  }
+
+  ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(ev =>
+    document.addEventListener(ev, () => { ultimaAqui = Date.now(); repasarReloj(); }, { passive: true }));
+  window.addEventListener('focus', repasarReloj);
+  window.addEventListener('blur', repasarReloj);
+  document.addEventListener('visibilitychange', repasarReloj);
+  /* Cada segundo, porque lo que caduca es el tiempo, no un acontecimiento: sin este
+     repaso el reloj seguiría corriendo aunque no se tocara nada. */
+  setInterval(repasarReloj, 1000);
 
   /* ---------- Etiquetas de contenido ----------
      La etiqueta de cada nota es el ACORDE MODELO tal como se escribe —«V/V 6/5̸»,

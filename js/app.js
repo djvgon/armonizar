@@ -230,7 +230,10 @@
     /* El botón de ayuda solo aparece si la lección tiene cuadro de estructuras. */
     const btnEst = $('#btn-estructuras');
     if (btnEst) {
-      const tema = ej.leccion ? TEMA_DE_LECCION[ej.leccion] : null;
+      /* `ej.leccion` de una ficha no es solo el código: trae detrás el nombre de la
+         lección («A3-7 · II7 y IV7»). El tema se busca por el código de delante. */
+      const codigo = String(ej.leccion || '').match(/^A\d+-\d+/);
+      const tema = codigo ? TEMA_DE_LECCION[codigo[0]] : null;
       btnEst.hidden = !tema;
       btnEst.dataset.tema = tema ? String(tema) : '';
     }
