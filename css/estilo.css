@@ -700,3 +700,26 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 svg.partitura .marca-flecha { fill: none; stroke: var(--tinta-suave); stroke-width: 1.4; }
 svg.partitura .marca-punta { fill: var(--tinta-suave); stroke: none; }
 svg.partitura .marca-corchete { fill: none; stroke: var(--tinta-suave); stroke-width: 1.4; stroke-linejoin: miter; }
+
+/* El nombre de la tonalidad a la izquierda de su renglón de fundamentales. No es un rótulo
+   de servicio como «Función:»: dice de qué tono se leen esos grados, así que va del tamaño
+   de las fundamentales y en negrita (Diego, 27/9/2026). */
+svg.partitura .rotulo-ton { font-family: Georgia, "Times New Roman", serif; font-size: 16px;
+  font-weight: 700; fill: var(--tinta); pointer-events: none; }
+/* Su casilla, más clarita que las de los acordes: se ve que pertenece al renglón de las
+   fundamentales sin competir con ellas. */
+svg.partitura .casilla-rotulo-ton { cursor: default; }
+svg.partitura .casilla-rotulo-ton .fondo { fill: #f4f1ea; stroke: var(--linea); }
+
+/* Los colores de las funciones tonales · combinación TIERRA (prueba, 27/9/2026).
+   El color refuerza, nunca informa solo: la letra T · S · D sigue estando. La corrección
+   (verde/rojo) manda sobre el color de la función. */
+svg.partitura .casilla-fun.fun-T .fondo { fill: #e8eef2; stroke: #33617A; }
+svg.partitura .casilla-fun.fun-T:not(.mal):not(.bien) .fun { fill: #33617A; }
+svg.partitura .casilla-fun.fun-S .fondo { fill: #edf1e4; stroke: #6F8F4A; }
+svg.partitura .casilla-fun.fun-S:not(.mal):not(.bien) .fun { fill: #6F8F4A; }
+svg.partitura .casilla-fun.fun-D .fondo { fill: #f7e9e3; stroke: #B5502F; }
+svg.partitura .casilla-fun.fun-D:not(.mal):not(.bien) .fun { fill: #B5502F; }
+/* La dominante de la dominante, con el mismo color de dominante pero el borde partido */
+svg.partitura .casilla-fun.fun-DD .fondo { fill: #f7e9e3; stroke: #B5502F; stroke-dasharray: 4 2.5; }
+svg.partitura .casilla-fun.fun-DD:not(.mal):not(.bien) .fun { fill: #B5502F; }

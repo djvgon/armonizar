@@ -581,8 +581,11 @@
   function abrirEstructuras() {
     const t = $('#btn-estructuras').dataset.tema;
     if (!t) return;
-    window.open('estructuras.html?tema=' + t, 'estructuras-armonicas',
-                'width=980,height=860,noopener');
+    /* Sin `noopener`: la ventana de ayuda necesita poder devolver el foco a esta para su
+       botón de «Volver a la práctica» (Diego, 27/9/2026). Es una página nuestra. */
+    const v = window.open('estructuras.html?tema=' + t, 'estructuras-armonicas',
+                          'width=980,height=860');
+    if (v) v.focus();
   }
 
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];

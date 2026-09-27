@@ -225,13 +225,17 @@ const Partitura = (() => {
     const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
     const marcasB = !!estado.marcasBerklee;                       // flecha de resolución y corchete del II emparentado
     const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // el cifrado, lo primero
-    const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
-    const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
+    const ALTO_ROMANO = 3.1 * SP;
+    /* La casilla del cifrado mide lo mismo que la de la fundamental, y va a la misma
+       distancia de ella que la función de la fundamental: las tres lecturas del acorde
+       forman así una columna regular (Diego, 27/9/2026). */
+    const ALTO_CASILLA = ALTO_ROMANO, ANCHO_CASILLA = 4.4 * SP;
+    const ESCALA_CIFRA = 0.48;                              // la cifra, a la medida de su casilla
     /* La función ya no necesita banda doble para el pivote: cada una de sus dos lecturas va
        con la fundamental de SU tonalidad, o sea en su propio renglón (Diego, 27/9/2026). */
     const ALTO_FUN = 2.7 * SP;
-    const ALTO_ROMANO = 3.1 * SP;
     const ALTO_TON = 2.7 * SP;
+    const TAM_ROTULO = 1.6 * SP;              // el nombre de la tonalidad, como las fundamentales
     /* Modulación: cada tonalidad escribe sus grados en un renglón nuevo, un poco más
        abajo; el pivote (dobles[i]) lleva dos grados apilados —el de la tonalidad anterior
        en su renglón y el de la nueva en el siguiente— unidos por dos líneas verticales.
@@ -295,6 +299,22 @@ const Partitura = (() => {
     }
     const NUM_RENGLONES = Math.max(1, ...renglon.map(r => r + 1), ...renglonAntes.map(r => r + 1));
     const rotuladas = new Set();     // renglones que ya llevan escrito el nombre de su tonalidad
+    /* El PRIMER acorde de cada renglón: ahí, a su izquierda, se escribe el nombre de la
+       tonalidad que lo rige. Un pivote inaugura el renglón de la tonalidad nueva (y cierra
+       el de la anterior), de modo que puede ser el primero de dos. */
+    const rotulosAqui = new Map();
+    {
+      const vistos = new Set();
+      for (let i = 0; i < numNotas; i++) {
+        const esPiv = !!dobles[i] && i > 0;
+        (esPiv ? [renglonAntes[i], renglon[i]] : [renglon[i]]).forEach(r => {
+          if (vistos.has(r)) return;
+          vistos.add(r);
+          if (!rotulosAqui.has(i)) rotulosAqui.set(i, []);
+          rotulosAqui.get(i).push(r);
+        });
+      }
+    }
     /* Debajo del cifrado, un renglón por tonalidad (decisión 83), y cada renglón lleva DOS
        casillas: la FUNDAMENTAL y, casi pegada debajo, su FUNCIÓN tonal. Las dos lecturas
        del mismo acorde van juntas, y al modular baja el renglón entero —fundamental y
@@ -309,7 +329,7 @@ const Partitura = (() => {
                        + (filaFun ? (pedirRomano ? HUECO_FUN : 0) + ALTO_FUN : 0)
                        + ALTO_MARCAS;
     const PASO_RENGLON = ALTO_RENGLON + 0.5 * SP;
-    const Y_RENGLON = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;        // el primer renglón
+    const Y_RENGLON = Y_CASILLA + ALTO_CASILLA + HUECO_FUN;       // el primer renglón, pegado al cifrado
     const yRenglon = r => Y_RENGLON + r * PASO_RENGLON;           // casilla de la fundamental
     const yRenglonFun = r => yRenglon(r) + (pedirRomano ? ALTO_ROMANO + HUECO_FUN : 0);
     const Y_FIN_RENGLONES = conRenglones
@@ -735,7 +755,7 @@ const Partitura = (() => {
         else if (bloq.cifra) clases.push('bien');
         else if (resp) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
-        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.8 * SP, class: 'fondo' }));
+        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.7 * SP, class: 'fondo' }));
         if (resp) dibujarCifra(g, resp, cx, Y_CASILLA + ALTO_CASILLA / 2, ESCALA_CIFRA, null, ctxCifra(i, nb));
         else if (!estado.corregido) g.appendChild(el('text', { x: cx, y: Y_CASILLA + ALTO_CASILLA / 2 + 0.55 * SP, 'text-anchor': 'middle', class: 'interrogante' }, '?'));
         if (!soloLectura) {
@@ -801,16 +821,30 @@ const Partitura = (() => {
           const yB = dobleFun ? yRenglonFun(rAbajo) + ALTO_FUN : yRenglon(rAbajo) + ALTO_ROMANO;
           [x0, x0 + ANCHO_CASILLA].forEach(x => svg.appendChild(el('line', { x1: x, x2: x, y1: yA - 0.3 * SP, y2: yB + 0.3 * SP, class: 'pivote-barra' })));
         }
-        // Nombre de la tonalidad al principio de cada renglón (si hay modulación)
-        if (filaTon && filaTon.celdas) {
+      }
+
+      /* Nombre de la tonalidad que rige el renglón, a su izquierda y justo antes de su
+         primer acorde: «Do M:» delante del primero de todos y «Sol M:» delante del primero
+         que ya está en Sol M. No es un rótulo insípido como «Función:» —dice de qué tono se
+         leen esos grados—, así que va del tamaño de las fundamentales (Diego, 27/9/2026).
+         Se escribe una vez por renglón: al volver a una tonalidad ya rotulada, no se repite. */
+      if (conRenglones && filaTon && filaTon.celdas) {
+        (rotulosAqui.get(i) || []).forEach(r => {
           const celda = filaTon.celdas[i] || {};
-          const rRotulo = esPivote ? renglon[i] : (i === 0 ? renglon[0] : -1);
-          // El nombre se escribe una vez por renglón: al volver a una tonalidad ya rotulada, no se repite
-          if (rRotulo >= 0 && !rotuladas.has(rRotulo) && celda.texto && celda.texto !== '¿?') {
-            rotuladas.add(rRotulo);
-            svg.appendChild(el('text', { x: x0 - 0.7 * SP, y: yRenglon(rRotulo) + ALTO_ROMANO / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, celda.texto + ':'));
-          }
-        }
+          if (rotuladas.has(r) || !celda.texto || celda.texto === '¿?') return;
+          rotuladas.add(r);
+          /* En su propia casilla, más clarita que las demás: así se ve que pertenece al
+             renglón de las fundamentales y no es un rótulo suelto al margen. */
+          const yR = pedirRomano ? yRenglon(r) : yRenglonFun(r);
+          const altoR = pedirRomano ? ALTO_ROMANO : ALTO_FUN;
+          const anchoR = Math.max(ANCHO_CASILLA, celda.texto.length * 0.58 * TAM_ROTULO + 0.9 * SP);
+          const xD = cx - ANCHO_CASILLA / 2 - 0.55 * SP;        // pegada a la izquierda del primer acorde
+          const gR = el('g', { class: 'casilla casilla-rotulo-ton' });
+          gR.appendChild(el('rect', { x: xD - anchoR, y: yR, width: anchoR, height: altoR, rx: 0.7 * SP, class: 'fondo' }));
+          gR.appendChild(el('text', { x: xD - anchoR / 2, y: yR + altoR / 2 + 0.6 * SP,
+            'text-anchor': 'middle', class: 'rotulo-ton' }, celda.texto));
+          svg.appendChild(gR);
+        });
       }
 
       /* Fila «Función»: T · S · D de cada acorde (dada por el profesor o pedida al alumno).
@@ -836,6 +870,9 @@ const Partitura = (() => {
           if (activa && editable && estado.campo === campo) clases.push('activa');
           else if (activa && editable) clases.push('activa-nota');
           if (celda.texto) clases.push('llena');
+          /* Cada función, su color (combinación «Tierra»): T azul pizarra, S oliva,
+             D terracota. El color va en la clase; el tono, en la hoja de estilo. */
+          if (/^(T|S|D|DD)$/.test(String(celda.texto || '').trim())) clases.push('fun-' + celda.texto.trim());
           g.setAttribute('class', clases.join(' '));
           g.appendChild(el('rect', { x: xF, y: yF, width: ANCHO_CASILLA, height: ALTO_FUN, rx: dobleFun ? 0 : 0.6 * SP, class: 'fondo' }));
           g.appendChild(el('text', { x: cx, y: yF + ALTO_FUN / 2 + 0.6 * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
@@ -947,14 +984,31 @@ const Partitura = (() => {
         const t = 0.5 * SP;
         svg.appendChild(el('path', { d: `M ${x1} ${y - t} L ${x1} ${y} L ${x2} ${y} L ${x2} ${y - t}`, class: 'marca-corchete' }));
       };
+      /* El 6/4 CADENCIAL es dominante a todos los efectos: su sexta y su cuarta son
+         apoyaturas de la quinta y la tercera del V, no un acorde de tónica. Por eso el
+         corchete lo atraviesa: II – I6/4 – V lleva corchete del II al V, igual que II – V
+         (Diego, 27/9/2026). Se reconoce por la cifra 64 seguida de una dominante. */
+      const dominanteDesde = j => {
+        if (j >= numNotas) return -1;
+        if (esDominante(j)) return j;
+        if (estado.respuestas[j] === '64' && j + 1 < numNotas && esDominante(j + 1)) return j + 1;
+        return -1;
+      };
       for (let i = 0; i + 1 < numNotas; i++) {
-        if (cxNota[i] == null || cxNota[i + 1] == null) continue;
-        const g1 = gradoDe(i), g2 = gradoDe(i + 1);
-        if (!bajaQuinta(g1, g2)) continue;
-        // La marca se dibuja en el renglón de más abajo de los dos, para no meterse en el de encima
-        const yB = yRenglon(Math.max(renglon[i], renglon[i + 1])) + ALTO_RENGLON - ALTO_MARCAS;
-        if (esDominante(i)) flecha(cxNota[i], cxNota[i + 1], yB + 1.25 * SP);
-        else if (esDominante(i + 1)) corchete(cxNota[i] - ANCHO_CASILLA / 2, cxNota[i + 1] + ANCHO_CASILLA / 2, yB + 0.65 * SP);
+        if (cxNota[i] == null) continue;
+        const g1 = gradoDe(i);
+        // Flecha: la dominante que baja de quinta a su resolución, que es el acorde siguiente
+        if (esDominante(i) && cxNota[i + 1] != null && bajaQuinta(g1, gradoDe(i + 1))) {
+          const yB = yRenglon(Math.max(renglon[i], renglon[i + 1])) + ALTO_RENGLON - ALTO_MARCAS;
+          flecha(cxNota[i], cxNota[i + 1], yB + 1.25 * SP);
+          continue;
+        }
+        // Corchete: el II emparentado con su dominante, aunque entre los dos se cuele el 6/4
+        const d = dominanteDesde(i + 1);
+        if (d < 0 || esDominante(i) || cxNota[d] == null) continue;
+        if (!bajaQuinta(g1, gradoDe(d))) continue;
+        const yB = yRenglon(Math.max(renglon[i], renglon[d])) + ALTO_RENGLON - ALTO_MARCAS;
+        corchete(cxNota[i] - ANCHO_CASILLA / 2, cxNota[d] + ANCHO_CASILLA / 2, yB + 0.65 * SP);
       }
     }
 

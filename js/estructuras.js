@@ -222,6 +222,7 @@
     const inicial = lista.includes(pedido) ? pedido : lista[0];
     sel.value = String(inicial);
     sel.addEventListener('change', () => pintar(parseInt(sel.value, 10)));
+    volver();
     pintar(inicial);
     document.addEventListener('visibilitychange', () => { if (document.hidden) parar(); });
     vigilarActividad();
@@ -236,6 +237,25 @@
 
      La señal es un sello de tiempo que caduca en un par de segundos: si esta ventana se
      cierra, pierde el foco o se queda quieta, el reloj del ejercicio se para solo. */
+  /* ---- Volver a la práctica (Diego, 27/9/2026) ----
+     Esta ventana la abre el ejercicio, así que lo natural es devolverle el foco y cerrarse:
+     el alumno vuelve a donde estaba, con su ejercicio a medio hacer. Si se ha llegado aquí
+     por la dirección —sin ventana que la abriera—, se va a la aplicación por las buenas. */
+  function volver() {
+    const btn = $('#btn-volver');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      parar();
+      let abierta = false;
+      try { abierta = !!window.opener && !window.opener.closed; } catch (e) { abierta = false; }
+      if (!abierta) { location.href = 'index.html'; return; }
+      try { window.opener.focus(); } catch (e) { /* el navegador puede negarse */ }
+      window.close();
+      // Si el navegador no deja cerrarla (pestaña abierta a mano), que no se quede colgada
+      setTimeout(() => { if (!window.closed) location.href = 'index.html'; }, 300);
+    });
+  }
+
   const MARGEN_MS = 60000;
   const CLAVE_ACTIVA = 'armonizar.ayuda.activa';
   let ultimaAqui = Date.now();
