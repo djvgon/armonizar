@@ -1014,12 +1014,14 @@ body { padding: 0; max-width: none; }
 .segmentos button.activo { background: var(--marca-apagada); border-color: var(--marca-apagada); color: #fff; }
 .tecla.elegida { border-color: var(--marca-apagada); background: var(--marca-tenue); color: var(--tinta); }
 
-/* El logotipo: una cifra suya, «+6», en la serif de la música. Es notación, no una palabra,
-   y a un músico le dice de qué va esto antes de leer nada (Diego, 28/9/2026). */
-.barra-app .logo-cifra {
-  font-family: var(--fuente-texto); font-size: 1.28rem; font-weight: 700;
-  letter-spacing: -.02em; line-height: 1; display: inline-block; padding: 2px 0;
-}
+/* El logotipo: las dos corcheas, en blanco (Diego, 28/9/2026). Antes iba una cifra, «+6»,
+   pero fuera de un pentagrama se lee como un marcador de puntos, no como un cifrado.
+   Va DIBUJADO en SVG y no como carácter: el símbolo ♫ depende de qué fuente lo tenga —en
+   este mismo contenedor salía una sola corchea— y en macOS e iOS se pinta como emoji de
+   color, que además no obedece al `color`. Dibujado, es igual en todas partes y hereda la
+   tinta que se le ponga. */
+.barra-app .logo-nota { display: block; width: 26px; height: 24px; fill: #ffffff; }
+.barra-app .marca { display: inline-flex; align-items: center; }
 
 /* Las dos ayudas, a continuación de los grados del ejercicio */
 .ayudas-fila { display: contents; }
