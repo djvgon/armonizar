@@ -521,7 +521,7 @@
 
   function responderFuncion(f) {
     const campo = estado.campo === 'funcion2' && esDobleFun(estado.activa) ? 'funcion2' : 'funcion';
-    if (estado.corregido || estado.modoFun !== 'pedir') return;
+    if (estado.modoFun !== 'pedir' || !reabrir()) return;
     const i = estado.activa;
     estado.campo = campo;
     if (campo === 'funcion2') estado.funciones2[i] = f; else estado.funciones[i] = f;
@@ -781,8 +781,23 @@
   const campoInicial = () => (conFuncion() ? 'funcion' : pideGrado() ? 'romano' : 'cifra');
   const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : campo === 'funcion2' ? estado.funciones2[j] : campo === 'funcion' ? estado.funciones[j] : estado.romanos[j]);
 
+  /* ---- Reabrir el ejercicio sin pulsar nada (Diego, 27/9/2026) ----
+     Después de corregir, el verde y el rojo son INFORMACIÓN, no una puerta cerrada: en
+     cuanto el alumno toca una casilla o una tecla de la paleta, el ejercicio se reabre solo.
+     Antes había que pulsar «Corregir los errores» primero, y además el reintento se sentía
+     como si solo se pudiera tocar lo rojo; pero para arreglar un rojo hay veces que hay que
+     mover un verde —con la fundamental acertada y el cifrado mal, por ejemplo— y entonces
+     no había salida. Ahora se toca cualquier casilla, del color que sea.
+     Solo se queda cerrado cuando ya está la solución a la vista: ahí no hay nada que hacer. */
+  function reabrir() {
+    if (!estado.corregido) return true;
+    if (estado.mostrarSolucion) return false;
+    corregirErrores();
+    return true;
+  }
+
   function seleccionar(i, campo) {
-    if (estado.corregido) return;
+    if (!reabrir()) return;
     campo = campo || campoInicial();
     if (campo === 'tonalidad') { if (!tonalidadEditable() || i === 0) return; }
     else if ((campo === 'funcion' || campo === 'funcion2') && !conFuncion()) return;
@@ -814,7 +829,7 @@
   }
 
   function responderCifra(id) {
-    if (estado.corregido) return;
+    if (!reabrir()) return;
     estado.campo = 'cifra';
     const i = estado.activa;
     estado.respuestas[i] = id;
@@ -939,7 +954,7 @@
   function parar() { Sonido.parar(); Voz.parar(); marcarSonando(null); $('#btn-parar').hidden = true; }
 
   function responderRomano(r) {
-    if (estado.corregido || !pideGrado()) return;
+    if (!pideGrado() || !reabrir()) return;
     const i = estado.activa;
     // El grado va a la mitad activa de la casilla (en un pivote hay dos: anterior y nueva)
     const campo = estado.campo === 'romano2' && esDoble(i) ? 'romano2' : 'romano';
@@ -952,7 +967,7 @@
   }
 
   function borrar() {
-    if (estado.corregido) return;
+    if (!reabrir()) return;
     const i = estado.activa;
     if (estado.campo === 'tonalidad') {
       if (!tonalidadEditable() || !estado.marcas[i]) return;
@@ -1342,7 +1357,7 @@
       for (const c of camposDe(j)) if (!acertada(j, c)) { estado.activa = j; estado.campo = c; break busqueda; }
     $('#resultado').hidden = true;
     pintar();
-    aviso('En verde, lo que ya estaba bien; en rojo, lo que hay que cambiar. Puedes tocar cualquier casilla —también las verdes— y vuelve a pulsar «Corregir».');
+    aviso('En verde, lo que ya estaba bien. Puedes cambiar cualquier casilla —también las verdes— y volver a pulsar «Corregir».');
   }
 
   function verSolucion() {
@@ -1412,9 +1427,9 @@
       const queArreglar = (porArreglar > 1 ? 'hay ' + porArreglar + ' errores de conducción de voces' : 'hay un error de conducción de voces') + ' en ' + listaNotas;
       html += '<p>' + (respuestasBien
         ? 'Los grados y los cifrados están bien, pero en la armonización que producen ' + queArreglar + '. Pulsa esas notas en el pentagrama (están en <span class="ref-mal">rojo</span>) para ver por qué, y prueba otra de las cifras admisibles.'
-        : 'Las casillas en rojo tienen algún error' + (hayQueArreglar ? ', y en la armonización ' + queArreglar : '') + '. Puedes corregir solo esas, o ver la solución.')
+        : 'Las casillas en rojo tienen algún error' + (hayQueArreglar ? ', y en la armonización ' + queArreglar : '') + '. Toca cualquier casilla —también las verdes— para cambiarla, y vuelve a pulsar «Corregir».')
         + '</p>'
-        + '<div class="botonera botonera-resultado"><button type="button" id="btn-errores" class="primario">Corregir los errores</button>'
+        + '<div class="botonera botonera-resultado">'
         + '<button type="button" id="btn-solucion">Ver la solución</button></div>';
     } else {
       html += '<ol class="errores">';

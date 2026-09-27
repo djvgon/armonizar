@@ -42,6 +42,8 @@ body {
   margin-bottom: 14px;
 }
 .sobretitulo { margin: 0; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-suave); }
+/* Vacío, sigue dando su renglón de aire sobre el título (Diego, 27/9/2026) */
+.sobretitulo:empty { min-height: 1.2em; }
 h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .instruccion { margin: 0; color: var(--tinta-suave); }
 /* Segunda línea del enunciado: cómo responde la aplicación (más suave que la tarea) */
@@ -102,6 +104,11 @@ svg.partitura .boton-sonar.sonando .triangulo { fill: #fff; }
 .segmentos button.activo { background: var(--acento); color: #fff; }
 .boton-pequeno { font: inherit; font-size: .9rem; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); cursor: pointer; }
 .boton-pequeno:hover { border-color: var(--acento); }
+/* Un botón que se vea botón: relleno y oscuro, como «Corregir» o «Escuchar la
+   propuesta», invitando a pulsarlo. El de contorno claro no lo parecía
+   (Diego, 27/9/2026). */
+.boton-pequeno.boton-lleno { background: var(--acento); border-color: var(--acento); color: #fff; box-shadow: var(--sombra); }
+.boton-pequeno.boton-lleno:hover { background: var(--tinta); border-color: var(--tinta); }
 svg.partitura .acorde.mal text { fill: var(--mal); }
 svg.partitura .acorde.mal .plica, svg.partitura .acorde.mal .linea { stroke: var(--mal); }
 
@@ -436,7 +443,9 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 @media (max-width: 719px), (max-height: 559px) {
   body { padding: 10px 8px 24px; }
   h1 { font-size: 1.15rem; margin: 0 0 2px; }
+  /* En pantalla estrecha el hueco vacío no se mantiene: ahí el sitio se aprovecha */
   .sobretitulo { font-size: .7rem; }
+  .sobretitulo:empty { display: none; min-height: 0; }
   .cabecera { gap: 8px 12px; margin-bottom: 8px; }
   .instruccion { font-size: .85rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
   .instruccion.desplegada { display: block; }
@@ -706,10 +715,12 @@ svg.partitura .marca-corchete { fill: none; stroke: var(--tinta-suave); stroke-w
    de las fundamentales y en negrita (Diego, 27/9/2026). */
 svg.partitura .rotulo-ton { font-family: Georgia, "Times New Roman", serif; font-size: 16px;
   font-weight: 700; fill: var(--tinta); pointer-events: none; }
-/* Su casilla, más clarita que las de los acordes: se ve que pertenece al renglón de las
-   fundamentales sin competir con ellas. */
+/* Su casilla es la MISMA que la de las fundamentales de los acordes —pertenece a ese
+   renglón—; lo que la distingue es la negrita (Diego, 27/9/2026). No se pulsa, así que no
+   se enciende al pasar por encima. */
 svg.partitura .casilla-rotulo-ton { cursor: default; }
-svg.partitura .casilla-rotulo-ton .fondo { fill: #f4f1ea; stroke: var(--linea); }
+svg.partitura .casilla-rotulo-ton .fondo { fill: var(--papel); stroke: var(--linea); }
+svg.partitura .casilla-rotulo-ton:hover .fondo { stroke: var(--linea); }
 
 /* Los colores de las funciones tonales · combinación TIERRA (prueba, 27/9/2026).
    El color refuerza, nunca informa solo: la letra T · S · D sigue estando. La corrección
@@ -723,3 +734,40 @@ svg.partitura .casilla-fun.fun-D:not(.mal):not(.bien) .fun { fill: #B5502F; }
 /* La dominante de la dominante, con el mismo color de dominante pero el borde partido */
 svg.partitura .casilla-fun.fun-DD .fondo { fill: #f7e9e3; stroke: #B5502F; stroke-dasharray: 4 2.5; }
 svg.partitura .casilla-fun.fun-DD:not(.mal):not(.bien) .fun { fill: #B5502F; }
+
+/* ---------------------------------------------------------------------------------------
+   Los colores de las funciones tonales en las teclas (combinación «Tierra», Diego 27/9/2026)
+
+   Las mismas tres tintas que llevan las casillas de función en la partitura: T azul pizarra,
+   S oliva, D terracota. El color refuerza, nunca informa solo —la letra y el número romano
+   siguen ahí—, y así la paleta enseña de qué familia es cada grado sin tener que leerlo.
+
+   El VI va PARTIDO EN DIAGONAL, mitad tónica y mitad subdominante, porque eso es lo que el
+   acorde es: tónica cuando viene de la dominante (cadencia rota) y subdominante cuando va
+   hacia ella. El III se queda sin color: no tiene función tonal.
+   --------------------------------------------------------------------------------------- */
+:root {
+  --fun-t: #33617A;  --fun-t-suave: #e8eef2;
+  --fun-s: #6F8F4A;  --fun-s-suave: #edf1e4;
+  --fun-d: #B5502F;  --fun-d-suave: #f7e9e3;
+}
+.tecla-fun[data-funcion="T"], .tecla-romano[data-romano="I"] {
+  background: var(--fun-t-suave); border-color: var(--fun-t); color: var(--fun-t); }
+.tecla-fun[data-funcion="S"], .tecla-romano[data-romano="II"], .tecla-romano[data-romano="IV"] {
+  background: var(--fun-s-suave); border-color: var(--fun-s); color: var(--fun-s); }
+.tecla-fun[data-funcion="D"], .tecla-romano[data-romano="V"], .tecla-romano[data-romano="VII"] {
+  background: var(--fun-d-suave); border-color: var(--fun-d); color: var(--fun-d); }
+/* La dominante de la dominante: el color de la dominante con el borde partido */
+.tecla-fun[data-funcion="DD"], .tecla-romano[data-romano="V/V"] {
+  background: var(--fun-d-suave); border-color: var(--fun-d); color: var(--fun-d);
+  border-style: dashed; }
+/* El VI, las dos cosas a la vez */
+.tecla-romano[data-romano="VI"] {
+  background: linear-gradient(135deg, var(--fun-t-suave) 0 49.4%, var(--fun-s) 49.4% 50.6%, var(--fun-s-suave) 50.6% 100%);
+  border-color: var(--fun-s); color: var(--fun-t); }
+/* El III no tiene función tonal, y «ninguna» tampoco */
+.tecla-fun[data-funcion="N"], .tecla-romano[data-romano="III"] {
+  background: var(--fondo); border-color: var(--linea); color: var(--tinta-suave); }
+/* Pulsada, elegida o apagada mandan sobre el color de la familia */
+.tecla-fun:hover, .tecla-romano:hover { border-color: var(--acento); }
+.tecla.elegida { border-color: var(--acento); background: var(--acento-suave); color: var(--tinta); }
