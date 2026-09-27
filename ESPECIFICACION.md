@@ -3031,6 +3031,26 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     `--marca-apagada`, que sobre el gris del panel se quedaba en 4,2:1; este da 5,9:1—, con
     el valor en tinta normal debajo. Dos niveles claros: rótulo morado, valor negro.
 
+139. **La dominante, en naranja** (28/9/2026, Diego). Corrige otra vez el reparto de la
+    decisión 135:
+
+        T  azul #0B5CD5        S  amarillo #F2C200        D  naranja #FF7A00
+
+    La dominante pasa a llevar **tinta oscura** (`#1F0E00`), porque el naranja con letra
+    blanca da 2,6:1 y es ilegible; la función hueca —la DD y las V/x— queda en contorno
+    naranja con la letra en `#8A3B00`.
+    **A tener en cuenta**: el naranja está a **19° de tono** del amarillo de la
+    subdominante (28,7° frente a 48,1°), donde el rojo estaba a 137°, y ahora las dos
+    funciones comparten familia cálida y tinta oscura. Se leen distintas, pero ya no saltan
+    a la vista como opuestas. Si al verlo en clase se confunden, hay dos salidas sin tocar
+    el amarillo: llevar el naranja al rojo-naranja `#FF5A00` (27° de separación) o apagar el
+    amarillo hacia un oro más verdoso.
+
+140. **«Sonar al elegir» encabeza las paletas** (28/9/2026, Diego). Deja el pie y sube al
+    **primer renglón** de la zona de paletas —el de la función tonal— pegado al borde
+    izquierdo del recuadro de la partitura. El pie se queda solo con el «Cuadro de
+    cifrados», centrado.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

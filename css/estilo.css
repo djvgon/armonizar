@@ -800,7 +800,7 @@ svg.partitura .casilla-rotulo-ton:hover .fondo { stroke: var(--linea); }
 :root {
   --fun-t: #0B5CD5;  --fun-t-letra: #ffffff;
   --fun-s: #F2C200;  --fun-s-letra: #1A1300;
-  --fun-d: #D62828;  --fun-d-letra: #ffffff;
+  --fun-d: #FF7A00;  --fun-d-letra: #1F0E00;
 }
 
 /* ---- En la partitura ---- */
@@ -812,7 +812,7 @@ svg.partitura .casilla-fun.fun-D .fondo { fill: var(--fun-d); stroke: var(--fun-
 svg.partitura .casilla-fun.fun-D:not(.mal):not(.bien) .fun { fill: var(--fun-d-letra); }
 /* HUECA: la dominante de otro tono. Mismo color, sin relleno. */
 svg.partitura .casilla-fun.fun-DD .fondo { fill: var(--papel); stroke: var(--fun-d); stroke-width: 3; }
-svg.partitura .casilla-fun.fun-DD:not(.mal):not(.bien) .fun { fill: #9B1C1C; }
+svg.partitura .casilla-fun.fun-DD:not(.mal):not(.bien) .fun { fill: #8A3B00; }
 
 /* La corrección: contorno y símbolo, nunca relleno */
 svg.partitura .casilla.bien .fondo { fill: var(--papel); stroke: var(--bien); stroke-width: 3; }
@@ -832,7 +832,7 @@ svg.partitura .marca-mal  { fill: var(--mal); }
   background: var(--fun-d); border-color: var(--fun-d); color: var(--fun-d-letra); }
 /* Hueca: la de otro tono */
 .tecla-fun[data-funcion="DD"], .tecla-romano[data-romano="V/V"] {
-  background: var(--papel); border-color: var(--fun-d); border-width: 2px; color: #9B1C1C; }
+  background: var(--papel); border-color: var(--fun-d); border-width: 2px; color: #8A3B00; }
 /* El VI es las dos cosas: mitad tónica, mitad subdominante. Con la subdominante en
    amarillo, la letra ya no puede ser blanca en las dos mitades: se dibuja DOS VECES, la
    segunda recortada a la mitad derecha y en tinta oscura, así que la «V» sale blanca sobre
@@ -1142,16 +1142,13 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
 #control-realizacion { order: 3; margin-left: 0; margin-right: 0;
   border-left: 1px solid var(--linea); padding-left: 18px; }
 
-/* El pie de las paletas: la casilla a la izquierda, en la columna de los rótulos, y el
-   acceso al cuadro de cifrados centrado bajo las teclas que explica. */
-.paletas-pie {
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  gap: 8px; margin: 6px 0 0;
-}
-.paletas-pie .control-sonar { grid-column: 1; justify-self: start; margin: 0; padding: 0; }
-.paletas-pie #btn-cifrados { grid-column: 2; justify-self: center; }
+/* «Sonar al elegir» encabeza las paletas: primer renglón, el de la función tonal, pegado
+   al borde izquierdo del recuadro de la partitura. Y el pie, con el acceso al cuadro de
+   cifrados centrado bajo las teclas que explica. */
+.paletas > .control-sonar { display: flex; margin: 0 0 2px; padding: 0; }
+.paletas-pie { display: flex; justify-content: center; margin: 6px 0 0; }
 @media (max-width: 719px), (max-height: 559px) {
-  .paletas-pie { gap: 4px; margin: 2px 0 0; }
+  .paletas-pie { margin: 2px 0 0; }
   .paletas-pie #btn-cifrados { font-size: .7rem; padding: 2px 8px; }
 }
 
@@ -1165,7 +1162,7 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
 .ficha-romano[data-romano="V"], .ficha-romano[data-romano="VII"] {
   background: var(--fun-d); border-color: var(--fun-d); color: var(--fun-d-letra); }
 /* La de otro tono, hueca; el III, sin función, como estaba */
-.ficha-romano[data-romano="V/V"] { background: var(--papel); border-color: var(--fun-d); border-width: 2px; color: #9B1C1C; }
+.ficha-romano[data-romano="V/V"] { background: var(--papel); border-color: var(--fun-d); border-width: 2px; color: #8A3B00; }
 .ficha-romano[data-romano="III"] { background: var(--papel); border-color: var(--linea); color: var(--tinta); }
 /* El VI, mitad tónica y mitad subdominante, con la letra a dos tintas como su tecla */
 .ficha-romano[data-romano="VI"] {
