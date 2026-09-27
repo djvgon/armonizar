@@ -154,11 +154,8 @@ svg.partitura .boton-sonar.sonando .triangulo { fill: #fff; }
 .segmentos button.activo { background: var(--acento); color: #fff; }
 .boton-pequeno { font: inherit; font-size: .9rem; padding: 5px 12px; border-radius: var(--radio-control); border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); cursor: pointer; }
 .boton-pequeno:hover { border-color: var(--acento); }
-/* Un botón que se vea botón: relleno y oscuro, como «Corregir» o «Escuchar la
-   propuesta», invitando a pulsarlo. El de contorno claro no lo parecía
-   (Diego, 27/9/2026). */
-.boton-pequeno.boton-lleno { background: var(--acento); border-color: var(--acento); color: #fff; }
-.boton-pequeno.boton-lleno:hover { background: var(--tinta); border-color: var(--tinta); }
+/* (La clase `boton-lleno` desapareció con la decisión 133: ahora TODOS los botones van
+   rellenos, así que no hacía falta una clase para pedirlo.) */
 svg.partitura .acorde.mal text { fill: var(--mal); }
 svg.partitura .acorde.mal .plica, svg.partitura .acorde.mal .linea { stroke: var(--mal); }
 
@@ -1010,7 +1007,12 @@ body { padding: 0; max-width: none; }
 
 /* Lo elegido, en el morado apagado: pertenece a la familia de la marca sin gritar como la
    banda ni desaparecer como el ciruela (Diego, 28/9/2026). */
-:root { --marca-apagada: #A169C2; --marca-tenue: #F3EEF6; --marca-texto: #7B00C2; }
+/* Aquí se redefinía además `--marca-texto` con el morado oscuro de la escala tonal
+   (#7B00C2), y esa variable es LA TINTA DE LA BANDA Y DE LOS BOTONES DE COLOR: el título
+   de la banda, su selector, «Cerrar» y el botón «Comprobar» salían en morado oscuro sobre
+   morado eléctrico en vez de en blanco, y eso en las cuatro ventanas (Diego, 28/9/2026).
+   El morado como tinta no lo usa nada, así que se va y la banda vuelve a ser blanca. */
+:root { --marca-apagada: #A169C2; --marca-tenue: #F3EEF6; }
 .segmentos button.activo { background: var(--marca-apagada); border-color: var(--marca-apagada); color: #fff; }
 .tecla.elegida { border-color: var(--marca-apagada); background: var(--marca-tenue); color: var(--tinta); }
 
@@ -1040,3 +1042,77 @@ body { padding: 0; max-width: none; }
 @media (max-width: 719px), (max-height: 559px) {
   #control-grados { border-left: none; padding-left: 0; }
 }
+
+/* =======================================================================================
+   LA MISMA BANDA EN LAS CUATRO VENTANAS  (Diego, 28/9/2026)
+
+   La barra en negro ciruela y la banda en morado eléctrico han de funcionar igual en la
+   pantalla del alumno, en las dos ventanas de ayuda y en el configurador: logotipo en la
+   esquina, texto en blanco sobre el morado y los mandos con el mismo traje. Lo que se
+   salía eran los rótulos y los botones que cada ventana de ayuda se había estilado por su
+   cuenta —gris de documento sobre el morado— y el paso del ratón, que devolvía letra
+   oscura. Sobre el morado, la letra es SIEMPRE blanca; lo que se enciende, se va al negro
+   ciruela, que es el otro color de la casa.
+   ======================================================================================= */
+.cabecera .mandos-ayuda label, .cabecera label { color: var(--marca-texto); }
+/* Los segmentos que viven en la banda (la posición, en el cuadro de cifrados): el mismo
+   blanco translúcido del selector, y el elegido en negro ciruela, el único de la banda. */
+.cabecera #posicion { display: inline-flex; gap: 4px; border: 0; }
+.cabecera #posicion button {
+  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.42);
+  color: var(--marca-texto); border-radius: var(--radio-control); }
+.cabecera #posicion button.elegida {
+  background: var(--barra); border-color: var(--barra); color: var(--barra-texto); }
+.cabecera .btn-volver:hover, .cabecera .boton-pequeno:hover, .cabecera .enlace-boton:hover,
+.cabecera #posicion button:hover {
+  background: var(--barra); color: var(--barra-texto); border-color: var(--barra); }
+
+/* «Sonar al elegir», con las teclas que hacen sonar (Diego, 28/9/2026): no es una
+   herramienta de audio como «Escuchar tono», es lo que pasa al pulsar una tecla. */
+.control-sonar {
+  display: flex; align-items: center; gap: 7px; margin: 4px 0 0; padding: 0 12px;
+  font-family: var(--fuente-ui); font-size: .82rem; color: var(--tinta-suave);
+}
+@media (max-width: 719px), (max-height: 559px) {
+  .control-sonar { margin: 0; padding: 0 3px; font-size: .66rem; gap: 4px; }
+  .control-sonar input { width: 13px; height: 13px; }
+}
+
+/* =======================================================================================
+   DECISIÓN 133 · LOS BOTONES, RELLENOS Y CON LA LETRA EN BLANCO  (Diego, 28/9/2026)
+
+   Un botón de contorno claro con letra oscura no se lee como botón: parece un rótulo. Así
+   que todo lo que sea PULSAR va relleno en el negro ciruela de la barra con la letra en
+   blanco —los botones negros que piden acción del software que nos gusta—, y al pasar por
+   encima se enciende en el morado de la marca. El color de la casa queda para la acción
+   principal («Comprobar») y para lo que está elegido.
+   Quedan fuera, y a propósito:
+     · las TECLAS de las paletas, que no son acciones sino símbolos musicales, y las de
+       función llevan además el color de su función (decisión 132);
+     · los ▶ dibujados DENTRO de la partitura, que pertenecen al pentagrama;
+     · los mandos de la banda, que tienen su propio traje (blanco translúcido sobre el
+       morado) y ya llevan la letra blanca.
+   ======================================================================================= */
+.boton-pequeno, .botonera button, button.primario, button.secundario,
+.btn-volver, .btn-datos, .enlace-boton, .ref-boton, .btn-sonar {
+  background: var(--acento); border: 1px solid var(--acento); color: #fff;
+}
+/* Los segmentos conservan su marco común y su raya de separación, que ahora ha de verse
+   sobre el ciruela: en blanco translúcido. */
+.segmentos { border-color: var(--acento); }
+.segmentos button { background: var(--acento); color: #fff; border-right-color: rgba(255,255,255,.28); }
+.boton-pequeno:hover, .botonera button:hover, button.primario:hover, button.secundario:hover,
+.btn-volver:hover, .btn-datos:hover, .enlace-boton:hover, .segmentos button:hover, .btn-sonar:hover {
+  background: var(--marca); border-color: var(--marca); color: var(--marca-texto);
+}
+/* La acción principal, en el morado; lo elegido, en el morado apagado. Vale también para
+   los «primario» que viven fuera de una botonera, como el «Igualar» del semáforo. */
+button.primario { background: var(--marca); border-color: var(--marca); color: var(--marca-texto); }
+button.primario:hover { background: var(--marca-honda); border-color: var(--marca-honda); }
+.segmentos button.activo, .segmentos button.activo:hover {
+  background: var(--marca-apagada); border-color: var(--marca-apagada); color: #fff; }
+/* Parar es lo único rojo: detiene el sonido */
+.boton-pequeno.parar { background: var(--mal); border-color: var(--mal); color: #fff; }
+.boton-pequeno.parar:hover { background: var(--mal); border-color: var(--mal); }
+/* Y el renglón de la barra: sus botones ya no llevan tinta oscura */
+.realizacion-barra .boton-pequeno { color: #fff; }

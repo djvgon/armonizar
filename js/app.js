@@ -217,6 +217,10 @@
     } else if (estado.modoEj === 'audicion') {
       notas.push('Al terminar verás el bajo y la realización a cuatro voces.');
     }
+    /* El aviso del envío, con el enunciado (Diego, 28/9/2026): el alumno tiene que saber
+       desde el principio que enviar exige terminar la ficha, no descubrirlo al final. */
+    if (estado.ficha && Envio.disponible())
+      notas.push('Podrás <b>enviar el resultado</b> al terminar los ' + estado.ficha.lista.length + ' ejercicios de la ficha.');
     $('#instruccion').innerHTML = frases.join(' ')
       + (notas.length ? '<span class="instruccion-nota">' + notas.join(' ') + '</span>' : '');
     /* Lección y repertorio de acordes. Cada lección tiene el suyo, y en una ficha que
@@ -714,12 +718,11 @@
        no descubrirlo cuando ya no le queda tiempo. */
     /* El renglón de progreso se queda con lo que NO se ve solo (Diego, 28/9/2026): el
        recuento de notas es redundante —basta mirar las casillas— y el «Ejercicio k de n»
-       ya lo dice la banda. Sobreviven el número de intento y el aviso del envío, que son
-       cosas que el alumno no puede deducir de la pantalla. */
+       ya lo dice la banda. Y el aviso del envío subió al enunciado (Diego, 28/9/2026), que
+       es donde se dice lo que la ficha exige: aquí abajo, después de la partitura, llegaba
+       tarde. Solo sobrevive el número de intento. */
     const partes = [];
     if (enCurso) partes.push('Intento ' + (estado.intento + 1));
-    if (estado.ficha && Envio.disponible())
-      partes.push('podrás enviar el resultado al terminar los ' + estado.ficha.lista.length + ' ejercicios');
     const texto = partes.join(' · ');
     $('#progreso').textContent = texto;
     $('#progreso').hidden = !texto;
@@ -877,7 +880,7 @@
 
   /* ---------- Escuchar ----------
      Tres cosas pueden sonar, siempre con el bajo doblado a la octava grave:
-       · «Tono inicial»: la cadencia I–IV–V7–I de la tonalidad inicial, para situar el oído;
+       · «Escuchar tono»: la cadencia I–IV–V7–I de la tonalidad inicial, para situar el oído;
        · «Escuchar propuesta»: lo que propone el ejercicio. En Análisis, la armonización
          que se ve; en Audición, la armonización que se ha de reconocer (no se ve); en
          Armonización, solo el bajo (no hay armonización propuesta que oír).
@@ -1178,7 +1181,7 @@
     const notas = Reglas.notasDe(estado.ejercicio);
     const n = res.length;
     const aciertos = res.filter(r => r.ok).length;
-    const partes = [aciertos + ' de ' + n + ' notas correctas.'];
+    const partes = [aciertos + ' de ' + n + ' acordes correctos.'];
     const esq = esquemaDelAlumno();
     if (esq) partes.push('Tu armonización hace ' + esq.dicho + '.' + (esq.cadencia ? ' Es una ' + esq.cadencia.split(' (')[0] + '.' : ''));
     const rm = estado.resultadoMod;
@@ -1399,7 +1402,7 @@
     const notas = Reglas.notasDe(ej);
     const caja = $('#resultado');
     const pct = Math.round(100 * aciertos / n);
-    let html = '<h2>' + aciertos + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
+    let html = '<h2>' + aciertos + ' de ' + n + ' acordes correctos <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
     const aciertosFun = res.filter(r => r.okFuncion && r.okFuncion2).length;
     const enlacesMal = res.filter(r => !r.okEnlace).length;
     const porArreglar = (estado.avisosRespuesta || []).length;          // los que ha causado el alumno
@@ -1553,7 +1556,7 @@
     const bien = m.reduce((a, x) => a + (x ? x.aciertos : 0), 0);
     const primero = m.reduce((a, x) => a + (x && x.primero !== null && x.primero !== undefined ? x.primero : (x ? x.aciertos : 0)), 0);
     const pct = n ? Math.round(100 * bien / n) : 0;
-    let html = '<h2>Ficha terminada: ' + bien + ' de ' + n + ' notas correctas <span class="pct">(' + pct + ' %)</span></h2>';
+    let html = '<h2>Ficha terminada: ' + bien + ' de ' + n + ' acordes correctos <span class="pct">(' + pct + ' %)</span></h2>';
     if (primero !== bien) html += '<p class="desglose">Al primer intento de cada ejercicio: ' + primero + ' de ' + n + '.</p>';
     html += '<ol class="resumen-ficha">';
     f.lista.forEach((e, k) => {

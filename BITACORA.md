@@ -468,6 +468,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-0130 | Sobre el morado, la letra en blanco —se elimina el `--marca-texto` morado que teñía de oscuro la banda y «Comprobar»—; la misma cabecera y los mismos mandos en las cuatro ventanas; todos los botones rellenos con la letra en blanco (133). Ajustes del alumno (134): fuera el renglón «Tonalidad», «Escuchar tono», el aviso del envío al enunciado, «sonar al elegir» con las paletas y el informe contando acordes |
 | 20260928-0030 | `f.html`, el redirector de los códigos QR: lo impreso lleva una dirección corta y fija (128) |
 | 20260928-0940 | Funciones en color plano según Kandinsky —azul la tónica, rojo la subdominante, amarillo la dominante— y la corrección por contorno y símbolo, no por relleno (132); rótulos de la barra unificados y la posición melódica dicha por la nota de la soprano |
 | 20260928-0210 | Cabecera de aplicación: barra en negro ciruela y banda en morado eléctrico #B026FF; el morado para identidad y llamada a la acción, el ciruela para los estados de trabajo (131) |

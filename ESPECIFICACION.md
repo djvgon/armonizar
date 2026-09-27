@@ -192,7 +192,7 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
      **el bajo doblado a la octava grave** en toda reproducción (para que
      destaque y ayude a reconocer las inversiones); nombres y comportamiento
      fijados por Diego el 20/9/2026:
-     - «▶ Tono inicial»: cadencia I–IV–V7–I en la tonalidad inicial, para
+     - «▶ Escuchar tono»: cadencia I–IV–V7–I en la tonalidad inicial, para
        situar el oído.
      - «▶ Escuchar propuesta»: lo que propone el ejercicio. En Análisis, la
        armonización que se ve; en Audición, la armonización que hay que
@@ -2933,6 +2933,44 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       aumentada. **Sin nada** = sin función tonal (el III). Se descartó distinguirlas por
       intensidad: una superficie más pálida ya significa «no disponible» en esta interfaz.
     - El **VI** sigue partido, mitad tónica y mitad subdominante.
+
+133. **Sobre el color, la letra va en blanco; y la cabecera es la misma en las cuatro
+    ventanas** (28/9/2026, Diego).
+    - **La avería que lo destapó.** Un `:root` de más al final de `css/estilo.css` —resto
+      de las pruebas de escala tonal— redefinía `--marca-texto` con el morado oscuro
+      `#7B00C2`. Esa variable es *la tinta de lo que va sobre el morado*: el título de la
+      banda, su selector, «Cerrar» y el botón «Comprobar» salían en morado oscuro sobre
+      morado eléctrico, en las cuatro ventanas. Se elimina esa redefinición: sobre el
+      morado, la letra es **siempre blanca**.
+    - **La misma banda en las cuatro ventanas.** Barra en negro ciruela con el logotipo en
+      la esquina y la banda en morado eléctrico debajo, con idéntico comportamiento en la
+      pantalla del alumno, las dos de ayuda y el configurador. Lo que se salía eran los
+      mandos que cada ventana de ayuda se había estilado por su cuenta —rótulos en gris de
+      documento sobre el morado, segmentos blancos— y el paso del ratón, que devolvía letra
+      oscura. Regla única: **sobre el morado, todo blanco**; lo que se enciende o está
+      elegido se va al **negro ciruela**, que es el otro color de la casa.
+    - **Los botones, rellenos.** Un botón de contorno claro con letra oscura no se lee como
+      botón: parece un rótulo. Todo lo que sea pulsar va relleno en negro ciruela con la
+      letra en blanco, y al pasar por encima se enciende en el morado. El morado queda para
+      la **acción principal** («Comprobar», «Igualar») y para lo **elegido** (en su versión
+      apagada). Quedan fuera, a propósito: las **teclas** de las paletas y del cuadro de
+      cifrados —no son acciones, son símbolos musicales, y las de función llevan el color de
+      su función (decisión 132)— y los **▶ dibujados dentro de la partitura**, que
+      pertenecen al pentagrama. Desaparece la clase `boton-lleno`: ya no hace falta pedir
+      lo que es la norma.
+
+134. **Ajustes de la pantalla del alumno** (28/9/2026, Diego).
+    - **Fuera el renglón «Tonalidad»** del recuadro de referencia: la tonalidad la dice el
+      cifrado del ejercicio o la pone el alumno en la fila de tonalidades, según se marque
+      en el configurador; tenerla además escrita ahí la regalaba.
+    - **«▶ Tono inicial» pasa a «▶ Escuchar tono»**, en la misma forma que sus dos vecinos.
+    - **El aviso del envío sube al enunciado**: «Podrás enviar el resultado al terminar los
+      N ejercicios de la ficha» es una condición de la tarea, y debajo de la partitura
+      llegaba tarde. El renglón de progreso se queda solo con el número de intento.
+    - **«Sonar al elegir» baja con las paletas**: no es una herramienta de audio como
+      «Escuchar tono», es lo que hacen esas teclas al pulsarlas.
+    - **El informe cuenta ACORDES, no notas**: «4 de 4 acordes correctos». Lo que se juzga
+      en cada casilla es el acorde, no la nota del bajo.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
