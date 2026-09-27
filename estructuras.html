@@ -7,8 +7,8 @@
   <meta name="description" content="Las estructuras armónicas con las que se resuelven los ejercicios de cada tema, con su realización a cuatro voces y un botón para escucharlas.">
   <meta property="og:title" content="Práctica armónica · Estructuras armónicas del tema">
   <meta property="og:description" content="Las estructuras armónicas con las que se resuelven los ejercicios de cada tema.">
-  <link rel="stylesheet" href="css/bravura.css?v=20260927-2330">
-  <link rel="stylesheet" href="css/estilo.css?v=20260927-2330">
+  <link rel="stylesheet" href="css/bravura.css?v=20260928-0940">
+  <link rel="stylesheet" href="css/estilo.css?v=20260928-0940">
   <style>
     /* La ventana de ayuda tiene su propio aire: aquí no se escribe, solo se mira y se
        escucha, así que los fragmentos van más sueltos que en la hoja de ejercicios. */
@@ -19,9 +19,9 @@
     .cuadro { padding: 0 14px 26px; max-width: 1500px; margin: 0 auto; font-size: .92rem; }
     /* La banda del esquema manda sobre los puntos para el repaso que van debajo, así que
        no puede ser más pequeña que ellos (Diego, 27/9/2026). */
-    .esquema { margin: 16px 0 6px; padding: 5px 12px; background: #f2ede3; border-radius: 4px;
+    .esquema { margin: 16px 0 6px; padding: 5px 12px; background: transparent; border-bottom: 1px solid var(--linea); border-radius: 0;
                font-size: 1rem; letter-spacing: .02em; }
-    .renglon { border-top: 1px dotted #c9c0b2; padding: 7px 0 2px; }
+    .renglon { border-top: 1px solid var(--linea); padding: 7px 0 2px; }
     .esquema + .renglon { border-top: 0; }
     .estructura { font-weight: 700; font-size: .92rem; margin-bottom: 3px; }
     .piezas { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: flex-start; }
@@ -35,43 +35,51 @@
        dejaba frases sin final (Diego, 27/9/2026). El botón no se deforma por ello. */
     .cabeza-pieza { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 2px;
                     min-width: 0; }
-    .cabeza-pieza .var { font-style: italic; color: #7a6a55; font-size: .78rem;
+    .cabeza-pieza .var { font-style: italic; color: var(--tinta-suave); font-size: .78rem;
                          line-height: 1.35; min-width: 0; }
     /* El fragmento conserva su tamaño aunque no quepa: se desplaza a lo largo. Así la
        música mide lo mismo en el móvil que en el ordenador (Diego, 27/9/2026). */
     .pieza .pent { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .pieza .pent svg { max-width: none; height: auto; }
-    .btn-sonar { font: inherit; font-size: .74rem; line-height: 1.5; padding: 1px 9px;
-                 border-radius: 999px; border: 1px solid #b9ad99; background: #fff;
+    .btn-sonar { font: inherit; font-family: var(--fuente-ui); font-size: .74rem; line-height: 1.5; padding: 2px 9px;
+                 border-radius: var(--radio-control); border: 1px solid var(--linea); background: var(--papel);
                  cursor: pointer;
                  /* Siempre finito: ni se estira ni se parte en dos renglones aunque la
                     leyenda de al lado ocupe dos (Diego, 27/9/2026). */
                  flex: 0 0 auto; white-space: nowrap; align-self: flex-start; }
-    .btn-sonar:hover { background: #f4efe6; }
+    .btn-sonar:hover { border-color: var(--acento); }
     /* La cabecera se queda pegada arriba: así el botón de cerrar está SIEMPRE arriba a la
        derecha, se haya bajado lo que se haya bajado, y el selector de tema con él
        (Diego, 27/9/2026). */
-    .cabecera { position: sticky; top: 0; z-index: 30; background: #faf8f3;
-                box-shadow: 0 1px 0 #e6dfd2; align-items: flex-start; gap: 16px; }
+    /* La banda de esta ventana, además, se queda pegada arriba al desplazar: es la que
+       dice de qué tema son las estructuras que estás mirando. El color y el texto los pone
+       ya `estilo.css`; aquí solo se añade que sea pegajosa. */
+    .cabecera { position: sticky; top: 0; z-index: 30;
+                align-items: center; gap: 10px 16px; }
     .mandos-ayuda { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
     .mandos-ayuda .selector-caja select { max-width: 15rem; }
-    .btn-volver { font: inherit; font-size: .86rem; padding: 6px 14px; border-radius: 999px;
-                  border: 1px solid #b9ad99; background: #fff; cursor: pointer; white-space: nowrap; }
-    .btn-volver:hover { background: #2f2a22; color: #fff; border-color: #2f2a22; }
+    .btn-volver { font: inherit; font-family: var(--fuente-ui); font-size: .86rem; padding: 6px 14px; border-radius: var(--radio-control);
+                  border: 1px solid var(--linea); background: var(--papel); cursor: pointer; white-space: nowrap; }
+    .btn-volver:hover { background: var(--tinta); color: #fff; border-color: var(--tinta); }
     /* La cabecera, como la de los cuadros del libro: el título del tema y, a continuación,
        lo que son y para qué sirven. */
     #titulo { margin: 0; }
-    #titulo .quees { font-weight: 400; font-size: .72em; letter-spacing: .02em; }
-    .btn-sonar.sonando { background: #2f2a22; color: #fff; border-color: #2f2a22; }
+    #titulo .quees { font-weight: 400; font-size: .72em; letter-spacing: .02em; opacity: .82; }
+    .btn-sonar.sonando { background: var(--acento); color: #fff; border-color: var(--acento); }
     #aviso { margin: 16px; color: #8a2b2b; }
   </style>
 </head>
 <body>
+  <nav class="barra-app" aria-label="Secciones">
+    <span class="marca">Práctica armónica</span>
+    <a href="index.html">Ejercicio</a>
+    <a href="estructuras.html" class="aqui">Estructuras</a>
+    <a href="cifrados.html">Cifrados</a>
+  </nav>
 
   <header class="cabecera">
     <div class="cabecera-texto">
       <h1 id="titulo">Estructuras armónicas</h1>
-      <p class="instruccion">Los ejercicios de la lección se resuelven con ellas. Pulsa <b>Escuchar</b> para oír cualquiera.</p>
     </div>
     <div class="mandos-ayuda">
       <!-- Sin rótulo «Tema»: se sobreentiende, y el título ya dice de qué tema es
@@ -83,17 +91,22 @@
     </div>
   </header>
 
+  <div class="envoltorio">
+    <p class="instruccion">Los ejercicios de la lección se resuelven con ellas. Pulsa <b>Escuchar</b> para oír cualquiera.</p>
+
+
   <p id="aviso" hidden></p>
   <main class="cuadro" id="cuadro"></main>
 
   <noscript><p class="instruccion" style="margin:24px 16px">Esta página necesita JavaScript.</p></noscript>
+  </div>
 
-  <script src="js/teoria.js?v=20260927-2330"></script>
-  <script src="js/reglas.js?v=20260927-2330"></script>
-  <script src="js/ejercicios.js?v=20260927-2330"></script>
-  <script src="js/partitura.js?v=20260927-2330"></script>
-  <script src="js/realizacion.js?v=20260927-2330"></script>
-  <script src="js/sonido.js?v=20260927-2330"></script>
-  <script src="js/estructuras.js?v=20260927-2330"></script>
+  <script src="js/teoria.js?v=20260928-0940"></script>
+  <script src="js/reglas.js?v=20260928-0940"></script>
+  <script src="js/ejercicios.js?v=20260928-0940"></script>
+  <script src="js/partitura.js?v=20260928-0940"></script>
+  <script src="js/realizacion.js?v=20260928-0940"></script>
+  <script src="js/sonido.js?v=20260928-0940"></script>
+  <script src="js/estructuras.js?v=20260928-0940"></script>
 </body>
 </html>

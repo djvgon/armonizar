@@ -53,7 +53,7 @@
     reintentos: true,         // si el alumno puede corregir solo los errores antes de ver la solución
     modoEj: 'armonizar',      // 'armonizar' | 'cifrar' (Análisis: se muestra la realización modelo) | 'audicion' | 'soprano' (melodía dada; el bajo se deduce)
     realizacionCuando: 'siempre', // 'siempre' (Análisis) | 'alCerrar' (Armonización y Audición: al mostrar la solución)
-    verRealizacion: true,     // interruptor del alumno
+    verRealizacion: true,     // siempre: quien decide si se ve la realización es la ficha (Diego, 27/9/2026)
     verGrados: true,          // grados de la escala en circulito sobre el bajo (Gjerdingen)
     gradosPermitidos: true,   // el profesor puede quitarlos en el ejercicio
     rotacion: 0,              // posición inicial de Furno (0, 1, 2)
@@ -672,12 +672,11 @@
     // Controles de la realización visible: solo cuando puede verse ahora
     const puedeVerse = puedeVerseRealizacion();
     $('#control-realizacion').hidden = !puedeVerse;
-    $('#ver-realizacion').checked = estado.verRealizacion;
     $('#sonar').checked = estado.sonar;
     $('#btn-propuesta').hidden = !propuestaAudible();
     $('#btn-parar').hidden = !Sonido.enCurso();
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.classList.toggle('activo', Number(b.dataset.pos) === estado.rotacion));
-    $('#posicion-control').hidden = !estado.verRealizacion || estado.modoEj === 'soprano';
+    $('#posicion-control').hidden = !estado.verRealizacion || estado.modoEj === 'soprano';   // en soprano la disposición la marca la melodía
     // Grados del bajo: solo donde hay bajo a la vista (en Audición no se ve)
     const puedeGrados = estado.gradosPermitidos && estado.modoEj !== 'audicion';
     $('#control-grados').hidden = !puedeGrados;
@@ -719,6 +718,11 @@
     }
     $('#progreso').textContent = texto;
     $('#btn-corregir').disabled = estado.corregido;
+    /* El botón dice lo que el alumno ha hecho, no una abreviatura: en los modos en que
+       escribe las voces es su ARMONIZACIÓN; en los que solo pone cifras y grados, su
+       CIFRADO (Diego, 28/9/2026). */
+    $('#btn-mio').textContent = '▶ Escuchar mi '
+      + (estado.modoEj === 'armonizar' || estado.modoEj === 'soprano' ? 'armonización' : 'cifrado');
     document.querySelectorAll('.paleta .tecla').forEach(b => { b.disabled = estado.corregido; });
     /* Cuál es la paleta que toca ahora. En pantalla grande solo se destaca; en el móvil
        es además la ÚNICA que se dibuja (decisión 111), así que acertar aquí importa:
@@ -1754,15 +1758,6 @@
     location.hash = 'ej=' + sig.id;
   }
 
-  function copiarEnlace() {
-    const ej = estado.ejercicio;
-    const base = location.href.split('#')[0];
-    const url = estado.ficha ? base + '#f=' + Banco.codificar(estado.ficha.filtro)
-      : Ejercicios.porId(ej.id) ? base + '#ej=' + ej.id : base + '#e=' + Ejercicios.codificar(ej);
-    const fin = () => aviso('Enlace copiado al portapapeles.');
-    if (navigator.clipboard) navigator.clipboard.writeText(url).then(fin, () => prompt('Copia este enlace:', url));
-    else prompt('Copia este enlace:', url);
-  }
 
   function aviso(txt, ms = 4000) {
     const a = $('#aviso');
@@ -1821,8 +1816,6 @@
     $('#btn-corregir').addEventListener('click', corregir);
     $('#btn-reiniciar').addEventListener('click', reiniciar);
     $('#btn-siguiente').addEventListener('click', siguiente);
-    $('#btn-enlace').addEventListener('click', copiarEnlace);
-    $('#ver-realizacion').addEventListener('change', ev => { estado.verRealizacion = ev.target.checked; pintar(); });
     $('#ver-grados').addEventListener('change', ev => { estado.verGrados = ev.target.checked; pintar(); });
     $('#sonar').addEventListener('change', ev => { estado.sonar = ev.target.checked; });
     /* La voz: la casilla solo aparece si el navegador tiene sintetizador, y se recuerda.

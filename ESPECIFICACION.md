@@ -2814,6 +2814,126 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       finales sobre la tónica. Los 59 prototipos de los cuadros impresos siguen pasando la
       pauta.
 
+130. **Las tres tintas de las funciones tonales** (27/9/2026, Diego). Tres funciones, tres
+    tintas, **y la tónica lleva la suya**:
+
+        T  azul pizarra  #33588C      S  ciruela  #7A4E7D      D  oro  #8F6A0E
+
+    - **Por qué la tónica va marcada.** Se probó dejarla sin marca —el reposo como
+      ausencia— y se cae por dos sitios. Musicalmente, en un lenguaje de tensión y
+      relajación la relajación es un estado, no la falta de uno. Y técnicamente, «sin
+      marca» ya estaba ocupado: el III **no tiene función tonal** (decisión 116) y se
+      escribe «—». Con la tónica sin tinta, tónica y «ninguna función» se dirían igual.
+      **El III es el que no lleva banda**, y esa ausencia ahora significa una sola cosa.
+    - **Por qué estas tres.** El verde del acierto (145°) y el carmín del error (3°) son de
+      la CORRECCIÓN y no se tocan. Antes la dominante era una terracota a **12°** del
+      carmín —una dominante se leía como un fallo— y la subdominante un verde oliva a
+      3,52:1 de contraste, por debajo del mínimo de 4,5. Ahora la más cercana a la
+      corrección es el oro, a 40° del carmín, y los contrastes son 6,89 · 6,26 · 4,75:1.
+      Entre sí, la pareja más próxima queda a 81°.
+    - **La dosis: el color es una anotación, no un relleno.** La casilla se queda neutra y
+      el color vive en la LETRA y en una BANDA FINA debajo (`.banda-fun` en la partitura,
+      `border-bottom` de 3 px en las teclas). Teñir la casilla entera era lo que daba el
+      aire de pegatina, y le quitaba a la corrección el único sitio donde puede hablar sin
+      competir. La casilla **dada** también pasa a ser neutra: que venga resuelta lo dice
+      el borde entero, no un relleno ámbar encima de la tinta que hay que leer.
+    - **Cómo crece con el cromatismo, que es lo que había que dejar resuelto antes de que
+      llegue: no se añaden tintas, se añade TRAZO.** Una V/V es una dominante y una
+      napolitana una subdominante, pero **de otro tono**, no del tono en que se está; así
+      que llevan la tinta de su familia con la **banda partida**. El alumno ve de qué
+      familia es antes de saber cómo se llama, y dar de alta un grado en
+      `Teoria.SECUNDARIAS` no estrena color. Se descartó distinguirlas bajando la
+      intensidad de la misma tinta: una tecla más pálida ya significa otra cosa aquí
+      —`.tecla:disabled` va al 45 % de opacidad— y se leería como «no disponible» en vez
+      de «prestada de otro tono».
+    - El **VI** conserva las dos funciones: media banda de tónica y media de subdominante.
+    - **Comprobado** con los estilos ya calculados en el navegador: I azul, II y IV
+      ciruela, V y VII oro, III sin banda y con la letra en tinta, VI con la banda partida
+      en dos mitades, y la DD con la banda discontinua en oro. Ningún error de consola.
+
+131. **La cabecera de la aplicación, y dos colores con dos oficios** (27/9/2026, Diego).
+    La pantalla pasa a tener **carrocería**: una barra en negro ciruela `#241630` con el
+    nombre y los tres destinos, y debajo una banda a sangre en **morado eléctrico
+    `#B026FF`** que dice en qué estás y por dónde vas. El contenido se centra dentro de
+    `.envoltorio`; las dos franjas van de borde a borde. Es lo que separa una aplicación de
+    un documento: el documento empieza en su título, la aplicación tiene cabecera.
+
+    - **De dónde sale.** De mirar Auralia, que es adonde apunta la hoja de ruta. Su color
+      fuerte **no está repartido**: hay una barra casi negra, UNA banda saturada que
+      identifica la sección y, debajo, todo neutro. La sensación de eficiencia viene de que
+      el color es escaso, saturado y está en un solo sitio.
+    - **Por qué un color CLARO y con el texto según toque.** El verde de Auralia es
+      `#89E334`: 76 % de saturación y **55 % de luminosidad**. Los primeros candidatos que
+      se probaron rondaban el 40 % de luminosidad —colores oscuros— y por eso sonaban
+      apagados. Sobre su verde el blanco da 1,60:1 y la tinta 11,80:1: por eso su rótulo va
+      en oscuro. El `#B026FF` cae del otro lado (blanco 4,60:1) y lleva el texto en blanco.
+    - **Por qué la barra es negro CIRUELA y no un grafito neutro.** Con la barra `#111419`
+      el salto de luminancia con la banda era de **2,78:1** —dos bloques oscuros pegados,
+      sin jerarquía— cuando en Auralia ese salto es de 10,15:1. El problema no era solo la
+      luminancia: un gris azulado neutro y un magenta saturado no se conocen de nada. El
+      `#241630` está a 272° de tono, la familia del morado, así que la banda parece **salir
+      de** la barra en vez de aterrizar encima. Por lo mismo, el fondo general se tiñe a
+      `#faf8fc`: si la cabecera es de la familia y el fondo no, el problema cambia de sitio.
+    - **Dos colores, dos oficios.** `--marca` (el morado) es identidad y llamada a la
+      acción: la banda, la pestaña en la que estás y el botón «Corregir». Nada más.
+      `--acento` (el negro ciruela) son los estados de TRABAJO: la casilla que se está
+      rellenando, la posición elegida, las casillas de verificación, el foco del teclado.
+      Hay un motivo medido además del de jerarquía: sobre papel blanco el morado da 4,60:1
+      y el ciruela 17,04:1, y el contorno de la casilla activa —que se mueve con cada
+      nota— en morado quedaría flojo. El verde del acierto y el carmín del error no los
+      toca ninguno de los dos.
+    - **Qué transmite, dicho sin adornos.** Un magenta violeta saturado es el color del
+      neón y del directo —el morado de Twitch es `#9146FF`—, así que el alumnado de 14 a 18
+      lo lee como territorio propio, que es exactamente el encargo: que la puerta de
+      entrada atraiga en vez de aburrir. A cambio, lee más a producto personal que a
+      herramienta institucional y envejecerá antes que un neutro. Se asume, y **vive en una
+      sola variable**: cambiarlo es una línea. Más adelante se podrá elegir entre varios.
+    - **El sepia que quedaba escondido.** Cambiar `--acento` no bastó: había marrones
+      ESCRITOS A MANO que no salían de ninguna variable y por eso sobrevivieron. Eran tres
+      focos: el viejo `rgba(122, 74, 31, …)` —entre otros sitios, en el recuadro de la
+      paleta activa, que en el móvil es lo más visible de la pantalla—; un ocre
+      `rgba(160, 120, 60, …)` repartido por los plegables del configurador; y unos beiges
+      que estaban puestos **de reserva** de variables que no existen (`var(--borde,
+      #d8d0c4)`, `var(--fondo-suave, #faf7f2)`), de modo que la reserva era justo lo que se
+      veía. Todos pasan a la familia ciruela o a `var(--linea)`. El semáforo del
+      configurador conserva sus luces —verde, ámbar y rojo son ahí el significado— pero
+      pierde los fondos crema.
+    - **Comprobado** en las cuatro pantallas reales —alumno, estructuras, cifrados y
+      configurador— y en el móvil apaisado: ningún error de consola, la corrección sigue
+      marcando bien y mal, los atajos responden y la anchura de la partitura no varía.
+
+132. **Las tres funciones, en color plano; la corrección, por forma** (28/9/2026, Diego).
+    Sustituye a la decisión 130.
+
+        T  azul #0B5CD5        S  rojo #D62828        D  amarillo #F2C200
+
+    - **De dónde salen.** De Kandinsky, en *De lo espiritual en el arte*: el azul es un
+      movimiento hacia dentro, profundo y quieto —lo emparenta con los instrumentos
+      graves—; el amarillo, uno hacia fuera, agudo y punzante, próximo a una trompeta
+      estridente; el rojo, una fuerza firme que se sostiene sin dispersarse. Llevado a la
+      armonía: azul el reposo (tónica), amarillo lo que empuja y necesita resolver
+      (dominante) y rojo la fuerza intermedia que prepara (subdominante). Nótese que
+      invierte la atribución intuitiva: el amarillo va a la dominante, no a la subdominante.
+    - **Por qué en BLOQUE y no en anotación fina.** El amarillo saturado da **1,85:1** sobre
+      blanco: como letra es ilegible. Con colores vibrantes la dosis se invierte —se pinta
+      el bloque y la letra va en el contraste que le toque, blanco sobre azul y rojo, tinta
+      sobre amarillo—, que es además el color plano que se buscaba.
+    - **La rueda estaba llena, y por eso cede la corrección.** Reservando ±30° alrededor de
+      cada color con significado, el carmín del error ocupaba 333°–33°, el verde del
+      acierto 115°–175° y el morado de la banda 248°–308°: quedaban tres tramos sueltos y
+      **no caben tres colores vibrantes bien separados**. No es cuestión de gusto, es
+      aritmética. Así que la **corrección deja de usar relleno**: pasa a contorno de 3 px
+      más un símbolo ✓ / ✗ en la esquina (`marcaCorreccion`, en `partitura.js`). Con eso se
+      liberan el verde y el rojo, y además la corrección deja de depender del color: se lee
+      en escala de grises y con cualquier daltonismo.
+    - **Cómo crece: no se añaden tonos, se añade TRATAMIENTO**, y el tratamiento significa
+      lo mismo en las tres familias. **Pleno** = la función diatónica del tono. **Hueco**
+      (contorno grueso, sin relleno) = la función **de otro tono**: la DD y las V/x que
+      vengan. **Rayado** = la función **alterada**: préstamos modales, napolitana, sexta
+      aumentada. **Sin nada** = sin función tonal (el III). Se descartó distinguirlas por
+      intensidad: una superficie más pálida ya significa «no disponible» en esta interfaz.
+    - El **VI** sigue partido, mitad tónica y mitad subdominante.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

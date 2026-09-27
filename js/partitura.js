@@ -233,6 +233,24 @@ const Partitura = (() => {
        que las tres lecturas del acorde forman columna (Diego, 27/9/2026). */
     const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
     const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
+    /* UN SOLO RADIO para las casillas del análisis (punto 1 del repaso de interfaz,
+       27/9/2026). Las cuatro filas llevaban cuatro redondeos distintos —0,8 el cifrado,
+       0,7 el romano, 0,6 la función y la tonalidad—, que es la misma incoherencia que
+       tenía el CSS con sus ocho radios. Y todas eran demasiado redondas: la esquina blanda
+       es lo que hace que una casilla parezca una pegatina y no un campo donde se escribe. */
+    const RADIO_CASILLA = 0.5 * SP;
+
+    /* LA MARCA DE LA CORRECCIÓN (decisión 132). Antes el acierto y el fallo teñían el
+       RELLENO de la casilla; ahora el relleno es de la FUNCIÓN —color plano— y no puede
+       compartirse. Así que la corrección pasa a decirse con el contorno y con un símbolo
+       en la esquina: ✓ o ✗. Además de no competir, deja de depender del color, y en
+       escala de grises o con cualquier daltonismo se sigue leyendo. */
+    const marcaCorreccion = (g, clases, xDer, yArriba) => {
+      const ok = clases.includes('bien'), mal = clases.includes('mal');
+      if (!ok && !mal) return;
+      g.appendChild(el('text', { x: xDer - 0.62 * SP, y: yArriba + 1.25 * SP, 'text-anchor': 'middle',
+        class: 'marca-corr ' + (ok ? 'marca-bien' : 'marca-mal') }, ok ? '✓' : '✗'));
+    };
     /* La función ya no necesita banda doble para el pivote: cada una de sus dos lecturas va
        con la fundamental de SU tonalidad, o sea en su propio renglón (Diego, 27/9/2026). */
     const ALTO_FUN = 2.7 * SP;
@@ -766,7 +784,8 @@ const Partitura = (() => {
         else if (bloq.cifra) clases.push('bien');
         else if (resp) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
-        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.8 * SP, class: 'fondo' }));
+        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: RADIO_CASILLA, class: 'fondo' }));
+        marcaCorreccion(g, clases, cx + ANCHO_CASILLA / 2, Y_CASILLA);
         if (resp) dibujarCifra(g, resp, cx, Y_CASILLA + ALTO_CASILLA / 2, ESCALA_CIFRA, null, ctxCifra(i, nb));
         else if (!estado.corregido) g.appendChild(el('text', { x: cx, y: Y_CASILLA + ALTO_CASILLA / 2 + 0.55 * SP, 'text-anchor': 'middle', class: 'interrogante' }, '?'));
         if (!soloLectura) {
@@ -818,7 +837,8 @@ const Partitura = (() => {
           else if (bloqueadaAqui) clases.push('bien');
           else if (rom) clases.push('llena');
           g.setAttribute('class', clases.join(' '));
-          g.appendChild(el('rect', { x: x0, y: y0, width: ANCHO_CASILLA, height: alto, rx: esPivote ? 0 : 0.7 * SP, class: 'fondo' }));
+          g.appendChild(el('rect', { x: x0, y: y0, width: ANCHO_CASILLA, height: alto, rx: esPivote ? 0 : RADIO_CASILLA, class: 'fondo' }));
+          marcaCorreccion(g, clases, x0 + ANCHO_CASILLA, y0);
           g.appendChild(el('text', { x: cx, y: y0 + ALTO_ROMANO / 2 + 0.75 * SP, 'text-anchor': 'middle', class: rom ? 'romano' : 'interrogante' }, rom || (estado.corregido ? '' : '?')));
           if (!soloLectura) {
             g.addEventListener('click', () => alPulsar(i, campo));
@@ -851,7 +871,7 @@ const Partitura = (() => {
           const anchoR = Math.max(ANCHO_CASILLA, celda.texto.length * 0.58 * TAM_ROTULO + 0.9 * SP);
           const xD = cx - ANCHO_CASILLA / 2 - 0.55 * SP;        // pegada a la izquierda del primer acorde
           const gR = el('g', { class: 'casilla casilla-rotulo-ton' });
-          gR.appendChild(el('rect', { x: xD - anchoR, y: yR, width: anchoR, height: altoR, rx: 0.7 * SP, class: 'fondo' }));
+          gR.appendChild(el('rect', { x: xD - anchoR, y: yR, width: anchoR, height: altoR, rx: RADIO_CASILLA, class: 'fondo' }));
           gR.appendChild(el('text', { x: xD - anchoR / 2, y: yR + altoR / 2 + 0.6 * SP,
             'text-anchor': 'middle', class: 'rotulo-ton' }, celda.texto));
           svg.appendChild(gR);
@@ -881,12 +901,16 @@ const Partitura = (() => {
           if (activa && editable && estado.campo === campo) clases.push('activa');
           else if (activa && editable) clases.push('activa-nota');
           if (celda.texto) clases.push('llena');
-          /* Cada función, su color (combinación «Tierra»): T azul pizarra, S oliva,
-             D terracota. El color va en la clase; el tono, en la hoja de estilo. */
-          if (/^(T|S|D|DD)$/.test(String(celda.texto || '').trim())) clases.push('fun-' + celda.texto.trim());
+          const fun = String(celda.texto || '').trim();
+          /* Cada función, su tinta (decisión 130): T azul pizarra, S ciruela, D oro. El color
+             va en la CLASE; el tono, en la hoja de estilo. La casilla se queda neutra y el
+             color vive en la letra y en una banda fina debajo: así el verde y el carmín de
+             la corrección tienen la casilla entera para ellos y no compiten con la función. */
+          if (/^(T|S|D|DD)$/.test(fun)) clases.push('fun-' + fun);
           g.setAttribute('class', clases.join(' '));
-          g.appendChild(el('rect', { x: xF, y: yF, width: ANCHO_CASILLA, height: ALTO_FUN, rx: dobleFun ? 0 : 0.6 * SP, class: 'fondo' }));
-          g.appendChild(el('text', { x: cx, y: yF + ALTO_FUN / 2 + 0.6 * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
+          g.appendChild(el('rect', { x: xF, y: yF, width: ANCHO_CASILLA, height: ALTO_FUN, rx: dobleFun ? 0 : RADIO_CASILLA, class: 'fondo' }));
+          g.appendChild(el('text', { x: cx, y: yF + ALTO_FUN / 2 + 0.45 * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
+          marcaCorreccion(g, clases, xF + ANCHO_CASILLA, yF);
           if (editable && !soloLectura) {
             g.addEventListener('click', () => alPulsar(i, campo));
             g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, campo); } });
@@ -923,7 +947,7 @@ const Partitura = (() => {
         else if (activa && editable) clases.push('activa-nota');
         if (celda.texto) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
-        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_TON, width: ANCHO_CASILLA, height: ALTO_TON, rx: 0.6 * SP, class: 'fondo' }));
+        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_TON, width: ANCHO_CASILLA, height: ALTO_TON, rx: RADIO_CASILLA, class: 'fondo' }));
         g.appendChild(el('text', { x: cx, y: Y_TON + ALTO_TON / 2 + 0.55 * SP, 'text-anchor': 'middle', class: celda.texto ? 'ton' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '·' : '')));
         if (editable && !soloLectura) {
           g.addEventListener('click', () => alPulsar(i, 'tonalidad'));

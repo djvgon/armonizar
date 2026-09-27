@@ -469,6 +469,9 @@ sesión nueva lo lea antes de empezar.
 | Versión | Qué llevaba |
 |---|---|
 | 20260928-0030 | `f.html`, el redirector de los códigos QR: lo impreso lleva una dirección corta y fija (128) |
+| 20260928-0940 | Funciones en color plano según Kandinsky —azul la tónica, rojo la subdominante, amarillo la dominante— y la corrección por contorno y símbolo, no por relleno (132); rótulos de la barra unificados y la posición melódica dicha por la nota de la soprano |
+| 20260928-0210 | Cabecera de aplicación: barra en negro ciruela y banda en morado eléctrico #B026FF; el morado para identidad y llamada a la acción, el ciruela para los estados de trabajo (131) |
+| 20260928-0130 | Repaso visual, punto 1: dos tipografías, dos radios y fuera el triple marco. Punto 2: las tres tintas de las funciones —T azul pizarra, S ciruela, D oro— como anotación y no como relleno, y el cromatismo por trazo y no por color nuevo (130) |
 | 20260927-2350 | Tres reglas más de conducción —la séptima preparada, la novena sobre la sensible, el salto compensado— y el cierre conclusivo ampliado a cualquier inversión de la tónica (129) |
 | 20260927-2330 | La ficha se mide en compases, no en número de ejercicios (127); `A3-4-04` con la soprano corregida |
 | 20260927-2230 | En un reintento se puede modificar cualquier casilla, también las acertadas (126) |

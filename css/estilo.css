@@ -4,18 +4,54 @@
    ===================================================================== */
 
 :root {
-  --fondo: #faf8f3;
+  /* =====================================================================================
+     DOS COLORES CON DOS OFICIOS  (decisión 131, Diego 27/9/2026)
+
+     --marca  · EL MORADO ELÉCTRICO. Es la identidad y la llamada a la acción, y nada más:
+       la banda de la cabecera, la pestaña en la que estás y el botón «Corregir». Poco,
+       grande y deliberado. Si todo lo seleccionado fuese morado, el morado dejaría de
+       significar nada y la pantalla sería un guirigay.
+
+     --acento · EL NEGRO CIRUELA. Son los estados de TRABAJO: la casilla que estás
+       rellenando, la posición elegida, las casillas de verificación, la tecla pulsada, el
+       foco del teclado. Ocurren a cada nota y no pueden gritar.
+
+     Y hay un motivo medido, no solo de jerarquía: sobre papel blanco el morado da 4,60:1 y
+     el negro ciruela 17,04:1. Un contorno de 2 px alrededor de la casilla activa —que se
+     mueve con cada nota que el alumno cifra— en morado quedaría flojo; en ciruela se ve
+     siempre. El color fuerte se queda donde hay superficie para sostenerlo.
+
+     El verde del acierto y el carmín del error no los toca ninguno de los dos.
+     ===================================================================================== */
+  --marca: #B026FF;
+  --marca-viva: #C258FF;
+  --marca-honda: #9412DC;
+  --marca-texto: #ffffff;
+
+  --barra: #241630;              /* el negro ciruela de la cabecera: la raíz de la que sale la banda */
+  --barra-texto: #ece7f1;
+  --barra-apagado: #9e94ab;
+
+  /* Las superficies, teñidas de la misma familia: si la cabecera es del morado y el fondo
+     no, el problema de «esto no viene de ningún sitio» solo cambia de sitio. */
+  --fondo: #faf8fc;
   --papel: #ffffff;
-  --tinta: #1f1d1a;
-  --tinta-suave: #6b665e;
-  --linea: #d9d3c7;
-  --acento: #7a4a1f;          /* marrón cálido, para lo activo */
-  --acento-suave: #f3e6d6;
+  --tinta: #1b1720;
+  --tinta-suave: #6b6474;
+  --linea: #e2dce8;
+  --acento: #241630;
+  --acento-suave: #f1e9f6;
+
   --bien: #2e7d4f;
   --bien-suave: #e2f3e8;
   --mal: #b3261e;
   --mal-suave: #fbe4e2;
-  --sombra: 0 1px 2px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+  --sombra: 0 1px 2px rgba(20,10,30,.07), 0 4px 14px rgba(20,10,30,.06);
+
+  --fuente-texto: Georgia, "Times New Roman", serif;
+  --fuente-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --radio-caja: 10px;
+  --radio-control: 6px;
 }
 
 * { box-sizing: border-box; }
@@ -26,14 +62,18 @@
 html, body { margin: 0; padding: 0; }
 
 body {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--fuente-texto);
   color: var(--tinta);
   background: var(--fondo);
   line-height: 1.45;
   padding: 20px 16px 40px;
   max-width: 1100px;
   margin: 0 auto;
+  /* Las casillas de verificación venían en el azul del navegador, el único azul de la
+     aplicación y ajeno a todo lo demás. Con esto adoptan el marrón de lo activo. */
+  accent-color: var(--acento);
 }
+
 
 /* ---- Cabecera ---- */
 .cabecera {
@@ -51,14 +91,14 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .selector-caja { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--tinta-suave); }
 .selector-caja select {
   font: inherit; font-size: 1rem; color: var(--tinta);
-  padding: 8px 10px; border: 1px solid var(--linea); border-radius: 8px; background: var(--papel);
+  padding: 8px 10px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel);
   min-width: 220px;
 }
 
 /* ---- Repertorio ---- */
 .repertorio-caja {
   display: flex; flex-direction: column; gap: 8px;
-  padding: 10px 14px; border: 1px dashed var(--linea); border-radius: 10px; background: var(--papel);
+  padding: 10px 14px 12px; border: none; border-bottom: 1px solid var(--linea); background: transparent;
   margin-bottom: 18px;
 }
 .repertorio-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
@@ -68,29 +108,39 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .repertorio { display: flex; flex-wrap: wrap; gap: 6px; }
 .ficha {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 34px; border: 1px solid var(--linea); border-radius: 6px; background: var(--fondo);
+  width: 38px; height: 34px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--fondo);
 }
 
 /* ---- Barra de realización ---- */
 .realizacion-barra {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;
   padding: 8px 14px; margin-bottom: 8px; font-size: .9rem; color: var(--tinta-suave);
-  background: var(--papel); border: 1px solid var(--linea); border-radius: 10px;
+  /* SIN línea abajo (Diego, 27/9/2026): la barra queda pegada al recuadro de la
+     partitura y las dos rayas juntas formaban una doble regla. Separa el borde
+     superior de la partitura, que ya está ahí. */
+  background: transparent; border: none;
 }
 .realizacion-barra .control { display: inline-flex; align-items: center; gap: 6px; }
 .realizacion-barra input[type="checkbox"] { width: 16px; height: 16px; }
 .realizacion-barra .control-etiqueta { color: var(--tinta-suave); }
 .realizacion-barra .control-sonido { gap: 10px; }
 .realizacion-barra .control-vista { flex-wrap: wrap; gap: 8px 18px; }
+/* Los ajustes de CÓMO SE VE Y SE ESCRIBE la música —los grados del bajo y la posición
+   melódica inicial— bajan JUNTOS a su propio renglón y pegados al borde derecho, con los
+   grados delante. Ni los grados ni la posición son sonido, y estaban mezclados con él
+   (Diego, 28/9/2026). El salto de renglón lo fuerza un elemento de ancho completo. */
+.realizacion-barra::after { content: ""; flex-basis: 100%; height: 0; order: 1; }
+#control-grados { order: 2; margin-left: auto; }
+#control-realizacion { order: 3; margin-left: 0; }
 .realizacion-barra.audicion #btn-cadencia, .realizacion-barra.audicion #btn-propuesta { background: var(--acento); color: #fff; border-color: var(--acento); font-size: 1rem; padding: 7px 16px; }
 .realizacion-barra.audicion .control-sonido { gap: 14px; }
 .boton-pequeno.parar { color: var(--mal); border-color: var(--mal); }
-.selector-pequeno { font: inherit; font-size: .88rem; padding: 3px 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); }
+.selector-pequeno { font: inherit; font-size: .88rem; padding: 3px 6px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta); }
 /* El indicador de carga no ocupa sitio (absoluto), para que no desplace nada mientras el alumno pulsa */
 .control-instrumento { position: relative; }
 .instrumento-estado { position: absolute; left: 0; top: 100%; font-size: .7rem; color: var(--acento); font-style: italic; white-space: nowrap; pointer-events: none; }
 .instruccion .ref-mal { color: var(--mal); font-weight: bold; }
-.ref-boton { display: inline-block; font-size: .82em; padding: 0 6px; border: 1px solid var(--linea); border-radius: 6px; background: var(--papel); color: var(--tinta); white-space: nowrap; }
+.ref-boton { display: inline-block; font-size: .82em; padding: 0 6px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta); white-space: nowrap; }
 svg.partitura .boton-sonar { cursor: pointer; }
 svg.partitura .boton-sonar .fondo { fill: var(--papel); stroke: var(--linea); stroke-width: 1.2; transition: fill .12s, stroke .12s; }
 svg.partitura .boton-sonar .triangulo { fill: var(--tinta-suave); }
@@ -98,23 +148,23 @@ svg.partitura .boton-sonar:hover .fondo, svg.partitura .boton-sonar:focus .fondo
 svg.partitura .boton-sonar:focus { outline: none; }
 svg.partitura .boton-sonar.sonando .fondo { fill: var(--acento); stroke: var(--acento); }
 svg.partitura .boton-sonar.sonando .triangulo { fill: #fff; }
-.segmentos { display: inline-flex; border: 1px solid var(--linea); border-radius: 8px; overflow: hidden; }
+.segmentos { display: inline-flex; border: 1px solid var(--linea); border-radius: var(--radio-control); overflow: hidden; }
 .segmentos button { font: inherit; padding: 4px 10px; border: none; background: var(--papel); color: var(--tinta); cursor: pointer; border-right: 1px solid var(--linea); }
 .segmentos button:last-child { border-right: none; }
 .segmentos button.activo { background: var(--acento); color: #fff; }
-.boton-pequeno { font: inherit; font-size: .9rem; padding: 5px 12px; border-radius: 8px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); cursor: pointer; }
+.boton-pequeno { font: inherit; font-size: .9rem; padding: 5px 12px; border-radius: var(--radio-control); border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); cursor: pointer; }
 .boton-pequeno:hover { border-color: var(--acento); }
 /* Un botón que se vea botón: relleno y oscuro, como «Corregir» o «Escuchar la
    propuesta», invitando a pulsarlo. El de contorno claro no lo parecía
    (Diego, 27/9/2026). */
-.boton-pequeno.boton-lleno { background: var(--acento); border-color: var(--acento); color: #fff; box-shadow: var(--sombra); }
+.boton-pequeno.boton-lleno { background: var(--acento); border-color: var(--acento); color: #fff; }
 .boton-pequeno.boton-lleno:hover { background: var(--tinta); border-color: var(--tinta); }
 svg.partitura .acorde.mal text { fill: var(--mal); }
 svg.partitura .acorde.mal .plica, svg.partitura .acorde.mal .linea { stroke: var(--mal); }
 
 /* ---- Partitura ---- */
 .partitura-caja {
-  background: var(--papel); border-radius: 12px; box-shadow: var(--sombra);
+  background: var(--papel); border: 1px solid var(--linea); border-radius: var(--radio-caja);
   padding: 8px 12px; overflow-x: auto;
 }
 svg.partitura { width: auto; max-width: 100%; height: auto; display: block; }   /* la anchura la fija partitura.js (px por unidad) */
@@ -165,7 +215,7 @@ svg.partitura .casilla-ton.fija { cursor: default; }
 svg.partitura .casilla-ton.mal .ton, svg.partitura .casilla-ton.mal .interrogante-ton { fill: var(--mal); }
 .chip-fund { font-weight: bold; min-width: 1.6em; text-align: right; }
 .chip.con-aviso .icono-cifra { opacity: .75; }
-.sel-fun { font: inherit; font-size: .85rem; padding: 3px 4px; border-radius: 6px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); }
+.sel-fun { font: inherit; font-size: .85rem; padding: 3px 4px; border-radius: var(--radio-control); border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); }
 /* Errores de conducción de voces: notas señaladas y globo de explicación */
 svg.partitura .voz-mal { fill: var(--mal); }
 /* pointer-events: all → la zona sigue siendo pulsable aunque el relleno pase a «none» al pasar el ratón */
@@ -205,10 +255,10 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .paleta-caja {
   display: flex; align-items: flex-start; gap: 12px;
   margin-top: 5px; padding: 4px 12px 5px;
-  border: 1px solid transparent; border-radius: 12px;
+  border: 1px solid transparent; border-radius: var(--radio-caja);
   transition: border-color .15s, background .15s;
 }
-.paleta-caja.destacada { border-color: var(--acento); background: rgba(122, 74, 31, .05); }
+.paleta-caja.destacada { border-color: var(--acento); background: rgba(36, 22, 48, .05); }
 /* El rótulo, A LA IZQUIERDA de las teclas y no encima (Diego, 25/9): cada paleta se
    ahorra así un renglón entero, y son tres o cuatro. El rótulo puede ocupar dos líneas
    —«Grado de la fundamental» las ocupa— sin dejar de compartir renglón con las teclas.
@@ -227,8 +277,8 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
   min-width: 48px; min-height: 46px; padding: 3px 7px;
   font: inherit; font-size: .93rem; color: var(--tinta);
   -webkit-tap-highlight-color: transparent;
-  background: var(--papel); border: 1px solid var(--linea); border-radius: 10px;
-  box-shadow: var(--sombra); cursor: pointer;
+  background: var(--papel); border: 1px solid var(--linea); border-radius: var(--radio-caja);
+  cursor: pointer;
   transition: transform .06s, border-color .12s, background .12s;
 }
 .tecla:hover { border-color: var(--acento); }
@@ -238,7 +288,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .tecla-num {
   display: inline-block; min-width: 14px; height: 14px; line-height: 12px; padding: 0 3px;
   font-size: .62rem; font-family: ui-monospace, Menlo, Consolas, monospace;
-  color: var(--tinta-suave); background: var(--fondo); border: 1px solid var(--linea); border-radius: 5px;
+  color: var(--tinta-suave); background: var(--fondo); border: 1px solid var(--linea); border-radius: var(--radio-control);
 }
 .tecla-num:empty { visibility: hidden; }
 .tecla-romano .tecla-num { margin-top: 1px; }
@@ -253,8 +303,8 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .botonera { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 .botonera button {
   font: inherit; font-size: 1rem; padding: 10px 18px;
-  border-radius: 10px; border: 1px solid var(--linea); background: var(--papel); color: var(--tinta);
-  cursor: pointer; box-shadow: var(--sombra);
+  border-radius: var(--radio-caja); border: 1px solid var(--linea); background: var(--papel); color: var(--tinta);
+  cursor: pointer;
 }
 .botonera button:hover { border-color: var(--acento); }
 .botonera button.primario { background: var(--acento); color: #fff; border-color: var(--acento); }
@@ -264,7 +314,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 /* ---- Resultado ---- */
 .resultado {
   margin-top: 20px; padding: 16px 20px; background: var(--papel);
-  border-radius: 12px; box-shadow: var(--sombra); border-left: 5px solid var(--acento);
+  border-radius: var(--radio-caja); border-left: 5px solid var(--acento);
 }
 .resultado h2 { margin: 0 0 8px; font-size: 1.25rem; font-weight: normal; }
 .resultado .pct { color: var(--tinta-suave); font-size: 1rem; }
@@ -275,7 +325,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .enhorabuena { margin: 0; color: var(--bien); }
 .errores { margin: 6px 0 0; padding-left: 22px; }
 .errores li { margin: 6px 0; }
-.cif { font-weight: bold; padding: 0 4px; border-radius: 4px; }
+.cif { font-weight: bold; padding: 0 4px; border-radius: var(--radio-control); }
 .cif.mal { color: var(--mal); background: var(--mal-suave); }
 .cif.bien { color: var(--bien); background: var(--bien-suave); }
 .explicacion { color: var(--tinta-suave); font-size: .92rem; }
@@ -283,7 +333,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 /* ---- Avisos y pie ---- */
 .aviso {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
-  background: var(--tinta); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: .9rem;
+  background: var(--tinta); color: #fff; padding: 10px 16px; border-radius: var(--radio-control); font-size: .9rem;
 }
 /* ---- Informe de fin de práctica ---- */
 .informe { margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--linea); }
@@ -293,9 +343,9 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .nota-informe b { font-size: 1.6rem; color: var(--acento); }
 .nota-informe span { color: var(--tinta-suave); font-size: .85rem; }
 .informe .campo-informe { display: flex; flex-direction: column; gap: 4px; margin: 12px 0 4px; max-width: 420px; font-size: .85rem; color: var(--tinta-suave); }
-.informe .campo-informe input { font: inherit; font-size: 1rem; color: var(--tinta); padding: 8px 10px; border: 1px solid var(--linea); border-radius: 8px; background: var(--papel); }
+.informe .campo-informe input { font: inherit; font-size: 1rem; color: var(--tinta); padding: 8px 10px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); }
 .ayuda-informe { margin: 4px 0 0; font-size: .82rem; color: var(--tinta-suave); }
-.informe-texto { width: 100%; margin-top: 10px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; padding: 8px; border: 1px solid var(--linea); border-radius: 8px; background: var(--papel); color: var(--tinta); }
+.informe-texto { width: 100%; margin-top: 10px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .8rem; padding: 8px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta); }
 
 .pie { margin-top: 36px; color: var(--tinta-suave); font-size: .82rem; }
 .pie p { margin: 2px 0; }
@@ -316,7 +366,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .tipos { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
 .tipo {
   flex: 1 1 240px; display: flex; flex-direction: column; gap: 6px; cursor: pointer;
-  padding: 14px 16px 16px; border: 2px solid var(--linea); border-radius: 12px; background: var(--fondo);
+  padding: 14px 16px 16px; border: 2px solid var(--linea); border-radius: var(--radio-caja); background: var(--fondo);
   transition: border-color .15s, background .15s, box-shadow .15s;
 }
 .tipo:hover { border-color: var(--acento); }
@@ -325,7 +375,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .tipo-titulo { font-size: 1.25rem; color: var(--tinta); }
 .tipo:has(input:checked) .tipo-titulo { color: var(--acento); }
 .tipo-texto { font-size: .9rem; color: var(--tinta-suave); line-height: 1.4; }
-.paso { background: var(--papel); border-radius: 12px; box-shadow: var(--sombra); padding: 16px 20px 18px; margin-bottom: 18px; }
+.paso { background: var(--papel); border: 1px solid var(--linea); border-radius: var(--radio-caja); padding: 16px 20px 18px; margin-bottom: 18px; }
 .paso h2 { margin: 0 0 10px; font-size: 1.2rem; font-weight: normal; display: flex; align-items: center; gap: 10px; }
 .paso h2 .num { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: var(--acento); color: #fff; font-size: .95rem; }
 .paso h3 { margin: 18px 0 4px; font-size: 1.05rem; font-weight: normal; }
@@ -334,7 +384,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
    sombreado del bloque solo no se veía y las tres zonas se confundían en una sola. */
 .configurador .bloque-opciones > h3 {
   font-weight: bold; font-size: 1.08rem; color: var(--acento);
-  margin-top: .8rem; padding-bottom: .3rem; border-bottom: 1px solid rgba(122, 74, 31, .25);
+  margin-top: .8rem; padding-bottom: .3rem; border-bottom: 1px solid rgba(36, 22, 48, .22);
 }
 .columnas { display: flex; flex-wrap: wrap; gap: 18px; }
 .columna { flex: 1 1 340px; min-width: 0; }
@@ -342,7 +392,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .campo > span { display: block; }
 .campo input[type="text"], .campo select, .campo textarea, textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion {
   font: inherit; font-size: 1rem; color: var(--tinta); padding: 8px 10px;
-  border: 1px solid var(--linea); border-radius: 8px; background: var(--papel); width: 100%;
+  border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); width: 100%;
 }
 .campo textarea { font-family: Menlo, Consolas, "Courier New", monospace; font-size: .95rem; line-height: 1.5; }
 textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion { font-family: Menlo, Consolas, monospace; font-size: .8rem; margin-top: 10px; word-break: break-all; }
@@ -352,12 +402,12 @@ textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion { font-
 .fila-campos .campo { flex: 0 1 auto; min-width: 120px; }
 .fila-campos .campo-ancho { flex: 1 1 220px; }
 .ayuda { margin: 6px 0 0; font-size: .85rem; color: var(--tinta-suave); }
-.ayuda code, .paso code { font-family: Menlo, Consolas, monospace; background: var(--fondo); padding: 1px 5px; border-radius: 4px; font-size: .85em; }
+.ayuda code, .paso code { font-family: Menlo, Consolas, monospace; background: var(--fondo); padding: 1px 5px; border-radius: var(--radio-control); font-size: .85em; }
 .error { margin: 8px 0 0; color: var(--mal); font-size: .9rem; }
 .aviso-suave { margin: 8px 0 0; color: var(--acento); font-size: .85rem; }
 
 .zona-archivo {
-  border: 2px dashed var(--linea); border-radius: 12px; padding: 18px 16px; text-align: center; cursor: pointer;
+  border: 2px dashed var(--linea); border-radius: var(--radio-caja); padding: 18px 16px; text-align: center; cursor: pointer;
   background: var(--fondo); transition: border-color .15s, background .15s;
 }
 .zona-archivo:hover, .zona-archivo:focus, .zona-archivo.sobre { border-color: var(--acento); background: var(--acento-suave); outline: none; }
@@ -365,7 +415,7 @@ textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion { font-
 .fragmentos { margin-top: 12px; }
 .lista-fragmentos { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; max-height: 260px; overflow: auto; }
 .fragmento {
-  font: inherit; font-size: .9rem; text-align: left; padding: 8px 10px; border: 1px solid var(--linea); border-radius: 8px;
+  font: inherit; font-size: .9rem; text-align: left; padding: 8px 10px; border: 1px solid var(--linea); border-radius: var(--radio-control);
   background: var(--papel); cursor: pointer; display: flex; gap: 10px; align-items: baseline;
 }
 .fragmento b { color: var(--acento); }
@@ -376,7 +426,7 @@ textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion { font-
 .repertorio-opciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .opcion-cifra {
   display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 8px;
-  border: 1px solid var(--linea); border-radius: 10px; background: var(--fondo); cursor: pointer; font-size: .85rem; color: var(--tinta-suave);
+  border: 1px solid var(--linea); border-radius: var(--radio-caja); background: var(--fondo); cursor: pointer; font-size: .85rem; color: var(--tinta-suave);
 }
 .opcion-cifra:has(input:checked) { background: var(--papel); border-color: var(--acento); color: var(--tinta); }
 .opcion-cifra input { width: 16px; height: 16px; }
@@ -396,10 +446,10 @@ textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion { font-
 .tabla-revision .num-fila { font-weight: bold; color: var(--acento); }
 .tabla-revision .celda-ton { white-space: nowrap; color: var(--tinta-suave); }
 .tabla-revision .th-ayuda { display: block; font-weight: normal; font-size: .72rem; color: var(--tinta-suave); }
-.tabla-revision .sel-ton { font: inherit; font-size: .85rem; padding: 3px 6px; border: 1px solid var(--acento); border-radius: 6px; background: var(--papel); color: var(--tinta); max-width: 120px; cursor: pointer; }
+.tabla-revision .sel-ton { font: inherit; font-size: .85rem; padding: 3px 6px; border: 1px solid var(--acento); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta); max-width: 120px; cursor: pointer; }
 .tabla-revision .sel-ton:hover { background: var(--acento-suave); }
 .tabla-revision .sel-ton.pivote { border-color: var(--acento); color: var(--acento); font-weight: bold; background: var(--acento-suave); }
-.tabla-revision tr.pivote td { background: rgba(122, 74, 31, .05); }
+.tabla-revision tr.pivote td { background: rgba(36, 22, 48, .05); }
 .tabla-revision .chip.no-comun { opacity: .45; }
 .tabla-revision tr.resaltada td { background: var(--acento-suave); transition: background .3s; }
 svg.partitura .numero-acorde circle { fill: var(--acento-suave); stroke: var(--acento); stroke-width: 1.2; }
@@ -411,7 +461,7 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
   display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px 3px 4px;
-  border: 1px solid var(--linea); border-radius: 8px; background: var(--fondo); cursor: pointer; opacity: .75;
+  border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--fondo); cursor: pointer; opacity: .75;
 }
 .chip.marcada { opacity: 1; background: var(--papel); border-color: var(--acento); }
 .chip.modelo { background: var(--bien-suave); border-color: var(--bien); box-shadow: 0 0 0 1px var(--bien) inset; }
@@ -420,8 +470,8 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
 .chip-romano { font-size: .8rem; color: var(--tinta-suave); min-width: 22px; }
 
 .enlace-boton {
-  display: inline-block; font: inherit; font-size: 1rem; padding: 10px 18px; border-radius: 10px;
-  border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); text-decoration: none; box-shadow: var(--sombra);
+  display: inline-block; font: inherit; font-size: 1rem; padding: 10px 18px; border-radius: var(--radio-caja);
+  border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); text-decoration: none;
 }
 .enlace-boton:hover { border-color: var(--acento); }
 .enlace-boton[aria-disabled="true"] { opacity: .5; pointer-events: none; }
@@ -480,13 +530,13 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
   /* Los renglones, PEGADOS uno al siguiente (decisión 112): sin margen entre cajas y sin
      relleno arriba ni abajo. Lo que separa visualmente un renglón del de abajo es el
      hueco propio de las teclas; el recuadro de la paleta activa queda ceñido a ellas. */
-  .paleta-caja { margin-top: 0; padding: 0 3px; border-radius: 8px; gap: 5px; align-items: center; }
+  .paleta-caja { margin-top: 0; padding: 0 3px; border-radius: var(--radio-control); gap: 5px; align-items: center; }
   .tecla { padding: 2px 4px; }
   .paleta-etiqueta { flex: 0 0 3.4rem; font-size: .58rem; letter-spacing: .02em; line-height: 1.1; text-align: right; }
   .etq-larga { display: none; }
   .etq-corta { display: inline; }
   .paleta { gap: 4px; }
-  .tecla { min-width: 36px; min-height: 40px; padding: 2px 5px; border-radius: 8px; box-shadow: none; }
+  .tecla { min-width: 36px; min-height: 40px; padding: 2px 5px; border-radius: var(--radio-control); box-shadow: none; }
   .tecla-num { display: none; }
   .tecla-cifra svg.icono-cifra { width: 32px; height: 32px; }
   .tecla-romano { min-width: 38px; min-height: 36px; font-size: .95rem; }
@@ -508,13 +558,13 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
   position: fixed; z-index: 40; max-width: 26rem;
   padding: .5rem .7rem; font-size: .85rem;
   background: var(--papel); border: 1px solid var(--acento); border-left: 4px solid var(--acento);
-  border-radius: 8px; box-shadow: var(--sombra); pointer-events: none;
+  border-radius: var(--radio-control); box-shadow: var(--sombra); pointer-events: none;
 }
 .globo-acorde .globo-cab { color: var(--tinta-suave); margin-bottom: .4rem; }
 .globo-acorde .globo-ops { display: flex; flex-wrap: wrap; gap: .35rem; }
 .globo-acorde .globo-op {
   display: inline-flex; align-items: center; gap: .15rem; padding: .15rem .4rem;
-  border: 1px solid var(--linea); border-radius: 6px; background: var(--fondo);
+  border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--fondo);
 }
 .globo-acorde .globo-op.modelo { background: var(--bien-suave); border-color: var(--bien); }
 /* Marcada pero fuera de la lista de acordes de su lección (decisión 101): ya no se da por
@@ -545,7 +595,7 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
   .btn-datos {
     display: block; align-self: flex-start;
     font: inherit; font-size: .72rem; color: var(--tinta-suave);
-    padding: 2px 8px; border: 1px solid var(--linea); border-radius: 6px;
+    padding: 2px 8px; border: 1px solid var(--linea); border-radius: var(--radio-control);
     background: var(--fondo); cursor: pointer;
   }
   .btn-datos:hover { border-color: var(--acento); }
@@ -567,10 +617,10 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .ficha-acorde-romano { font-variant: small-caps; font-size: .95rem; }
 .banco-repertorio { display: flex; align-items: flex-start; gap: .8rem; flex-wrap: wrap; margin: .2rem 0 .6rem; }
 .banco-repertorio .ayuda { flex: 1 1 22rem; margin: 0; }
-.tabla-banco tr.con-aviso td:first-child { color: #9a3b12; font-weight: 600; }
+.tabla-banco tr.con-aviso td:first-child { color: var(--mal); font-weight: 600; }
 
 /* Cartel del paso 4 cuando se está revisando un fragmento que viene del banco */
-.banco-origen { margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--borde, #d8d0c4); border-radius: .5rem; background: rgba(160, 120, 60, .07); }
+.banco-origen { margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--linea); border-radius: var(--radio-control); background: rgba(36, 22, 48, .05); }
 .banco-origen > .ayuda:first-child { margin-top: 0; font-weight: 600; }
 .banco-origen .botonera { margin: .6rem 0; }
 
@@ -578,22 +628,22 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
    Lo ocasional —llenar el banco y corregir fragmentos— va plegado, para que no
    compita con lo semanal, que es preparar una ficha. */
 .configurador .plegable {
-  margin-top: 1.2rem; border: 1px solid var(--linea); border-radius: 10px;
+  margin-top: 1.2rem; border: 1px solid var(--linea); border-radius: var(--radio-caja);
   background: var(--papel); overflow: hidden;
 }
 .configurador .plegable > summary {
   cursor: pointer; padding: .7rem 1rem; font-size: 1.05rem;
-  background: rgba(160, 120, 60, .06); list-style: none;
+  background: rgba(36, 22, 48, .04); list-style: none;
 }
 .configurador .plegable > summary::-webkit-details-marker { display: none; }
 .configurador .plegable > summary::before { content: '▸ '; color: var(--tinta-suave); }
 .configurador .plegable[open] > summary::before { content: '▾ '; }
-.configurador .plegable > summary:hover { background: rgba(160, 120, 60, .12); }
+.configurador .plegable > summary:hover { background: rgba(36, 22, 48, .08); }
 .configurador .plegable > *:not(summary) { margin-left: 1rem; margin-right: 1rem; }
 .configurador .plegable > *:last-child { margin-bottom: 1rem; }
 /* Un plegable DENTRO de otro: el mismo mecanismo, pero más discreto, para que no
    parezca un apartado del mismo rango que los de fuera. */
-.configurador .plegable-interior { margin-top: .9rem; border-radius: 8px; }
+.configurador .plegable-interior { margin-top: .9rem; border-radius: var(--radio-control); }
 .configurador .plegable-interior > summary { padding: .45rem .8rem; font-size: .95rem; }
 .configurador .plegable-interior > *:not(summary) { margin-left: .8rem; margin-right: .8rem; }
 .configurador .sumario-cuenta { color: var(--tinta-suave); font-size: .85rem; font-weight: 400; }
@@ -602,8 +652,8 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
    ocupar más sitio: el relleno es el justo para que el color no toque los controles. */
 .configurador .bloque-opciones {
   margin-top: 1rem; padding: .1rem .9rem .5rem;
-  background: rgba(160, 120, 60, .055); border-radius: 10px;
-  border: 1px solid rgba(160, 120, 60, .14);
+  background: rgba(36, 22, 48, .035); border-radius: var(--radio-caja);
+  border: 1px solid rgba(36, 22, 48, .10);
 }
 .configurador .bloque-opciones > h3 { margin-top: .6rem; }
 .configurador .bloque-opciones > .ayuda:last-child { margin-bottom: 0; }
@@ -611,7 +661,7 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .configurador .recorrido {
   display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap;
   margin: 1.1rem 0 .2rem; padding: .45rem .8rem;
-  background: rgba(160, 120, 60, .07); border: 1px solid rgba(160, 120, 60, .18); border-radius: 999px;
+  background: rgba(36, 22, 48, .05); border: 1px solid rgba(36, 22, 48, .13); border-radius: var(--radio-caja);
   font-size: .9rem; color: var(--tinta-suave);
 }
 .configurador .recorrido button { min-width: 7.5rem; }
@@ -622,11 +672,11 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .configurador .recorrido button:disabled { opacity: .4; cursor: default; }
 .configurador .recorrido button:disabled:hover { border-color: var(--linea); }
 .configurador .recorrido b { color: var(--tinta); }
-.configurador .recorrido code { font-size: .88em; color: var(--tinta); background: var(--papel); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--linea); }
+.configurador .recorrido code { font-size: .88em; color: var(--tinta); background: var(--papel); padding: 1px 5px; border-radius: var(--radio-control); border: 1px solid var(--linea); }
 /* El identificador del fragmento: monoespaciado y sin partir, para buscarlo con Cmd+F */
 .tabla-banco .celda-id { white-space: nowrap; }
 .tabla-banco .celda-id code { font-size: .86rem; color: var(--tinta-suave); }
-.configurador .recorrido .recorrido-aviso { color: #9a3b12; }
+.configurador .recorrido .recorrido-aviso { color: var(--mal); }
 .configurador .sub-paso { margin-top: 1.4rem; padding-top: 1rem; border-top: 1px dashed var(--linea); }
 .configurador .sub-paso > h3:first-child { margin-top: 0; }
 /* Las fichas de tipo de ejercicio, en columna y más compactas cuando van al lado del archivo */
@@ -639,7 +689,7 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .configurador .buscar-id {
   display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
   margin: 0 0 .6rem; padding: .5rem .7rem;
-  background: var(--fondo-suave, #faf7f2); border: 1px solid var(--borde, #e4ddd2); border-radius: 6px;
+  background: var(--acento-suave); border: 1px solid var(--linea); border-radius: var(--radio-control);
 }
 .configurador .buscar-id label { font-weight: 600; font-size: .92rem; }
 .configurador .buscar-id input {
@@ -655,27 +705,27 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .configurador .semaforo {
   display: flex; align-items: center; flex-wrap: wrap; gap: .5rem;
   margin: 0 0 1rem; padding: .5rem .8rem;
-  background: #f6f7f8; border: 1px solid #d8dcdf; border-left: 4px solid #98a0a6; border-radius: 6px;
+  background: var(--papel); border: 1px solid var(--linea); border-left: 4px solid var(--tinta-suave); border-radius: var(--radio-control);
   font-size: .95rem;
 }
 .configurador .semaforo .luz {
   width: .8rem; height: .8rem; border-radius: 50%; flex: none;
-  background: #98a0a6; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18);
+  background: var(--tinta-suave); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18);
 }
 .configurador .semaforo #banco-semaforo-texto { flex: 1 1 16rem; }
 .configurador .semaforo button { font-size: .88rem; padding: .25rem .6rem; }
-.configurador .semaforo[data-estado="verde"] { background: #f0f7f0; border-color: #b9d6b9; border-left-color: #4a9a52; }
+.configurador .semaforo[data-estado="verde"] { background: var(--papel); border-color: var(--linea); border-left-color: #4a9a52; }
 .configurador .semaforo[data-estado="verde"] .luz { background: #4a9a52; }
-.configurador .semaforo[data-estado="ambar"] { background: #fdf6e3; border-color: #e0c97f; border-left-color: #d9a441; }
+.configurador .semaforo[data-estado="ambar"] { background: var(--papel); border-color: var(--linea); border-left-color: #d9a441; }
 .configurador .semaforo[data-estado="ambar"] .luz { background: #d9a441; }
-.configurador .semaforo[data-estado="rojo"] { background: #fdf1ef; border-color: #e0a89f; border-left-color: #c0564a; }
+.configurador .semaforo[data-estado="rojo"] { background: var(--papel); border-color: var(--linea); border-left-color: #c0564a; }
 .configurador .semaforo[data-estado="rojo"] .luz { background: #c0564a; }
 
 /* Aviso de banco desfasado (decisión 77): el publicado no es el de este navegador.
    Va en ámbar, no en rojo: no es un error, es una decisión que tomar. */
 .configurador .desfase {
   margin: 0 0 1rem; padding: .8rem 1rem;
-  background: #fdf6e3; border: 1px solid #e0c97f; border-left: 4px solid #d9a441; border-radius: 6px;
+  background: var(--papel); border: 1px solid var(--linea); border-left: 4px solid #d9a441; border-radius: var(--radio-control);
 }
 .configurador .desfase p { margin: 0 0 .45rem; }
 .configurador .desfase p:last-child { margin-bottom: 0; }
@@ -686,7 +736,7 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .configurador .desfase li { margin: .15rem 0; }
 /* El desfase en el que la copia local va por detrás: rojo, porque ahí descargar y subir
    borra fragmentos para los alumnos (decisión 79). */
-.configurador .desfase.peligro { background: #fdf1ef; border-color: #e0a89f; border-left-color: #c0564a; }
+.configurador .desfase.peligro { background: var(--papel); border-color: var(--linea); border-left-color: #c0564a; }
 
 
 /* ---------- Las cifras, agrupadas por familia (Diego, 27/9/2026) ----------
@@ -721,52 +771,220 @@ svg.partitura .casilla-rotulo-ton { cursor: default; }
 svg.partitura .casilla-rotulo-ton .fondo { fill: var(--papel); stroke: var(--linea); }
 svg.partitura .casilla-rotulo-ton:hover .fondo { stroke: var(--linea); }
 
-/* Los colores de las funciones tonales · combinación TIERRA (prueba, 27/9/2026).
-   El color refuerza, nunca informa solo: la letra T · S · D sigue estando. La corrección
-   (verde/rojo) manda sobre el color de la función. */
-svg.partitura .casilla-fun.fun-T .fondo { fill: #e8eef2; stroke: #33617A; }
-svg.partitura .casilla-fun.fun-T:not(.mal):not(.bien) .fun { fill: #33617A; }
-svg.partitura .casilla-fun.fun-S .fondo { fill: #edf1e4; stroke: #6F8F4A; }
-svg.partitura .casilla-fun.fun-S:not(.mal):not(.bien) .fun { fill: #6F8F4A; }
-svg.partitura .casilla-fun.fun-D .fondo { fill: #f7e9e3; stroke: #B5502F; }
-svg.partitura .casilla-fun.fun-D:not(.mal):not(.bien) .fun { fill: #B5502F; }
-/* La dominante de la dominante, con el mismo color de dominante pero el borde partido */
-svg.partitura .casilla-fun.fun-DD .fondo { fill: #f7e9e3; stroke: #B5502F; stroke-dasharray: 4 2.5; }
-svg.partitura .casilla-fun.fun-DD:not(.mal):not(.bien) .fun { fill: #B5502F; }
+/* =======================================================================================
+   LAS TRES FUNCIONES, EN COLOR PLANO  (decisión 132, Diego 28/9/2026)
 
-/* ---------------------------------------------------------------------------------------
-   Los colores de las funciones tonales en las teclas (combinación «Tierra», Diego 27/9/2026)
+       T  azul  #0B5CD5        S  rojo  #D62828        D  amarillo  #F2C200
 
-   Las mismas tres tintas que llevan las casillas de función en la partitura: T azul pizarra,
-   S oliva, D terracota. El color refuerza, nunca informa solo —la letra y el número romano
-   siguen ahí—, y así la paleta enseña de qué familia es cada grado sin tener que leerlo.
+   POR QUÉ ESTOS TRES. Kandinsky, en «De lo espiritual en el arte», describe el azul como
+   un movimiento hacia dentro, profundo y quieto —lo emparenta con los instrumentos graves—
+   y el amarillo como un movimiento hacia fuera, agudo y punzante, próximo a una trompeta
+   estridente; el rojo es para él una fuerza firme que se sostiene sin dispersarse. Llevado
+   a la armonía: el azul es el reposo (TÓNICA), el amarillo lo que empuja y necesita
+   resolver (DOMINANTE) y el rojo la fuerza intermedia que prepara (SUBDOMINANTE).
 
-   El VI va PARTIDO EN DIAGONAL, mitad tónica y mitad subdominante, porque eso es lo que el
-   acorde es: tónica cuando viene de la dominante (cadencia rota) y subdominante cuando va
-   hacia ella. El III se queda sin color: no tiene función tonal.
-   --------------------------------------------------------------------------------------- */
+   POR QUÉ EN BLOQUE Y NO EN ANOTACIÓN. El amarillo saturado da 1,85:1 sobre blanco: como
+   LETRA es ilegible. Con colores vibrantes la dosis se invierte —se pinta el bloque y la
+   letra va en el contraste que le toque—, y eso es además lo que se buscaba: color plano.
+
+   LO QUE ESTO OBLIGA. Si la subdominante es un rojo intenso, la CORRECCIÓN no puede seguir
+   siendo un relleno rojo. Pasa a decirse con el contorno y con un símbolo ✓ / ✗ en la
+   esquina (`marcaCorreccion` en partitura.js). De paso deja de depender del color.
+
+   CÓMO CRECE con el cromatismo, que es lo que había que dejar resuelto: no se añaden
+   tonos, se añade TRATAMIENTO, y el tratamiento significa lo mismo en las tres familias.
+     · PLENO   → la función diatónica del tono
+     · HUECO   → la función DE OTRO TONO: la DD y las V/x que vengan
+     · RAYADO  → la función ALTERADA: préstamos modales, napolitana, sexta aumentada
+     · sin nada → sin función tonal (el III)
+   Se descartó distinguirlas por intensidad: una superficie más pálida ya significa «no
+   disponible» en esta interfaz, y las gradaciones se confunden entre sí pasando de tres.
+   ======================================================================================= */
 :root {
-  --fun-t: #33617A;  --fun-t-suave: #e8eef2;
-  --fun-s: #6F8F4A;  --fun-s-suave: #edf1e4;
-  --fun-d: #B5502F;  --fun-d-suave: #f7e9e3;
+  --fun-t: #0B5CD5;  --fun-t-letra: #ffffff;
+  --fun-s: #D62828;  --fun-s-letra: #ffffff;
+  --fun-d: #F2C200;  --fun-d-letra: #1A1300;
 }
+
+/* ---- En la partitura ---- */
+svg.partitura .casilla-fun.fun-T .fondo { fill: var(--fun-t); stroke: var(--fun-t); }
+svg.partitura .casilla-fun.fun-T:not(.mal):not(.bien) .fun { fill: var(--fun-t-letra); }
+svg.partitura .casilla-fun.fun-S .fondo { fill: var(--fun-s); stroke: var(--fun-s); }
+svg.partitura .casilla-fun.fun-S:not(.mal):not(.bien) .fun { fill: var(--fun-s-letra); }
+svg.partitura .casilla-fun.fun-D .fondo { fill: var(--fun-d); stroke: var(--fun-d); }
+svg.partitura .casilla-fun.fun-D:not(.mal):not(.bien) .fun { fill: var(--fun-d-letra); }
+/* HUECA: la dominante de otro tono. Mismo color, sin relleno. */
+svg.partitura .casilla-fun.fun-DD .fondo { fill: var(--papel); stroke: var(--fun-d); stroke-width: 3; }
+svg.partitura .casilla-fun.fun-DD:not(.mal):not(.bien) .fun { fill: #6B5400; }
+
+/* La corrección: contorno y símbolo, nunca relleno */
+svg.partitura .casilla.bien .fondo { fill: var(--papel); stroke: var(--bien); stroke-width: 3; }
+svg.partitura .casilla.mal .fondo  { fill: var(--papel); stroke: var(--mal);  stroke-width: 3; }
+svg.partitura .casilla-fun.bien .fondo, svg.partitura .casilla-fun.mal .fondo { fill: var(--papel); }
+svg.partitura .marca-corr { font-family: var(--fuente-ui); font-size: 11px; font-weight: 700; pointer-events: none; }
+svg.partitura .marca-bien { fill: var(--bien); }
+svg.partitura .marca-mal  { fill: var(--mal); }
+
+/* ---- En las teclas: el mismo bloque ---- */
+.tecla-fun, .tecla-romano { background: var(--papel); border-color: var(--linea); }
 .tecla-fun[data-funcion="T"], .tecla-romano[data-romano="I"] {
-  background: var(--fun-t-suave); border-color: var(--fun-t); color: var(--fun-t); }
+  background: var(--fun-t); border-color: var(--fun-t); color: var(--fun-t-letra); }
 .tecla-fun[data-funcion="S"], .tecla-romano[data-romano="II"], .tecla-romano[data-romano="IV"] {
-  background: var(--fun-s-suave); border-color: var(--fun-s); color: var(--fun-s); }
+  background: var(--fun-s); border-color: var(--fun-s); color: var(--fun-s-letra); }
 .tecla-fun[data-funcion="D"], .tecla-romano[data-romano="V"], .tecla-romano[data-romano="VII"] {
-  background: var(--fun-d-suave); border-color: var(--fun-d); color: var(--fun-d); }
-/* La dominante de la dominante: el color de la dominante con el borde partido */
+  background: var(--fun-d); border-color: var(--fun-d); color: var(--fun-d-letra); }
+/* Hueca: la de otro tono */
 .tecla-fun[data-funcion="DD"], .tecla-romano[data-romano="V/V"] {
-  background: var(--fun-d-suave); border-color: var(--fun-d); color: var(--fun-d);
-  border-style: dashed; }
-/* El VI, las dos cosas a la vez */
+  background: var(--papel); border-color: var(--fun-d); border-width: 2px; color: #6B5400; }
+/* El VI es las dos cosas: mitad tónica, mitad subdominante */
 .tecla-romano[data-romano="VI"] {
-  background: linear-gradient(135deg, var(--fun-t-suave) 0 49.4%, var(--fun-s) 49.4% 50.6%, var(--fun-s-suave) 50.6% 100%);
-  border-color: var(--fun-s); color: var(--fun-t); }
-/* El III no tiene función tonal, y «ninguna» tampoco */
+  background: linear-gradient(to right, var(--fun-t) 0 50%, var(--fun-s) 50% 100%);
+  border-color: var(--fun-t); color: #ffffff; }
+/* El III no tiene función tonal, y «—» tampoco */
 .tecla-fun[data-funcion="N"], .tecla-romano[data-romano="III"] {
-  background: var(--fondo); border-color: var(--linea); color: var(--tinta-suave); }
-/* Pulsada, elegida o apagada mandan sobre el color de la familia */
+  background: var(--papel); border-color: var(--linea); color: var(--tinta); }
+/* Preparado para cuando lleguen: la función ALTERADA, rayada en su propio color */
+.tecla-romano.alterada, .tecla-fun.alterada {
+  background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.55) 0 5px, transparent 5px 10px); }
+/* Pulsada, elegida o apagada mandan sobre la familia */
 .tecla-fun:hover, .tecla-romano:hover { border-color: var(--acento); }
 .tecla.elegida { border-color: var(--acento); background: var(--acento-suave); color: var(--tinta); }
+
+/* ======================================================================================
+   LAS DOS VOCES TIPOGRÁFICAS  (punto 1 del repaso de interfaz, 27/9/2026)
+
+   Va al final del archivo a propósito: buena parte de los controles se declaran con
+   `font: inherit`, que es un ATAJO y por tanto reescribe también la familia. Colocadas
+   arriba, estas reglas quedaban anuladas por cada `font: inherit` posterior; aquí ganan
+   por orden de aparición, que es lo que decide entre selectores de igual peso.
+   ====================================================================================== */
+
+/* La voz de la herramienta: rótulos, botones, selectores, estados. Nada de esto es
+   música ni prosa del profesor, y en serif parecía el pie de una fotocopia. */
+.paleta-etiqueta, .repertorio-etiqueta, .control-etiqueta, .tecla-nombre, .tecla-num,
+.sobretitulo, .progreso, .pie, .instrumento-estado, .selector-caja, .selector-pequeno,
+.globo-acorde, .boton-pequeno, .botonera button, .segmentos button, .tecla-borrar,
+.ref-boton, .chip, .aviso, .tecla, #posicion button, .btn-sonar, .btn-volver,
+select, input, textarea, button {
+  font-family: var(--fuente-ui);
+}
+
+/* La voz de la música y del profesor: títulos, enunciados y todo texto que ES notación
+   —cifras, romanos, T S D, nombres de tonalidad—. Después del bloque anterior, para que
+   las teclas que llevan notación recuperen la serif que les toca. */
+h1, h2, h3, .instruccion, .esquema,
+.tecla-romano, .tecla-romano-texto, .tecla-fun, .tecla-ton, .ficha-romano {
+  font-family: var(--fuente-texto);
+}
+
+/* =======================================================================================
+   LA CABECERA DE LA APLICACIÓN  (decisión 131)
+
+   Dos franjas a sangre y, debajo, el espacio de trabajo. Es lo que separa una aplicación
+   de un documento: el documento empieza en su título; la aplicación tiene carrocería.
+     · la BARRA, en negro ciruela, con el nombre y los tres destinos;
+     · la BANDA, en morado eléctrico, que dice en qué estás y por dónde vas.
+   Ambas de borde a borde: el contenido se centra dentro de `.envoltorio`.
+   ======================================================================================= */
+.barra-app {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  background: var(--barra); color: var(--barra-texto);
+  padding: 0 20px; min-height: 42px;
+  font-family: var(--fuente-ui); font-size: .84rem;
+}
+.barra-app .marca { font-weight: 700; letter-spacing: .01em; }
+.barra-app a { color: var(--barra-apagado); text-decoration: none; padding: 12px 2px; }
+.barra-app a:hover { color: var(--barra-texto); }
+/* La pestaña en la que estás: en el morado, que es lo que identifica el sitio */
+.barra-app a.aqui { color: var(--marca); font-weight: 600; box-shadow: inset 0 -3px 0 0 var(--marca); }
+.barra-app .derecha { margin-left: auto; display: flex; gap: 18px; align-items: center; }
+
+/* La banda. `.cabecera` ya existía como cabecera del documento: aquí pasa a ser la banda. */
+.cabecera {
+  background: var(--marca); color: var(--marca-texto);
+  padding: 9px 20px; margin: 0 0 18px;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 18px;
+  font-family: var(--fuente-ui);
+}
+.cabecera h1 { margin: 0; font-family: var(--fuente-ui); font-size: 1.14rem; font-weight: 700;
+  letter-spacing: -.01em; color: var(--marca-texto); }
+.cabecera .sobretitulo { display: none; }
+.cabecera .cabecera-texto { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; min-width: 0; }
+/* Los mandos que viven dentro de la banda (el selector de ejercicio, el de tema, Cerrar):
+   sobre el morado no valen los bordes claros de siempre. */
+.cabecera .selector-caja { flex-direction: row; align-items: center; gap: 8px; color: var(--marca-texto); font-size: .84rem; }
+.cabecera .selector-caja select, .cabecera select {
+  font-family: var(--fuente-ui); font-size: .88rem; color: var(--marca-texto);
+  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.42);
+  border-radius: var(--radio-control); padding: 5px 8px; min-width: 0; }
+.cabecera .selector-caja select option, .cabecera select option { color: var(--tinta); background: var(--papel); }
+.cabecera .btn-volver, .cabecera .boton-pequeno {
+  color: var(--marca-texto); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.42); }
+.cabecera .btn-volver:hover, .cabecera .boton-pequeno:hover {
+  background: var(--marca-texto); color: var(--marca); border-color: var(--marca-texto); }
+.cabecera .instruccion, .cabecera .quees { color: rgba(255,255,255,.84); }
+
+/* El contenido, centrado dentro de las franjas */
+.envoltorio { max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
+body { padding: 0; max-width: none; }
+
+/* El botón principal es lo único más del morado: es la llamada a la acción */
+.botonera button.primario {
+  background: var(--marca); border-color: var(--marca); color: var(--marca-texto); font-weight: 700; }
+.botonera button.primario:hover { background: var(--marca-honda); border-color: var(--marca-honda); }
+.botonera button.primario:disabled { opacity: .45; }
+
+/* El foco del teclado, visible sobre cualquier fondo */
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+.cabecera :focus-visible, .barra-app :focus-visible { outline-color: var(--marca-texto); }
+
+@media (max-width: 719px), (max-height: 559px) {
+  .barra-app { padding: 0 10px; gap: 12px; font-size: .76rem; min-height: 36px; }
+  .barra-app .derecha { gap: 10px; }
+  .cabecera { padding: 6px 10px; margin-bottom: 8px; }
+  .cabecera h1 { font-size: .96rem; }
+  .envoltorio { padding: 0 8px 24px; }
+}
+
+/* En las ventanas de ayuda la instrucción baja al contenido, como en la pantalla del
+   alumno: la banda se queda en UN renglón, que en una ventana pensada para estar al lado
+   del ejercicio es alto que se gana. */
+.envoltorio > .instruccion:first-child { margin: 0 0 14px; }
+/* El enlace-botón que vive dentro de la banda (el del configurador) */
+.cabecera .enlace-boton { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.45); color: var(--marca-texto); }
+.cabecera .enlace-boton:hover { background: var(--marca-texto); color: var(--marca); border-color: var(--marca-texto); }
+.cabecera .quees { font-size: .84rem; opacity: .82; }
+
+/* «Leer los errores», junto a Comprobar: no es un ajuste de sonido sino lo que ocurre
+   después de comprobar, y ahí es donde el alumno lo va a buscar (Diego, 28/9/2026). */
+.botonera .junto-a-comprobar { display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--fuente-ui); font-size: .9rem; color: var(--tinta-suave); }
+
+/* =======================================================================================
+   LOS RÓTULOS DE LA BARRA, TODOS IGUALES  (Diego, 28/9/2026)
+
+   Medían todos 14,4 px, pero la mitad salían en Georgia y la otra mitad en la sans: los
+   rótulos de las casillas de verificación llevan el texto en un <span> pelado dentro del
+   <label>, y ese caso no lo cogía la regla de las dos voces tipográficas. A la vista, una
+   serif y una sans del mismo cuerpo no parecen del mismo tamaño.
+   ======================================================================================= */
+.realizacion-barra label, .realizacion-barra label span, .realizacion-barra .control,
+.botonera label, .botonera label span {
+  font-family: var(--fuente-ui); font-size: .9rem; color: var(--tinta-suave);
+}
+.realizacion-barra .boton-pequeno { color: var(--tinta); }
+
+/* «Grados del bajo»: el rótulo delante y la casilla detrás, como el resto del renglón
+   —«Instrumento» y «Posición melódica inicial» también son rótulo + mando—. */
+#control-grados label.control { flex-direction: row-reverse; gap: 8px; }
+
+/* Y un separador entre los dos ajustes, que venían pegados */
+/* La misma separación que entre los mandos del renglón de arriba: 18 px, ni más ni menos,
+   y una línea fina en medio (Diego, 28/9/2026). */
+#control-realizacion { border-left: 1px solid var(--linea); padding-left: 18px; }
+/* Los tres botones de la posición, del MISMO ancho: dicen qué nota del acorde lleva la
+   soprano —fundamental, tercera o quinta—, y «Fund.» es más largo que las otras dos. */
+#posicion-control .segmentos button { min-width: 3.6rem; text-align: center; }
+@media (max-width: 719px), (max-height: 559px) {
+  #control-realizacion { border-left: none; padding-left: 0; margin-left: 10px; }
+}

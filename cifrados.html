@@ -7,33 +7,36 @@
   <meta name="description" content="Cada cifra con el acorde que produce en Do mayor, a cuatro voces y con sonido.">
   <meta property="og:title" content="Práctica armónica · Cuadro de cifrados">
   <meta property="og:description" content="Cada cifra con el acorde que produce en Do mayor.">
-  <link rel="stylesheet" href="css/bravura.css?v=20260927-2330">
-  <link rel="stylesheet" href="css/estilo.css?v=20260927-2330">
+  <link rel="stylesheet" href="css/bravura.css?v=20260928-0940">
+  <link rel="stylesheet" href="css/estilo.css?v=20260928-0940">
   <style>
     body { max-width: 1500px; }
     .cuadro { padding: 0 14px 26px; max-width: 1500px; margin: 0 auto; font-size: .92rem; }
     /* La cabecera se queda pegada arriba, como en la ventana de estructuras */
-    .cabecera { position: sticky; top: 0; z-index: 30; background: #faf8f3;
-                box-shadow: 0 1px 0 #e6dfd2; align-items: flex-start; gap: 16px; }
+    /* La banda de esta ventana, además, se queda pegada arriba al desplazar: es la que
+       dice de qué tema son las estructuras que estás mirando. El color y el texto los pone
+       ya `estilo.css`; aquí solo se añade que sea pegajosa. */
+    .cabecera { position: sticky; top: 0; z-index: 30;
+                align-items: center; gap: 10px 16px; }
     .mandos-ayuda { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; flex-wrap: wrap;
                     justify-content: flex-end; }
     .mandos-ayuda label { display: flex; align-items: center; gap: 6px;
                           font-size: .78rem; text-transform: uppercase; letter-spacing: .04em;
                           color: var(--tinta-suave); }
     #posicion { display: flex; gap: 0; }
-    #posicion button { font: inherit; font-size: .82rem; padding: 4px 9px; cursor: pointer;
+    #posicion button { font: inherit; font-family: var(--fuente-ui); font-size: .82rem; padding: 4px 9px; cursor: pointer;
                        border: 1px solid var(--linea); background: var(--papel); color: var(--tinta); }
-    #posicion button:first-child { border-radius: 8px 0 0 8px; }
-    #posicion button:last-child { border-radius: 0 8px 8px 0; }
+    #posicion button:first-child { border-radius: var(--radio-control) 0 0 var(--radio-control); }
+    #posicion button:last-child { border-radius: 0 var(--radio-control) var(--radio-control) 0; }
     #posicion button.elegida { background: var(--acento); border-color: var(--acento); color: #fff; }
-    .btn-volver { font: inherit; font-size: .86rem; padding: 6px 14px; border-radius: 999px;
-                  border: 1px solid #b9ad99; background: #fff; cursor: pointer; white-space: nowrap; }
-    .btn-volver:hover { background: #2f2a22; color: #fff; border-color: #2f2a22; }
+    .btn-volver { font: inherit; font-family: var(--fuente-ui); font-size: .86rem; padding: 6px 14px; border-radius: var(--radio-control);
+                  border: 1px solid var(--linea); background: var(--papel); cursor: pointer; white-space: nowrap; }
+    .btn-volver:hover { background: var(--tinta); color: #fff; border-color: var(--tinta); }
     #titulo { margin: 0; }
-    #titulo .quees { font-weight: 400; font-size: .72em; letter-spacing: .02em; }
-    .esquema { margin: 0 0 5px; padding: 4px 10px; background: #f2ede3; border-radius: 4px;
+    #titulo .quees { font-weight: 400; font-size: .72em; letter-spacing: .02em; opacity: .82; }
+    .esquema { margin: 0 0 5px; padding: 4px 10px; background: transparent; border-bottom: 1px solid var(--linea); border-radius: 0;
                font-size: .92rem; letter-spacing: .02em; }
-    .esquema .acorde-familia { font-size: .74rem; font-style: italic; color: #7a6a55; }
+    .esquema .acorde-familia { font-size: .74rem; font-style: italic; color: var(--tinta-suave); }
     .piezas { display: flex; flex-wrap: wrap; gap: 18px 26px; align-items: flex-start; }
     .pieza { display: flex; flex-direction: column; flex: 0 0 auto; min-width: 0; max-width: 100%; }
     /* La tira de botones es un renglón de alto con cada botón colocado sobre su acorde */
@@ -43,20 +46,25 @@
                   font-size: .7rem; }
     .pieza .pent { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .pieza .pent svg { max-width: none; height: auto; }
-    .btn-sonar { font: inherit; font-size: .74rem; line-height: 1.5; padding: 1px 9px;
-                 border-radius: 999px; border: 1px solid #b9ad99; background: #fff;
+    .btn-sonar { font: inherit; font-family: var(--fuente-ui); font-size: .74rem; line-height: 1.5; padding: 2px 9px;
+                 border-radius: var(--radio-control); border: 1px solid var(--linea); background: var(--papel);
                  cursor: pointer; flex: 0 0 auto; white-space: nowrap; align-self: flex-start; }
-    .btn-sonar:hover { background: #f4efe6; }
-    .btn-sonar.sonando { background: #2f2a22; color: #fff; border-color: #2f2a22; }
+    .btn-sonar:hover { border-color: var(--acento); }
+    .btn-sonar.sonando { background: var(--acento); color: #fff; border-color: var(--acento); }
     #aviso { margin: 16px; color: #8a2b2b; }
   </style>
 </head>
 <body>
+  <nav class="barra-app" aria-label="Secciones">
+    <span class="marca">Práctica armónica</span>
+    <a href="index.html">Ejercicio</a>
+    <a href="estructuras.html">Estructuras</a>
+    <a href="cifrados.html" class="aqui">Cifrados</a>
+  </nav>
 
   <header class="cabecera">
     <div class="cabecera-texto">
       <h1 id="titulo">Cuadro de cifrados <span class="quees">— cada cifra y el acorde que manda escribir, en Do mayor</span></h1>
-      <p class="instruccion">Dentro de cada familia es siempre el mismo acorde, visto desde cada uno de sus bajos. Pulsa <b>Escuchar</b> para oírlo.</p>
     </div>
     <div class="mandos-ayuda">
       <label>Posición
@@ -73,17 +81,22 @@
     </div>
   </header>
 
+  <div class="envoltorio">
+    <p class="instruccion">Dentro de cada familia es siempre el mismo acorde, visto desde cada uno de sus bajos. Pulsa <b>Escuchar</b> para oírlo.</p>
+
+
   <p id="aviso" hidden></p>
   <main class="cuadro" id="cuadro"></main>
 
   <noscript><p class="instruccion" style="margin:24px 16px">Esta página necesita JavaScript.</p></noscript>
+  </div>
 
-  <script src="js/teoria.js?v=20260927-2330"></script>
-  <script src="js/reglas.js?v=20260927-2330"></script>
-  <script src="js/ejercicios.js?v=20260927-2330"></script>
-  <script src="js/partitura.js?v=20260927-2330"></script>
-  <script src="js/realizacion.js?v=20260927-2330"></script>
-  <script src="js/sonido.js?v=20260927-2330"></script>
-  <script src="js/cifrados.js?v=20260927-2330"></script>
+  <script src="js/teoria.js?v=20260928-0940"></script>
+  <script src="js/reglas.js?v=20260928-0940"></script>
+  <script src="js/ejercicios.js?v=20260928-0940"></script>
+  <script src="js/partitura.js?v=20260928-0940"></script>
+  <script src="js/realizacion.js?v=20260928-0940"></script>
+  <script src="js/sonido.js?v=20260928-0940"></script>
+  <script src="js/cifrados.js?v=20260928-0940"></script>
 </body>
 </html>
