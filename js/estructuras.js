@@ -135,9 +135,6 @@
 
   function pieza(p) {
     const caja = el('div', 'pieza');
-    /* Los fragmentos cortos se encogen para que quepan dos por renglón; los largos se
-       quedan con su ancho y ocupan el renglón entero, que si no se vuelven ilegibles. */
-    if ((p.compases || []).length > 4) caja.classList.add('larga');
     /* El botón va ENCIMA y a la izquierda, donde empieza el fragmento: así se pulsa
        mirando el primer acorde y no hay que bajar la vista (Diego, 27/9/2026). */
     const cabeza = el('div', 'cabeza-pieza');
@@ -183,7 +180,39 @@
         cont.appendChild(r);
       });
     });
+    igualarTamano();
     try { localStorage.setItem(CLAVE_TEMA, String(tema)); } catch (e) { /* sin almacenamiento */ }
+  }
+
+  /* ---------- Todos los fragmentos, del mismo tamaño (Diego, 27/9/2026) ----------
+     Antes cada fragmento se dibujaba a su tamaño natural y el navegador encogía solo los
+     que no cabían: un fragmento de dos compases salía con la música y las casillas más
+     grandes que uno de cuatro, lo que es inadmisible en un cuadro que se mira de un golpe.
+
+     Ahora manda UNA escala para todo el cuadro, la mayor con la que quepa el fragmento más
+     ancho —y nunca mayor que el tamaño natural, que agrandar no mejora nada—. Si además,
+     encogiendo menos de un 15 %, caben de dos en dos, se encoge: un cuadro denso se abarca
+     mejor que una columna larguísima. */
+  function igualarTamano() {
+    const cont = $('#cuadro');
+    const svgs = [...cont.querySelectorAll('.pent svg')];
+    // El ancho útil es el de la fila de fragmentos, no el del cuadro (que incluye su margen)
+    const fila = cont.querySelector('.piezas');
+    const W = fila ? fila.clientWidth : cont.clientWidth;
+    if (!svgs.length || !W) return;
+    const HUECO = 20;                                   // el mismo que el gap de .piezas
+    const anchos = svgs.map(s => Number((s.getAttribute('viewBox') || '0 0 0 0').split(/\s+/)[2]) || 0);
+    const maxU = Math.max(...anchos);
+    if (!maxU) return;
+    let escala = Math.min(1, (W - 2) / maxU);
+    const deDos = (W - HUECO) / (2 * maxU);
+    if (2 * maxU * escala + HUECO > W && deDos >= escala * 0.85) escala = deDos;
+    svgs.forEach((s, k) => {
+      const ancho = Math.round(anchos[k] * escala);
+      s.setAttribute('width', ancho);
+      const caja = s.closest('.pieza');
+      if (caja) caja.style.width = ancho + 'px';
+    });
   }
 
   function aviso(texto) {
@@ -225,6 +254,9 @@
     volver();
     pintar(inicial);
     document.addEventListener('visibilitychange', () => { if (document.hidden) parar(); });
+    // Al cambiar el ancho de la ventana, la escala común se recalcula
+    let esperando = null;
+    window.addEventListener('resize', () => { clearTimeout(esperando); esperando = setTimeout(igualarTamano, 120); });
     vigilarActividad();
   }
 

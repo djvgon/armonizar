@@ -19,11 +19,12 @@
     .esquema + .renglon { border-top: 0; }
     .estructura { font-weight: 700; font-size: .92rem; margin-bottom: 3px; }
     .piezas { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: flex-start; }
-    /* Cada fragmento ocupa lo suyo y se encoge si no cabe; así los cortos se ponen dos
-       por renglón y uno solo no se infla hasta el ancho de la página. */
-    .pieza { display: flex; flex-direction: column; flex: 0 1 470px; min-width: 0;
-             max-width: min(100%, 470px); }
-    .pieza.larga { flex-basis: 100%; max-width: 100%; }
+    /* Cada fragmento ocupa su propio ancho, que le fija el guion: TODOS los del cuadro van
+       a la misma escala (véase `igualarTamano` en estructuras.js), de modo que la música y
+       las casillas se ven del mismo tamaño en un fragmento de dos compases y en uno de
+       cinco. Los que caben se ponen uno al lado de otro. */
+    .pieza { display: flex; flex-direction: column; flex: 0 0 auto; min-width: 0;
+             max-width: 100%; }
     .cabeza-pieza { display: flex; margin-bottom: 1px; }
     .pieza .pent { overflow-x: auto; }
     .pieza .pent svg { max-width: 100%; height: auto; }
