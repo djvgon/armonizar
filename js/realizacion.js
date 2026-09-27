@@ -273,17 +273,21 @@ const Realizacion = (() => {
       if (nov.length && ter.length && Math.max(...ter) > Math.min(...nov)) coste += 90;
     }
     if (d.superiores.length < 3 && !c.doblaBajo) coste += 3;         // tríada sin doblar el bajo
-    /* El acorde final, con la tónica en la soprano siempre que se pueda (decisión 120,
-       Diego). Es la posición de octava, la que cierra de verdad: la tercera deja la
-       cadencia abierta y la quinta, más aún. Los números son grandes a propósito —el
-       movimiento de una voz cuesta un punto por semitono— para que la tónica gane a
-       cualquier comodidad de conducción; siguen muy por debajo de las paralelas (120),
-       que nunca se admiten por acabar mejor. */
-    if (esFinal && d.id === '53' && clase(d.bajo) === claseTonica(ton)) {
+    /* EL CIERRE CONCLUSIVO (decisión 120, ampliada por Diego el 27/9/2026). Si el fragmento
+       acaba en el acorde de tónica, la melodía de la soprano ha de TENDER A LA TÓNICA —la
+       posición de octava, la que cierra de verdad— y, en su defecto, a la TERCERA del acorde,
+       que cierra también. La quinta arriba deja la cadencia en el aire y se admite solo
+       cuando no hay otra salida.
+       Vale para cualquier inversión del acorde de tónica, no solo la fundamental: lo
+       conclusivo es la nota con que acaba la melodía, no el bajo.
+       Los números son grandes a propósito —el movimiento de una voz cuesta un punto por
+       semitono— para que el cierre gane a cualquier comodidad de conducción; y todos quedan
+       por debajo de las paralelas (120), que nunca se admiten por acabar mejor. */
+    if (esFinal && d.septima === null && clase(d.fund) === claseTonica(ton)) {
       const cs = clase(s);
-      if (cs === claseTonica(ton)) coste += 0;
-      else if (d.quinta !== null && cs === d.quinta) coste += 90;   // la quinta en la soprano final: lo último
-      else coste += 45;                                              // la tercera
+      if (cs === claseTonica(ton)) coste += 0;                        // la tónica: cierre pleno
+      else if (d.tercera !== null && cs === d.tercera) coste += 30;   // la tercera: cierra también
+      else coste += 110;                                              // la quinta arriba: lo último
     }
     return coste;
   }
@@ -292,7 +296,16 @@ const Realizacion = (() => {
   function costeTransicion(p, dp, c, dc) {
     const antes = [dp.bajo, ...p.voces], ahora = [dc.bajo, ...c.voces];
     let coste = 0;
-    for (let q = 1; q < 4; q++) coste += Math.abs(midi(ahora[q]) - midi(antes[q]));
+    /* El movimiento de cada voz cuesta un punto por semitono (XS2: la voz que menos se
+       mueve). Y a partir de la cuarta el salto se encarece de prisa, porque un salto grande
+       hay que COMPENSARLO después y no siempre se puede: la séptima melódica no se canta
+       (Diego, 27/9/2026). */
+    for (let q = 1; q < 4; q++) {
+      const salto = Math.abs(midi(ahora[q]) - midi(antes[q]));
+      coste += salto;
+      if (salto > 5) coste += (salto - 5) * 8;
+      if (salto >= 10) coste += 90;                 // séptima o más: prácticamente prohibido
+    }
     coste += 120 * paralelasEntre(antes, ahora).length;      // las paralelas pesan más que cualquier otro defecto
     const contiene = pc => dc.tonos.some(t => clase(t) === pc);
     // Mismo acorde en otra inversión (arpegio del bajo): las voces se reparten libremente
@@ -676,6 +689,39 @@ const Realizacion = (() => {
           avisos.push({ i, tipo: 'sensible', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
             texto: 'La sensible (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de subir a la tónica; aquí va a ' + nombre(a) + '.' });
         }
+      }
+    }
+    /* ---- El salto melódico, compensado (Diego, 27/9/2026) ----
+       Una voz que salta una quinta o más ha de volver después por grado conjunto —o por
+       tercera— EN SENTIDO CONTRARIO. Un salto grande seguido de otro salto, y más aún en la
+       misma dirección, deja la voz descoyuntada y no se canta. Y la séptima melódica no se
+       admite en ningún caso. Solo se miran las tres voces superiores: el bajo viene dado por
+       el fragmento y su dibujo es el que es. */
+    const SALTO_GRANDE = 7;          // una quinta justa
+    for (let q = 1; q < 4; q++) {
+      for (let i = 1; i < acordes.length; i++) {
+        const a = voces(i - 1), b = voces(i);
+        if (!a || !b) continue;
+        const salto = midi(b[q]) - midi(a[q]);
+        const tam = Math.abs(salto);
+        if (tam >= 10 && tam !== 12) {
+          avisos.push({ i, tipo: 'salto', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
+            texto: 'Salto de ' + (tam >= 13 ? 'más de una octava' : 'séptima') + ' en ' + NOMBRE_VOZ[q]
+              + ': ' + nombre(a[q]) + ' a ' + nombre(b[q]) + '. Una voz no canta ese intervalo; '
+              + 'búscale otra disposición al acorde.' });
+          continue;
+        }
+        if (tam < SALTO_GRANDE) continue;
+        const c = i + 1 < acordes.length ? voces(i + 1) : null;
+        if (!c) continue;                       // el salto que cae en el último acorde no se juzga
+        const vuelta = midi(c[q]) - midi(b[q]);
+        const contrario = (salto > 0 && vuelta < 0) || (salto < 0 && vuelta > 0);
+        if (contrario && Math.abs(vuelta) <= 4) continue;       // compensado: segunda o tercera al revés
+        avisos.push({ i, tipo: 'salto', notas: [{ i: i - 1, voz: q }, { i, voz: q }, { i: i + 1, voz: q }],
+          texto: 'Salto sin compensar en ' + NOMBRE_VOZ[q] + ': de ' + nombre(a[q]) + ' a ' + nombre(b[q])
+            + (vuelta === 0 ? ' y ahí se queda' : ' y sigue a ' + nombre(c[q]))
+            + '. Después de un salto de quinta o mayor, la voz ha de volver por grado conjunto —o por '
+            + 'tercera— en sentido contrario.' });
       }
     }
     // Voces cruzadas dentro de un acorde (Y4a)
