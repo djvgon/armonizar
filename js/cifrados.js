@@ -121,23 +121,28 @@
     const cifras = g.cifras.map(x => x[0]), bajos = g.cifras.map(x => x[1]);
     const voces = cifras.map((id, k) => vocesDe(id, bajos[k]));
 
-    // Un botón por acorde, con su nombre: se oye cada cifra por separado
+    /* Un botón por acorde, ENCIMA de su acorde y a su izquierda: se pulsa mirando el
+       acorde, no una lista aparte (Diego, 27/9/2026). Se coloca por la posición que la
+       partitura le ha dado a la casilla del cifrado, guardada como fracción del ancho para
+       que siga cuadrando cuando la escala cambie. */
     const cabeza = el('div', 'cabeza-pieza');
+    const pent = el('div', 'pent');
+    caja.appendChild(cabeza);
+    caja.appendChild(pent);
+    const svg = Partitura.dibujar(pent, ejercicioDe(bajos), estadoDe(cifras, bajos, voces), () => {});
+    const anchoU = Number((svg.getAttribute('viewBox') || '0 0 1 1').split(/\s+/)[2]) || 1;
     cifras.forEach((id, k) => {
-      const btn = el('button', 'btn-sonar');
+      const btn = el('button', 'btn-sonar btn-acorde');
       btn.type = 'button';
+      btn.innerHTML = '<span aria-hidden="true">▶</span>';
       const c = Teoria.CIFRADOS[id] || {};
-      btn.innerHTML = '<span aria-hidden="true">▶</span> ';
-      btn.appendChild(document.createTextNode(c.nombre || id));
-      btn.setAttribute('aria-label', 'Escuchar el acorde de ' + (c.nombre || id));
+      btn.title = 'Escuchar el acorde de ' + (c.nombre || id);
+      btn.setAttribute('aria-label', btn.title);
+      const casilla = svg.querySelector('g[data-campo="cifra"][data-indice="' + k + '"] rect');
+      btn.dataset.fx = casilla ? (Number(casilla.getAttribute('x')) || 0) / anchoU : 0;
       btn.addEventListener('click', () => tocar(bajos[k], voces[k], btn));
       cabeza.appendChild(btn);
     });
-    caja.appendChild(cabeza);
-
-    const pent = el('div', 'pent');
-    caja.appendChild(pent);
-    Partitura.dibujar(pent, ejercicioDe(bajos), estadoDe(cifras, bajos, voces), () => {});
     return caja;
   }
 
@@ -180,7 +185,12 @@
       const ancho = Math.round(anchos[k] * escala);
       s.setAttribute('width', ancho);
       const caja = s.closest('.pieza');
-      if (caja) caja.style.width = ancho + 'px';
+      if (!caja) return;
+      caja.style.width = ancho + 'px';
+      // Cada botón, encima de su acorde: la fracción se convierte en píxeles
+      caja.querySelectorAll('.btn-acorde').forEach(btn => {
+        btn.style.left = Math.round((Number(btn.dataset.fx) || 0) * ancho) + 'px';
+      });
     });
   }
 
