@@ -227,6 +227,13 @@
     const filaLec = $('#leccion-fila');
     if (ej.leccion) { $('#leccion').textContent = ej.leccion; filaLec.hidden = false; }
     else filaLec.hidden = true;
+    /* El botón de ayuda solo aparece si la lección tiene cuadro de estructuras. */
+    const btnEst = $('#btn-estructuras');
+    if (btnEst) {
+      const tema = ej.leccion ? TEMA_DE_LECCION[ej.leccion] : null;
+      btnEst.hidden = !tema;
+      btnEst.dataset.tema = tema ? String(tema) : '';
+    }
     const deLaLeccion = ej.leccion ? 'de esta lección' : 'en este ejercicio';
     const rep = $('#repertorio');
     rep.innerHTML = '';
@@ -543,6 +550,20 @@
   const notaRespondida = i => notaCompleta(i) && (estado.modoFun !== 'pedir' || (!!estado.funciones[i] && (!esDobleFun(i) || !!estado.funciones2[i])));
 
   // El bajo se dobla a la octava grave al sonar, para que destaque y se oigan bien las inversiones.
+  /* ---------- La ayuda con las estructuras armónicas (27/9/2026) ----------
+     Cada lección tiene su cuadro de estructuras —las mismas que encabezan la hoja de
+     ejercicios en papel—, y el alumno lo abre cuando lo necesita, no siempre. Va en otra
+     ventana para poder dejarlo al lado mientras se trabaja. */
+  const TEMA_DE_LECCION = { 'A3-1': 5, 'A3-2': 6, 'A3-3': 7, 'A3-4': 8, 'A3-5': 9,
+                            'A3-6': 10, 'A3-7': 11, 'A3-8': 12, 'A4-10': 13, 'A4-11': 14 };
+
+  function abrirEstructuras() {
+    const t = $('#btn-estructuras').dataset.tema;
+    if (!t) return;
+    window.open('estructuras.html?tema=' + t, 'estructuras-armonicas',
+                'width=980,height=860,noopener');
+  }
+
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];
 
   function calcularRealizacion() {
@@ -1742,6 +1763,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     Envio.preparar();            // lee envio.json en segundo plano; si no está, no pasa nada
     rellenarSelector();
+    if ($('#btn-estructuras')) $('#btn-estructuras').addEventListener('click', abrirEstructuras);
     $('#btn-corregir').addEventListener('click', corregir);
     $('#btn-reiniciar').addEventListener('click', reiniciar);
     $('#btn-siguiente').addEventListener('click', siguiente);
