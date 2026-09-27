@@ -175,6 +175,27 @@
     return n;
   }
 
+  /* ---------- La leyenda, sin repetir lo que ya se ve (Diego, 27/9/2026) ----------
+     Casi todos los rótulos empiezan por la sucesión de acordes —«I – II6/5 – I6/4 – V7 – I:
+     la ⑤ se queda…»—, que es exactamente lo que el alumno tiene debajo del fragmento, en
+     las casillas de fundamental. Repetirlo no añade nada y se come el sitio de lo que sí lo
+     añade. Así que se quita esa cabeza y se deja solo lo que viene detrás; si no viene nada
+     detrás, el fragmento se queda sin leyenda, que es lo honrado. */
+  const ACORDE = /^[IVX]+(?:[0-9+]|\/|–|-|d|º)*$/;
+  const esSucesion = txt => {
+    const piezas = txt.split('–').map(x => x.trim()).filter(Boolean);
+    return piezas.length >= 2 && piezas.every(x => ACORDE.test(x));
+  };
+  function soloLoQueAnade(txt) {
+    let t = String(txt || '').trim();
+    if (!t) return '';
+    ['·', ':'].forEach(sep => {
+      const k = t.indexOf(sep);
+      if (k > 0 && esSucesion(t.slice(0, k))) t = t.slice(k + 1).trim();
+    });
+    return esSucesion(t) ? '' : t;
+  }
+
   function pieza(p) {
     const caja = el('div', 'pieza');
     caja.dataset.compases = String((p.compases || []).length);   // decide cuántos caben por renglón
@@ -189,7 +210,8 @@
     cabeza.appendChild(btn);
     /* La leyenda, ENCIMA y al lado del botón: leída antes de mirar el fragmento dice qué
        hay que mirar, y debajo se perdía. Además no gasta renglón propio (Diego, 27/9/2026). */
-    if (p.variante) cabeza.appendChild(el('span', 'var', p.variante));
+    const leyenda = soloLoQueAnade(p.variante);
+    if (leyenda) cabeza.appendChild(el('span', 'var', leyenda));
     caja.appendChild(cabeza);
 
     const pent = el('div', 'pent');
@@ -201,8 +223,12 @@
 
   function pintar(tema) {
     parar();
+    /* Como la cabecera de los cuadros del libro: primero de qué tema son y luego qué son
+       (Diego, 27/9/2026). */
     const titulo = datos.temas && datos.temas[tema];
-    $('#titulo').textContent = 'Tema ' + tema + (titulo ? ' \u00b7 ' + titulo : '');
+    const h = $('#titulo');
+    h.textContent = 'Tema ' + tema + (titulo ? ' \u00b7 ' + titulo : '') + ' ';
+    h.appendChild(el('span', 'quees', '\u2014 las estructuras arm\u00f3nicas de este tema'));
     const cont = $('#cuadro');
     cont.textContent = '';
     renglones(tema).forEach(([esquema, grupos]) => {
@@ -244,6 +270,7 @@
      tamaño legible: esos piden la otra solución —un solo sistema con dobles barras, como en
      el papel—, que aún está por hacer. */
   const HUECO = 20;                                   // el mismo que el gap de .piezas
+  const ESCALA_MIN = 0.74;                            // por debajo de esto no se encoge
   const CORTO = 4;                                    // «breve» = hasta cuatro compases
   let medidos = null;                                 // ancho en unidades de CADA prototipo
 
@@ -280,7 +307,11 @@
       const suma = g.reduce((s, x) => s + x.u, 0);
       e = Math.min(e, (W - (g.length - 1) * HUECO) / suma);
     });
-    return Math.min(1, e);
+    /* Un SUELO: por estrecha que sea la pantalla, la música no se encoge más allá de esto.
+       En un móvil apaisado, hacer caber tres fragmentos a lo ancho dejaba las notas
+       ilegibles; es preferible que el fragmento ancho se desplace a lo largo con el dedo y
+       que la música mida lo mismo aquí que en el ordenador (Diego, 27/9/2026). */
+    return Math.max(ESCALA_MIN, Math.min(1, e));
   }
 
   function igualarTamano() {

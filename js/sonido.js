@@ -49,10 +49,11 @@ const Sonido = (() => {
     { id: 'piano', nombre: 'Piano' },
     { id: 'clave', nombre: 'Clave' },
     { id: 'organo', nombre: 'Órgano' },
+    { id: 'coro', nombre: 'Coro' },
     { id: 'sintetico', nombre: 'Sintético' }
   ];
   const registro = {};        // id → { nombre, muestras:{'C4': dataURI}, buffers:{midi: AudioBuffer}|null, cargando: Promise|null }
-  const GANANCIA = { piano: 2.6, clave: 2.2, organo: 1.5 };   // por nota (÷ √n); las muestras son flojas
+  const GANANCIA = { piano: 2.6, clave: 2.2, organo: 1.5, coro: 2.2 };   // por nota (÷ √n); las muestras son flojas
   let actual = 'piano';
 
   const Sonido = { INSTRUMENTOS, alCambiarEstado: null, alCargar: null };

@@ -29,23 +29,37 @@
        cinco. Los que caben se ponen uno al lado de otro. */
     .pieza { display: flex; flex-direction: column; flex: 0 0 auto; min-width: 0;
              max-width: 100%; }
-    .cabeza-pieza { display: flex; align-items: baseline; gap: 10px; margin-bottom: 1px;
+    /* La leyenda se parte en dos renglones si hace falta: cortarla con puntos suspensivos
+       dejaba frases sin final (Diego, 27/9/2026). El botón no se deforma por ello. */
+    .cabeza-pieza { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 2px;
                     min-width: 0; }
     .cabeza-pieza .var { font-style: italic; color: #7a6a55; font-size: .78rem;
-                         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pieza .pent { overflow-x: auto; }
-    .pieza .pent svg { max-width: 100%; height: auto; }
+                         line-height: 1.35; min-width: 0; }
+    /* El fragmento conserva su tamaño aunque no quepa: se desplaza a lo largo. Así la
+       música mide lo mismo en el móvil que en el ordenador (Diego, 27/9/2026). */
+    .pieza .pent { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .pieza .pent svg { max-width: none; height: auto; }
     .btn-sonar { font: inherit; font-size: .74rem; line-height: 1.5; padding: 1px 9px;
                  border-radius: 999px; border: 1px solid #b9ad99; background: #fff;
-                 cursor: pointer; }
+                 cursor: pointer;
+                 /* Siempre finito: ni se estira ni se parte en dos renglones aunque la
+                    leyenda de al lado ocupe dos (Diego, 27/9/2026). */
+                 flex: 0 0 auto; white-space: nowrap; align-self: flex-start; }
     .btn-sonar:hover { background: #f4efe6; }
-    .btn-volver { position: fixed; right: 18px; bottom: 18px; z-index: 30;
-                  font: inherit; font-size: .86rem; padding: 8px 16px; border-radius: 999px;
-                  border: 1px solid #b9ad99; background: #fff; cursor: pointer; white-space: nowrap;
-                  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 6px 18px rgba(0,0,0,.12); }
+    /* La cabecera se queda pegada arriba: así el botón de cerrar está SIEMPRE arriba a la
+       derecha, se haya bajado lo que se haya bajado, y el selector de tema con él
+       (Diego, 27/9/2026). */
+    .cabecera { position: sticky; top: 0; z-index: 30; background: #faf8f3;
+                box-shadow: 0 1px 0 #e6dfd2; align-items: flex-start; gap: 16px; }
+    .mandos-ayuda { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+    .mandos-ayuda .selector-caja select { max-width: 15rem; }
+    .btn-volver { font: inherit; font-size: .86rem; padding: 6px 14px; border-radius: 999px;
+                  border: 1px solid #b9ad99; background: #fff; cursor: pointer; white-space: nowrap; }
     .btn-volver:hover { background: #2f2a22; color: #fff; border-color: #2f2a22; }
-    /* Que el último fragmento no se quede debajo del botón */
-    .cuadro { padding-bottom: 72px; }
+    /* La cabecera, como la de los cuadros del libro: el título del tema y, a continuación,
+       lo que son y para qué sirven. */
+    #titulo { margin: 0; }
+    #titulo .quees { font-weight: 400; font-size: .72em; letter-spacing: .02em; }
     .btn-sonar.sonando { background: #2f2a22; color: #fff; border-color: #2f2a22; }
     #aviso { margin: 16px; color: #8a2b2b; }
   </style>
@@ -54,19 +68,17 @@
 
   <header class="cabecera">
     <div class="cabecera-texto">
-      <p class="sobretitulo">Armonización con cifrado barroco</p>
       <h1 id="titulo">Estructuras armónicas</h1>
-      <p class="instruccion"><b>Las estructuras armónicas de este tema.</b> Los ejercicios de la lección se resuelven con ellas. Pulsa <b>Escuchar</b> para oír cualquiera.</p>
+      <p class="instruccion">Los ejercicios de la lección se resuelven con ellas. Pulsa <b>Escuchar</b> para oír cualquiera.</p>
     </div>
-    <label class="selector-caja">
-      <span>Tema</span>
-      <select id="tema" aria-label="Elegir tema"></select>
-    </label>
+    <div class="mandos-ayuda">
+      <label class="selector-caja">
+        <span>Tema</span>
+        <select id="tema" aria-label="Elegir tema"></select>
+      </label>
+      <button type="button" id="btn-volver" class="btn-volver" title="Volver a la práctica">Cerrar &#10005;</button>
+    </div>
   </header>
-
-  <!-- Flotante, abajo a la derecha de lo que se ve: se vuelve a la práctica desde donde se
-       esté, sin tener que llegar al final de la página (Diego, 27/9/2026). -->
-  <button type="button" id="btn-volver" class="btn-volver">&#8592; Volver a la práctica</button>
 
   <p id="aviso" hidden></p>
   <main class="cuadro" id="cuadro"></main>

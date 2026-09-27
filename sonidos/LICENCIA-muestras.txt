@@ -1,4 +1,5 @@
-Muestras de instrumentos (sonidos/piano.js, sonidos/clave.js, sonidos/organo.js)
+Muestras de instrumentos (sonidos/piano.js, sonidos/clave.js, sonidos/organo.js,
+sonidos/coro.js)
 
 Proceden del banco de sonidos FluidR3_GM (Frank Wen), en la versión renderizada
 a mp3 nota a nota por el proyecto MIDI.js Soundfonts de Benjamin Gleitzman
@@ -6,8 +7,10 @@ a mp3 nota a nota por el proyecto MIDI.js Soundfonts de Benjamin Gleitzman
   · piano  → acoustic_grand_piano
   · clave  → harpsichord
   · órgano → church_organ
+  · coro   → choir_aahs
 
 Licencia: Creative Commons Attribution 3.0 (CC BY 3.0),
 https://creativecommons.org/licenses/by/3.0/us/
-Se incluyen aquí incrustadas en base64 (una muestra cada tercera menor, do1–do6)
+Se incluyen aquí incrustadas en base64 (una muestra cada tercera menor, do1–do6;
+el coro, una cada tono, porque la voz cantada no aguanta bien el transporte)
 para que la aplicación funcione también abierta desde el disco, sin conexión.
