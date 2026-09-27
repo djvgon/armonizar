@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Armonía · abriendo el ejercicio</title>
+<!--
+  EL REDIRECTOR DE LOS CÓDIGOS QR (decisión 128)
+
+  Los códigos QR impresos en el cuadernillo NO llevan la dirección del ejercicio:
+  llevan una dirección corta y fija que pasa por aquí. Esta página traduce el código
+  —«a34-cifrar»— y manda al alumno a donde toque.
+
+  Por qué. Un papel impreso no se puede corregir. Si el QR llevara la dirección larga
+  de la ficha, cualquier cambio en el filtro, en el nombre de una lección o en la
+  dirección de un ejercicio de fuera dejaría muertas las hojas ya repartidas. Pasando
+  por aquí, lo que cambia es ESTE archivo, y todos los papeles impresos siguen valiendo.
+
+  Además la dirección corta cabe en un QR de versión baja: con módulos del doble de
+  tamaño, se lee sin esfuerzo en papel.
+
+  REGLAS PARA QUIEN LO TOQUE
+  · Un código que ya se ha impreso NO SE BORRA NUNCA. Si una lección cambia de nombre
+    o un ejercicio de sitio, se cambia su destino aquí; el código sigue igual.
+  · Añadir códigos nuevos, todos los que hagan falta.
+  · Si un código no existe, esta página lo dice con todas las letras en vez de dejar
+    una pantalla en blanco.
+
+  DOS FORMAS DE ESCRIBIR EL CÓDIGO
+  · f.html?c=a34-cifrar  ← la que llevan los QR nuevos.
+  · f.html#a34-cifrar    ← la que llevan los primeros QR. Sigue funcionando y seguirá.
+
+  La forma con «?c=» es mejor por dos razones: hay lectores de QR que se comen la parte
+  que va detrás de la almohadilla, y cada código es así una dirección distinta, de modo
+  que el móvil no puede responder con una copia vieja de esta página guardada en su
+  memoria —que es lo que pasaba con los enlaces del apéndice: el móvil tenía guardado un
+  f.html anterior y decía «no encuentro este ejercicio»—.
+
+  Por si acaso, al no encontrar un código esta página pide una copia nueva de sí misma
+  (con «?r=» y la hora) y lo intenta otra vez antes de dar el aviso.
+-->
+<style>
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:#f7f4ee; color:#2f2a22; font:16px/1.5 Georgia,'Times New Roman',serif;
+         padding:24px; box-sizing:border-box; }
+  .caja { max-width:34rem; text-align:center; }
+  h1 { font-size:1.25rem; margin:0 0 .6rem; }
+  p { margin:.4rem 0; }
+  code { background:#eae4d8; padding:.1em .35em; border-radius:3px; font-size:.95em; }
+  a { color:#7a5c2e; }
+</style>
+</head>
+<body>
+<div class="caja" id="caja">
+  <h1>Abriendo el ejercicio…</h1>
+  <p>Si no se abre solo, <a id="manual" href="index.html">pulsa aquí</a>.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* Las lecciones, por su código corto. El código es lo que va impreso: no se cambia
+     nunca. El contenido de cada línea sí se puede cambiar. */
+  var LECCIONES = {
+    a31:  { leccion: 'A3-1',  rotulo: 'Tema 5' },
+    a32:  { leccion: 'A3-2',  rotulo: 'Tema 6' },
+    a33:  { leccion: 'A3-3',  rotulo: 'Tema 7' },
+    a34:  { leccion: 'A3-4',  rotulo: 'Tema 8' },
+    a35:  { leccion: 'A3-5',  rotulo: 'Tema 9' },
+    a36:  { leccion: 'A3-6',  rotulo: 'Tema 10' },
+    a37:  { leccion: 'A3-7',  rotulo: 'Tema 11' },
+    a38:  { leccion: 'A3-8',  rotulo: 'Tema 12' },
+    a410: { leccion: 'A4-10', rotulo: 'Modulación al V' },
+    a411: { leccion: 'A4-11', rotulo: 'Modulación al relativo' }
+  };
+
+  /* Los cuatro tipos de ejercicio: a qué página van y cuánta música lleva la ficha,
+     medida en compases (decisión 127). */
+  var MODOS = {
+    cifrar:    { pagina: 'analisis.html',              rotulo: 'Análisis armónico',        compases: [14, 18] },
+    audicion:  { pagina: 'audicion.html',              rotulo: 'Reconocimiento auditivo',  compases: [7, 10] },
+    armonizar: { pagina: 'armonizacion-bajo.html',     rotulo: 'Armonización de bajo',     compases: [7, 10] },
+    soprano:   { pagina: 'armonizacion-soprano.html',  rotulo: 'Armonización de soprano',  compases: [7, 10] }
+  };
+
+  /* Direcciones sueltas que también viajan impresas: los ejercicios de fuera. Si alguna
+     cambia, se cambia aquí y los papeles repartidos siguen sirviendo. */
+  var ENLACES = {
+    'mtn-clavefa':   'https://www.musictheory.net/exercises/note/ndzyryyynyybyy',
+    'mtn-int0':      'https://www.musictheory.net/exercises/fretboard-interval/yyyyyyy9by9by998ondyynbyd',
+    'mtn-int1':      'https://www.musictheory.net/exercises/interval/drwy9y99999bnyyrbe',
+    'mtn-int2':      'https://www.musictheory.net/exercises/interval/oyrwy9y99999bnyyrbe',
+    'mtn-int3':      'https://www.musictheory.net/exercises/interval-construction/drwy9yb99999ybnbnyrby',
+    'mtn-int4':      'https://www.musictheory.net/exercises/interval-construction/oyrwa9db99999ydybnyrby',
+    'mtn-nombrar1':  'https://www.musictheory.net/exercises/chord/drwy9yxyybnyynyb',
+    'mtn-nombrar2':  'https://www.musictheory.net/exercises/chord/drwo9bxyynnyynyb',
+    'mtn-nombrar3':  'https://www.musictheory.net/exercises/chord/drwh98xyydnyynyb',
+    'mtn-fund1':     'https://www.musictheory.net/exercises/chord-construction/drwy9yxyyyyynynyy',
+    'mtn-fund2':     'https://www.musictheory.net/exercises/chord-construction/drwo9bxyyyybnynyy',
+    'mtn-fund3':     'https://www.musictheory.net/exercises/chord-construction/drwa9dxyyyynnynyy',
+    'mtn-inv1':      'https://www.musictheory.net/exercises/chord-construction/drwy9yxyybyynynyy',
+    'mtn-inv2':      'https://www.musictheory.net/exercises/chord-construction/drwo9bxyybybnynyy',
+    'mtn-inv3':      'https://www.musictheory.net/exercises/chord-construction/drwa9dxyybynnynyy',
+    'mtn-inv4':      'https://www.musictheory.net/exercises/chord-construction/drwh98xyybydnynyy',
+
+    /* Apéndice «Esquemas de acordes en canciones»: para cada canción, los acordes en
+       Hooktheory (ht-) y la grabación (yt-). */
+
+    /* La serie de quintas. Los códigos «iwillsurvive» se imprimieron primero y no se
+       borran; los cortos son los que llevan los QR nuevos. */
+    'ht-iwillsurvive':  'https://www.hooktheory.com/theorytab/view/gloria-gaynor/i-will-survive',
+    'yt-iwillsurvive':  'https://www.youtube.com/watch?v=vVzA0-QeGnI',
+    'ht-survive':       'https://www.hooktheory.com/theorytab/view/gloria-gaynor/i-will-survive',
+    'yt-survive':       'https://www.youtube.com/watch?v=vVzA0-QeGnI',
+    'ht-flymoon':       'https://www.hooktheory.com/theorytab/view/frank-sinatra/fly-me-to-the-moon',
+    'yt-flymoon':       'https://www.youtube.com/watch?v=JYuyWrkwpok',
+    'ht-lucky':         'https://www.hooktheory.com/theorytab/view/jason-mraz/lucky-(feat-colbie-caillat)',
+    'yt-lucky':         'https://www.youtube.com/watch?v=acvIVA9-FMQ',
+    /* El mismo vídeo con dos códigos: el largo se imprimió primero y no se borra; el
+       corto es el que llevan los QR nuevos, porque cabe en un QR más holgado. */
+    'yt-mashup-quintas':'https://www.youtube.com/watch?v=9Hf1t_BXGfk',
+    'yt-mashup':        'https://www.youtube.com/watch?v=9Hf1t_BXGfk',
+
+    /* Los cuatro acordes */
+    'yt-mashup4':       'https://www.youtube.com/watch?v=oOlDewpCfZQ',
+    'ht-despacito':     'https://www.hooktheory.com/theorytab/view/luis-fonsi/despacito',
+    'yt-despacito':     'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
+    'yt-subeme':        'https://www.youtube.com/watch?v=9sg-A-eS6Ig',
+    /* «La Graciosa» se escucha en Spotify, no en YouTube (Diego, 27/9/2026). */
+    'sp-graciosa':      'https://open.spotify.com/track/0b3Bkp0UfCkNqquAUmoP5m',
+    'ht-hello':         'https://www.hooktheory.com/theorytab/view/adele/hello',
+    'yt-hello':         'https://www.youtube.com/watch?v=YQHsXMglC9A',
+    'ht-pokerface':     'https://www.hooktheory.com/theorytab/view/lady-gaga/poker-face',
+    'yt-pokerface':     'https://www.youtube.com/watch?v=bESGLojNYSo',
+    'ht-avemaria':      'https://www.hooktheory.com/theorytab/view/david-bisbal/ave-maria',
+    'yt-avemaria':      'https://www.youtube.com/watch?v=ZMPKtNufR-I',
+    'ht-lovestory':     'https://www.hooktheory.com/theorytab/view/taylor-swift/love-story',
+    'yt-lovestory':     'https://www.youtube.com/watch?v=8xg3vE8Ie_E',
+    'ht-angels':        'https://www.hooktheory.com/theorytab/view/robbie-williams/angels',
+    'yt-angels':        'https://www.youtube.com/watch?v=luwAMFcc2f8',
+
+    /* Los cuatro acordes, en otro orden */
+    'ht-siempre':       'https://www.hooktheory.com/theorytab/view/whitney-houston/i-will-always-love-you',
+    'yt-siempre':       'https://www.youtube.com/watch?v=3JWTaaS7LdU',
+    'ht-standbyme':     'https://www.hooktheory.com/theorytab/view/ben-e-king/stand-by-me',
+    'yt-standbyme':     'https://www.youtube.com/watch?v=z5i9vT8wGY8',
+    'ht-perfect':       'https://www.hooktheory.com/theorytab/view/ed-sheeran/perfect',
+    'yt-perfect':       'https://www.youtube.com/watch?v=2Vv-BfVoq4g',
+    'yt-callejuela':    'https://www.youtube.com/watch?v=mjno1tCTGRM',
+    'ht-vivalavida':    'https://www.hooktheory.com/theorytab/view/coldplay/viva-la-vida',
+    'yt-vivalavida':    'https://www.youtube.com/watch?v=dvgZkm1xWPE',
+
+    /* Los cuatro acordes, pero ahora son seis */
+    'ht-iwillwait':     'https://www.hooktheory.com/theorytab/view/mumford-and-sons/i-will-wait',
+    'yt-iwillwait':     'https://www.youtube.com/watch?v=rGKfrgqWcv0',
+    'ht-shapeofyou':    'https://www.hooktheory.com/theorytab/view/ed-sheeran/shape-of-you',
+    'yt-shapeofyou':    'https://www.youtube.com/watch?v=JGwWNGJdvx8',
+    'yt-wakemeup':      'https://www.youtube.com/watch?v=pIgZ7gMze7A'
+  };
+
+  /* Lo que comparten todas las fichas: nivel, alteraciones y el tope de ejercicios. */
+  var COMUN = { n: 10, nivel: [1, 5], alteraciones: [0, 2] };
+
+  function base64url(txt) {
+    var b = btoa(unescape(encodeURIComponent(txt)));
+    return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function aviso(html) {
+    document.getElementById('caja').innerHTML = html;
+  }
+
+  /* El código puede venir de dos sitios: ?c=… (los QR nuevos) o #… (los primeros). */
+  function leerCodigo() {
+    var q = (location.search || '').match(/[?&]c=([^&]*)/);
+    var txt = q ? q[1] : (location.hash || '').replace(/^#/, '');
+    try { txt = decodeURIComponent(txt); } catch (e) { /* se queda como está */ }
+    return txt.trim().toLowerCase();
+  }
+
+  /* Una copia vieja de esta página guardada en el móvil no conoce los códigos nuevos.
+     Antes de decir que no existe, pedimos el archivo otra vez con una dirección que la
+     caché no puede tener y lo intentamos una segunda vez. Solo una. */
+  function pedirCopiaNueva() {
+    var s = location.search || '';
+    location.replace(location.pathname + s + (s ? '&' : '?') + 'r=' + Date.now() +
+                     (location.hash || ''));
+  }
+
+  function resolver() {
+    var codigo = leerCodigo();
+    if (!codigo) {
+      aviso('<h1>Falta el código</h1><p>Esta dirección se abre desde un código QR del ' +
+            'cuadernillo. <a href="index.html">Ir a la aplicación</a>.</p>');
+      return;
+    }
+
+    if (ENLACES[codigo]) { location.replace(ENLACES[codigo]); return; }
+
+    var partes = codigo.split('-');
+    var modo = partes.pop();
+    var lec = LECCIONES[partes.join('-')];
+    if (!lec || !MODOS[modo]) {
+      if (!/[?&]r=/.test(location.search || '')) { pedirCopiaNueva(); return; }
+      aviso('<h1>No encuentro este ejercicio</h1><p>El código <code>' +
+            codigo.replace(/[<>&]/g, '') + '</code> no está en la lista. ' +
+            'Díselo a tu profesor y, mientras tanto, entra por ' +
+            '<a href="index.html">la portada de la aplicación</a>.</p>');
+      return;
+    }
+
+    var m = MODOS[modo];
+    var filtro = {
+      n: COMUN.n, modo: modo, nivel: COMUN.nivel, alteraciones: COMUN.alteraciones,
+      leccion: lec.leccion, compases: m.compases,
+      titulo: lec.rotulo + ' · ' + m.rotulo
+    };
+    var destino = m.pagina + '#f=' + base64url(JSON.stringify(filtro));
+    document.getElementById('manual').setAttribute('href', destino);
+    location.replace(destino);
+  }
+
+  /* Si se escanea otro QR con esta misma página ya abierta, cambia solo la almohadilla y
+     el navegador no vuelve a cargar nada: hay que resolverlo a mano. */
+  window.addEventListener('hashchange', resolver);
+  resolver();
+})();
+</script>
+</body>
+</html>
