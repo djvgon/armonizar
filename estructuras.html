@@ -29,11 +29,12 @@
        cinco. Los que caben se ponen uno al lado de otro. */
     .pieza { display: flex; flex-direction: column; flex: 0 0 auto; min-width: 0;
              max-width: 100%; }
-    .cabeza-pieza { display: flex; margin-bottom: 1px; }
+    .cabeza-pieza { display: flex; align-items: baseline; gap: 10px; margin-bottom: 1px;
+                    min-width: 0; }
+    .cabeza-pieza .var { font-style: italic; color: #7a6a55; font-size: .78rem;
+                         overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .pieza .pent { overflow-x: auto; }
     .pieza .pent svg { max-width: 100%; height: auto; }
-    .pie-pieza { margin-top: 0; }
-    .pie-pieza .var { font-style: italic; color: #7a6a55; font-size: .78rem; }
     .btn-sonar { font: inherit; font-size: .74rem; line-height: 1.5; padding: 1px 9px;
                  border-radius: 999px; border: 1px solid #b9ad99; background: #fff;
                  cursor: pointer; }

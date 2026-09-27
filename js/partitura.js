@@ -226,11 +226,13 @@ const Partitura = (() => {
     const marcasB = !!estado.marcasBerklee;                       // flecha de resolución y corchete del II emparentado
     const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // el cifrado, lo primero
     const ALTO_ROMANO = 3.1 * SP;
-    /* La casilla del cifrado mide lo mismo que la de la fundamental, y va a la misma
-       distancia de ella que la función de la fundamental: las tres lecturas del acorde
-       forman así una columna regular (Diego, 27/9/2026). */
-    const ALTO_CASILLA = ALTO_ROMANO, ANCHO_CASILLA = 4.4 * SP;
-    const ESCALA_CIFRA = 0.48;                              // la cifra, a la medida de su casilla
+    /* La casilla del cifrado se queda más alta que la de la fundamental: se probó a
+       igualarlas, pero la cifra hay que encogerla tanto —el 6/4 y el 6/5 van en dos pisos—
+       que se pierde de vista, y además esta casilla es donde se pulsa. Lo que sí se iguala
+       es la SEPARACIÓN: va pegada al renglón igual que la función a su fundamental, de modo
+       que las tres lecturas del acorde forman columna (Diego, 27/9/2026). */
+    const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
+    const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
     /* La función ya no necesita banda doble para el pivote: cada una de sus dos lecturas va
        con la fundamental de SU tonalidad, o sea en su propio renglón (Diego, 27/9/2026). */
     const ALTO_FUN = 2.7 * SP;
@@ -755,7 +757,7 @@ const Partitura = (() => {
         else if (bloq.cifra) clases.push('bien');
         else if (resp) clases.push('llena');
         g.setAttribute('class', clases.join(' '));
-        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.7 * SP, class: 'fondo' }));
+        g.appendChild(el('rect', { x: cx - ANCHO_CASILLA / 2, y: Y_CASILLA, width: ANCHO_CASILLA, height: ALTO_CASILLA, rx: 0.8 * SP, class: 'fondo' }));
         if (resp) dibujarCifra(g, resp, cx, Y_CASILLA + ALTO_CASILLA / 2, ESCALA_CIFRA, null, ctxCifra(i, nb));
         else if (!estado.corregido) g.appendChild(el('text', { x: cx, y: Y_CASILLA + ALTO_CASILLA / 2 + 0.55 * SP, 'text-anchor': 'middle', class: 'interrogante' }, '?'));
         if (!soloLectura) {

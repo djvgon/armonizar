@@ -459,8 +459,18 @@ const Ejercicios = (() => {
     if (Array.isArray(ej.funcionesNotas) && Teoria.TODAS_FUNCIONES.includes(ej.funcionesNotas[i])) return ej.funcionesNotas[i];
     const p = parejasEn(ej, i, ton)[0];
     if (!p) return 'T';
-    const pSig = i + 1 < numNotas(ej) ? (parejas(ej, i + 1)[0] || {}) : {};
-    const pAnt = i > 0 ? (parejas(ej, i - 1)[0] || null) : null;
+    /* Los vecinos se miran en la tonalidad que rige en ellos… salvo cuando se está leyendo
+       el acorde en la OTRA tonalidad del pivote: entonces hay que mirarlos también en esa.
+       Si no, la regla de la cadencia rota se dispara con una dominante que en el tono que se
+       está leyendo ni siquiera existe, y el acorde común sale con la función equivocada: el
+       i de la menor, leído en Do, es el VI que va al V, o sea SUBDOMINANTE, y salía tónica
+       porque delante tenía la dominante de la menor (Diego, 27/9/2026). */
+    const vecino = k => {
+      const suya = Teoria.mismaTonalidad(tonalidadEn(ej, k), ton);
+      return (suya ? parejas(ej, k) : parejasEn(ej, k, ton))[0] || null;
+    };
+    const pSig = i + 1 < numNotas(ej) ? (vecino(i + 1) || {}) : {};
+    const pAnt = i > 0 ? vecino(i - 1) : null;
     return Teoria.funcionDe(p.romano, pSig.romano || null, p.cifra, pSig.cifra || null, pAnt);
   }
   // Funciones admisibles leídas en una tonalidad concreta (para el pivote)

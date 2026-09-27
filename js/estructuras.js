@@ -187,18 +187,15 @@
     btn.innerHTML = '<span aria-hidden="true">▶</span> Escuchar';
     btn.addEventListener('click', () => tocar(p, btn));
     cabeza.appendChild(btn);
+    /* La leyenda, ENCIMA y al lado del botón: leída antes de mirar el fragmento dice qué
+       hay que mirar, y debajo se perdía. Además no gasta renglón propio (Diego, 27/9/2026). */
+    if (p.variante) cabeza.appendChild(el('span', 'var', p.variante));
     caja.appendChild(cabeza);
 
     const pent = el('div', 'pent');
     caja.appendChild(pent);
     const ej = ejercicioDe(p);
     Partitura.dibujar(pent, ej, estadoDe(p, ej), () => {});
-
-    if (p.variante) {
-      const pie = el('div', 'pie-pieza');
-      pie.appendChild(el('span', 'var', p.variante));
-      caja.appendChild(pie);
-    }
     return caja;
   }
 
