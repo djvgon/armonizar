@@ -73,6 +73,9 @@
       soloLectura: true,
       realizacion: p.voces.map(v => v.map(x => Teoria.nota(x))),
       gradosBajo: true,                    // el circulito del grado sobre el bajo
+      /* Prueba de los símbolos de Berklee: flecha de la dominante que baja una quinta y
+         corchete del II emparentado con ella (Diego, 27/9/2026). */
+      marcasBerklee: true,
       filaTonalidad: {
         visible: true, editable: false,
         celdas: (() => {

@@ -223,11 +223,13 @@ const Partitura = (() => {
        música, y debajo lo que se deduce de ella —la fundamental, su función y el tono. */
     const filaFun = estado.filaFunciones && estado.filaFunciones.visible ? estado.filaFunciones : null;   // fila «Función» (T · S · D)
     const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
+    const marcasB = !!estado.marcasBerklee;                       // flecha de resolución y corchete del II emparentado
     const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // el cifrado, lo primero
     const ALTO_CASILLA = 4.3 * SP, ANCHO_CASILLA = 4.4 * SP;
     const ESCALA_CIFRA = 0.65;                              // tamaño de las cifras en las casillas (igual que en la paleta)
-    // La banda de función se dobla cuando algún acorde pivote lleva sus dos lecturas
-    const ALTO_FUN = (estado.filaFunciones && (estado.filaFunciones.dobles || []).some(Boolean)) ? 5.4 * SP : 2.7 * SP;
+    /* La función ya no necesita banda doble para el pivote: cada una de sus dos lecturas va
+       con la fundamental de SU tonalidad, o sea en su propio renglón (Diego, 27/9/2026). */
+    const ALTO_FUN = 2.7 * SP;
     const ALTO_ROMANO = 3.1 * SP;
     const ALTO_TON = 2.7 * SP;
     /* Modulación: cada tonalidad escribe sus grados en un renglón nuevo, un poco más
@@ -293,17 +295,27 @@ const Partitura = (() => {
     }
     const NUM_RENGLONES = Math.max(1, ...renglon.map(r => r + 1), ...renglonAntes.map(r => r + 1));
     const rotuladas = new Set();     // renglones que ya llevan escrito el nombre de su tonalidad
-    /* Las cuatro bandas, una debajo de otra. La de la FUNDAMENTAL lleva dentro un renglón
-       por tonalidad (decisión 83): el pivote ocupa dos y la casilla de arriba se estira
-       hasta la de abajo. Las demás son una sola banda para todo el sistema. */
-    const PASO_RENGLON = ALTO_ROMANO + 0.5 * SP;
-    const Y_ROMANO = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;
-    const yRenglon = r => Y_ROMANO + r * PASO_RENGLON;
-    const Y_FIN_ROMANO = pedirRomano ? yRenglon(NUM_RENGLONES - 1) + ALTO_ROMANO : Y_CASILLA + ALTO_CASILLA;
-    const Y_FUN = Y_FIN_ROMANO + 0.8 * SP;
-    const Y_FIN_FUN = filaFun ? Y_FUN + ALTO_FUN : Y_FIN_ROMANO;
-    const Y_TON = Y_FIN_FUN + 0.8 * SP;
-    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_FUN;
+    /* Debajo del cifrado, un renglón por tonalidad (decisión 83), y cada renglón lleva DOS
+       casillas: la FUNDAMENTAL y, casi pegada debajo, su FUNCIÓN tonal. Las dos lecturas
+       del mismo acorde van juntas, y al modular baja el renglón entero —fundamental y
+       función—, como ya bajaba antes la fundamental sola. La TONALIDAD queda en una única
+       banda al pie, debajo del último renglón (Diego, 27/9/2026).
+       Antes la función era una banda propia debajo de TODOS los renglones: se separaba de la
+       fundamental a la que se refiere y gastaba alto de más. */
+    const HUECO_FUN = 0.3 * SP;                                   // fundamental y función, casi pegadas
+    const conRenglones = pedirRomano || !!filaFun;
+    const ALTO_MARCAS = marcasB ? 2.5 * SP : 0;                   // la banda de los símbolos de Berklee
+    const ALTO_RENGLON = (pedirRomano ? ALTO_ROMANO : 0)
+                       + (filaFun ? (pedirRomano ? HUECO_FUN : 0) + ALTO_FUN : 0)
+                       + ALTO_MARCAS;
+    const PASO_RENGLON = ALTO_RENGLON + 0.5 * SP;
+    const Y_RENGLON = Y_CASILLA + ALTO_CASILLA + 0.8 * SP;        // el primer renglón
+    const yRenglon = r => Y_RENGLON + r * PASO_RENGLON;           // casilla de la fundamental
+    const yRenglonFun = r => yRenglon(r) + (pedirRomano ? ALTO_ROMANO + HUECO_FUN : 0);
+    const Y_FIN_RENGLONES = conRenglones
+      ? yRenglon(NUM_RENGLONES - 1) + ALTO_RENGLON : Y_CASILLA + ALTO_CASILLA;
+    const Y_TON = Y_FIN_RENGLONES + 0.8 * SP;
+    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_RENGLONES;
     const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
     const Y_MODELO = Y_FIN_CASILLAS + 2.4 * SP;            // centro de la respuesta modelo (tras corregir)
     /* Si hay errores de conducción de voces, se reserva al pie una banda para el globo de
@@ -678,6 +690,7 @@ const Partitura = (() => {
 
     // Notas del bajo (dadas, o deducidas de las respuestas en la melodía de soprano) y,
     // bajo cada una, sus casillas
+    const cxNota = [], bajoNota = [];          // centro y bajo de cada acorde, para las marcas de después
     notas.forEach((it, idx) => {
       const xN = xNotas[idx];
       const f = figura(it.dur);
@@ -690,6 +703,7 @@ const Partitura = (() => {
       const i = it.k;
       const n = it.nota;
       const nb = bajoDe(it);
+      bajoNota[i] = nb;
       if (!sinBajo && nb) {
         const g = el('g', { class: (sopranoDada ? 'bajo-alumno' : 'bajo') + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') });
         const cabeza = notaSuelta(g, nb, paso(nb), Y_BOT, xN, f);
@@ -698,6 +712,7 @@ const Partitura = (() => {
       }
 
       const cx = xN + ancho * SP / 2;
+      cxNota[i] = cx;
       const res = estado.corregido && estado.resultados ? estado.resultados[i] : null;
       const activa = estado.activa === i && !estado.corregido && !soloLectura;
       // Verde = acertado en la corrección anterior; se sigue pudiendo tocar (decisión 126)
@@ -734,6 +749,13 @@ const Partitura = (() => {
       // tonalidad. En un pivote (dobles[i]) hay dos apiladas: grado en la tonalidad
       // anterior (renglón de arriba) y en la nueva (renglón de abajo), unidas por dos
       // líneas verticales continuas.
+      /* ¿Parte este acorde su función en dos (pivote)? Hace falta saberlo ya aquí: las barras
+         verticales que unen las dos lecturas se dibujan con la fundamental y han de bajar
+         hasta la última casilla de función. */
+      const dobleFun = !!(filaFun && filaFun.dobles && filaFun.dobles[i]
+                          && filaFun.celdas2 && filaFun.celdas2[i]);
+      const pivoteRomano = pedirRomano && !!dobles[i] && i > 0;
+
       if (pedirRomano) {
         const esPivote = !!dobles[i] && i > 0;
         const partes = esPivote ? ['romano', 'romano2'] : ['romano'];
@@ -747,8 +769,10 @@ const Partitura = (() => {
         partes.forEach((campo, k) => {
           const r = esPivote ? (k === 0 ? renglonAntes[i] : renglon[i]) : renglon[i];
           const y0 = yRenglon(r);
-          const alto = (esPivote && rAbajo > rArriba && r === rArriba)
-            ? (rAbajo - rArriba) * PASO_RENGLON : ALTO_ROMANO;    // la de arriba llega hasta la de abajo
+          /* Cada casilla mide lo suyo: la de arriba ya no se estira hasta la de abajo, porque
+             entre las dos va ahora la función de su propia tonalidad. Lo que ata las dos
+             lecturas del pivote son las barras verticales. */
+          const alto = ALTO_ROMANO;
           const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: 0, role: 'button',
             'aria-label': 'Grado de la nota ' + (i + 1) + (sinBajo ? '' : ' (' + Teoria.nombreEs(n) + ')') + (esPivote ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
           const clases = ['casilla', 'casilla-romano'];
@@ -773,7 +797,8 @@ const Partitura = (() => {
         });
         if (esPivote) {
           // Las dos líneas verticales que unen los dos grados del pivote: | I | sobre | IV |
-          const yA = yRenglon(rArriba), yB = yRenglon(rAbajo) + ALTO_ROMANO;
+          const yA = yRenglon(rArriba);
+          const yB = dobleFun ? yRenglonFun(rAbajo) + ALTO_FUN : yRenglon(rAbajo) + ALTO_ROMANO;
           [x0, x0 + ANCHO_CASILLA].forEach(x => svg.appendChild(el('line', { x1: x, x2: x, y1: yA - 0.3 * SP, y2: yB + 0.3 * SP, class: 'pivote-barra' })));
         }
         // Nombre de la tonalidad al principio de cada renglón (si hay modulación)
@@ -794,14 +819,14 @@ const Partitura = (() => {
          en uno y subdominante en el otro—, unidas por las mismas barras verticales que
          llevan los grados. */
       if (filaFun) {
-        const dobleFun = !!(filaFun.dobles && filaFun.dobles[i]) && !!(filaFun.celdas2 && filaFun.celdas2[i]);
         const partesFun = dobleFun ? ['funcion', 'funcion2'] : ['funcion'];
         const xF = cx - ANCHO_CASILLA / 2;
-        const altoUna = dobleFun ? (ALTO_FUN - 0.25 * SP) / 2 : ALTO_FUN;
         partesFun.forEach((campo, k) => {
           const celda = (campo === 'funcion2' ? filaFun.celdas2[i] : filaFun.celdas[i]) || {};
           const editable = filaFun.editable && !celda.fija;
-          const yF = Y_FUN + k * (altoUna + 0.25 * SP);
+          /* En el pivote, cada función va en el renglón de SU tonalidad, justo debajo de la
+             fundamental que le corresponde. */
+          const yF = yRenglonFun(dobleFun ? (k === 0 ? renglonAntes[i] : renglon[i]) : renglon[i]);
           const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: editable ? 0 : -1, role: editable ? 'button' : 'note',
             'aria-label': 'Función tonal de la nota ' + (i + 1) + (dobleFun ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
           const clases = ['casilla', 'casilla-fun'];
@@ -812,17 +837,23 @@ const Partitura = (() => {
           else if (activa && editable) clases.push('activa-nota');
           if (celda.texto) clases.push('llena');
           g.setAttribute('class', clases.join(' '));
-          g.appendChild(el('rect', { x: xF, y: yF, width: ANCHO_CASILLA, height: altoUna, rx: dobleFun ? 0 : 0.6 * SP, class: 'fondo' }));
-          g.appendChild(el('text', { x: cx, y: yF + altoUna / 2 + (dobleFun ? 0.42 : 0.6) * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
+          g.appendChild(el('rect', { x: xF, y: yF, width: ANCHO_CASILLA, height: ALTO_FUN, rx: dobleFun ? 0 : 0.6 * SP, class: 'fondo' }));
+          g.appendChild(el('text', { x: cx, y: yF + ALTO_FUN / 2 + 0.6 * SP, 'text-anchor': 'middle', class: celda.texto ? 'fun' : 'interrogante-ton' }, celda.texto || (editable && !estado.corregido ? '?' : '')));
           if (editable && !soloLectura) {
             g.addEventListener('click', () => alPulsar(i, campo));
             g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, campo); } });
           }
           svg.appendChild(g);
         });
-        if (dobleFun) [xF, xF + ANCHO_CASILLA].forEach(x => svg.appendChild(
-          el('line', { x1: x, x2: x, y1: Y_FUN - 0.3 * SP, y2: Y_FUN + ALTO_FUN + 0.3 * SP, class: 'pivote-barra' })));
-        if (i === 0) svg.appendChild(el('text', { x: cx - ANCHO_CASILLA / 2 - 0.7 * SP, y: Y_FUN + ALTO_FUN / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, 'Función:'));
+        /* Las barras del pivote las dibuja ya la fundamental, que abarca los dos renglones
+           enteros; solo hacen falta aquí si este cuadro no lleva fundamentales. */
+        if (dobleFun && !pivoteRomano) {
+          const yA = yRenglonFun(Math.min(renglonAntes[i], renglon[i]));
+          const yB = yRenglonFun(Math.max(renglonAntes[i], renglon[i])) + ALTO_FUN;
+          [xF, xF + ANCHO_CASILLA].forEach(x => svg.appendChild(
+            el('line', { x1: x, x2: x, y1: yA - 0.3 * SP, y2: yB + 0.3 * SP, class: 'pivote-barra' })));
+        }
+        if (i === 0) svg.appendChild(el('text', { x: cx - ANCHO_CASILLA / 2 - 0.7 * SP, y: yRenglonFun(renglon[0]) + ALTO_FUN / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, 'Función:'));
       }
 
       // Fila «Tonalidad»: desde qué nota rige cada tonalidad (modulación)
@@ -879,6 +910,53 @@ const Partitura = (() => {
         svg.appendChild(gm);
       }
     });
+
+    /* ---- Los símbolos de Berklee (prueba, Diego 27/9/2026) ----
+       Los mismos dos signos que usa la armonía de Berklee —y con ellos el «Mapping Tonal
+       Harmony» de mDecks— debajo de los grados; no se inventa ninguno nuevo:
+         · FLECHA continua: la dominante que resuelve BAJANDO UNA QUINTA. Vale para la
+           dominante de la tonalidad (V → I) y para las secundarias (V/V → V), que es
+           justamente lo que Berklee quiere que se vea: la cadena de quintas.
+         · CORCHETE: el acorde que prepara a esa dominante una quinta por encima —el «II
+           emparentado»—, atado a ella. Así, II7 · V7 · I sale con corchete sobre II–V y
+           flecha de V a I.
+       Lo que Berklee NO marca se queda sin marca: la resolución rota, el IV que va al V
+       (no está a una quinta) y el VII, que no baja de quinta. */
+    if (marcasB) {
+      const gradoDe = i => {
+        const c = estado.respuestas[i], nb = bajoNota[i];
+        if (!c || !nb) return null;
+        try { return Teoria.gradoFundamental(c, nb, (tonsNota && tonsNota[i]) || ton); } catch (e) { return null; }
+      };
+      const esDominante = i => {
+        const c = estado.respuestas[i];
+        return !!c && (Teoria.DOMINANTES.includes(c) || gradoDe(i) === 5);
+      };
+      const bajaQuinta = (a, b) => a != null && b != null && ((a - 1 + 3) % 7) + 1 === b;
+      const punta = (x, y, vx, vy, L) => {
+        const m = Math.hypot(vx, vy) || 1, ux = vx / m, uy = vy / m, px = -uy, py = ux;
+        const bx = x - ux * L, by = y - uy * L, a = L * 0.45;
+        return `M ${x} ${y} L ${bx + px * a} ${by + py * a} L ${bx - px * a} ${by - py * a} Z`;
+      };
+      const flecha = (x1, x2, y) => {
+        const cxm = (x1 + x2) / 2, dip = y + 1.5 * SP;
+        svg.appendChild(el('path', { d: `M ${x1} ${y} Q ${cxm} ${dip} ${x2} ${y}`, class: 'marca-flecha' }));
+        svg.appendChild(el('path', { d: punta(x2, y, x2 - cxm, y - dip, 0.62 * SP), class: 'marca-punta' }));
+      };
+      const corchete = (x1, x2, y) => {
+        const t = 0.5 * SP;
+        svg.appendChild(el('path', { d: `M ${x1} ${y - t} L ${x1} ${y} L ${x2} ${y} L ${x2} ${y - t}`, class: 'marca-corchete' }));
+      };
+      for (let i = 0; i + 1 < numNotas; i++) {
+        if (cxNota[i] == null || cxNota[i + 1] == null) continue;
+        const g1 = gradoDe(i), g2 = gradoDe(i + 1);
+        if (!bajaQuinta(g1, g2)) continue;
+        // La marca se dibuja en el renglón de más abajo de los dos, para no meterse en el de encima
+        const yB = yRenglon(Math.max(renglon[i], renglon[i + 1])) + ALTO_RENGLON - ALTO_MARCAS;
+        if (esDominante(i)) flecha(cxNota[i], cxNota[i + 1], yB + 1.25 * SP);
+        else if (esDominante(i + 1)) corchete(cxNota[i] - ANCHO_CASILLA / 2, cxNota[i + 1] + ANCHO_CASILLA / 2, yB + 0.65 * SP);
+      }
+    }
 
     dibujarMarcasVoz();
 
