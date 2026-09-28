@@ -468,6 +468,9 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-0605 | La banda dice «Lección» (141); fuera el renglón del esquema en el informe y la casilla del comentario con las palabras de su botón (143) |
+| 20260929-0530 | Las paralelas, vetadas y no solo penalizadas; el movimiento directo encarecido a 75/55; el bajo deducido deja una octava bajo la melodía (142). Banco: 0 combinaciones con paralelas y 20 de 378 con algún aviso |
+| 20260929-0450 | «Sonar al elegir», dentro del primer renglón de paletas y pegado al borde derecho de la partitura (140, corregida) |
 | 20260929-0420 | La banda empieza por «Tema» y el «Ejercicio k de n» baja junto a «Comprobar»; el título del fragmento deja de repetir el nombre del tema (141) |
 | 20260929-0345 | La dominante en naranja, con tinta oscura (139); «sonar al elegir» al frente de las paletas (140) |
 | 20260929-0300 | Oscuro solo lo que es una acción: las herramientas vuelven al botón claro; la escucha a la izquierda y la vista a la derecha, a ras de la partitura; «sonar al elegir» y «Cuadro de cifrados» al pie de las paletas; los grados del ejercicio con el color de su función (137); rótulos del configurador en morado y por encima del valor (138) |

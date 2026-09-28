@@ -3046,23 +3046,65 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     el amarillo: llevar el naranja al rojo-naranja `#FF5A00` (27° de separación) o apagar el
     amarillo hacia un oro más verdoso.
 
-140. **«Sonar al elegir» encabeza las paletas** (28/9/2026, Diego). Deja el pie y sube al
-    **primer renglón** de la zona de paletas —el de la función tonal— pegado al borde
-    izquierdo del recuadro de la partitura. El pie se queda solo con el «Cuadro de
-    cifrados», centrado.
+140. **«Sonar al elegir», en el primer renglón de paletas y a la derecha**
+    (28/9/2026, Diego). Deja el pie —que se queda solo con el «Cuadro de cifrados»,
+    centrado— y pasa a vivir **dentro** del primer renglón de paletas que esté a la vista
+    —el de la **función tonal** cuando se piden—, **centrado verticalmente** en él y
+    **alineado con el borde derecho** del recuadro de la partitura, mientras el rótulo de
+    ese renglón ocupa el borde izquierdo. Como el renglón de función tonal solo aparece
+    cuando la ficha pide las funciones, `colocarSonar()` (en `app.js`) mueve el nodo —no lo
+    vuelve a crear, así conserva su estado— al primer renglón visible en cada pintado.
+    (En la versión 20260929-0345 estuvo un rato en un renglón propio encima de las paletas;
+    duró lo que tardó Diego en verlo.)
 
-141. **La banda dice el TEMA; por dónde va la ficha baja junto a «Comprobar»**
-    (28/9/2026, Diego). La banda empieza por la palabra **«Tema»** y sigue con el nombre del
-    tema tal como lo guarda el banco (por ejemplo «Tema A3-5 · El 6/4 cadencial»). Sale de
+141. **La banda dice la LECCIÓN; por dónde va la ficha baja junto a «Comprobar»**
+    (28/9/2026, Diego). La banda empieza por la palabra **«Lección»** y sigue con el nombre
+    de la lección tal como lo guarda el banco (por ejemplo «Lección A3-5 · El 6/4
+    cadencial»). Se probó antes con «Tema», que duró una versión. Sale de
     ahí el «(Ejercicio 1 de 4)», que pasa a un rótulo en tinta suave **al lado del botón
     «Comprobar»**: por dónde va la ficha es lo que el alumno mira al terminar un ejercicio,
     no al empezarlo.
     - De paso se corrige una repetición que venía de antes: cuando un fragmento no tiene
       título propio hereda el nombre de su lección, y la banda escribía «A3-5 · El 6/4
       cadencial · El 6/4 cadencial». Ahora el título del fragmento solo se añade si dice
-      algo que el nombre del tema no diga ya.
+      algo que el nombre de la lección no diga ya.
     - En los ejercicios del corpus de demostración, que no pertenecen a ninguna lección, la
-      banda sigue diciendo la colección, sin la palabra «Tema»: no hay tema que nombrar.
+      banda sigue diciendo la colección, sin la palabra «Lección»: no hay lección que
+      nombrar.
+
+142. **Las paralelas dejan de ser un coste y pasan a ser un veto** (28/9/2026, Diego, que
+    las vio escritas en un ejercicio de armonización de soprano).
+    - **Por qué salían.** El motor elige la serie de disposiciones más barata, y una octava
+      o una quinta seguidas costaban **120 puntos**. Pero un final conclusivo cuesta 110 y un
+      salto grande 90 por voz: sumando dos o tres defectos, al motor le salía a cuenta
+      **pagar una paralela**. Ahora pesan `PESO_PARALELA = 100000`, más de lo que puede
+      sumar cualquier serie de defectos de un fragmento entero, de modo que el motor solo
+      escribe una paralela cuando **no existe ninguna disposición que la evite**.
+    - **El movimiento directo, encarecido de 30/20 a 75/55.** Con las paralelas vetadas el
+      motor se refugiaba en la directa (de 21 a 29 avisos). Encarecida, las combinaciones del
+      banco con algún aviso bajan de 31 a **20** y las directas a 17.
+    - **El bajo deducido deja sitio a las voces de en medio.** En la armonización de soprano
+      el bajo lo deduce la respuesta del alumno (`Ejercicios.bajosDe`), y solo se le pedía
+      estar una **quinta** por debajo de la melodía. En ese hueco no caben el tenor y la
+      contralto sin unísonos, y de los unísonos salían octavas paralelas que ninguna
+      disposición podía evitar. Ahora se le pide una **octava**.
+    - **Medido sobre el banco entero.** Como armonización de bajo (378 combinaciones
+      fragmento × posición): de 4 combinaciones con paralelas a **0**, y de 31 con algún
+      aviso a 20. Como armonización de soprano con las respuestas del modelo (110
+      fragmentos): de 6 con paralelas a **1**. En el corpus de demostración, 0 paralelas en
+      las tres posiciones. El bajo medio apenas se mueve (51,0 → 50,8 en cifra MIDI) y
+      ninguno baja del mi2.
+    - **El caso que queda**, `A3-7-12`: quintas entre el **bajo y la soprano**, las dos voces
+      dadas. No es cosa del motor —no puede cambiar ninguna de las dos—, sino de la propia
+      sucesión de acordes del modelo (un VI en estado fundamental ahí). Queda anotado para
+      revisar ese fragmento.
+
+143. **El informe, más corto** (28/9/2026, Diego).
+    - **Fuera «Tu armonización: T – D – T · cadencia auténtica»** (decisión 122): con las
+      funciones pintadas en la partitura, la cadena se lee en ella. El **comentario hablado**
+      la sigue diciendo, que ahí no hay nada que mirar.
+    - La casilla que pone el comentario automático pasa a decir **«escuchar el comentario»**,
+      las mismas palabras que su botón.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

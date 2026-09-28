@@ -81,6 +81,9 @@ const Realizacion = (() => {
      acorde sin realizar; el coste la relega al último lugar. */
   const ABERTURA_MAX = 12;
   const ABERTURA_TOPE = 14;
+  /* El veto de las paralelas: más de lo que puede sumar cualquier serie de defectos
+     (un paso caro ronda los 500 puntos y un fragmento largo no llega a 20 000). */
+  const PESO_PARALELA = 100000;
 
   const octavaArriba = (n, k = 1) => ({ letra: n.letra, alt: n.alt, octava: n.octava + k });
   const midi = n => Teoria.midi(n);
@@ -296,7 +299,7 @@ const Realizacion = (() => {
        conclusivo es la nota con que acaba la melodía, no el bajo.
        Los números son grandes a propósito —el movimiento de una voz cuesta un punto por
        semitono— para que el cierre gane a cualquier comodidad de conducción; y todos quedan
-       por debajo de las paralelas (120), que nunca se admiten por acabar mejor. */
+       por debajo del veto de las paralelas, que nunca se admiten por acabar mejor. */
     if (esFinal && d.septima === null && clase(d.fund) === claseTonica(ton)) {
       const cs = clase(s);
       if (cs === claseTonica(ton)) coste += 0;                        // la tónica: cierre pleno
@@ -320,7 +323,13 @@ const Realizacion = (() => {
       if (salto > 5) coste += (salto - 5) * 8;
       if (salto >= 10) coste += 90;                 // séptima o más: prácticamente prohibido
     }
-    coste += 120 * paralelasEntre(antes, ahora).length;      // las paralelas pesan más que cualquier otro defecto
+    /* LAS PARALELAS NO SON UN COSTE ALTO: SON UN VETO (Diego, 28/9/2026). Con 120 puntos
+       un final conclusivo (110) o un par de saltos grandes (90 cada uno) podían pagarse una
+       octava o una quinta seguidas, y en la armonización de soprano —donde el bajo lo fija
+       la respuesta del alumno y la melodía está dada— salían escritas. Con un peso que
+       ninguna suma de los demás defectos puede alcanzar, el motor solo escribe paralelas
+       cuando NO hay ninguna disposición que las evite. */
+    coste += PESO_PARALELA * paralelasEntre(antes, ahora).length;
     const contiene = pc => dc.tonos.some(t => clase(t) === pc);
     // Mismo acorde en otra inversión (arpegio del bajo): las voces se reparten libremente
     const mismoAcorde = clase(dp.fund) === clase(dc.fund) && dp.tonos.every(t => contiene(clase(t)));
@@ -405,7 +414,11 @@ const Realizacion = (() => {
         const iv = ((midi(ahora[r]) - midi(ahora[q])) % 12 + 12) % 12;
         if (iv !== 0 && iv !== 7) continue;
         const salvada = q === 0 ? conjunto(r) : (conjunto(q) || conjunto(r));
-        if (!salvada) coste += q === 0 ? 30 : 20;
+        /* El movimiento DIRECTO a octava o quinta con el bajo, encarecido (Diego,
+           28/9/2026): con las paralelas vetadas, el motor tendía a refugiarse en la
+           directa. Medido sobre el banco, pasar de 30/20 a 75/55 baja las combinaciones
+           con aviso de 31 a 20 y las directas de 29 a 17, sin recuperar ninguna paralela. */
+        if (!salvada) coste += q === 0 ? 75 : 55;
       }
     }
     return coste;

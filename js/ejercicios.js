@@ -517,9 +517,13 @@ const Ejercicios = (() => {
       const ton = Teoria.tonParaAcorde(r, id, tons[i], notas[i]);
       const b = Teoria.bajoDe(r, id, ton, false);              // lo que el alumno ha escrito, sin arreglarlo
       if (!b) return null;
-      // La octava más cercana al bajo anterior, con una ligera preferencia por el centro del
-      // registro (do3) y dejando sitio a las dos voces intermedias bajo la melodía (al menos una 5ª)
-      const coste = x => Math.abs(x - ref) + 0.5 * Math.abs(x - 52) + (x > melodia[i] - 7 ? 50 : 0);
+      /* La octava más cercana al bajo anterior, con una ligera preferencia por el centro del
+         registro (do3) y dejando sitio a las dos voces intermedias bajo la melodía: al menos
+         una OCTAVA (Diego, 28/9/2026). Con una quinta —lo que se pedía antes— el tenor y la
+         contralto no cabían sin unísonos, y de ahí salían octavas paralelas que el motor no
+         podía evitar: exigiendo la octava desaparecen dos de los tres casos del banco, y el
+         bajo medio apenas se mueve (de 51,0 a 50,8 en cifra MIDI, ninguno por debajo del mi2). */
+      const coste = x => Math.abs(x - ref) + 0.5 * Math.abs(x - 52) + (x > melodia[i] - 12 ? 50 : 0);
       let mejor = null;
       for (let o = 1; o <= 4; o++) {
         const n = { letra: b.letra, alt: b.alt, octava: o };

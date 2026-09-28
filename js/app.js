@@ -166,12 +166,12 @@
   function pintarCabecera() {
     const ej = estado.ejercicio;
     const f = estado.ficha;
-    /* La banda dice DE DÓNDE viene este ejercicio y nada más: «Tema» y el nombre del tema
-       (Diego, 28/9/2026). Por dónde va la ficha —«Ejercicio 1 de 4»— bajó junto a
+    /* La banda dice DE DÓNDE viene este ejercicio y nada más: «Lección» y el nombre de la
+       lección (Diego, 28/9/2026). Por dónde va la ficha —«Ejercicio 1 de 4»— bajó junto a
        «Comprobar», que es donde el alumno mira cuando termina uno. La palabra «Ficha» no
        aportaba nada, y el renglón «Lección …» que había debajo era lo mismo ocupando sitio. */
     const deDonde = ej.leccion || ej.coleccion || (f && f.filtro.titulo) || '';
-    const tema = ej.leccion ? 'Tema ' + ej.leccion : deDonde;
+    const tema = ej.leccion ? 'Lección ' + ej.leccion : deDonde;
     /* El título del fragmento solo se añade si dice algo NUEVO: cuando el fragmento no
        tiene título propio hereda el nombre de la lección, y la banda repetía «A3-5 · El
        6/4 cadencial · El 6/4 cadencial». */
@@ -417,6 +417,18 @@
     });
     pc.appendChild(tecla('tecla-borrar', 'Borrar', 'Vaciar la casilla activa (Retroceso)', borrar));
     pintarPaletaTonalidades();
+    colocarSonar();
+  }
+
+  /* «Sonar al elegir» vive EN el primer renglón de paletas que esté a la vista —el de la
+     función tonal cuando se piden— pegado al borde derecho del recuadro de la partitura,
+     mientras el rótulo de ese renglón ocupa el borde izquierdo (Diego, 28/9/2026). Se
+     mueve el nodo, no se vuelve a crear: conserva su estado y su escuchador. */
+  function colocarSonar() {
+    const etiqueta = $('#sonar') && $('#sonar').closest('label');
+    if (!etiqueta) return;
+    const caja = [...document.querySelectorAll('#paletas .paleta-caja')].find(c => !c.hidden);
+    if (caja && etiqueta.parentElement !== caja) caja.appendChild(etiqueta);
   }
 
   /* ---------- Modulación: lecturas y marcas ---------- */
@@ -1430,10 +1442,9 @@
       + (porArreglar ? ' (' + porArreglar + ' por arreglar)' : '') + ' (notas en rojo)');
     if (estado.intento > 1 && estado.primerIntento !== null) trozos.push('Al primer intento: ' + estado.primerIntento + ' de ' + n);
     if (trozos.length) html += '<p class="desglose">' + trozos.join(' · ') + '</p>';
-    // El esquema de lo que ha escrito el alumno (decisión 122)
-    const esq = esquemaDelAlumno();
-    if (esq) html += '<p class="desglose esquema">Tu armonización: <b>' + esq.texto + '</b>'
-      + (esq.cadencia ? ' · ' + esq.cadencia : '') + '</p>';
+    /* El renglón «Tu armonización: T – D – T · cadencia auténtica» se quitó del informe
+       (Diego, 28/9/2026): con las funciones pintadas en la partitura, la cadena se lee en
+       ella. El comentario hablado sí la sigue diciendo, que ahí no hay nada que mirar. */
     // Que lo lea en voz alta, se haya marcado o no la casilla (decisión 121)
     if (Voz.hay() && (aciertos < n || porArreglar))
       html += '<p class="botonera-voz">'
@@ -1442,7 +1453,7 @@
            —una automática y la otra a petición— y separarlas obligaba a buscarla
            (Diego, 28/9/2026). */
         + '<label class="control junto-a-voz" title="Al comprobar, el comentario se escucha solo, sin tener que pedirlo">'
-        + '<input id="leer-errores" type="checkbox"' + (estado.leerErrores ? ' checked' : '') + '><span>comentar al comprobar</span></label>'
+        + '<input id="leer-errores" type="checkbox"' + (estado.leerErrores ? ' checked' : '') + '><span>escuchar el comentario</span></label>'
         + '</p>';
     // Modulación
     const rm = estado.resultadoMod;

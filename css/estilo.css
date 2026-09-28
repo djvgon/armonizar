@@ -1142,10 +1142,14 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
 #control-realizacion { order: 3; margin-left: 0; margin-right: 0;
   border-left: 1px solid var(--linea); padding-left: 18px; }
 
-/* «Sonar al elegir» encabeza las paletas: primer renglón, el de la función tonal, pegado
-   al borde izquierdo del recuadro de la partitura. Y el pie, con el acceso al cuadro de
+/* «Sonar al elegir» va DENTRO del primer renglón de paletas —el de la función tonal
+   cuando se piden—, centrado en él y pegado al borde derecho del recuadro de la partitura,
+   con el rótulo del renglón en el borde izquierdo. Y el pie, con el acceso al cuadro de
    cifrados centrado bajo las teclas que explica. */
-.paletas > .control-sonar { display: flex; margin: 0 0 2px; padding: 0; }
+.paleta-caja > .control-sonar {
+  display: flex; align-self: center; margin: 0 0 0 auto; padding: 0 6px 0 14px;
+  flex: 0 0 auto; white-space: nowrap;
+}
 .paletas-pie { display: flex; justify-content: center; margin: 6px 0 0; }
 @media (max-width: 719px), (max-height: 559px) {
   .paletas-pie { margin: 2px 0 0; }
