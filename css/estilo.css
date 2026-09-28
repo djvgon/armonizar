@@ -1219,3 +1219,102 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
    se lea sobre el papel (4,2:1 sobre blanco; los signos gráficos piden 3:1). */
 :root { --cambio: #D95F00; }
 svg.partitura .nota.cambiada { fill: var(--cambio); }
+
+/* =======================================================================================
+   LA ESCALA DE TAMAÑOS  (Diego, 28/9/2026, revisada con él)
+
+   Una sola escala, MÚLTIPLOS DE 8, que incluye también las dos franjas de arriba —cada una
+   lleva botones o información de la página, así que forman parte del sistema— y que pone
+   a las teclas y a las fichas la MISMA FORMA: el cuadrado.
+
+     48 px · la BANDA morada y las TECLAS de las paletas, cuadradas de 48 × 48. La banda se
+             probó a 64 (a esa altura el morado pesa como un cartel), a 56 y a 52, y Diego
+             eligió 48 sobre las tres alturas puestas una encima de otra (28/9/2026)
+     32 px · la BARRA ciruela: es navegación, no contenido, y va por debajo de la banda
+     40 px · las ACCIONES de la botonera (Comprobar, Reiniciar, Ver la solución…)
+     32 px · HERRAMIENTAS (escuchar, cuadros, segmentos, mandos de la banda) y las FICHAS
+             de referencia, también cuadradas
+     24 px · los ▶ de cada acorde, que van DENTRO de la partitura
+     16 px · las casillas de verificación
+
+   Dos cosas que hacían ruido y quedan resueltas:
+     · la tecla de cifrado era un RECTÁNGULO VERTICAL (48 × 54), porque el numerito del
+       atajo de teclado ocupaba un renglón propio debajo del símbolo. Ese número pasa a la
+       ESQUINA INFERIOR IZQUIERDA, en posición absoluta, y la tecla vuelve a ser cuadrada;
+     · las fichas de «Grados en este ejercicio» eran rectángulos apaisados (38 × 34) junto a
+       teclas verticales del mismo color. Ahora unas y otras son cuadradas, y solo cambia el
+       tamaño: 48 la que se pulsa, 32 la que solo informa.
+   ======================================================================================= */
+:root {
+  --alto-banda: 48px; --alto-barra: 32px; --alto-tecla: 48px;
+  --alto-accion: 40px; --alto-util: 32px; --alto-casilla: 16px;
+}
+
+/* 1 · Las dos franjas de arriba */
+.barra-app { min-height: var(--alto-barra); }
+.cabecera { min-height: var(--alto-banda); padding: 8px 20px; align-content: center; }
+.cabecera h1 { font-size: 1.12rem; }
+
+/* 2 · Las teclas: cuadradas y todas iguales, con el atajo en la esquina */
+.tecla, .tecla-romano, .tecla-fun, .tecla-cifra {
+  width: var(--alto-tecla); height: var(--alto-tecla); min-width: 0; min-height: 0;
+  padding: 0; gap: 0; position: relative;
+}
+.tecla-cifra svg.icono-cifra { width: 32px; height: 32px; }
+/* El atajo, en la esquina y SIN recuadro: dentro de una tecla de 48 el recuadro se comía
+   el sitio del símbolo. Un número pequeño en gris basta. */
+.tecla-num {
+  position: absolute; left: 4px; bottom: 3px; margin: 0; padding: 0;
+  min-width: 0; height: auto; line-height: 1; font-size: .62rem;
+  background: none; border: 0;
+  /* Hereda la tinta de la tecla y se apaga: en las de color —azul, rojo, amarillo— un gris
+     fijo no se veía. */
+  color: currentColor; opacity: .72;
+}
+/* Las dos que llevan palabra o nombre de tonalidad crecen a lo ancho, no a lo alto */
+.tecla-borrar, .tecla-ton {
+  width: auto; min-width: 64px; height: var(--alto-tecla); padding: 0 10px;
+}
+.tecla-ton { min-width: 56px; }
+
+/* 3 · Las acciones */
+.botonera button { min-height: var(--alto-accion); padding-top: 0; padding-bottom: 0;
+  display: inline-flex; align-items: center; justify-content: center; }
+
+/* 4 · Las herramientas y las fichas de referencia. `.btn-acorde` queda fuera: es el ▶ que
+   va colocado sobre cada acorde del cuadro de cifrados, y pertenece al pentagrama. */
+.boton-pequeno, .btn-sonar:not(.btn-acorde), .btn-volver, .enlace-boton, .segmentos button,
+.cabecera select, .cabecera .selector-caja select {
+  min-height: var(--alto-util); padding-top: 0; padding-bottom: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.enlace-boton { min-height: var(--alto-accion); }     /* el del configurador es una acción */
+.cabecera .enlace-boton { min-height: var(--alto-util); }
+.ficha { width: var(--alto-util); height: var(--alto-util); min-width: var(--alto-util); padding: 0; }
+.ficha-romano { width: auto; min-width: var(--alto-util); padding: 0 4px; }
+.segmentos { align-items: stretch; }
+
+/* 5 · Las casillas de verificación */
+.control input[type="checkbox"], .control-sonar input[type="checkbox"],
+.junto-a-voz input[type="checkbox"], .realizacion-barra input[type="checkbox"] {
+  width: var(--alto-casilla); height: var(--alto-casilla); accent-color: var(--marca);
+}
+.control-sonar { font-size: .88rem; }
+
+/* 6 · Los rótulos de las paletas, un poco adentro: pegados al borde, la línea del recuadro
+   que marca la paleta activa cortaba la primera palabra. */
+.paleta-etiqueta { padding-left: 10px; }
+
+@media (max-width: 719px), (max-height: 559px) {
+  :root {
+    --alto-banda: 46px; --alto-barra: 36px; --alto-tecla: 40px;
+    --alto-accion: 36px; --alto-util: 28px; --alto-casilla: 15px;
+  }
+  .cabecera { padding: 4px 10px; }
+  .cabecera h1 { font-size: 1rem; }
+  .tecla-cifra svg.icono-cifra { width: 26px; height: 26px; }
+  .tecla-num { display: none; }
+  .tecla-borrar, .tecla-ton { min-width: 44px; padding: 0 6px; }
+  .paleta-etiqueta { padding-left: 4px; }
+  .control-sonar { font-size: .72rem; }
+}

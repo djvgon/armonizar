@@ -468,6 +468,10 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-1400 | Al ver la solución se respeta el acorde del alumno donde acertó, aunque el modelo prefiera otro admitido: con todo bien ya no sale nada en naranja (147, corregida). Banda a 48 y barra a 32, las alturas elegidas (151) |
+| 20260929-1330 | Banda a 52 y barra a 36; los atajos de las teclas, sin negrita (151, afinada) |
+| 20260929-1300 | La banda baja de 64 a 56 y la barra de 48 a 40; los atajos de las teclas, en negrita (151, afinada) |
+| 20260929-1220 | Escala única en múltiplos de 8 con las dos franjas dentro —64 banda · 48 barra y teclas cuadradas · 40 acciones · 32 herramientas y fichas cuadradas—, con el atajo en la esquina de la tecla (151) |
 | 20260929-1050 | En la melodía de soprano, aviso cuando el acorde escrito no contiene la nota de la melodía (150) |
 | 20260929-1010 | El naranja de la solución se decide comparando el acorde dibujado con el que escribió el alumno, no con si acertó (147, corregida) |
 | 20260929-0940 | Vuelve el renglón de acordes del ejercicio y el botón de las estructuras sale del renglón de los grados (149) |

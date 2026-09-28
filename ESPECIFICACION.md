@@ -3139,10 +3139,14 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     5.ª** en todas las ventanas —en el cuadro de cifrados decía «Posición» y numeraba 1.ª,
     2.ª, 3.ª—.
 
-147. **Al ver la solución, en naranja los acordes que fallaron** (28/9/2026, Diego). Con la
-    realización del modelo a la vista (decisión 145), los acordes que **no son los que
-    escribió el alumno** se pintan enteros en naranja `#D95F00`, para que vea de un vistazo
-    qué le cambia. El acorde lo fija el **cifrado** sobre el bajo dado; en la melodía de
+147. **Al ver la solución se enseña la armonización del ALUMNO con lo fallado arreglado, y
+    en naranja lo que cambia** (28/9/2026, Diego). Con la
+    Corrige la decisión 145: lo que se dibuja **no es la armonización del modelo entera**,
+    sino la del alumno con los acordes fallados sustituidos por los del modelo. Donde acertó
+    se queda **su** acorde, aunque el modelo prefiera otro de los admitidos —si no, alguien
+    que lo tiene todo bien veía cambiada media armonización, y marcada en naranja, que es lo
+    contrario de lo que el naranja quiere decir (Diego, 28/9/2026)—. Los acordes sustituidos
+    se pintan enteros en naranja `#D95F00`, para que vea de un vistazo qué le cambia. El acorde lo fija el **cifrado** sobre el bajo dado; en la melodía de
     soprano, también el grado, porque de él se deduce el bajo. Un acorde con el cifrado bien
     y el grado mal —el mismo acorde con otro nombre— no se marca: lo que suena es idéntico.
     Ojo: NO vale mirar si la respuesta estaba «bien». Una cifra puede ser **admisible** —y
@@ -3181,6 +3185,41 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     elegido, y nada lo decía. Ahora esa nota de la melodía **sale en rojo** y, al pulsarla,
     explica qué pasa: «El acorde que has escrito no contiene la nota de la melodía (si):
     sobre ese bajo no cabe ahí. Elige otro acorde, u otra inversión».
+
+151. **La escala de tamaños de la interfaz** (28/9/2026, Diego). Medido lo que había: las
+    teclas de función y grado, **46 px**; las de cifrado, **62** —y, peor aún, eran
+    rectángulos VERTICALES, porque el número del atajo de teclado ocupaba un renglón propio
+    debajo del símbolo—; las fichas de «Grados en este ejercicio», rectángulos **apaisados**
+    de 38 × 34 y del mismo color que las teclas; los botones de herramienta, 33; los
+    segmentos, 29; «Comprobar», 45; las casillas, 13. Y las dos franjas de arriba quedaban
+    fuera de cualquier escala, de modo que se veían menguadas al lado del resto.
+    Se ordena todo en **una sola escala, múltiplos de 8**, que incluye las franjas —cada una
+    lleva botones o información de la página— y que da a teclas y fichas **la misma forma, el
+    cuadrado**:
+
+    | alto | qué |
+    |---|---|
+    | **48 px** | la **banda** morada (título a 1,12 rem) y las **teclas** de las paletas, cuadradas de 48 × 48. La banda se probó a 64 —a esa altura el morado pesa como un cartel—, a 56 y a 52, y se eligió 48 comparando las tres alturas una encima de otra |
+    | **32 px** | la **barra** ciruela: es navegación, no contenido, y va por debajo de la banda |
+    | **40 px** | las **acciones**: Comprobar, Otro ejercicio, Reiniciar, Ver la solución |
+    | **32 px** | **herramientas** (escuchar, cuadros, estructuras, segmentos, mandos de la banda) y **fichas** de referencia, también cuadradas |
+    | **≈24 px** | los **▶ de cada acorde**, que van dentro de la partitura y miden en unidades del pentagrama, no en píxeles de la interfaz |
+    | **16 px** | las **casillas** de verificación |
+
+    En el móvil la escala se comprime manteniendo el orden: 46 · 40 · 36 · 28 · 15.
+    - El **número del atajo** de teclado pasa a la **esquina inferior izquierda** de la tecla,
+      en posición absoluta y sin recuadro, heredando la tinta de la tecla al 72 % de
+      opacidad. **Sin negrita**: es intendencia, no parte del ejercicio musical, y en negrita
+      se daba una importancia que no le toca (se probó y se retiró el mismo día).
+      Eso es lo que permite que la tecla sea cuadrada sin encoger el símbolo (el icono de la
+      cifra mide 32 px dentro de los 48).
+    - «Borrar» y las teclas de **tonalidad** crecen a lo ancho, no a lo alto: llevan palabra.
+    - Los **rótulos de las paletas** se meten 10 px hacia dentro, para que la línea del
+      recuadro que marca la paleta activa no corte la primera palabra.
+    - **Dónde está el selector de posición melódica**: en la armonización de SOPRANO no se
+      muestra, y es a propósito —la disposición la fija la melodía, que ya viene dada—. Lo
+      mismo pasa con «Grados del bajo» cuando la ficha no los permite; por eso en ese
+      ejercicio faltaba el renglón entero.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

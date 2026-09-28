@@ -601,8 +601,19 @@
   /* La respuesta modelo, separada en grado y cifra: en las armonizaciones la respuesta se
      guarda como pareja «V|65d», y la realización necesita solo la cifra. */
   const modeloPar = i => Ejercicios.par(Ejercicios.admisibles(estado.ejercicio, i)[0]);
-  const cifrasSolucion = () => estado.ejercicio.respuestas.map((_, i) => modeloPar(i).cifra);
-  const romanosSolucion = () => estado.ejercicio.respuestas.map((_, i) => modeloPar(i).romano);
+  /* QUÉ SE ENSEÑA AL VER LA SOLUCIÓN (Diego, 28/9/2026, corrigiendo la decisión 145).
+     No la respuesta del modelo entera, sino **la del alumno con lo que falló arreglado**:
+     donde acertó se queda SU acorde, aunque el modelo prefiera otro de los admitidos. Si no,
+     alguien que lo tiene TODO bien veía cambiada media armonización y marcada en naranja,
+     que es justo lo contrario de lo que el naranja quiere decir. */
+  const acertoElAcorde = i => {
+    const r = (estado.resultados || [])[i];
+    return !!(r && r.okCifra && (estado.modoEj !== 'soprano' || r.okRomano));
+  };
+  const cifrasSolucion = () => estado.ejercicio.respuestas.map((_, i) =>
+    (acertoElAcorde(i) && estado.respuestas[i] ? estado.respuestas[i] : modeloPar(i).cifra));
+  const romanosSolucion = () => estado.ejercicio.respuestas.map((_, i) =>
+    (acertoElAcorde(i) && estado.romanos[i] ? estado.romanos[i] : modeloPar(i).romano));
 
   // Cifras que se dibujan en el pentagrama de sol: las modelo en Análisis; en
   // Armonización, Audición y Melodía de soprano, las del alumno, solo en las notas completas (grado y cifra).
@@ -683,6 +694,7 @@
       const suyaC = notaCompleta(i) ? estado.respuestas[i] : null;
       const distinto = modeloC[i] !== suyaC
         || (estado.modoEj === 'soprano' && modeloR[i] !== (estado.romanos[i] || null));
+      /* Con todo bien no hay nada que señalar: lo que se ve es su propia armonización. */
       return ac.map(() => distinto);
     });
   }
