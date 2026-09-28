@@ -3865,6 +3865,21 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       propósito. Ejemplos: `A3-4-03` nota 4 (bajo II6 · soprano IV), `A3-6-01` nota 3 (bajo IV
       · soprano I6/4), `A4-11-06` nota 15 (bajo V · soprano II).
 
+175. **«Revisando: el bajo · la melodía», junto al editor de fragmentos** (29/9/2026,
+    Diego: «¿dónde está ese desplegable que permite cambiar de lista?… no quiero que decida
+    el de A, está muy lejos del editor del banco»). No existía tal desplegable: la voz la
+    decidía el de «A · Preparar una ficha» y **solo en el instante de pulsar «Cargar»**,
+    porque `cargarDelBanco(e, modo)` recibe el modo una vez. Con el fragmento ya abierto,
+    cambiar aquel desplegable no hacía nada, y además metía dos tareas distintas —preparar
+    una ficha y revisar el banco— en el mismo control.
+    - Mando propio bajo el título «El fragmento en curso», encima del cuadro de texto:
+      dos botones que recargan **el mismo fragmento en la otra voz**, sin tocar el filtro de
+      arriba. El botón de la voz que el fragmento no tiene escrita sale desactivado.
+    - Conserva el tipo de ejercicio elegido si ya corresponde a esa voz —análisis, audición
+      y armonización de bajo van todos con el bajo—, para no cambiar las opciones del paso 3
+      sin motivo.
+    - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
+
 168. **El candado, junto a la partitura** (29/9/2026, Diego: «a veces voy repasando
     fragmento por fragmento y no quiero perder tiempo teniendo que subir a ver en la tabla si
     está cerrado o no»). Una chapa pegada al título «Revisión de las respuestas» que dice el

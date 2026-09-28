@@ -1683,7 +1683,48 @@
     $('#banco-origen-texto').textContent = 'Estás revisando el fragmento ' + (e.id || '(sin identificador)')
       + (e.leccion ? ' de la lección ' + Banco.etiquetaLeccion(e) : '')
       + ' · voz: ' + (b.voz === 'bajo' ? 'el bajo' : 'la melodía') + '.';
+    pintarVozRevision();
     pintarSello();
+  }
+
+  /* QUÉ VOZ SE ESTÁ REVISANDO (decisión 175, Diego 29/9/2026: «¿dónde está ese desplegable
+     que permite cambiar de lista?»). No existía. La voz la decidía el desplegable de «A ·
+     Preparar una ficha», y solo en el instante de pulsar «Cargar»: con el fragmento ya
+     abierto, cambiarlo no hacía nada, porque `cargarDelBanco` recibe el modo UNA vez. Y
+     preparar una ficha y revisar el banco son dos tareas distintas metidas en el mismo
+     control. Ahora hay un mando propio aquí, que recarga el mismo fragmento en la otra voz
+     y no toca el filtro de arriba. */
+  function pintarVozRevision() {
+    const caja = $('#voz-revision'), b = estado.banco;
+    if (!caja) return;
+    caja.hidden = !b;
+    if (!b) return;
+    const e = b.entrada;
+    [['bajo', $('#btn-voz-bajo')], ['soprano', $('#btn-voz-soprano')]].forEach(([voz, bot]) => {
+      if (!bot) return;
+      const hay = !!e[voz];
+      bot.disabled = !hay;
+      bot.title = hay ? (voz === b.voz ? 'Es la que estás revisando' : 'Abrir la otra voz de este mismo fragmento')
+        : 'Este fragmento no tiene ' + (voz === 'bajo' ? 'el bajo' : 'la melodía') + ' escrita';
+      bot.classList.toggle('activo', voz === b.voz);
+      bot.setAttribute('aria-pressed', voz === b.voz ? 'true' : 'false');
+    });
+  }
+
+  /* Cambiar de voz sin salir del fragmento. Se conserva el tipo de ejercicio elegido si ya
+     corresponde a esa voz —análisis, audición y armonización de bajo van todos con el bajo—,
+     para no cambiarle a Diego las opciones del paso 3 sin motivo. */
+  function revisarVoz(voz) {
+    const b = estado.banco;
+    if (!b || voz === b.voz) return;
+    const e = b.entrada;
+    if (!e[voz]) { aviso('Este fragmento no tiene ' + (voz === 'bajo' ? 'el bajo escrito' : 'la melodía escrita') + '.'); return; }
+    if (hayCambiosSinGuardar()
+      && !confirm('Has cambiado este fragmento y no lo has guardado en el banco. Si cambias de voz se perderá lo que hayas tocado. ¿Seguir?')) return;
+    const actual = modoElegido();
+    const modo = voz === 'soprano' ? 'soprano' : (Banco.vozDeModo(actual) === 'bajo' ? actual : 'armonizar');
+    cargarDelBanco(e, modo);
+    aviso('Ahora revisas ' + (voz === 'bajo' ? 'el bajo' : 'la melodía') + ' de ' + (e.id || '') + '.');
   }
 
   /* ---------- El sello (decisión 166) ----------
@@ -2251,6 +2292,8 @@
     $('#btn-banco-guardar').addEventListener('click', guardarEnBanco);
     $('#btn-banco-cerrar').addEventListener('click', cerrarActual);
     $('#btn-banco-abrir').addEventListener('click', abrirActual);
+    $('#btn-voz-bajo').addEventListener('click', () => revisarVoz('bajo'));
+    $('#btn-voz-soprano').addEventListener('click', () => revisarVoz('soprano'));
     $('#sello-chip').addEventListener('click', () => {
       if (!estado.banco) return;
       if (Banco.estaCerrada(estado.banco.entrada)) abrirActual(); else cerrarActual();

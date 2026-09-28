@@ -689,6 +689,13 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .tabla-banco .celda-sello { width: 3.2rem; text-align: center; font-size: .95rem; white-space: nowrap; }
 .tabla-banco tr.sello-cerrado td.celda-id { color: var(--bien); }
 .tabla-banco tr.sello-roto { background: var(--mal-suave); }
+/* Qué voz se está revisando (decisión 175): mando propio, separado del filtro de la ficha */
+.voz-revision { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem; margin: .5rem 0 .2rem; }
+.voz-revision-rotulo { font-weight: 600; font-size: .92rem; }
+.voz-revision .ayuda { flex: 1 1 20rem; margin: 0; }
+.voz-revision .segmentos button.activo { background: var(--acento); color: #fff; }
+.voz-revision .segmentos button:disabled { opacity: .4; cursor: default; }
+
 /* Lo que admite la OTRA voz del fragmento (decisión 174): al lado de los admisibles de la
    voz que se revisa, en gris y solo de lectura. Cada voz lleva su propia lista, y por eso un
    acorde puede valer armonizando el bajo y no armonizando la melodía. */

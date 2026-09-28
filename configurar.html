@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260930-1730">
-  <link rel="stylesheet" href="css/estilo.css?v=20260930-1730">
+  <link rel="stylesheet" href="css/bravura.css?v=20260930-1930">
+  <link rel="stylesheet" href="css/estilo.css?v=20260930-1930">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -380,6 +380,19 @@
       <details class="plegable" id="paso-bajo">
         <summary><span id="titulo-voz">El fragmento en curso</span></summary>
 
+        <!-- Qué voz se está revisando (decisión 175, Diego: «quiero otro selector junto al
+             editor de fragmentos»). Hasta aquí lo decidía el desplegable de «A · Preparar
+             una ficha», que está lejísimos y además solo actuaba en el momento de pulsar
+             «Cargar»: con el fragmento ya abierto, cambiarlo no hacía nada. -->
+        <p class="voz-revision" id="voz-revision" hidden>
+          <span class="voz-revision-rotulo">Revisando</span>
+          <span class="segmentos" role="group" aria-label="Qué voz de este fragmento estás revisando">
+            <button type="button" data-voz="bajo" id="btn-voz-bajo">el bajo</button>
+            <button type="button" data-voz="soprano" id="btn-voz-soprano">la melodía</button>
+          </span>
+          <span class="ayuda">Cada voz guarda su propia lista de acordes admisibles. Cambiar aquí abre la otra voz del mismo fragmento; no toca el filtro de la ficha.</span>
+        </p>
+
         <label class="campo">
           <span id="etiqueta-voz">Escribe el bajo</span>
           <textarea id="texto-bajo" rows="3" spellcheck="false" placeholder="do3 re3 | mi3 do3 | sol3r | do3r"></textarea>
@@ -527,19 +540,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260930-1730</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260930-1930</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20260930-1730"></script>
-  <script src="js/reglas.js?v=20260930-1730"></script>
-  <script src="js/ejercicios.js?v=20260930-1730"></script>
-  <script src="js/partitura.js?v=20260930-1730"></script>
-  <script src="js/musicxml.js?v=20260930-1730"></script>
-  <script src="js/musescore.js?v=20260930-1730"></script>
-  <script src="js/banco.js?v=20260930-1730"></script>
-  <script src="js/realizacion.js?v=20260930-1730"></script>
-  <script src="js/tecnicas.js?v=20260930-1730"></script>
-  <script src="js/configurador.js?v=20260930-1730"></script>
+  <script src="js/teoria.js?v=20260930-1930"></script>
+  <script src="js/reglas.js?v=20260930-1930"></script>
+  <script src="js/ejercicios.js?v=20260930-1930"></script>
+  <script src="js/partitura.js?v=20260930-1930"></script>
+  <script src="js/musicxml.js?v=20260930-1930"></script>
+  <script src="js/musescore.js?v=20260930-1930"></script>
+  <script src="js/banco.js?v=20260930-1930"></script>
+  <script src="js/realizacion.js?v=20260930-1930"></script>
+  <script src="js/tecnicas.js?v=20260930-1930"></script>
+  <script src="js/configurador.js?v=20260930-1930"></script>
 </body>
 </html>

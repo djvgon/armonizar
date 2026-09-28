@@ -11,7 +11,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-1730.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-1930.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Archivos tocados: las ocho páginas
   HTML (marca de versión; `index.html`, `configurar.html` y `cifrados.html` además por el
   vocabulario), `css/estilo.css`, y `js/app.js`, `js/banco.js`, `js/configurador.js`,
@@ -550,6 +550,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-1930 | «Revisando: el bajo · la melodía», un mando propio junto al editor de fragmentos: hasta aquí la voz la decidía el desplegable de la ficha, y solo al pulsar «Cargar» (175) |
 | 20260930-1730 | Cada voz tiene su propia lista de admisibles —ya la tenía— y ahora se ve: columna «El bajo admite» / «La melodía admite» en la tabla de revisión (174) |
 | 20260930-1530 | El cambio de posición del mismo acorde, reconocido de verdad: se comparaba con las duplicaciones y por eso la excepción de los movimientos directos no se aplicaba nunca. `A3-4-11` y `A3-4-12` se quedan sin avisos (173) |
 | 20260930-1330 | El unísono entre el bajo y el tenor, admitido: la disposición que faltaba. `A3-2-01` queda sin ningún aviso y el banco entero baja de 28 avisos a 25, sin que ninguno empeore (172) |
