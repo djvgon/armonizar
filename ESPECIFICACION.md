@@ -3880,6 +3880,50 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+180. **Las reglas de duplicación avisan, no esconden** (29/9/2026, Diego, sobre
+    `A3-7-11`: «no puedo poner I6 en el tercer acorde de este fragmento»). La nota 3 de esa
+    melodía es un mi, y `candidatosSoprano` descartaba el `I 6` —cuyo bajo es mi— porque
+    doblaría **la tercera de una tríada mayor en las voces extremas**. La regla es buena
+    para ESCRIBIR las cuatro voces y mala para decidir QUÉ ACORDE CABE: habla del reparto,
+    no de la armonía, y usada para descartar le escondía al profesor un acorde que él quiere
+    admitir. Lo mismo ocurría con la séptima y la sensible dobladas.
+    - `Reglas.candidatosSoprano` acepta un modo **permisivo**: esas tres reglas dejan de
+      descartar y pasan a **avisar**, con el texto en el globo del acorde («dobla la tercera
+      de una tríada mayor en las voces extremas», etc.) y la chapa marcada como «con aviso».
+    - El modo permisivo se usa **solo en la lista que se le ofrece a Diego** (la de la 176).
+      El motor sigue **proponiendo** con las reglas duras, así que ningún modelo del banco
+      cambia: comprobado, el `I 6` sigue fuera de la propuesta automática y dentro de la
+      lista que él puede marcar.
+    - Es el mismo principio de la 179 y de la 177: lo que es de realización no decide lo que
+      es de armonía, y donde hay criterio, decide él.
+
+179. **El 6.º grado elevado, marcado nota a nota** (29/9/2026, Diego, sobre `A3-6-09`:
+    «cómo introduzco el si becuadro del IV mayor, porque quiero que el si suba al do♯ y de
+    ahí al re»). En el modo menor, la octava ascendente eleva el 6.º y el 7.º grados, y eso
+    convierte el **IV en mayor** y el **II en menor**. El motor sabía construirlo —la
+    tonalidad con `{melodica: true}`—, pero solo lo elegía cuando la nota de la melodía
+    obligaba a ello; con la melodía en sol, que está en las dos formas, se quedaba con el
+    si♭. En el ejercicio de **bajo** el problema no existía: el si♮ está escrito y el 6 sobre
+    él ya da el IV mayor —así lo tiene el propio `A3-6-09`, cuyo bajo es re · si♮ · do♯ · re—.
+    El agujero estaba en el de **melodía**, donde el bajo lo deduce el motor.
+    - **No es un acorde nuevo, y es a propósito**: `IV 6` con si♭ y `IV 6` con si♮ son la
+      **misma respuesta** para el alumno —fundamental IV, cifrado 6—. No es, pues, una opción
+      de la lista sino una propiedad del pasaje, y va en la columna «Tonalidad», que es donde
+      se dice qué escala rige en cada nota.
+    - Interruptor **6.º ♮** por nota, que sale **solo donde de verdad cambia algo**: tono
+      menor y algún acorde marcado que toque el 6.º grado. Lo marca el profesor; el motor no
+      lo decide.
+    - Dato: `melodica: [i…]` dentro de la voz. `Teoria.tonalidadesPorNota` devuelve en esas
+      notas la menor melódica, así que el bajo deducido, las opciones de acorde, la
+      realización y la auditoría lo ven todos sin tocar nada más, y viaja igual en el enlace
+      de ficha y en el de ejercicio fijo.
+    - **La huella solo lo incluye cuando lo hay**, de modo que los fragmentos firmados antes
+      de existir esta marca conservan su huella intacta: comprobado sobre el banco, 26
+      cerrados y **0 huellas rotas**.
+    - Comprobado en el navegador sobre `A3-6-09`: al marcarlo en la nota 2, el `IV 6` pasa de
+      bajo si♭ a bajo si♮ y el bajo deducido del fragmento pasa a ser re · si♮ · la · re. Las
+      demás notas no cambian.
+
 178. **Cambiar la función toca solo esa nota** (29/9/2026, Diego: «si cambio la función de
     un acorde, después de haber introducido varios acordes o modificado las asignaciones, no
     quiero que elimines las que he introducido… me haces perder todo el trabajo hecho»). En la

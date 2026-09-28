@@ -65,6 +65,7 @@
     companera: null,         // por nota: la nota de la OTRA voz que suena a la vez (si el archivo traía las dos)
     ejercicio: null,         // último ejercicio generado
     modulaciones: [],        // [{nota, tonalidad}]: desde la nota (pivote) rige la tonalidad nueva
+    melodica: [],            // notas con el 6.º grado elevado (menor melódica ascendente, decisión 179)
     funciones: null,         // función tonal por nota ('T' | 'S' | 'D') fijada en la revisión, o null (las del modelo)
     banco: null              // {entrada, voz}: el fragmento del banco que se está revisando
   };
@@ -247,6 +248,7 @@
     if (op.tonalidades) ej.tonalidades = op.tonalidades;
     const mods = extra.modulaciones !== undefined ? extra.modulaciones : modulacionesValidas(Ejercicios.numNotas({ compases }));
     if (mods.length) ej.modulaciones = mods.map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }));
+    if (estado.melodica && estado.melodica.length) ej.melodica = estado.melodica.slice();   // 6.º elevado (179)
     return ej;
   }
 
@@ -312,8 +314,10 @@
     prepararOtraVoz();                 // qué admite la otra voz del fragmento (decisión 174)
     const rep = repertorio();
     const notas = Teoria.notasDeCompases(estado.compases);      // los silencios no llevan fila
-    const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(notas.length) };
+    const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(notas.length), melodica: estado.melodica };
     const tons = Teoria.tonalidadesPorNota(ejTon);
+    // Las mismas tonalidades SIN el 6.º elevado: hacen falta para poder desmarcarlo (179)
+    const tonsBase = Teoria.tonalidadesPorNota(Object.assign({}, ejTon, { melodica: [] }));
     const pivotes = new Set(ejTon.modulaciones.map(m => m.nota));
     const tbody = $('#tabla-revision tbody');
     tbody.innerHTML = '';
@@ -331,6 +335,7 @@
       const ton = tons[i];
       const tonAntes = i > 0 ? tons[i - 1] : ton;
       const esPivote = pivotes.has(i);
+      const elevada = (estado.melodica || []).indexOf(i) >= 0;     // 6.º grado elevado (179)
       const tr = document.createElement('tr');
       tr.id = 'fila-' + (i + 1);
       if (!adm.length) tr.className = 'sin-propuesta';
@@ -409,6 +414,21 @@
         sel.addEventListener('change', () => { fijarModulacion(i, sel.value); });
         ct.appendChild(sel);
       }
+      /* EL 6.º GRADO ELEVADO, POR NOTA (decisión 179). Solo aparece donde de verdad cambia
+         algo: tono menor y un acorde marcado que toque el 6.º grado —el IV, que pasa a
+         mayor; el II, que pasa a menor; el VI—. No lo decide el motor: lo marca Diego. */
+      if (sextaCambia(i, n, tonsBase[i], sop, adm)) {
+        const lab = document.createElement('label');
+        lab.className = 'sexta-elevada' + (elevada ? ' puesta' : '');
+        lab.title = 'El 6.º grado elevado (menor melódica ascendente): el IV pasa a ser mayor y el II, menor. '
+          + 'Márcalo donde la línea suba 6 – ♯7 – 8, como en ' + Teoria.nombreCorto(tonsBase[i]) + '.';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.checked = elevada;
+        cb.addEventListener('change', () => { marcarSexta(i, cb.checked); });
+        const tx = document.createElement('span'); tx.textContent = '6.º ♮';
+        lab.appendChild(cb); lab.appendChild(tx);
+        ct.appendChild(lab);
+      }
       const celda = tr.querySelector('.chips');
       // Opciones de la nota: en el bajo dado, las cifras del repertorio; en la melodía de soprano,
       // los acordes (fundamental + cifra) que contienen la nota, según el motor (o los marcados, si no hay análisis)
@@ -437,10 +457,15 @@
            Ahora, cuando no hay análisis, se añaden sin marcar todos los acordes de la
            lección que contienen esa nota. No cambia nada de lo guardado: solo deja verlos
            para poder marcarlos. */
+        /* En modo PERMISIVO (decisión 180): las reglas de duplicación no descartan acordes
+           de esta lista, solo los marcan con un aviso que sale en el globo. Descartar
+           escondía acordes que Diego quiere admitir —el I6 con la melodía en su tercera—, y
+           esas reglas hablan de cómo se reparten las cuatro voces, no de qué acorde cabe. */
+        const avisosDe = {};
         if (!prop) {
           try {
-            Reglas.candidatosSoprano(n, ton, rep, i === notas.length - 1, acordesElegidos())
-              .forEach(c => { if (!ids.includes(c.id)) ids.push(c.id); });
+            Reglas.candidatosSoprano(n, ton, rep, i === notas.length - 1, acordesElegidos(), false, true)
+              .forEach(c => { if (!ids.includes(c.id)) ids.push(c.id); if (c.avisos && c.avisos.length) avisosDe[c.id] = c.avisos; });
           } catch (e) { /* si el repertorio no da para tanto, se queda con lo marcado */ }
         }
         opcionesNota = ids.map(id => {
@@ -448,7 +473,8 @@
           const cand = prop && prop.candidatos ? prop.candidatos.find(x => x.id === id) : null;
           const b = cand ? cand.bajo : Teoria.bajoDe(p.romano, p.cifra, ton);
           const fuera = !loAdmiteLaLeccion(id);
-          return { id, cifra: p.cifra, bajo: b, romTxt: Teoria.gradoEscrito(p.romano, p.cifra), extra: b ? ' (' + Teoria.nombreEs(b) + ')' : '', titulo: Teoria.CIFRADOS[p.cifra].descripcion + (b ? ' · bajo ' + Teoria.nombreEs(b) : '') + (cand && cand.avisos.length ? ' · ' + cand.avisos.join(', ') : '') + (fuera ? ' · NO está en la lista de acordes de esta lección' : ''), aviso: !!(cand && cand.avisos.length), fuera };
+          const avs = (cand && cand.avisos && cand.avisos.length) ? cand.avisos : (avisosDe[id] || []);
+          return { id, cifra: p.cifra, bajo: b, romTxt: Teoria.gradoEscrito(p.romano, p.cifra), extra: b ? ' (' + Teoria.nombreEs(b) + ')' : '', titulo: Teoria.CIFRADOS[p.cifra].descripcion + (b ? ' · bajo ' + Teoria.nombreEs(b) : '') + (avs.length ? ' · ' + avs.join(', ') : '') + (fuera ? ' · NO está en la lista de acordes de esta lección' : ''), aviso: !!avs.length, fuera };
         });
       } else {
         opcionesNota = rep.map(id => {
@@ -517,6 +543,47 @@
     pintarVistaPrevia();
   }
 
+  /* ---------- El 6.º grado elevado, nota a nota (decisión 179) ----------
+     Diego, 29/9/2026: «cómo introduzco el si becuadro del IV mayor, porque quiero que el si
+     suba al do♯ y de ahí al re». En el modo menor, la octava ascendente eleva el 6.º y el
+     7.º grados, y eso convierte el IV en mayor y el II en menor. El motor sabía construirlo
+     —la tonalidad con `{melodica: true}`—, pero solo lo elegía cuando la nota de la melodía
+     obligaba; con la melodía en sol, que está en las dos formas, se quedaba con el si♭.
+
+     No se marca con un acorde nuevo, y es a propósito: `IV 6` con si♭ y `IV 6` con si♮ son
+     LA MISMA RESPUESTA para el alumno —fundamental IV, cifrado 6—, así que no es una opción
+     de la lista sino una propiedad del pasaje. Va, pues, en la columna «Tonalidad», que es
+     donde se dice qué escala rige en cada nota, y lo marca Diego, no el motor. */
+  function marcarSexta(i, puesta) {
+    limpiarDireccion();
+    const hay = (estado.melodica || []).filter(x => x !== i);
+    estado.melodica = puesta ? hay.concat([i]).sort((a, b) => a - b) : hay;
+    guardarBorrador();
+    pintarRevision();
+  }
+
+  /* ¿Cambia algo elevar el 6.º grado en esta nota? Se compara el acorde MARCADO en las dos
+     formas de la escala: si da las mismas notas, el interruptor no pinta nada y no sale. */
+  function sextaCambia(i, n, tonBase, sop, adm) {
+    if (!tonBase || tonBase.modo !== 'menor' || tonBase.melodica) return false;
+    if (!adm || !adm.length) return false;
+    const mel = { tonica: tonBase.tonica, modo: 'menor', melodica: true };
+    const clases = (id, ton) => {
+      try {
+        let bajo, cifra;
+        if (sop) {
+          const p = Ejercicios.par(id);
+          const b = Teoria.bajoDe(p.romano, p.cifra, ton);
+          if (!b) return null;
+          bajo = { letra: b.letra, alt: b.alt, octava: 3 }; cifra = p.cifra;
+        } else { bajo = Teoria.nota(n); cifra = id; }
+        return [Teoria.clase(bajo), ...Teoria.vocesSuperiores(cifra, bajo, ton).map(x => Teoria.clase(x))]
+          .sort((a, b) => a - b).join(',');
+      } catch (e) { return null; }
+    };
+    return adm.some(id => { const a = clases(id, tonBase), b = clases(id, mel); return !!(a && b && a !== b); });
+  }
+
   // Empieza (o quita) una tonalidad nueva en la nota i y vuelve a analizar con el motor.
   function fijarModulacion(i, valor) {
     limpiarDireccion();
@@ -527,7 +594,7 @@
     }
     // Las modulaciones posteriores parten de una tonalidad distinta: se descartan si ya no son vecinas
     const n = Ejercicios.numNotas({ compases: estado.compases });
-    const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(n) };
+    const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(n), melodica: estado.melodica };
     const tons = Teoria.tonalidadesPorNota(ejTon);
     estado.modulaciones = estado.modulaciones.filter(m => m.nota <= i || Teoria.tonalidadesVecinas(tons[m.nota - 1]).some(t => Teoria.mismaTonalidad(t, m.tonalidad)));
     analizar();
@@ -952,6 +1019,7 @@
     $('#modo').value = f.tonalidad.modo;
     $('#compas').value = f.compas.join('/');
     estado.modulaciones = (v.modulaciones || []).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
+    estado.melodica = (v.melodica || []).slice();
     if (!$('#titulo').value || /^Ejercicio \d+$/.test($('#titulo').value)) $('#titulo').value = 'Ejercicio ' + (k + 1);
     document.querySelectorAll('.fragmento').forEach((b, i) => b.classList.toggle('elegido', i === k));
     estado.respuestas = null; estado.propuesta = null;
@@ -982,6 +1050,7 @@
     ajustarCampoAudicion();
     $('#ficha-preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
     estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
+    estado.melodica = Array.isArray(ej.melodica) ? ej.melodica.slice() : [];
     $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ej.tonalidades) ? ej.tonalidades : '';
     estado.compases = ej.compases;
     abrirFragmento();
@@ -1010,7 +1079,7 @@
         pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked,
         tipo: modoElegido(), respuestas: estado.respuestas,
         bancoId: estado.banco ? estado.banco.entrada.id : null, bancoVoz: estado.banco ? estado.banco.voz : null,
-        modulaciones: estado.modulaciones, bajoAudicion: $('#bajo-audicion').value,
+        modulaciones: estado.modulaciones, melodica: estado.melodica, bajoAudicion: $('#bajo-audicion').value,
         gradosBajo: $('#grados-bajo').value, gradosPrimero: $('#grados-primero').checked,
         fichaAyudaGrados: $('#ficha-ayuda-grados').value, fichaPreferir: $('#ficha-preferir').value, fichaFunciones: $('#ficha-funciones').value,
         fichaTonalidades: $('#ficha-tonalidades').value,
@@ -1051,6 +1120,7 @@
       $('#formula-tst').checked = b.formulaTST !== false;
       ajustarCampoAudicion();
       estado.modulaciones = Array.isArray(b.modulaciones) ? b.modulaciones.filter(m => m && m.tonalidad && Number.isInteger(m.nota)) : [];
+      estado.melodica = Array.isArray(b.melodica) ? b.melodica.filter(Number.isInteger) : [];
       // Si se estaba revisando un fragmento del banco, se vuelve a enganchar con él
       estado.banco = null;
       if (b.bancoId && b.bancoVoz) {
@@ -1643,6 +1713,7 @@
     if (Array.isArray(e.leccionAcordes) && e.leccionAcordes.length) marcarAcordes(e.leccionAcordes);
     $('#titulo').value = e.titulo || (e.leccion ? e.leccion : 'Ejercicio');
     estado.modulaciones = (parte.modulaciones || []).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
+    estado.melodica = (parte.melodica || []).slice();          // 6.º grado elevado (179)
     estado.respuestas = null; estado.propuesta = null;
     estado.funciones = null;
     $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true;
@@ -1864,6 +1935,9 @@
       modulaciones: mods,
       respuestas: estado.respuestas.map(a => a.slice())
     };
+    // El 6.º grado elevado (179) solo se guarda cuando lo hay: así no cambia nada de lo ya firmado
+    const mel = (estado.melodica || []).filter(Number.isInteger).sort((x, y) => x - y);
+    if (mel.length) e[b.voz].melodica = mel;
 
     // La otra voz, si la hay y ha cambiado la tonalidad: se vuelve a analizar en la nueva
     const otra = b.voz === 'bajo' ? 'soprano' : 'bajo';

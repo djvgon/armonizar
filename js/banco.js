@@ -602,6 +602,7 @@ const Banco = (() => {
     // La fila «Tonalidad»: rige module o no el fragmento (decisión 56)
     if (['dadas', 'pedir', 'no'].includes(f.tonalidades)) ej.tonalidades = f.tonalidades;
     if (parte.modulaciones && parte.modulaciones.length) ej.modulaciones = parte.modulaciones;
+    if (parte.melodica && parte.melodica.length) ej.melodica = parte.melodica.slice();   // 6.º grado elevado (179)
     return ej;
   }
 
@@ -693,8 +694,11 @@ const Banco = (() => {
      repertorio de la lección: eso se cambia a propósito desde el panel de lecciones y
      haría saltar el aviso en fragmentos que nadie ha tocado. */
   function contenidoArmonico(e) {
+    /* El 6.º grado elevado (decisión 179) entra en la huella SOLO cuando lo hay: así los
+       fragmentos firmados antes de existir esta marca conservan su huella intacta. */
     const voz = v => (e[v]
-      ? [JSON.stringify(e[v].compases || []), JSON.stringify(e[v].modulaciones || []), JSON.stringify(e[v].respuestas || [])].join('|')
+      ? [JSON.stringify(e[v].compases || []), JSON.stringify(e[v].modulaciones || []), JSON.stringify(e[v].respuestas || [])]
+        .concat((e[v].melodica && e[v].melodica.length) ? [JSON.stringify(e[v].melodica)] : []).join('|')
       : '—');
     return [JSON.stringify(e.tonalidad || {}), JSON.stringify(e.compas || []), voz('bajo'), voz('soprano')].join('#');
   }

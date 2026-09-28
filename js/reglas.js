@@ -697,7 +697,15 @@ const Reglas = (() => {
      comprobaciones de doblado miran la relación entre las dos voces extremas; si la nota
      dada es la del bajo, `cs === cb` siempre y descartarían acordes buenísimos —el I6, el
      VII6, el V4/2— por un doblado que nadie ha escrito. Ahí no se aplican. */
-  function candidatosSoprano(s, tonBase, repertorio, esUltima, acordes, esBajo = false) {
+  /* `permisivo` (decisión 180, Diego 29/9/2026: «no puedo poner I6 en el tercer acorde de
+     este fragmento»). Las reglas de DUPLICACIÓN son de realización, no de armonía: dicen
+     cómo estarían repartidas las cuatro voces, no qué acorde cabe ahí. Usadas para
+     DESCARTAR, escondían del profesor acordes que él quiere admitir —el I6 con la melodía
+     en mi, que sería la tercera de una tríada mayor doblada en las voces extremas—. En modo
+     permisivo no descartan: avisan, y el aviso viaja en el globo del acorde. El motor sigue
+     PROPONIENDO con las reglas duras, así que los modelos del banco no cambian; lo permisivo
+     es solo la lista que se le ofrece a él para marcar. */
+  function candidatosSoprano(s, tonBase, repertorio, esUltima, acordes, esBajo = false, permisivo = false) {
     const out = [];
     const cs = claseDe(s);
     const sensibleTon = (Teoria.clase(Teoria.nota(tonBase.tonica + '4')) + 11) % 12;
@@ -731,10 +739,16 @@ const Reglas = (() => {
         if (Teoria.DOMINANTES.includes(id)) { const t = sup.concat([bajo]).find(n => miembroDe(n) === 2); if (t) sensibles.add(Teoria.clase(t)); }
         const avisos = [];
         if (cs === cb && !esBajo) {
-          if (miembro === 6 || miembro === 1) return;                 // séptima (o novena) doblada
-          if (sensibles.has(cs)) return;                               // sensible doblada
-          if (id === '6' && (romano === 'I' || romano === 'IV' || romano === 'V')) return;   // tercera de una tríada mayor doblada en las voces extremas
-          if (id === '6' || id === '65' || id === '65d') avisos.push('dobla la tercera');
+          if (miembro === 6 || miembro === 1) {                        // séptima (o novena) doblada
+            if (!permisivo) return;
+            avisos.push('dobla la séptima del acorde en las voces extremas');
+          } else if (sensibles.has(cs)) {                               // sensible doblada
+            if (!permisivo) return;
+            avisos.push('dobla la sensible en las voces extremas');
+          } else if (id === '6' && (romano === 'I' || romano === 'IV' || romano === 'V')) {
+            if (!permisivo) return;                                    // tercera de una tríada mayor doblada en las voces extremas
+            avisos.push('dobla la tercera de una tríada mayor en las voces extremas');
+          } else if (id === '6' || id === '65' || id === '65d') avisos.push('dobla la tercera');
         }
         if (id === '64' && !(romano === 'I' && !esUltima)) return;     // solo el 6/4 cadencial (I6/4 sobre el 5.º grado)
         /* Final: solo tónica o dominante. La TÓNICA puede acabar en estado fundamental o

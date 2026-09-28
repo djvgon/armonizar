@@ -477,6 +477,16 @@ const Teoria = (() => {
     (ej.modulaciones || []).slice().sort((a, b) => a.nota - b.nota).forEach(m => {
       for (let i = Math.max(0, m.nota); i < n; i++) out[i] = m.tonalidad;
     });
+    /* EL 6.º GRADO ELEVADO, NOTA A NOTA (decisión 179, Diego 29/9/2026: «cómo introduzco el
+       si becuadro del IV mayor, porque quiero que el si suba al do♯ y de ahí al re»). En el
+       modo menor, el 6.º grado se eleva cuando la línea sube hacia la tónica —la octava
+       ascendente—, y eso convierte el IV en mayor y el II en menor. El motor sabía
+       construirlo (`{melodica: true}`), pero solo lo usaba cuando la nota de la MELODÍA
+       obligaba a ello; si el sol está en las dos formas, se quedaba con la armónica. Ahora
+       el profesor lo marca por nota, y aquí es donde entra: en esas notas el tono que rige
+       es la menor melódica, así que el bajo deducido, las opciones de acorde, la
+       realización y la auditoría lo ven todos sin tocar nada más. */
+    (ej.melodica || []).forEach(i => { if (i >= 0 && i < n) out[i] = menorMelodica(out[i]); });
     return out;
   }
 

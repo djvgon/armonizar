@@ -1442,3 +1442,13 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
   .paleta-etiqueta { padding-left: 4px; }
   .control-sonar { font-size: .72rem; }
 }
+
+/* El 6.º grado elevado, en la columna «Tonalidad» del revisor (decisión 179) */
+.sexta-elevada {
+  display: inline-flex; align-items: center; gap: .25rem; margin-top: .25rem;
+  font-size: .78rem; line-height: 1; color: var(--tinta-suave, #5a5566); cursor: pointer;
+  border: 1px solid var(--borde, #d9d4e0); border-radius: .4rem; padding: .15rem .35rem;
+  background: var(--fondo-claro, #fff); white-space: nowrap;
+}
+.sexta-elevada input { margin: 0; }
+.sexta-elevada.puesta { border-color: var(--voz-dada, #9412DC); color: var(--voz-dada, #9412DC); font-weight: 600; }
