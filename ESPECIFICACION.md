@@ -3106,6 +3106,60 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - La casilla que pone el comentario automático pasa a decir **«escuchar el comentario»**,
       las mismas palabras que su botón.
 
+144. **El trío puede quedarse arriba: tres octavas de tenor y hasta dos octavas y una
+    quinta sobre el bajo** (28/9/2026, Diego, que vio «saltos injustificados y un unísono
+    innecesario»).
+    - **Lo que pasaba.** Al generar disposiciones, el tenor solo se probaba en **dos**
+      octavas por encima del bajo y nunca a más de 24 semitonos de él. Con un bajo grave
+      —`A3-6-06` acaba en fa2— las disposiciones altas no existían, así que el trío tenía
+      que **desplomarse** al final de la frase, y la programación dinámica lo anticipaba
+      desbaratando el enlace anterior: de ahí el salto de sexta de la soprano y el unísono.
+    - **Lo que se hace.** Se prueban **tres** octavas de tenor y el tope sube a **31**
+      semitonos (dos octavas y una quinta), que es la distancia normal entre el bajo y el
+      trío en la escritura de teclado cuando el bajo está grave.
+    - **El caso de Diego**, `A3-6-06` con I · VI · V · I y posición inicial Fund., pasa a ser
+      el enlace de manual, sin un solo aviso:
+      `fa3: la4 do5 fa5 | re3: la4 re5 fa5 | do3: do5 mi5 sol5 | fa2: do5 fa5 la5`
+      —notas comunes mantenidas, movimiento contrario al bajo en el V y soprano cerrando en
+      la tercera—.
+    - **Medido sobre el banco**: de 20 combinaciones con aviso a **17** de 378, con las
+      directas de 17 a **7** y los saltos de 22 a **15**. Sigue habiendo 0 paralelas, y en el
+      corpus 0 en las tres posiciones.
+
+145. **«Ver la solución» enseña el ejercicio BIEN RESUELTO** (28/9/2026, Diego). Hasta ahora
+    mostraba la lista de errores y las respuestas modelo en las casillas, pero el pentagrama
+    seguía con la armonización del alumno —la fallida—. Ahora la realización que se dibuja es
+    la del **modelo**: en la armonización de soprano se rededuce también el **bajo** del
+    modelo, y las notas dejan de marcarse en rojo, porque lo que se está viendo ya está bien.
+    Las casillas siguen diciendo, en verde y en rojo, lo que respondió cada uno.
+
+146. **Rótulos** (28/9/2026, Diego). La casilla del comentario automático dice **«Lectura
+    automática del comentario al comprobar»**; «Sonar al elegir» va con mayúscula inicial; y
+    el selector de posición se llama **«Posición melódica»** con las opciones **Fund. · 3.ª ·
+    5.ª** en todas las ventanas —en el cuadro de cifrados decía «Posición» y numeraba 1.ª,
+    2.ª, 3.ª—.
+
+147. **Al ver la solución, en naranja lo que cambia** (28/9/2026, Diego). Con la
+    realización del modelo a la vista (decisión 145), se vuelve a realizar el ejercicio con
+    las respuestas del ALUMNO —y, en la melodía de soprano, con el bajo que deducían— y se
+    comparan nota a nota: las cabezas que no coinciden se pintan en naranja `#D95F00`. Una
+    nota que no llegó a cifrar cuenta como distinta.
+    Ojo a una consecuencia que es correcta aunque sorprenda: un acorde bien respondido puede
+    salir en naranja si su **disposición** cambia, porque la conducción de voces se decide
+    para la frase entera y un error posterior mueve lo anterior.
+
+148. **El recorrido de las casillas, siempre en el mismo orden** (28/9/2026, Diego).
+    **Función → fundamental → cifrado**, y a la nota siguiente, **aunque la casilla ya tenga
+    respuesta**: antes se saltaban las rellenas y el recorrido daba brincos imprevisibles en
+    cuanto se corregía algo. En el acorde **pivote** de una modulación diatónica, primero los
+    datos del acorde en la tonalidad de partida —función, fundamental y cifrado— y después
+    los de la tonalidad nueva —su función y su fundamental—; el cifrado no se repite, que es
+    el mismo acorde.
+    - De paso se arregla un error que esto dejó a la vista: la segunda función del pivote
+      (`funcion2`) faltaba en la lista de paletas del **teclado**, así que con el foco ahí el
+      número iba a parar a la paleta de cifrados y el recorrido se quedaba dando vueltas
+      entre el cifrado y la función.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

@@ -548,8 +548,12 @@
   function prepararBajos() {
     if (estado.modoEj !== 'soprano') { estado.vozDada = null; estado.bajos = []; return; }
     estado.vozDada = 'soprano';
-    estado.bajos = Ejercicios.bajosDe(estado.ejercicio, estado.romanos, estado.respuestas);
-    estado.bajosMal = estado.corregido && estado.resultados ? estado.resultados.map(r => !r.ok) : null;
+    /* Con la solución a la vista, el bajo que se dibuja es el del modelo: si no, la
+       armonización buena se escribiría sobre el bajo que dedujo una respuesta equivocada. */
+    estado.bajos = estado.mostrarSolucion
+      ? Ejercicios.bajosDe(estado.ejercicio, romanosSolucion(), cifrasSolucion())
+      : Ejercicios.bajosDe(estado.ejercicio, estado.romanos, estado.respuestas);
+    estado.bajosMal = !estado.mostrarSolucion && estado.corregido && estado.resultados ? estado.resultados.map(r => !r.ok) : null;
   }
   const melodia = () => Reglas.notasDe(estado.ejercicio);
 
@@ -594,11 +598,21 @@
   }
 
   const cifrasModelo = () => estado.ejercicio.respuestas.map((_, i) => Ejercicios.admisibles(estado.ejercicio, i)[0]);
+  /* La respuesta modelo, separada en grado y cifra: en las armonizaciones la respuesta se
+     guarda como pareja «V|65d», y la realización necesita solo la cifra. */
+  const modeloPar = i => Ejercicios.par(Ejercicios.admisibles(estado.ejercicio, i)[0]);
+  const cifrasSolucion = () => estado.ejercicio.respuestas.map((_, i) => modeloPar(i).cifra);
+  const romanosSolucion = () => estado.ejercicio.respuestas.map((_, i) => modeloPar(i).romano);
 
   // Cifras que se dibujan en el pentagrama de sol: las modelo en Análisis; en
   // Armonización, Audición y Melodía de soprano, las del alumno, solo en las notas completas (grado y cifra).
   function cifrasParaRealizar() {
     if (estado.modoEj === 'cifrar') return cifrasModelo();
+    /* Con la solución a la vista, la realización que se dibuja es la BUENA (Diego,
+       28/9/2026): ver la solución es ver el ejercicio bien resuelto, no la propia
+       armonización fallida con la lista de errores al lado. Las casillas siguen diciendo,
+       en verde y en rojo, lo que respondió cada uno. */
+    if (estado.mostrarSolucion) return cifrasSolucion();
     return estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null));
   }
   // ¿La nota está respondida del todo (también la función, si se pide)?
@@ -639,12 +653,37 @@
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];
 
   function calcularRealizacion() {
-    if (!realizacionVisible()) { estado.realizacion = null; estado.realizacionMal = null; estado.paralelas = []; estado.avisosVoces = []; return; }
+    if (!realizacionVisible()) { estado.realizacion = null; estado.realizacionMal = null; estado.realizacionCambio = null; estado.paralelas = []; estado.avisosVoces = []; return; }
     const r = Realizacion.realizar(estado.ejercicio, cifrasParaRealizar(), opcionesRealizacion());
     estado.realizacion = r.acordes;
+    estado.realizacionCambio = estado.mostrarSolucion ? diferenciasConLaSuya(r.acordes) : null;
     estado.paralelas = r.paralelas;
-    estado.realizacionMal = (estado.modoEj !== 'cifrar' && estado.corregido && estado.resultados) ? estado.resultados.map(x => !x.okCifra) : null;
+    /* Y no se marca en rojo lo que está bien: con la solución a la vista, la realización
+       dibujada es la del modelo. */
+    estado.realizacionMal = (estado.modoEj !== 'cifrar' && estado.corregido && !estado.mostrarSolucion && estado.resultados)
+      ? estado.resultados.map(x => !x.okCifra) : null;
     calcularAvisosVoces();
+  }
+
+  /* En qué se diferencia la realización BUENA de la que escribió el alumno, voz a voz
+     (Diego, 28/9/2026). Se vuelve a realizar con SUS respuestas —y, en la melodía de
+     soprano, con el bajo que deducían— y se comparan nota a nota: lo que no coincide se
+     pinta en naranja. Una nota que él no llegó a cifrar cuenta como distinta. */
+  function diferenciasConLaSuya(buenos) {
+    try {
+      const suyas = estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null));
+      const op = { modo: estado.rigida ? 'rigida' : 'auto', rotacion: estado.rotacion };
+      if (estado.modoEj === 'soprano') {
+        op.bajos = Ejercicios.bajosDe(estado.ejercicio, estado.romanos, estado.respuestas);
+        op.sopranos = melodia();
+      }
+      const suya = Realizacion.realizar(estado.ejercicio, suyas, op).acordes;
+      return buenos.map((ac, i) => {
+        if (!ac) return null;
+        const mio = suya[i];
+        return ac.map((n, k) => !mio || !mio[k] || Teoria.midi(n) !== Teoria.midi(mio[k]));
+      });
+    } catch (e) { return null; }
   }
 
   /* Errores de conducción de voces de la realización que se está viendo (octavas y quintas
@@ -816,7 +855,20 @@
   /* La casilla de función se parte en el pivote, igual que la del grado: la tonalidad ha
      de estar a la vista para que las dos lecturas signifiquen algo (decisión 95). */
   const esDobleFun = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && !!estado.modoFun;
-  const camposDe = j => (conFuncion() ? (esDobleFun(j) ? ['funcion', 'funcion2'] : ['funcion']) : []).concat(pideGrado() ? (esDoble(j) ? ['romano', 'romano2', 'cifra'] : ['romano', 'cifra']) : ['cifra']);
+  /* EL ORDEN EN QUE SE RELLENA UNA NOTA (Diego, 28/9/2026): función → fundamental →
+     cifrado, y a la nota siguiente. En el acorde PIVOTE de una modulación diatónica, primero
+     los datos del acorde en la tonalidad de partida —función, fundamental y cifrado— y luego
+     los de la tonalidad nueva: su función y su fundamental (el cifrado es el mismo acorde y
+     no se repite). */
+  const camposDe = j => {
+    const orden = [];
+    if (conFuncion()) orden.push('funcion');
+    if (pideGrado()) orden.push('romano');
+    orden.push('cifra');
+    if (conFuncion() && esDobleFun(j)) orden.push('funcion2');
+    if (pideGrado() && esDoble(j)) orden.push('romano2');
+    return orden;
+  };
   /* Las mismas casillas en su orden VISUAL, de arriba abajo, para las flechas ↑ ↓:
      cifra · fundamental · función, y en el pivote cada una con su segunda lectura
      debajo (decisión 106). */
@@ -858,22 +910,16 @@
 
   const acertada = (j, campo) => !!(estado.acertadas[j] && estado.acertadas[j][campo]);
 
-  // Tras responder, pasa a la siguiente casilla pendiente: primero las otras casillas
-  // de la misma nota, después las de las notas siguientes. Pendiente = editable y vacía;
-  // en un reintento, pendiente = aún no acertada y aún no tocada
-  // desde la corrección.
+  /* Se avanza SIEMPRE a la casilla siguiente del orden, esté o no rellena (Diego,
+     28/9/2026): antes se saltaban las que ya tenían respuesta, y el recorrido daba brincos
+     imprevisibles en cuanto se corregía algo. En la última casilla de la última nota se
+     queda donde está. */
   function avanzar() {
     const n = estado.respuestas.length, i = estado.activa;
-    const enReintento = estado.intento > 0;
-    const pendiente = (j, campo) => !acertada(j, campo) && (enReintento ? !estado.tocadas[j][campo] : !valorDe(j, campo));
     const campos = camposDe(i);
-    const posicion = campos.indexOf(estado.campo);
-    for (const c of campos.slice(posicion + 1)) if (pendiente(i, c)) { estado.campo = c; return; }
-    for (let k = 1; k <= n; k++) {
-      const j = (i + k) % n;
-      for (const c of camposDe(j)) if (pendiente(j, c)) { estado.activa = j; estado.campo = c; return; }
-    }
-    // Nada pendiente: se queda donde está
+    const k = campos.indexOf(estado.campo);
+    if (k >= 0 && k + 1 < campos.length) { estado.campo = campos[k + 1]; return; }
+    if (i + 1 < n) { estado.activa = i + 1; estado.campo = camposDe(i + 1)[0]; return; }
   }
 
   function responderCifra(id) {
@@ -1453,7 +1499,7 @@
            —una automática y la otra a petición— y separarlas obligaba a buscarla
            (Diego, 28/9/2026). */
         + '<label class="control junto-a-voz" title="Al comprobar, el comentario se escucha solo, sin tener que pedirlo">'
-        + '<input id="leer-errores" type="checkbox"' + (estado.leerErrores ? ' checked' : '') + '><span>escuchar el comentario</span></label>'
+        + '<input id="leer-errores" type="checkbox"' + (estado.leerErrores ? ' checked' : '') + '><span>Lectura automática del comentario al comprobar</span></label>'
         + '</p>';
     // Modulación
     const rm = estado.resultadoMod;
@@ -1834,8 +1880,11 @@
     else if (ev.key === 'ArrowUp') { if (pos > 0) { estado.campo = filas[pos - 1]; pintar(); } }
     else if (/^[0-9]$/.test(ev.key)) {
       // El número pequeño de cada tecla de la paleta activa (cifra, grado o tonalidad)
+      /* `funcion2` —la segunda lectura del pivote— faltaba en esta lista (Diego, 28/9/2026):
+         con el foco ahí, el número iba a parar a la paleta de cifrados y el recorrido se
+         quedaba dando vueltas entre el cifrado y la función. */
       const paleta = estado.campo === 'tonalidad' ? '#paleta-tonalidades'
-        : estado.campo === 'funcion' && estado.modoFun === 'pedir' ? '#paleta-funciones'
+        : (estado.campo === 'funcion' || estado.campo === 'funcion2') && estado.modoFun === 'pedir' ? '#paleta-funciones'
         : (estado.campo === 'romano' || estado.campo === 'romano2') && pideGrado() ? '#paleta-romanos' : '#paleta';
       const b = document.querySelector(paleta + ' .tecla[data-atajo="' + ev.key + '"]');
       if (b) { ev.preventDefault(); b.click(); }

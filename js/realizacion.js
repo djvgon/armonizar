@@ -243,8 +243,12 @@ const Realizacion = (() => {
       });
       perms.forEach(({ v }) => {
         const t0 = desde(v[0], mb, true);
-        (sopranoFija !== null ? [t0, octavaArriba(t0), octavaArriba(t0, 2)] : [t0, octavaArriba(t0)]).forEach(t => {
-          if (midi(t) - mb > (sopranoFija !== null ? 36 : 24)) return;
+        /* TRES octavas de tenor, no dos, y hasta dos octavas y una quinta por encima del
+           bajo (Diego, 28/9/2026). Con un bajo grave —un fa2 al final de la frase— las dos
+           octavas de antes dejaban fuera las disposiciones altas, y el motor tenía que
+           desplomar el trío: de ahí salían los saltos injustificados y los unísonos. */
+        [t0, octavaArriba(t0), octavaArriba(t0, 2)].forEach(t => {
+          if (midi(t) - mb > (sopranoFija !== null ? 36 : 31)) return;
           const a0 = desde(v[1], midi(t), false);
           [a0, octavaArriba(a0)].forEach(a => {
             if (midi(a) - midi(t) > 12) return;
@@ -329,10 +333,14 @@ const Realizacion = (() => {
        la respuesta del alumno y la melodía está dada— salían escritas. Con un peso que
        ninguna suma de los demás defectos puede alcanzar, el motor solo escribe paralelas
        cuando NO hay ninguna disposición que las evite. */
-    coste += PESO_PARALELA * paralelasEntre(antes, ahora).length;
     const contiene = pc => dc.tonos.some(t => clase(t) === pc);
     // Mismo acorde en otra inversión (arpegio del bajo): las voces se reparten libremente
     const mismoAcorde = clase(dp.fund) === clase(dc.fund) && dp.tonos.every(t => contiene(clase(t)));
+    /* El veto rige SIEMPRE, también entre dos disposiciones del mismo acorde: se probó a
+       exentarlas —bajar el trío una octava sobre el mismo acorde no hace dos armonías— y la
+       pauta las siguió contando como octavas seguidas, así que el motor escribía lo que el
+       alumno vería marcado en rojo. Mejor que motor y pauta digan lo mismo. */
+    coste += PESO_PARALELA * paralelasEntre(antes, ahora).length;
     for (let q = 1; q < 4 && !mismoAcorde; q++) {
       const de = antes[q], a = ahora[q];
       const delta = midi(a) - midi(de);

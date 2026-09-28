@@ -1207,3 +1207,15 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
   font-family: var(--fuente-ui); font-size: .9rem; color: var(--tinta-suave);
   align-self: center; margin-left: 2px;
 }
+
+/* Los tres botones de la posición melódica, del mismo ancho también en el cuadro de
+   cifrados: el rótulo y las opciones son los mismos que en la pantalla del alumno
+   (Diego, 28/9/2026). */
+.cabecera #posicion button { min-width: 3.6rem; text-align: center; }
+
+/* Las notas que CAMBIAN al ver la solución, en naranja (Diego, 28/9/2026): la realización
+   que se enseña es la buena, y lo que el alumno necesita ver es en qué se diferencia de la
+   suya. Un naranja de tinta, más hondo que el de la dominante, para que la cabeza de nota
+   se lea sobre el papel (4,2:1 sobre blanco; los signos gráficos piden 3:1). */
+:root { --cambio: #D95F00; }
+svg.partitura .nota.cambiada { fill: var(--cambio); }

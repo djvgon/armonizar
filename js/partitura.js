@@ -13,6 +13,8 @@
                       soloLectura:bool (vista previa sin interacción),
                       realizacion:[[n1,n2,n3]|null…] (si existe, se dibuja el pentagrama
                       de sol con esos acordes), realizacionMal:[bool] (acordes en rojo),
+                      realizacionCambio:[[bool]] (notas en naranja: las que cambian
+                      respecto a la realización del alumno, al ver la solución),
                       alSonar:función(i) (si existe, un botón ▶ encima de cada acorde la llama),
                       sonando:índice (nota cuyo botón ▶ se resalta),
                       numerar:bool (número de cada acorde encima del sistema, como en la
@@ -709,9 +711,13 @@ const Partitura = (() => {
       adicionales.forEach((x, q) => g.appendChild(el('line', {
         x1: x[0] - extra, x2: x[1] + extra,
         y1: Y_BOT_SOL - q * SP / 2, y2: Y_BOT_SOL - q * SP / 2, class: 'linea' })));
+      /* Las notas que CAMBIAN respecto a lo que escribió el alumno, en naranja: al ver la
+         solución, lo que importa no es la realización entera sino en qué se diferencia de
+         la suya (Diego, 28/9/2026). `estado.realizacionCambio[i][k]` lo dice voz a voz. */
+      const cambio = estado.realizacionCambio && estado.realizacionCambio[i];
       pasos.forEach((p, k) => {
         const y = Y_BOT_SOL - p * SP / 2;
-        const cabeza = glifo(xN + dx[k], y, f.cabeza, EM, { class: 'nota' });
+        const cabeza = glifo(xN + dx[k], y, f.cabeza, EM, { class: 'nota' + (cambio && cambio[k] ? ' cambiada' : '') });
         g.appendChild(cabeza);
         señalar(cabeza, i, k + 1, xN + dx[k] + ancho * SP / 2, y);
         if (f.puntillo) puntillo(g, xDer, p, Y_BOT_SOL);

@@ -468,6 +468,8 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-0830 | En naranja lo que cambia entre la solución y lo del alumno (147); el recorrido de casillas siempre en el orden función · fundamental · cifrado, con el pivote detrás, y arreglada la segunda función en el teclado (148) |
+| 20260929-0715 | El trío ya no se desploma con el bajo grave: tres octavas de tenor y tope de 31 semitonos (144); «Ver la solución» dibuja la realización del modelo (145); rótulos de comentario, «Sonar al elegir» y «Posición melódica» (146). Banco: 17 de 378 combinaciones con aviso |
 | 20260929-0605 | La banda dice «Lección» (141); fuera el renglón del esquema en el informe y la casilla del comentario con las palabras de su botón (143) |
 | 20260929-0530 | Las paralelas, vetadas y no solo penalizadas; el movimiento directo encarecido a 75/55; el bajo deducido deja una octava bajo la melodía (142). Banco: 0 combinaciones con paralelas y 20 de 378 con algún aviso |
 | 20260929-0450 | «Sonar al elegir», dentro del primer renglón de paletas y pegado al borde derecho de la partitura (140, corregida) |
