@@ -103,7 +103,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "ef64e16b511d6666"
   },
   {
    "id": "A3-1-02",
@@ -206,7 +208,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "deb1c15a03519de9"
   },
   {
    "id": "A3-1-03",
@@ -310,7 +314,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "0bdd5430ccd08f7d"
   },
   {
    "id": "A3-1-04",
@@ -413,7 +419,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "3d599804185d5167"
   },
   {
    "id": "A3-1-05",
@@ -462,8 +470,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -511,12 +519,15 @@
     "alteraciones": 0,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "159536cad34a4ab9"
   },
   {
    "id": "A3-1-06",
@@ -619,7 +630,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "83c83eec67d2ade7"
   },
   {
    "id": "A3-1-07",
@@ -722,7 +735,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "64f56921ec9c5668"
   },
   {
    "id": "A3-1-08",
@@ -842,7 +857,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "34ed0519d9c16fe2"
   },
   {
    "id": "A3-1-09",
@@ -962,7 +979,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "1732db3900c81b02"
   },
   {
    "id": "A3-1-10",
@@ -1065,7 +1084,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "4ef216db8d1f105a"
   },
   {
    "id": "A3-1-11",
@@ -1114,8 +1135,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -1163,12 +1184,15 @@
     "alteraciones": 1,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "8ace2c5f2d61da88"
   },
   {
    "id": "A3-1-12",
@@ -1271,7 +1295,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "4457c7f519f0882c"
   },
   {
    "id": "A3-1-13",
@@ -1375,7 +1401,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "42ec408dc02568bc"
   },
   {
    "id": "A3-1-14",
@@ -1424,8 +1452,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -1473,12 +1501,15 @@
     "alteraciones": 1,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "3e5365d629554235"
   },
   {
    "id": "A3-1-15",
@@ -1581,7 +1612,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "00415a027ff97151"
   },
   {
    "id": "A3-1-16",
@@ -1630,8 +1663,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -1679,12 +1712,15 @@
     "alteraciones": 2,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "de6ac98116392040"
   },
   {
    "id": "A3-1-17",
@@ -1733,8 +1769,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -1782,12 +1818,15 @@
     "alteraciones": 1,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "e7a9e0f87ec512f5"
   },
   {
    "id": "A3-1-18",
@@ -1836,8 +1875,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -1885,12 +1924,15 @@
     "alteraciones": 0,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "63c81230107b3a1b"
   },
   {
    "id": "A3-1-19",
@@ -1993,7 +2035,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "91d3224c161afc39"
   },
   {
    "id": "A3-1-20",
@@ -2042,8 +2086,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -2092,12 +2136,15 @@
     "alteraciones": 2,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "0299ca01e6a78330"
   },
   {
    "id": "A3-1-21",
@@ -2200,7 +2247,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "892d666a93168d6d"
   },
   {
    "id": "A3-1-22",
@@ -2249,8 +2298,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -2298,12 +2347,15 @@
     "alteraciones": 1,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "8ebda32c7d2a79e1"
   },
   {
    "id": "A3-1-23",
@@ -2352,8 +2404,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -2401,12 +2453,15 @@
     "alteraciones": 3,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "1449e46de3858af4"
   },
   {
    "id": "A3-1-24",
@@ -2455,8 +2510,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -2504,12 +2559,15 @@
     "alteraciones": 3,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "635f5a46935b939b"
   },
   {
    "id": "A3-1-25",
@@ -2558,8 +2616,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -2607,7 +2665,8 @@
     "alteraciones": 1,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 1
@@ -2715,7 +2774,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "691c697ae74f69c7"
   },
   {
    "id": "A3-1-27",
@@ -2818,7 +2879,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "728a448e6d9b3d17"
   },
   {
    "id": "A3-1-28",
@@ -2867,8 +2930,8 @@
       "53"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -2917,7 +2980,8 @@
     "alteraciones": 3,
     "modula": false,
     "cifras": [
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
     "nivel": 2
