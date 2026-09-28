@@ -166,12 +166,23 @@
   function pintarCabecera() {
     const ej = estado.ejercicio;
     const f = estado.ficha;
-    /* El título de la banda dice DE DÓNDE viene este ejercicio —la lección— y por dónde va,
-       y nada más. La palabra «Ficha» no aportaba nada, y el renglón «Lección …» que había
-       debajo era la misma información ocupando sitio (Diego, 28/9/2026). */
+    /* La banda dice DE DÓNDE viene este ejercicio y nada más: «Tema» y el nombre del tema
+       (Diego, 28/9/2026). Por dónde va la ficha —«Ejercicio 1 de 4»— bajó junto a
+       «Comprobar», que es donde el alumno mira cuando termina uno. La palabra «Ficha» no
+       aportaba nada, y el renglón «Lección …» que había debajo era lo mismo ocupando sitio. */
     const deDonde = ej.leccion || ej.coleccion || (f && f.filtro.titulo) || '';
-    const porDonde = f ? ' (Ejercicio ' + (f.k + 1) + ' de ' + f.lista.length + ')' : '';
-    $('#titulo').textContent = (deDonde ? deDonde + (ej.titulo ? ' · ' : '') : '') + (ej.titulo || '') + porDonde;
+    const tema = ej.leccion ? 'Tema ' + ej.leccion : deDonde;
+    /* El título del fragmento solo se añade si dice algo NUEVO: cuando el fragmento no
+       tiene título propio hereda el nombre de la lección, y la banda repetía «A3-5 · El
+       6/4 cadencial · El 6/4 cadencial». */
+    const suyo = ej.titulo && !tema.includes(ej.titulo) ? ej.titulo : '';
+    $('#titulo').textContent = tema + (suyo ? (tema ? ' · ' : '') + suyo : '');
+    /* Por dónde va la ficha, abajo y junto al botón de comprobar */
+    const donde = $('#donde-ficha');
+    if (donde) {
+      donde.textContent = f ? 'Ejercicio ' + (f.k + 1) + ' de ' + f.lista.length : '';
+      donde.hidden = !f;
+    }
     /* ---- El enunciado ----
        Una sola cosa clara —qué hay que hacer— y, debajo, cómo responde la aplicación. Los
        botones de sonido y la tonalidad del fragmento no se explican: están a la vista, se

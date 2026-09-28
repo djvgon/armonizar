@@ -3051,6 +3051,19 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     izquierdo del recuadro de la partitura. El pie se queda solo con el «Cuadro de
     cifrados», centrado.
 
+141. **La banda dice el TEMA; por dónde va la ficha baja junto a «Comprobar»**
+    (28/9/2026, Diego). La banda empieza por la palabra **«Tema»** y sigue con el nombre del
+    tema tal como lo guarda el banco (por ejemplo «Tema A3-5 · El 6/4 cadencial»). Sale de
+    ahí el «(Ejercicio 1 de 4)», que pasa a un rótulo en tinta suave **al lado del botón
+    «Comprobar»**: por dónde va la ficha es lo que el alumno mira al terminar un ejercicio,
+    no al empezarlo.
+    - De paso se corrige una repetición que venía de antes: cuando un fragmento no tiene
+      título propio hereda el nombre de su lección, y la banda escribía «A3-5 · El 6/4
+      cadencial · El 6/4 cadencial». Ahora el título del fragmento solo se añade si dice
+      algo que el nombre del tema no diga ya.
+    - En los ejercicios del corpus de demostración, que no pertenecen a ninguna lección, la
+      banda sigue diciendo la colección, sin la palabra «Tema»: no hay tema que nombrar.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

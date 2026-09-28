@@ -1196,3 +1196,10 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
 /* El rótulo de una casilla de verificación va en el mismo renglón que ella y no manda
    sobre un desplegable: ese se queda como está, en tinta normal. */
 .campo-linea > span { font-weight: 400; color: var(--tinta); font-size: .95rem; }
+
+/* Por dónde va la ficha, al lado de «Comprobar» (Diego, 28/9/2026): en la sans y en tinta
+   suave, que es un dato y no una acción. */
+.donde-ficha {
+  font-family: var(--fuente-ui); font-size: .9rem; color: var(--tinta-suave);
+  align-self: center; margin-left: 2px;
+}
