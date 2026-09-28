@@ -535,7 +535,7 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
   .paleta { gap: 4px; }
   .tecla { min-width: 36px; min-height: 40px; padding: 2px 5px; border-radius: var(--radio-control); box-shadow: none; }
   .tecla-num { display: none; }
-  .tecla-cifra svg.icono-cifra { width: 32px; height: 32px; }
+  .tecla-cifra svg.icono-cifra { width: 28px; height: 28px; }
   .tecla-romano { min-width: 38px; min-height: 36px; font-size: .95rem; }
   .tecla-borrar { min-width: 44px; font-size: .75rem; }
   .tecla-ton { min-width: 40px; min-height: 36px; font-size: .75rem; }
@@ -1227,10 +1227,10 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
    lleva botones o información de la página, así que forman parte del sistema— y que pone
    a las teclas y a las fichas la MISMA FORMA: el cuadrado.
 
-     48 px · la BANDA morada y las TECLAS de las paletas, cuadradas de 48 × 48. La banda se
-             probó a 64 (a esa altura el morado pesa como un cartel), a 56 y a 52, y Diego
-             eligió 48 sobre las tres alturas puestas una encima de otra (28/9/2026)
-     32 px · la BARRA ciruela: es navegación, no contenido, y va por debajo de la banda
+     48 px · la BANDA morada: no baja de ahí, y nunca por debajo de las teclas
+     40 px · las TECLAS de las paletas, cuadradas de 40 × 40, y las ACCIONES de la botonera:
+             la tecla no debe asomar por encima del botón que se pulsa al final
+     32 px · la BARRA ciruela y las HERRAMIENTAS
      40 px · las ACCIONES de la botonera (Comprobar, Reiniciar, Ver la solución…)
      32 px · HERRAMIENTAS (escuchar, cuadros, segmentos, mandos de la banda) y las FICHAS
              de referencia, también cuadradas
@@ -1246,7 +1246,7 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
        tamaño: 48 la que se pulsa, 32 la que solo informa.
    ======================================================================================= */
 :root {
-  --alto-banda: 48px; --alto-barra: 32px; --alto-tecla: 48px;
+  --alto-banda: 48px; --alto-barra: 32px; --alto-tecla: 40px;
   --alto-accion: 40px; --alto-util: 32px; --alto-casilla: 16px;
 }
 
@@ -1260,7 +1260,7 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
   width: var(--alto-tecla); height: var(--alto-tecla); min-width: 0; min-height: 0;
   padding: 0; gap: 0; position: relative;
 }
-.tecla-cifra svg.icono-cifra { width: 32px; height: 32px; }
+.tecla-cifra svg.icono-cifra { width: 28px; height: 28px; }
 /* El atajo, en la esquina y SIN recuadro: dentro de una tecla de 48 el recuadro se comía
    el sitio del símbolo. Un número pequeño en gris basta. */
 .tecla-num {

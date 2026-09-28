@@ -3199,10 +3199,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
 
     | alto | qué |
     |---|---|
-    | **48 px** | la **banda** morada (título a 1,12 rem) y las **teclas** de las paletas, cuadradas de 48 × 48. La banda se probó a 64 —a esa altura el morado pesa como un cartel—, a 56 y a 52, y se eligió 48 comparando las tres alturas una encima de otra |
-    | **32 px** | la **barra** ciruela: es navegación, no contenido, y va por debajo de la banda |
-    | **40 px** | las **acciones**: Comprobar, Otro ejercicio, Reiniciar, Ver la solución |
-    | **32 px** | **herramientas** (escuchar, cuadros, estructuras, segmentos, mandos de la banda) y **fichas** de referencia, también cuadradas |
+    | **48 px** | la **banda** morada (título a 1,12 rem). Nunca por debajo de las teclas: es lo que identifica la página. Se probó a 64 —a esa altura el morado pesa como un cartel—, a 56 y a 52, y se eligió 48 comparando las alturas una encima de otra |
+    | **40 px** | las **teclas** de las paletas, cuadradas de 40 × 40, y las **acciones** de la botonera: la tecla no debe asomar por encima del botón que se pulsa al final |
+    | **32 px** | la **barra** ciruela y las **herramientas**: navegación y utillaje, no contenido |
+    | **32 px** | las **fichas** de referencia, cuadradas, y las herramientas: escuchar, cuadros, estructuras, segmentos, mandos de la banda |
     | **≈24 px** | los **▶ de cada acorde**, que van dentro de la partitura y miden en unidades del pentagrama, no en píxeles de la interfaz |
     | **16 px** | las **casillas** de verificación |
 
