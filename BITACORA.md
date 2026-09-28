@@ -11,9 +11,10 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-2015.** Pendiente de que
-  Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176: en la
-  melodía de soprano, los acordes que contienen la nota salen siempre, marcados o no.
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-2115.** Pendiente de que
+  Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la
+  melodía de soprano, los acordes que contienen la nota salen siempre, marcados o no— y la
+  **177, que deroga la 167**: cada ejercicio enseña su voz y el motor deduce las demás.
   Archivos tocados en esta entrega: `js/configurador.js`, `js/reglas.js` y las ocho páginas
   HTML (marca de versión). **`banco.json` no cambia.**
 - **Lo que destapó la 176** (Diego, 29/9, revisando `A3-3-01` en melodía): una nota que se
@@ -36,9 +37,10 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 - **Lo siguiente es de Diego: revisar los 140 y firmarlos.** El procedimiento técnico ya
   está; la revisión es suya. Contador en la tabla: «N de 140 fragmentos cerrados», y el
   candado junto a la partitura para cerrar sin subir a la tabla (168).
-- **El configurador ya enseña las dos voces** (167) y audita la realización con ellas. Al
-  revisar saldrán problemas de conducción que antes no se veían: no son nuevos, es que
-  hasta ahora una de las dos voces no entraba en el cálculo.
+- **La 167 queda derogada por la 177** (Diego, 29/9). Forzar las dos voces obligaba a que
+  casaran, y son dos ejercicios distintos: de las 461 notas de los 103 fragmentos con las
+  dos voces, 110 no casaban —78 de ellas el mismo acorde en otra inversión—, y de ahí
+  salían 92 de los 103 avisos de conducción. Ninguno era un error del banco.
 - **Diego está firmando el banco**: 26 de 140 cerrados en la copia subida el 29/9 (toda la
   lección A3-1 salvo `A3-1-28`, que dejó abierto para corregirle la primera nota de la
   melodía —re5 por do5—; hecho, con la pareja de esa nota puesta a `I|53`, que es lo que
@@ -561,6 +563,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-2115 | Cada ejercicio enseña su voz y el motor deduce las demás: la vista de las dos voces a la vez (167) queda derogada, porque el bajo y la soprano de un fragmento son dos ejercicios distintos y no tienen por qué casar. 92 de los 103 avisos de conducción de la vista previa eran de eso (177) |
 | 20260930-2015 | En la melodía, los acordes que contienen la nota salen siempre, marcados o no: al traer un fragmento del banco solo se veía lo marcado, así que se podía quitar pero no añadir, y una nota sin nada marcado no tenía ni una casilla que pulsar (176) |
 | 20260930-1930 | «Revisando: el bajo · la melodía», un mando propio junto al editor de fragmentos: hasta aquí la voz la decidía el desplegable de la ficha, y solo al pulsar «Cargar» (175) |
 | 20260930-1730 | Cada voz tiene su propia lista de admisibles —ya la tenía— y ahora se ve: columna «El bajo admite» / «La melodía admite» en la tabla de revisión (174) |

@@ -3880,6 +3880,25 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+177. **Cada ejercicio enseña su voz; la otra es otro ejercicio** (29/9/2026, Diego: «si
+    estoy introduciendo los acordes de la soprano, entonces no debería aparecer la melodía
+    del bajo, ¿no? Y viceversa cuando introduzco los del bajo»). **Deroga la 167**, que era
+    propuesta mía. El bajo y la soprano de un fragmento son **dos ejercicios distintos sobre
+    la misma música** —ya estaba dicho y anotado el 26/9, a propósito de los fragmentos cuyas
+    dos voces no tienen el mismo número de notas—, no dos voces de una misma armonización.
+    Dibujarlas juntas las obligaba a casar, y no tienen por qué.
+    - **Medido sobre el banco**: de las 461 notas de los 103 fragmentos con las dos voces
+      alineadas, **110 no casaban**, y **78 de esas 110 son el mismo acorde en otra
+      inversión** —la lista del bajo dice `I 6` donde la de la melodía dice `I 5/3`, porque en
+      el ejercicio de melodía el bajo lo deduce el motor—; solo 32 son otro acorde. De ahí
+      salían **92 de los 103** avisos de conducción de la vista previa: ninguno era un error
+      del banco. En `A3-3-08`, los tres avisos que salían eran los tres de esta clase.
+    - La vista previa vuelve a enseñar **la voz del ejercicio** y el motor deduce las demás.
+      Lo que aporta la otra voz se queda donde sí sirve: la columna «El bajo admite / La
+      melodía admite» (174), con el aviso de que **no tienen por qué coincidir**.
+    - Queda anotado, por si alguna vez hace falta: forzar las dos voces a la vez solo tiene
+      sentido si antes se decide qué hacer con esas 110 notas, y eso es criterio de Diego.
+
 176. **En la melodía, los acordes que contienen la nota salen siempre, marcados o no**
     (29/9/2026, Diego: «¿cómo hago para que aparezcan como opciones para el acorde 4 el
     V7?», y «NO puedo introducir ningún acorde aquí» en una nota sin nada marcado). En la

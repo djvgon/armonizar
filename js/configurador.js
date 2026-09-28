@@ -566,30 +566,25 @@
   }
 
   // Qué se está viendo, dicho en una línea bajo la partitura
-  function pintarAvisoVoces(dos, extremas, avisos, sop) {
+  function pintarAvisoVoces(dos, sop) {
     const p = $('#aviso-voces');
     if (!p) return;
     if (!estado.banco) { p.hidden = true; return; }
     p.hidden = false;
-    if (extremas) {
-      let t = 'Se ven tus <b>dos voces</b> —el bajo abajo y la melodía arriba, en morado— y, en negro, el tenor y la contralto que escribe el motor con los acordes asignados.';
-      if (avisos.length) {
-        const lista = avisos.slice(0, 4).map(a => 'acorde ' + ((a.i || 0) + 1) + ': ' + a.texto.replace(/<[^>]*>/g, '')).join(' · ');
-        t += ' <b class="voces-mal">⚠ ' + avisos.length + (avisos.length > 1 ? ' problemas' : ' problema') + ' de conducción</b> con esos acordes y estas dos voces — ' + lista
-          + (avisos.length > 4 ? ' · y ' + (avisos.length - 4) + ' más' : '') + '.';
-      } else {
-        t += ' <b class="voces-bien">Sin problemas de conducción.</b>';
-      }
-      p.innerHTML = t;
-      return;
+    /* Qué se está viendo (decisión 177). La vista previa enseña el ejercicio que se revisa:
+       su voz, y las demás las deduce el motor con los acordes asignados. La otra voz del
+       fragmento es otro ejercicio y vive en su propia columna. */
+    const mia = sop ? 'la melodía' : 'el bajo';
+    const otra = sop ? 'el bajo' : 'la melodía';
+    let t = 'Se ve <b>' + mia + '</b>, que es la voz de este ejercicio, en morado; en negro, las demás voces que escribe el motor con los acordes asignados'
+      + (sop ? ' —incluido el bajo, que aquí lo deduce él—' : '') + '.';
+    if (dos && dos.hayDos) {
+      t += ' Este fragmento tiene también <b>' + otra + '</b>, que es <b>otro ejercicio</b> con su propia lista de acordes: la tienes en la columna «'
+        + (sop ? 'El bajo admite' : 'La melodía admite') + '». No tienen por qué coincidir.';
+    } else {
+      t += ' Este fragmento solo tiene escrita esta voz.';
     }
-    if (!dos || !dos.hayDos) {
-      p.innerHTML = 'Este fragmento solo tiene escrita <b>una voz</b> (' + (sop ? 'la melodía' : 'el bajo') + '), así que las voces superiores son las que el motor deduce de los acordes.';
-      return;
-    }
-    p.innerHTML = 'Este fragmento tiene las dos voces, pero <b>no comparten ritmo</b> ('
-      + dos.propias + ' ataques en la que revisas y ' + dos.cuantas + ' en ' + (dos.cual === 'bajo' ? 'el bajo' : 'la melodía')
-      + '), así que no caben en una sola rejilla de acordes: se muestra solo la voz del ejercicio.';
+    p.innerHTML = t;
   }
 
   /* LO QUE ADMITE LA OTRA VOZ (decisión 174, Diego 29/9/2026, sobre `A3-5-02`: «si se
@@ -675,33 +670,27 @@
       return Teoria.romanoEscrito(a[0], notas[i], ton);
     };
     const romanos = ver ? ej.respuestas.map((a, i) => romanoModelo(a, i, pivotes.has(i) ? Ejercicios.tonalidadAntes(ej, i) : Ejercicios.tonalidadEn(ej, i))) : new Array(n).fill(null);
-    /* LAS DOS VOCES DEL FRAGMENTO, NO UNA (decisión 167, Diego 29/9/2026: «al revisar el
-       fragmento quiero conocer qué dos voces suministré, a la vez que los acordes que han
-       sido asignados»). Hasta aquí la vista previa enseñaba la voz del tipo de ejercicio
-       elegido y el motor ponía las otras tres a su gusto: en la armonización de bajo la
-       soprano de Diego no se dibujaba, y en la de soprano su bajo ni se dibujaba ni se
-       usaba —se deducía otro—. Ahora, cuando el fragmento tiene las dos voces y comparten
-       ritmo, se FUERZAN como voces extremas: su bajo abajo, su soprano arriba, y el motor
-       solo escribe tenor y contralto. Así la vista previa deja de ser un dibujo y pasa a ser
-       una comprobación: si los acordes asignados no admiten las dos voces a la vez, salen
-       los errores de conducción. */
+    /* CADA EJERCICIO, SU VOZ (decisión 177, Diego 29/9/2026: «si estoy introduciendo los
+       acordes de la soprano, entonces no debería aparecer la melodía del bajo, ¿no? Y
+       viceversa cuando introduzco los del bajo»). Tiene razón, y **deroga la 167**, que era
+       mía: el bajo y la soprano de un fragmento son DOS EJERCICIOS DISTINTOS sobre la misma
+       música —eso ya estaba dicho y anotado el 26/9—, no dos voces de una misma
+       armonización. Dibujarlos juntos obligaba a que casaran, y no tienen por qué: medido
+       sobre el banco, de las 461 notas de los 103 fragmentos con las dos voces, 110 no
+       casaban, y 78 de esas 110 son el MISMO acorde en otra inversión (la lista del bajo
+       dice `I 6` donde la de la melodía dice `I 5/3`, porque en el ejercicio de melodía el
+       bajo lo deduce el motor). De ahí salían 92 de los 103 avisos de conducción: ninguno
+       era un error suyo. Se vuelve a lo de antes —la voz que se revisa, y el motor deduce
+       las demás— y lo que aporta la otra voz se queda donde sí sirve: la columna «El bajo
+       admite / La melodía admite» (decisión 174). */
     const dos = vocesDelBanco(ej);
-    const extremas = !!(ver && dos && dos.alineadas);
     const opReal = { modo: 'auto', rotacion: 0 };
     if (sop) {
-      opReal.bajos = extremas ? dos.notas : Ejercicios.bajosDe(ej, romanos, ver ? modelos : new Array(n).fill(null));
+      opReal.bajos = Ejercicios.bajosDe(ej, romanos, ver ? modelos : new Array(n).fill(null));
       opReal.sopranos = notas;
-    } else if (extremas) {
-      opReal.sopranos = dos.notas;
     }
     const real = ver ? Realizacion.realizar(ej, modelos, opReal) : null;
-    let avisosVoces = [];
-    if (extremas && real) {
-      try { avisosVoces = Realizacion.auditar(ej, sop ? opReal.bajos : notas, real.acordes) || []; } catch (e) { avisosVoces = []; }
-    }
-    const malos = new Array(n).fill(false);
-    avisosVoces.forEach(a => { if (typeof a.i === 'number' && a.i >= 0) malos[a.i] = true; });
-    pintarAvisoVoces(dos, extremas, avisosVoces, sop);
+    pintarAvisoVoces(dos, sop);
     const est = {
       respuestas: ver ? modelos : new Array(n).fill(null),
       // Grado en la tonalidad que rige; en el pivote, también en la anterior (casilla partida)
@@ -712,13 +701,13 @@
       pedirRomano: opciones().pedirRomano || sop,
       activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
       realizacion: real ? real.acordes : null,   // el profesor siempre puede ver la realización modelo
-      realizacionMal: extremas ? malos : null,   // los acordes en los que las dos voces dadas chocan
-      extremasDadas: extremas,                   // bajo y soprano son los suyos: van en color
-      /* Qué voces son del profesor y cuáles las escribe el motor (decisión 169). En la
-         armonización de bajo el bajo es suyo siempre; en la de soprano, solo cuando se han
-         podido forzar las dos voces extremas —si no, el bajo dibujado es deducido—. */
-      bajoDado: sop ? extremas : true,
-      sopranoDada: sop || extremas,
+      realizacionMal: null,
+      extremasDadas: false,
+      /* Qué voz es del profesor y cuáles escribe el motor (decisión 169, ajustada por la
+         177): la del ejercicio que se revisa. En la armonización de bajo, el bajo; en la de
+         soprano, la melodía —y el bajo que se dibuja es deducido, no el suyo—. */
+      bajoDado: !sop,
+      sopranoDada: sop,
       realizacionDada: false,                    // tenor y contralto siempre los pone el motor
       vozDada: sop ? 'soprano' : null,
       bajos: sop ? opReal.bajos : null,
