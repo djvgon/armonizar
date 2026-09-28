@@ -468,6 +468,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-1050 | En la melodía de soprano, aviso cuando el acorde escrito no contiene la nota de la melodía (150) |
 | 20260929-1010 | El naranja de la solución se decide comparando el acorde dibujado con el que escribió el alumno, no con si acertó (147, corregida) |
 | 20260929-0940 | Vuelve el renglón de acordes del ejercicio y el botón de las estructuras sale del renglón de los grados (149) |
 | 20260929-0900 | En naranja, en la solución, los acordes que el alumno falló (147); el recorrido de casillas siempre en el orden función · fundamental · cifrado, con el pivote detrás, y arreglada la segunda función en el teclado (148) |

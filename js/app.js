@@ -697,6 +697,32 @@
     if (!Array.isArray(estado.realizacion)) return;
     const bajos = estado.modoEj === 'soprano' ? estado.bajos : Reglas.notasDe(estado.ejercicio);
     try { estado.avisosVoces = Realizacion.auditar(estado.ejercicio, bajos, estado.realizacion); } catch (e) { estado.avisosVoces = []; }
+    estado.avisosVoces = avisosDeMelodia().concat(estado.avisosVoces);
+  }
+
+  /* LA NOTA DE LA MELODÍA HA DE CABER EN EL ACORDE (Diego, 28/9/2026).
+     En la armonización de soprano, el acorde que escribe el alumno puede no contener la
+     nota que tiene encima: un 6/4 de tónica bajo una melodía que lleva la sensible, por
+     ejemplo. La realización respeta siempre la melodía —el alumno ha de ver lo que ha
+     escrito, sin arreglos—, así que el acorde sale con una nota de más y aparecen segundas
+     que no son culpa de la conducción, sino del acorde elegido. Hasta ahora eso no se
+     decía. Ahora la nota sale en rojo y, al pulsarla, explica qué pasa. */
+  function avisosDeMelodia() {
+    if (estado.modoEj !== 'soprano' || !Array.isArray(estado.bajos)) return [];
+    const notas = melodia();
+    const clase = n => ((Teoria.midi({ letra: n.letra, alt: n.alt, octava: 4 }) % 12) + 12) % 12;
+    const out = [];
+    estado.respuestas.forEach((id, i) => {
+      if (!id || !notaCompleta(i) || !estado.bajos[i] || !notas[i]) return;
+      let d;
+      try { d = Realizacion.describir(id, estado.bajos[i], Ejercicios.tonalidadEn(estado.ejercicio, i)); } catch (e) { return; }
+      const s = Teoria.nota(notas[i]);
+      if (!d || !Array.isArray(d.tonos) || d.tonos.some(t => clase(t) === clase(s))) return;
+      out.push({ i, tipo: 'melodia', notas: [{ i, voz: 3 }],
+        texto: 'El acorde que has escrito no contiene la nota de la melodía (' + Teoria.nombreEs(s)
+          + '): sobre ese bajo no cabe ahí. Elige otro acorde, u otra inversión.' });
+    });
+    return out;
   }
 
   /* ¿Los avisos de conducción de voces cuentan en este tipo de ejercicio? Cuentan donde la

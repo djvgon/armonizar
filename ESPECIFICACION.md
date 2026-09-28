@@ -3172,6 +3172,16 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     vivía en el renglón de los grados: ese renglón se oculta en los ejercicios que no piden
     el grado, y el botón se iba con él sin que nadie lo hubiera pedido.
 
+150. **La nota de la melodía tiene que caber en el acorde** (28/9/2026, Diego). En la
+    armonización de soprano, el acorde que escribe el alumno puede no contener la nota que
+    tiene encima —un 6/4 de tónica bajo una melodía que en ese punto lleva la quinta de la
+    dominante, por ejemplo—. La realización respeta **siempre** la melodía, porque el alumno
+    ha de ver lo que ha escrito y no una versión arreglada; así que el acorde salía con una
+    nota de más y aparecían segundas que no venían de la conducción de voces sino del acorde
+    elegido, y nada lo decía. Ahora esa nota de la melodía **sale en rojo** y, al pulsarla,
+    explica qué pasa: «El acorde que has escrito no contiene la nota de la melodía (si):
+    sobre ese bajo no cabe ahí. Elige otro acorde, u otra inversión».
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
