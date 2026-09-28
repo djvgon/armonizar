@@ -468,6 +468,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-1600 | La solución se dice en una sola tinta y en un solo sitio: bajo cada nota fallada, una línea naranja con función · grado · cifra, sacada de los mismos pares que realizan el pentagrama; la función del modelo sale de dentro de la casilla (152). Arreglado el `Cifrado desconocido: I\|53` que dejaba sin efecto Comprobar en `A4-11` en melodía de soprano |
 | 20260929-1500 | Las teclas bajan a 40, igual que las acciones y por debajo de la banda; la escala queda 48 banda · 40 teclas y acciones · 32 barra, herramientas y fichas (151) |
 | 20260929-1400 | Al ver la solución se respeta el acorde del alumno donde acertó, aunque el modelo prefiera otro admitido: con todo bien ya no sale nada en naranja (147, corregida). Banda a 48 y barra a 32, las alturas elegidas (151) |
 | 20260929-1330 | Banda a 52 y barra a 36; los atajos de las teclas, sin negrita (151, afinada) |

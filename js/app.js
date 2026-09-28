@@ -531,11 +531,11 @@
       if (estado.modoFun === 'dadas') { c.clase = 'dada'; c.fija = true; }
       else if (estado.corregido && estado.resultados) c.clase = ok(estado.resultados[i]) ? 'bien' : 'mal';
       else if (acertada(i, campo)) c.clase = 'bien';
-      if (estado.corregido && estado.mostrarSolucion && !c.texto) {
-        c.texto = Teoria.textoFuncion(campo === 'funcion2'
-          ? Ejercicios.funcionModelo(ej, i)
-          : (esDobleFun(i) ? Ejercicios.funcionModeloEn(ej, i, Ejercicios.tonalidadAntes(ej, i)) : Ejercicios.funcionModelo(ej, i)));
-      }
+      /* La función del modelo YA NO se escribe dentro de la casilla vacía (Diego,
+         28/9/2026, decisión 152). Se escribía ahí y, como la casilla está corregida, salía
+         pintada de rojo: parecía una respuesta del alumno, y encima equivocada. Ahora va al
+         renglón naranja de la solución, con el grado y la cifra del mismo acorde. La
+         casilla se queda diciendo solo lo tuyo: verde, rojo o vacía. */
       return c;
     };
     const celdas = estado.respuestas.map((_, i) => una(i, 'funcion'));
@@ -614,6 +614,57 @@
     (acertoElAcorde(i) && estado.respuestas[i] ? estado.respuestas[i] : modeloPar(i).cifra));
   const romanosSolucion = () => estado.ejercicio.respuestas.map((_, i) =>
     (acertoElAcorde(i) && estado.romanos[i] ? estado.romanos[i] : modeloPar(i).romano));
+
+  /* ---------- EL RENGLÓN DE LA SOLUCIÓN (decisión 152, Diego 28/9/2026) ----------
+     Una sola tinta y un solo sitio: bajo cada nota que falló, una línea NARANJA con
+     función · grado · cifra. Queda así el reparto: naranja = lo que pone la solución;
+     verde = lo que acertaste; rojo = lo que fallaste. Y es el MISMO naranja de las notas
+     que la solución cambia en el pentagrama, que era lo que faltaba por explicar.
+
+     Lo importante es de dónde sale: de los mismos pares grado+cifra con los que se realiza
+     el pentagrama, así que el cifrado que se lee aquí es siempre el de los acordes
+     dibujados arriba («el cifrado ha de coincidir con los acordes escritos», Diego). Antes
+     se imprimía `parejas[0].cifra` —la primera admitida— pasara lo que pasara: bastaba
+     acertar la cifra con otra admisible y fallar la función para que abajo pusiera un
+     acorde y arriba sonara otro. */
+  const paresSolucion = () => {
+    // En Análisis el pentagrama es siempre el del modelo: el alumno no lo escribe, lo lee.
+    if (estado.modoEj === 'cifrar') return estado.ejercicio.respuestas.map((_, i) => modeloPar(i));
+    const rom = romanosSolucion(), cif = cifrasSolucion();
+    return rom.map((r, i) => ({ romano: r, cifra: cif[i] }));
+  };
+
+  /* La función que corresponde al acorde DIBUJADO. Donde la solución es la del modelo la
+     da el ejercicio, que sabe de tonalidades, de acordes prestados y de la cadencia rota, y
+     respeta la que fije la ficha; donde se conserva el acorde del alumno —porque acertó con
+     una admisible distinta— se deduce de SU grado y SU cifra, con sus vecinos. */
+  function funcionSolucionEn(pares, i, ton) {
+    const ej = estado.ejercicio, mod = modeloPar(i);
+    if (pares[i].romano === mod.romano && pares[i].cifra === mod.cifra) {
+      return ton ? Ejercicios.funcionModeloEn(ej, i, ton) : Ejercicios.funcionModelo(ej, i);
+    }
+    const sig = pares[i + 1] || {};
+    return Teoria.funcionDe(pares[i].romano, sig.romano || null, pares[i].cifra, sig.cifra || null,
+                            i > 0 ? pares[i - 1] : null);
+  }
+
+  function prepararSolucion() {
+    if (!estado.corregido || !estado.mostrarSolucion || !estado.resultados) { estado.filaSolucion = null; return; }
+    const ej = estado.ejercicio, pares = paresSolucion();
+    estado.filaSolucion = estado.respuestas.map((_, i) => {
+      const r = estado.resultados[i];
+      if (!r || r.ok) return null;                  // lo que está bien no necesita solución
+      const funciones = [];
+      if (estado.modoFun) {
+        // En el pivote, las dos lecturas del mismo acorde, la vieja sobre la nueva: T/S.
+        if (esDobleFun(i)) funciones.push(Teoria.textoFuncion(funcionSolucionEn(pares, i, Ejercicios.tonalidadAntes(ej, i))));
+        funciones.push(Teoria.textoFuncion(funcionSolucionEn(pares, i, null)));
+      }
+      return { funcion: funciones.filter(Boolean).join('/'),
+               romano: pideGrado() ? pares[i].romano : null,
+               cifra: pares[i].cifra };
+    });
+  }
 
   // Cifras que se dibujan en el pentagrama de sol: las modelo en Análisis; en
   // Armonización, Audición y Melodía de soprano, las del alumno, solo en las notas completas (grado y cifra).
@@ -812,6 +863,7 @@
     pintarBarraRealizacion();
     prepararModulacion();
     prepararFunciones();
+    prepararSolucion();
     estado.ocultarBajo = !bajoVisible();
     Partitura.dibujar($('#partitura'), estado.ejercicio, estado, seleccionar);
     pintarPaletaTonalidades();

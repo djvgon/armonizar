@@ -188,8 +188,18 @@ svg.partitura .casilla.bien .fondo { fill: var(--bien-suave); stroke: var(--bien
 svg.partitura .casilla.mal .fondo { fill: var(--mal-suave); stroke: var(--mal); stroke-width: 2; }
 svg.partitura .casilla.mal .cifra-texto, svg.partitura .casilla.mal .cifra-raya { fill: var(--mal); stroke: var(--mal); }
 svg.partitura .casilla.mal .cifra-texto { stroke: none; }
-svg.partitura .casilla .modelo .cifra-texto { fill: var(--bien); }
-svg.partitura .casilla .modelo .cifra-raya { stroke: var(--bien); }
+/* El renglón de la SOLUCIÓN bajo cada nota fallada (decisión 152, Diego 28/9/2026): una
+   sola tinta, la naranja —la misma con la que el pentagrama señala las notas que la
+   solución cambia—, y las tres lecturas del acorde seguidas: función · grado · cifra.
+   Antes esto se decía en verde y a medias: el grado salía verde («lo acertaste», que era
+   justo lo contrario de la verdad) y la cifra se quedaba negra, porque su regla apuntaba
+   a `.casilla .modelo` y el grupo nunca colgó de una casilla. */
+svg.partitura .solucion-cifrado { pointer-events: none; }
+svg.partitura .solucion-cifrado .sol-fun,
+svg.partitura .solucion-cifrado .sol-romano {
+  font-family: Georgia, "Times New Roman", serif; font-weight: bold; letter-spacing: .5px; fill: var(--cambio); }
+svg.partitura .solucion-cifrado .cifra-texto { fill: var(--cambio); }
+svg.partitura .solucion-cifrado .cifra-raya { stroke: var(--cambio); }
 svg.partitura .casilla.activa-nota .fondo { stroke: var(--acento); stroke-dasharray: 3 3; }
 svg.partitura .casilla.fija { cursor: default; }
 svg.partitura .casilla.fija:hover .fondo { stroke: var(--bien); }
@@ -197,7 +207,6 @@ svg.partitura .casilla.fija:hover .fondo { stroke: var(--bien); }
 svg.partitura .interrogante { font-family: Georgia, serif; font-size: 18px; fill: var(--tinta-suave); pointer-events: none; }
 svg.partitura .romano { font-family: Georgia, "Times New Roman", serif; font-size: 18px; letter-spacing: .5px; fill: var(--tinta); pointer-events: none; }
 svg.partitura .casilla.mal .romano { fill: var(--mal); }
-svg.partitura .modelo-romano { fill: var(--bien); font-size: 19px; }
 svg.partitura .cifra-raya { stroke: var(--tinta); }
 /* Modulación: casilla de grado partida (pivote), fila «Tonalidad» y rótulos */
 svg.partitura .pivote-barra { stroke: var(--acento); stroke-width: 2.2; stroke-linecap: round; pointer-events: none; }

@@ -767,7 +767,19 @@ const Ejercicios = (() => {
     const antes = tonalidadAntes(ej, m.nota);
     for (let i = m.nota + 1; i < notas.length; i++) {
       const id = admisibles(ej, i)[0];
-      if (id && Teoria.acordeAjeno(id, notas[i], tonalidadEn(ej, i), antes)) return i;
+      if (!id) continue;
+      /* El id puede venir como pareja «grado|cifra»: los fragmentos de melodía de soprano
+         guardan las dos cosas. Entonces la nota escrita es la SOPRANO —no el bajo— y el
+         bajo hay que deducirlo del grado y la cifra, igual que hace `bajosDe`. Antes se le
+         pasaba la pareja entera a `acordeAjeno`, que espera una cifra a secas, y reventaba
+         con «Cifrado desconocido: I|53»: la excepción salía en mitad de `corregirMarcas`,
+         así que en la lección A4-11 en melodía de soprano el alumno pulsaba Comprobar y no
+         pasaba nada (Diego, 28/9/2026). */
+      const p = par(id), ton = tonalidadEn(ej, i);
+      let bajo = notas[i];
+      if (p.romano) { try { bajo = Teoria.bajoDe(p.romano, p.cifra, ton); } catch (e) { continue; } }
+      if (!bajo) continue;
+      try { if (Teoria.acordeAjeno(p.cifra, bajo, ton, antes)) return i; } catch (e) { /* cifra que no conocemos: se pasa de largo */ }
     }
     return null;
   }

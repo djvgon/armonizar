@@ -153,6 +153,27 @@ const Partitura = (() => {
     });
   }
 
+  /* Ancho que ocupará una cifra dibujada —su fila más ancha—, para poder centrar un grupo
+     que la lleve dentro. Se mide con la misma tabla de avances que usa `dibujarCifra`, de
+     modo que las dos no puedan discrepar. */
+  function anchoCifra(id, escala = 1, ctx = null) {
+    const c = Teoria.CIFRADOS[id];
+    if (!c) return 0;
+    const em = EM_CIFRA * escala;
+    const filas = ctx && ctx.bajo && ctx.ton ? Teoria.filasCifra(id, ctx.bajo, ctx.ton) : c.filas;
+    return filas.reduce((m, fila) => {
+      if (fila.length === 1 && fila[0].signo === '—') return Math.max(m, 1.8 * SP * escala);
+      return Math.max(m, fila.reduce((a, s) => a + (s.num ? AVANCE.num : (AVANCE[s.signo] || 0.2)) * em, 0));
+    }, 0);
+  }
+
+  /* Ancho aproximado de un texto en la partitura. No hace falta precisión tipográfica:
+     solo sirve para centrar y para saber si un grupo cabe entre nota y nota. Las letras
+     que de verdad descuadran son la I —estrechísima— y la raya del «sin cifra». */
+  const ANCHO_LETRA = { I: 0.34, V: 0.72, X: 0.7, T: 0.66, S: 0.62, D: 0.74, '/': 0.34, '—': 1.0 };
+  const anchoTexto = (txt, tam) => String(txt).split('')
+    .reduce((a, ch) => a + (ANCHO_LETRA[ch] !== undefined ? ANCHO_LETRA[ch] : 0.6) * tam, 0);
+
   /* ---- Dibujo principal ---- */
   function dibujar(contenedor, ej, estado, alPulsar) {
     const ton = ej.tonalidad;
@@ -288,11 +309,10 @@ const Partitura = (() => {
        etc.): el bajo de cada nota y la tonalidad que rige en ella. */
     const tonsNota = (() => { try { return Teoria.tonalidadesPorNota(ej); } catch (e) { return null; } })();
     const ctxCifra = (i, nb) => (nb ? { bajo: nb, ton: (tonsNota && tonsNota[i]) || ton } : null);
-    // Bajo de la respuesta MODELO: el escrito o, en una melodía de soprano, el que deduce su acorde
-    const modeloBajo = (it, res) => {
-      if (!sopranoDada) return it.nota;
-      try { return Teoria.bajoDe(res.modeloRomano, res.modelo, (tonsNota && tonsNota[it.k]) || ton); } catch (e) { return null; }
-    };
+    /* El bajo que hace falta para escribir las alteraciones del renglón de la solución es
+       el que ya está dibujado: con la solución a la vista, `estado.bajos` trae el del
+       modelo, así que `bajoDe(it)` devuelve el del acorde bueno sin más cuentas. Antes se
+       recalculaba aparte (`modeloBajo`), y era una fuente más de la que discrepar. */
     const dobles = Array.isArray(estado.dobles) ? estado.dobles : [];
     /* Un renglón por TONALIDAD, no uno nuevo por cada cambio (decisión 83). Antes, cada
        pivote abría un renglón más: un fragmento que sale de Sol M, toma prestado un acorde
@@ -359,14 +379,19 @@ const Partitura = (() => {
     const Y_TON = Y_FIN_RENGLONES + 0.8 * SP;
     const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_RENGLONES;
     const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
-    const Y_MODELO = Y_FIN_CASILLAS + 2.4 * SP;            // centro de la respuesta modelo (tras corregir)
+    /* El renglón de la SOLUCIÓN, en naranja, bajo las casillas (decisión 152): función,
+       grado y cifra en una sola línea centrada en la nota. Se encoge si no cabe entre nota
+       y nota —el caso malo es un VII con una DD—, que es preferible a que se solapen. */
+    const Y_SOLUCION = Y_FIN_CASILLAS + 2.4 * SP;          // centro del renglón de la solución
+    const TAM_SOL_FUN = 1.5 * SP, TAM_SOL_ROM = 1.8 * SP, ESCALA_SOL = 0.7;
+    const HUECO_SOL = 0.5 * SP, ANCHO_SOL_MAX = 5.4 * SP;  // el hueco mínimo entre notas es 6 SP
     /* Si hay errores de conducción de voces, se reserva al pie una banda para el globo de
        explicación, de modo que nunca tape la música. Se calcula la altura del globo más
        alto que puede abrirse (el texto se reparte en líneas de 46 caracteres). */
     const maxLineas = avisosVoces.reduce((m, av) => Math.max(m, lineasDe(av).length), 0);
     const ALTO_GLOBO = avisosVoces.length ? maxLineas * ALTO_LINEA + 3.2 * SP : 0;
-    const Y_GLOBO = Y_MODELO + 2.6 * SP;                   // borde superior de la banda del globo
-    const ALTO_TOTAL = Y_MODELO + 2.6 * SP + ALTO_GLOBO;
+    const Y_GLOBO = Y_SOLUCION + 2.6 * SP;                 // borde superior de la banda del globo
+    const ALTO_TOTAL = Y_SOLUCION + 2.6 * SP + ALTO_GLOBO;
 
     // Cálculo de posiciones x
     let x = sinSistema ? MARGEN + 6 * SP : MARGEN + ANCHO_CLAVE + ANCHO_ARM + ANCHO_COMPAS;   // sin sistema queda sitio para «Do M:»
@@ -976,16 +1001,32 @@ const Partitura = (() => {
         svg.appendChild(g);
       }
 
-      // Al mostrar la solución, la respuesta modelo (cifra y grado) bajo las notas con algún error
-      if (res && !res.ok && estado.mostrarSolucion) {
-        const gm = el('g', { class: 'modelo' });
-        if (pedirRomano) {
-          dibujarCifra(gm, res.modelo, cx - 0.9 * SP, Y_MODELO, 0.75, null, ctxCifra(i, modeloBajo(it, res)));
-          gm.appendChild(el('text', { x: cx + 1.1 * SP, y: Y_MODELO + 0.75 * SP, 'text-anchor': 'start', class: 'romano modelo-romano' }, res.modeloRomano));
-        } else {
-          dibujarCifra(gm, res.modelo, cx, Y_MODELO, 0.8, null, ctxCifra(i, modeloBajo(it, res)));
+      /* EL RENGLÓN DE LA SOLUCIÓN (decisión 152): bajo cada nota que falló, lo que la
+         solución pone en ella —función · grado · cifra—, en naranja y en una sola línea.
+         Lo que se escribe aquí lo calcula `app.js` a partir de los mismos pares con los que
+         realiza el pentagrama, de modo que este cifrado y esos acordes no pueden discrepar.
+         Las casillas de arriba, mientras, siguen diciendo solo lo que respondió el alumno. */
+      const sol = estado.filaSolucion ? estado.filaSolucion[i] : null;
+      if (sol) {
+        const partes = [];
+        if (sol.funcion) partes.push({ txt: sol.funcion, tam: TAM_SOL_FUN, clase: 'sol-fun', ancho: anchoTexto(sol.funcion, TAM_SOL_FUN) });
+        if (sol.romano) partes.push({ txt: sol.romano, tam: TAM_SOL_ROM, clase: 'sol-romano', ancho: anchoTexto(sol.romano, TAM_SOL_ROM) });
+        if (sol.cifra) partes.push({ cifra: sol.cifra, ancho: anchoCifra(sol.cifra, ESCALA_SOL, ctxCifra(i, nb)) });
+        if (partes.length) {
+          const ancho = partes.reduce((a, p) => a + p.ancho, 0) + HUECO_SOL * (partes.length - 1);
+          const escala = Math.min(1, ANCHO_SOL_MAX / ancho);
+          const gm = el('g', { class: 'solucion-cifrado',
+            transform: 'translate(' + cx.toFixed(2) + ',' + Y_SOLUCION.toFixed(2) + ') scale(' + escala.toFixed(3) + ')' });
+          let xp = -ancho / 2;
+          partes.forEach(p => {
+            const cp = xp + p.ancho / 2;
+            if (p.cifra) dibujarCifra(gm, p.cifra, cp, 0, ESCALA_SOL, null, ctxCifra(i, nb));
+            else gm.appendChild(el('text', { x: cp, y: 0.36 * p.tam, 'text-anchor': 'middle',
+              'font-size': p.tam, class: p.clase }, p.txt));
+            xp += p.ancho + HUECO_SOL;
+          });
+          svg.appendChild(gm);
         }
-        svg.appendChild(gm);
       }
     });
 

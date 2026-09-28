@@ -3221,6 +3221,54 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       mismo pasa con «Grados del bajo» cuando la ficha no los permite; por eso en ese
       ejercicio faltaba el renglón entero.
 
+152. **El renglón de la solución: una tinta, un sitio** (28/9/2026, Diego). Al ver la
+    solución había **tres tintas contando tres historias** del mismo acorde. Las notas del
+    pentagrama salían en **naranja** donde la solución cambiaba lo del alumno (decisión
+    147). La **función** del modelo se escribía dentro de la casilla vacía y, como la
+    casilla estaba corregida, salía **roja**: parecía una respuesta suya, y equivocada. Y el
+    **grado y la cifra** ni se rellenaban en su casilla ni iban con los demás: se dibujaban
+    en un renglón aparte bajo las notas, el grado en **verde** —el color que en esta
+    aplicación significa «lo acertaste», justo lo contrario de la verdad— y la cifra en
+    negro, porque su regla de estilo apuntaba a `.casilla .modelo` y aquel grupo nunca
+    colgó de una casilla. Diego: «¿y el cifrado????».
+
+    Queda un solo reparto, y se dice en un sitio:
+
+    > **naranja = lo que pone la solución · verde = lo que acertaste · rojo = lo que fallaste**
+
+    - Bajo cada nota que falló, **una sola línea naranja** con **función · grado · cifra**, en
+      ese orden —el mismo de la lista de comentarios y el mismo del recorrido de casillas
+      (decisión 148)—, centrada en la nota. En el **pivote**, las dos lecturas del acorde
+      separadas por barra, la vieja sobre la nueva: `T/S`.
+    - Es el **mismo naranja** (`--cambio`) que marca las notas que la solución cambia, que era
+      justo lo que faltaba por explicar en el pentagrama.
+    - Las **casillas** se quedan diciendo **solo lo del alumno**: verde, rojo o vacía. La
+      función del modelo sale de dentro de la casilla.
+    - Si la línea no cabe entre nota y nota —el caso malo es un `VII` con una `DD`— se
+      **encoge** en vez de pisar a la vecina. Medido en el banco entero: el más ancho llega a
+      53 px sobre 54 disponibles, así que en la práctica no llega a encogerse nunca.
+
+    **Lo que de verdad se arregla** (Diego: «el cifrado ha de coincidir con los acordes
+    escritos»). El renglón imprimía siempre `parejas[0].cifra` —la primera admitida— mientras
+    el pentagrama se dibujaba con `cifrasSolucion()`, que **conserva el acorde del alumno
+    donde acertó** (decisión 147, corregida). Bastaba escribir `I 6` donde el modelo pone
+    `I —` —las dos admitidas— y fallar la función para que abajo se leyera un acorde y arriba
+    sonara otro. Ahora las dos cosas salen de **la misma lista**: `paresSolucion()` en
+    `app.js`, que es la que realiza el pentagrama. En Análisis devuelve el par del modelo,
+    porque allí la realización es siempre la del modelo; en los demás modos, la armonización
+    del alumno con lo que falló arreglado. La **función** se deduce de ese par: la del
+    ejercicio cuando el acorde es el del modelo —sabe de tonalidades, de préstamos y de la
+    cadencia rota, y respeta la que fije la ficha— y `Teoria.funcionDe` sobre el grado y la
+    cifra del alumno cuando es el suyo el que se conserva.
+
+    **Fallo aparte, destapado por la auditoría** (28/9/2026). `Ejercicios.primeraAjena` le
+    pasaba a `Teoria.acordeAjeno` el id admisible **entero**, que en los fragmentos de
+    melodía de soprano viene como pareja `«grado|cifra»`, y además le daba como bajo la nota
+    **escrita**, que en esos fragmentos es la soprano. Saltaba un `Cifrado desconocido:
+    I|53` **en mitad de `corregirMarcas`**: en la lección `A4-11` en melodía de soprano el
+    alumno pulsaba Comprobar y no pasaba nada. Ahora la pareja se separa y el bajo se deduce
+    del grado y la cifra, como en `bajosDe`.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |
