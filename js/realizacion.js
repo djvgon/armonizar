@@ -716,13 +716,34 @@ const Realizacion = (() => {
           avisos.push({ i, tipo: 'septima', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
             texto: 'La séptima del acorde (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de bajar de grado; aquí va a ' + nombre(a) + '.' });
         }
-        /* La sensible sube a la tónica cuando está en la SOPRANO (norma XN6 de la pauta). En el
-           bajo, la Regla de la octava la hace descender en la escala descendente (7 → 6), que es
-           lo correcto ahí: no se señala. */
-        if (d.sensibles.has(pc) && !mismoAcorde && contiene((pc + 1) % 12) && q === 3) {
+        /* LA SENSIBLE SUBE A LA TÓNICA, salvo que con eso el acorde se quede sin quinta
+           (norma XN6 de la pauta; decisión 171, Diego 29/9/2026: «que suba salvo si la
+           tónica se queda sin quinta»).
+
+           Hasta aquí solo se avisaba cuando la sensible estaba en la SOPRANO, y en las
+           voces interiores se callaba siempre. Diego señaló un caso —`A3-1-22`, V7 → I con
+           la melodía en la tercera— en el que la sensible de la contralto se iba a la quinta
+           pudiendo no hacerlo, y no se decía nada. Ahora se avisa también en el tenor y en
+           la contralto, pero SOLO cuando subir era posible: si esa voz es la única que lleva
+           la quinta del acorde, resolverla dejaría la tríada sin quinta, y ahí la excepción
+           clásica —la que admiten Aldwell y Schachter— manda y no se señala.
+
+           En el BAJO no se mira: la Regla de la octava lo hace descender en la escala
+           descendente (7 → 6), que es lo correcto ahí. */
+        if (d.sensibles.has(pc) && !mismoAcorde && contiene((pc + 1) % 12) && q > 0) {
           if (delta === 1 || (delta === 0 && contiene(pc))) continue;
+          let calla = false;
+          if (q !== 3) {
+            const dc = describirDesde(ej, i, bajos, acordes, tons);
+            const quinta = dc ? dc.quinta : null;
+            const otras = ahora.filter((_, k) => k !== q).map(clase);
+            // ¿Es esta voz la única que sostiene la quinta? Entonces subir la dejaría fuera.
+            calla = quinta !== null && clase(a) === quinta && !otras.includes(quinta);
+          }
+          if (calla) continue;
           avisos.push({ i, tipo: 'sensible', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
-            texto: 'La sensible (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de subir a la tónica; aquí va a ' + nombre(a) + '.' });
+            texto: 'La sensible (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de subir a la tónica; aquí va a ' + nombre(a) + '.'
+              + (q === 3 ? '' : ' Solo se le perdona cuando es la única voz que sostiene la quinta del acorde, y aquí no es el caso.') });
         }
       }
     }
@@ -798,8 +819,10 @@ const Realizacion = (() => {
       && ((clase(tercera) - clase(fund) + 12) % 12) === 4);
     if (dominante) sensibles.add(clase(tercera));
     const novena = todas.find(n => miembro(n, 1));
+    const quinta = todas.find(n => miembro(n, 4));      // hace falta para la excepción de la sensible
     return { septima: septima ? clase(septima) : null, fund: fund || null, sensibles, dominante,
              tercera: tercera ? clase(tercera) : null,
+             quinta: quinta ? clase(quinta) : null,
              novena: novena ? clase(novena) : null };
   }
 

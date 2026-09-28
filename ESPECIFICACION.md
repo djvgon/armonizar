@@ -3780,6 +3780,29 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     un candado dibujado se lee como «aquí hay cerradura», esté o no echada. Ahora, sin
     cerrar, no hay candado; cerrado, 🔒 con su fecha.
 
+171. **La sensible sube a la tónica salvo que el acorde se quede sin quinta** (29/9/2026,
+    Diego, sobre `A3-1-22`: «aquí no resuelves la sensible pero podrías hacerlo»). En ese
+    fragmento, en Fa M y con su melodía en la tercera (la), la séptima si♭ del V7 baja a la
+    y la sensible mi se va al do en vez de subir al fa. Reconstruido el caso, resolverla
+    dejaría la tónica en fa – la – fa – la: **sin quinta y con la tercera doblada**, una
+    disposición que el motor no genera nunca.
+    - **La regla queda así**: la sensible sube siempre en la soprano; en las voces
+      interiores sube también, salvo cuando es la única voz que sostiene la quinta del
+      acorde, y entonces puede bajar a ella para que la tríada quede completa (la excepción
+      clásica que admiten Aldwell y Schachter). En el bajo no se mira: la Regla de la octava
+      lo hace descender del 7.º al 6.º en la escala descendente, que ahí es lo correcto.
+    - **El auditor pasa a avisar también en el tenor y la contralto**, pero solo cuando
+      subir era posible. Antes callaba siempre fuera de la soprano, y por eso la línea de la
+      vista previa decía «sin problemas de conducción» en el caso que Diego señaló.
+    - **El motor NO cambia**, y está medido: subir el peso de la sensible en las voces
+      interiores de 6 a 30 quita **un** aviso de sensible y añade **dos** de quinta u octava
+      por movimiento directo (aparece `A4-10-07`). Cambiar una falta por dos peores no es un
+      arreglo, así que se deja como está y se escribe la regla.
+    - **Lo que el cambio destapa**, con las dos voces forzadas: cuatro sensibles sin
+      resolver en las realizaciones modelo —`A3-2-01` (acorde 6), `A4-11-01` (13) y
+      `A4-11-06` (7 y 16)—, de las que dos se ven también en la pantalla del alumno. No son
+      faltas nuevas: son faltas que hasta ahora nadie decía.
+
 168. **El candado, junto a la partitura** (29/9/2026, Diego: «a veces voy repasando
     fragmento por fragmento y no quiero perder tiempo teniendo que subir a ver en la tabla si
     está cerrado o no»). Una chapa pegada al título «Revisión de las respuestas» que dice el

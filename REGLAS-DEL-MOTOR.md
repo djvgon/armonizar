@@ -224,7 +224,12 @@ saltando una tercera, y esa fórmula es de las centrales del lenguaje.
 
 □ **R‑34 · La séptima baja de grado.**
 
-□ **R‑35 · La sensible sube a la tónica.**
+□ **R‑35 · La sensible sube a la tónica**, salvo que con eso el acorde se quede sin
+quinta. La excepción vale solo en las voces interiores: si la sensible es la única voz
+que sostiene la quinta, puede bajar a ella para que la tríada quede completa —es lo que
+admiten Aldwell y Schachter—. En la soprano sube siempre. (Decidida por Diego el
+29/9/2026 a partir de `A3-1-22`: allí, con la melodía en la tercera y la séptima
+bajando a ella, resolver la sensible dejaría la tónica sin quinta.)
 
 □ **R‑36 · En el acorde de novena, la sensible no va por encima de la novena.**
 Chocarían en segunda con la sensible arriba. Salvo que la novena venga preparada del acorde
