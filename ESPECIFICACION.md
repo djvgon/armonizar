@@ -3687,11 +3687,13 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - Se aceptan direcciones de Hojas de cálculo, Documentos y Drive; cualquier otra cosa no
       enciende el botón.
 
-165. **«Sonido fundamental» y «cifrado armónico»** (29/9/2026, Diego: «no digas *grado +
-    cifra* sino sonido fundamental, en vez de grado, y cifrado armónico, en vez de cifra»).
+165. **«Sonido fundamental» y «cifrado interválico»** (29/9/2026, Diego: «no digas *grado +
+    cifra* sino sonido fundamental, en vez de grado, y cifrado armónico, en vez de cifra»;
+    y, al verlo puesto, «cifrado armónico, mejor cifrado interválico o cifrado barroco» →
+    elige **interválico**, y **sonido fundamental** se queda a secas).
     Cambia el vocabulario de todo lo que se lee, en la pantalla del alumno y en el
     configurador: la paleta de romanos pasa a **«Sonido fundamental»** (en el móvil,
-    «Fundamental»), la de cifras a **«Cifrado armónico»**, el renglón de referencia a
+    «Fundamental»), la de cifras a **«Cifrado interválico»**, el renglón de referencia a
     «Sonidos fundamentales en este ejercicio», el plegable del móvil a «Fundamentales y
     cifrados», y las frases del enunciado, de la corrección y de la solución se rehacen en
     consecuencia; en el informe que se envía, las columnas de fallo son ahora `fundamental`
@@ -3726,6 +3728,40 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       revisión con la cola puesta en «sin cerrar», se pasa solo al siguiente: repasar ciento
       y pico fragmentos es mirar, firmar, siguiente.
     - Cerrar exige no tener cambios sin guardar: primero «Guardar los cambios en el banco».
+
+167. **El configurador enseña LAS DOS VOCES del fragmento** (29/9/2026, Diego: «al revisar
+    el fragmento quiero conocer qué dos voces suministré, a la vez que los acordes que han
+    sido asignados»). Hasta aquí la vista previa enseñaba **una sola**: la del tipo de
+    ejercicio elegido en el filtro. En armonización de bajo se veía su bajo y las tres voces
+    superiores las ponía el motor a su gusto —su soprano no se dibujaba—; en armonización de
+    soprano se veía su melodía y **un bajo deducido**, no el suyo, que ni se dibujaba ni se
+    usaba. Su soprano intervenía solo en un sitio discreto: `preferir()`, que pone delante
+    como modelo el cifrado que contiene la nota que suena a la vez en la otra voz.
+
+    - Ahora, cuando el fragmento tiene las dos voces y **comparten ritmo**, se fuerzan como
+      **voces extremas** de la realización: su bajo abajo (`opciones.bajos`), su soprano
+      arriba (`opciones.sopranos`), y el motor escribe solo tenor y contralto.
+    - **Las voces del profesor van en morado** (`--voz-dada: #9412DC`, hermano hondo de
+      `--marca`); las del motor, en negro; el rojo del error manda sobre los dos.
+    - La vista previa deja de ser un dibujo y pasa a ser **una comprobación**: se pasa
+      `Realizacion.auditar` sobre la realización con las dos voces dadas y los acordes que
+      chocan salen en rojo, con la lista de problemas bajo la partitura.
+    - **Medido antes de hacerlo**: de los 140 fragmentos, 110 tienen las dos voces y **104
+      de esos comparten ritmo** —mismo número de ataques y en los mismos tiempos—, así que
+      una sola rejilla de acordes vale. Los seis que no (`A3-1-29`, `A3-2-11`, `A3-3-04`,
+      `A3-5-11`, `A4-11-01`, `A4-11-07`) se dicen bajo la partitura y se dejan como estaban.
+    - **Solo el configurador**, por ahora. La pantalla del alumno no cambia: queda anotado
+      que en análisis y audición la realización podría llevar también sus voces extremas, y
+      que la solución de un ejercicio de soprano podría escribir su bajo en vez del deducido.
+    - De paso, un fallo de orden: `cargarDelBanco` apuntaba `estado.banco` **al final**, de
+      modo que la vista previa se dibujaba sin saber de qué fragmento venía y la otra voz
+      llegaba un paso tarde. Ahora se apunta antes de pintar.
+
+168. **El candado, junto a la partitura** (29/9/2026, Diego: «a veces voy repasando
+    fragmento por fragmento y no quiero perder tiempo teniendo que subir a ver en la tabla si
+    está cerrado o no»). Una chapa pegada al título «Revisión de las respuestas» que dice el
+    estado —sin cerrar, cerrado con su fecha, o cerrado con la huella rota— y que **cierra y
+    reabre con un clic**, sin volver a la tabla.
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

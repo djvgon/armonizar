@@ -751,7 +751,10 @@ const Partitura = (() => {
       const cambio = estado.realizacionCambio && estado.realizacionCambio[i];
       pasos.forEach((p, k) => {
         const y = Y_BOT_SOL - p * SP / 2;
-        const cabeza = glifo(xN + dx[k], y, f.cabeza, EM, { class: 'nota' + (cambio && cambio[k] ? ' cambiada' : '') });
+        /* Con las dos voces dadas (configurador, decisión 167), la voz más aguda del acorde
+           es la SOPRANO DEL PROFESOR, no una que elija el motor: va en color, como el bajo. */
+        const suya = estado.extremasDadas && k === pasos.length - 1;
+        const cabeza = glifo(xN + dx[k], y, f.cabeza, EM, { class: 'nota' + (cambio && cambio[k] ? ' cambiada' : '') + (suya ? ' dada' : '') });
         g.appendChild(cabeza);
         señalar(cabeza, i, k + 1, xN + dx[k] + ancho * SP / 2, y);
         if (f.puntillo) puntillo(g, xDer, p, Y_BOT_SOL);
@@ -794,7 +797,7 @@ const Partitura = (() => {
       const nb = bajoDe(it);
       bajoNota[i] = nb;
       if (!sinBajo && nb) {
-        const g = el('g', { class: (sopranoDada ? 'bajo-alumno' : 'bajo') + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') });
+        const g = el('g', { class: (sopranoDada ? 'bajo-alumno' : 'bajo') + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') + (estado.extremasDadas ? ' dada' : '') });
         const cabeza = notaSuelta(g, nb, paso(nb), Y_BOT, xN, f);
         señalar(cabeza, i, 0, xN + ancho * SP / 2, Y_BOT - paso(nb) * SP / 2);
         svg.appendChild(g);

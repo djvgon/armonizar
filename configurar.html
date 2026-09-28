@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260930-0100">
-  <link rel="stylesheet" href="css/estilo.css?v=20260930-0100">
+  <link rel="stylesheet" href="css/bravura.css?v=20260930-0700">
+  <link rel="stylesheet" href="css/estilo.css?v=20260930-0700">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -139,7 +139,7 @@
              este dice a QUÉ TONALIDAD se transportan al dárselos al alumno. -->
         <div class="bloque-opciones">
         <h3>En qué tonalidades</h3>
-        <p class="ayuda">Casi todo el banco está escrito en Do M y la menor. Aquí se elige a qué tonalidades se <b>transporta</b>: cada fragmento sale en una, y el mismo enlace da siempre las mismas, así que la ficha se puede repetir, comparar e imprimir. <b>Las respuestas no cambian</b> —son cifrados armónicos y sonidos fundamentales, que no dependen del tono—: cambia la música, no el ejercicio. No lo confundas con «Alteraciones de la armadura» de arriba, que es un filtro de qué fragmentos entran.</p>
+        <p class="ayuda">Casi todo el banco está escrito en Do M y la menor. Aquí se elige a qué tonalidades se <b>transporta</b>: cada fragmento sale en una, y el mismo enlace da siempre las mismas, así que la ficha se puede repetir, comparar e imprimir. <b>Las respuestas no cambian</b> —son cifrados interválicos y sonidos fundamentales, que no dependen del tono—: cambia la música, no el ejercicio. No lo confundas con «Alteraciones de la armadura» de arriba, que es un filtro de qué fragmentos entran.</p>
         <div class="fila-campos">
           <label class="campo campo-ancho">
             <span>Curso</span>
@@ -248,7 +248,7 @@
          =================================================================== -->
     <section class="paso" id="paso-banco">
       <h2><span class="num">B</span> El banco de fragmentos</h2>
-      <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifrados armónicos que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Vive <b>en este navegador</b>: para que las fichas funcionen hay que descargarlo como <code>banco.json</code> y subirlo a GitHub junto a la aplicación.</p>
+      <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifrados interválicos que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Vive <b>en este navegador</b>: para que las fichas funcionen hay que descargarlo como <code>banco.json</code> y subirlo a GitHub junto a la aplicación.</p>
 
       <!-- El banco de este navegador y el publicado no coinciden (decisiones 77 y 78).
            Un solo cartel, porque la diferencia es una sola: lo que cambia es en qué dirección.
@@ -285,7 +285,7 @@
           <span class="ayuda" id="banco-cerrados"></span>
         </p>
         <p class="ayuda"><b>El candado</b> dice si el fragmento está <b>cerrado</b>, es decir, firmado por ti: un fragmento cerrado no lo reescribe ninguna parte del programa, y su huella se comprueba cada vez que se carga el banco. Para repasar de corrido, pon «Repaso» en «Solo los que están sin cerrar»: la tabla y las flechas de recorrido se convierten en una cola que se vacía a medida que firmas. Esto no cambia qué fragmentos entran en la ficha.</p>
-        <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados armónicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
+        <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados interválicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
         <div class="tabla-caja">
           <table id="tabla-banco" class="tabla-revision tabla-banco">
             <thead><tr><th title="Cerrado: firmado por ti; nada del programa lo reescribe">🔒</th><th>Id</th><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifrados del modelo</th><th>Nivel</th><th></th></tr></thead>
@@ -317,7 +317,7 @@
               <label class="tipo">
                 <input type="radio" name="modo-ej" value="cifrar">
                 <span class="tipo-titulo">Análisis</span>
-                <span class="tipo-texto">Se le dan el bajo y la realización a cuatro voces; ha de señalar el cifrado armónico y el sonido fundamental de cada acorde.</span>
+                <span class="tipo-texto">Se le dan el bajo y la realización a cuatro voces; ha de señalar el cifrado interválico y el sonido fundamental de cada acorde.</span>
               </label>
               <label class="tipo">
                 <input type="radio" name="modo-ej" value="armonizar" checked>
@@ -332,14 +332,14 @@
               <label class="tipo">
                 <input type="radio" name="modo-ej" value="soprano">
                 <span class="tipo-titulo">Armonización de soprano</span>
-                <span class="tipo-texto">Ve la melodía y la armoniza: en cada nota elige el sonido fundamental y el cifrado armónico, y el bajo aparece escrito.</span>
+                <span class="tipo-texto">Ve la melodía y la armoniza: en cada nota elige el sonido fundamental y el cifrado interválico, y el bajo aparece escrito.</span>
               </label>
             </div>
           </div>
         </div>
 
         <h3>Repertorio de la lección</h3>
-        <p class="ayuda" id="ayuda-repertorio">Los cifrados armónicos marcados forman la paleta del alumno y limitan las respuestas admisibles. <b>Se guardan con cada fragmento</b> al añadirlo: por eso una ficha puede mezclar lecciones y cada fragmento se juega con los acordes de la suya.</p>
+        <p class="ayuda" id="ayuda-repertorio">Los cifrados interválicos marcados forman la paleta del alumno y limitan las respuestas admisibles. <b>Se guardan con cada fragmento</b> al añadirlo: por eso una ficha puede mezclar lecciones y cada fragmento se juega con los acordes de la suya.</p>
         <div id="repertorio-opciones" class="repertorio-opciones"></div>
         <!-- Los acordes de la lección se tocan pocas veces —al montar una lección nueva o al
              corregir la que ya está—, pero se necesitan en los DOS tipos de ejercicio, no solo
@@ -348,7 +348,7 @@
         <details class="plegable plegable-interior" id="acordes-plegable">
           <summary>Acordes de la lección <span class="sumario-cuenta" id="acordes-cuenta"></span></summary>
           <div id="acordes-funciones" class="acordes-funciones">
-            <p class="ayuda">Los acordes que esta lección autoriza, por función tonal. <b>Se guardan con cada fragmento</b> al añadirlo: son los que el alumno ve como inventario y los que la corrección admite. En la <b>armonización de soprano</b>, además, son los únicos que entran en el análisis de la melodía, y con sus cifrados armónicos se forma la paleta.</p>
+            <p class="ayuda">Los acordes que esta lección autoriza, por función tonal. <b>Se guardan con cada fragmento</b> al añadirlo: son los que el alumno ve como inventario y los que la corrección admite. En la <b>armonización de soprano</b>, además, son los únicos que entran en el análisis de la melodía, y con sus cifrados interválicos se forma la paleta.</p>
             <div id="acordes-lista"></div>
             <label class="campo campo-linea formula-tst">
               <input id="formula-tst" type="checkbox" checked>
@@ -421,7 +421,7 @@
 
         <div class="botonera">
           <button id="btn-analizar" type="button" class="primario">Analizar</button>
-          <span class="ayuda">El motor propone los cifrados armónicos de cada nota; después puedes corregirlos a mano.</span>
+          <span class="ayuda">El motor propone los cifrados interválicos de cada nota; después puedes corregirlos a mano.</span>
         </div>
 
         <!-- Recorrido por los fragmentos que cumplen el filtro (decisión 67): permite
@@ -438,10 +438,14 @@
 
         <!-- Revisión -->
         <div class="sub-paso" id="paso-revision" hidden>
-          <h3>Revisión de las respuestas</h3>
+          <!-- El sello, aquí arriba y no solo en la tabla (Diego, 29/9/2026): al repasar
+               fragmento por fragmento hay que saber de un vistazo si este está cerrado, sin
+               subir a mirarlo. Y desde aquí mismo se cierra y se reabre. -->
+          <h3>Revisión de las respuestas <button type="button" id="sello-chip" class="sello-chip" hidden></button></h3>
           <div id="vista-previa" class="partitura-caja"></div>
+          <p class="ayuda aviso-voces" id="aviso-voces" hidden></p>
           <label class="campo campo-linea"><input id="ver-solucion" type="checkbox" checked><span>Mostrar la solución modelo en la vista previa</span></label>
-          <p class="ayuda">Marca los cifrados armónicos admisibles de cada nota y elige cuál es el modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. En una <b>armonización de soprano</b> cada opción es un acorde (sonido fundamental y cifrado armónico; entre paréntesis, el bajo que resulta): el motor propone los que caben en una sucesión válida y deja sin marcar los demás acordes que contienen la nota. Cambiar la <b>función</b> de una nota vuelve a analizar la melodía con esa función fijada. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
+          <p class="ayuda">Marca los cifrados interválicos admisibles de cada nota y elige cuál es el modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. En una <b>armonización de soprano</b> cada opción es un acorde (sonido fundamental y cifrado interválico; entre paréntesis, el bajo que resulta): el motor propone los que caben en una sucesión válida y deja sin marcar los demás acordes que contienen la nota. Cambiar la <b>función</b> de una nota vuelve a analizar la melodía con esa función fijada. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
           <div class="tabla-caja">
             <table id="tabla-revision" class="tabla-revision">
               <thead><tr><th>#</th><th>Nota</th><th>Tonalidad <small class="th-ayuda">(despliega para modular desde esa nota)</small></th><th>Fundamental</th><th class="col-fun">Función</th><th id="th-admisibles">Cifrados admisibles (● modelo)</th><th>Regla</th></tr></thead>
@@ -459,7 +463,7 @@
               <button id="btn-banco-soltar" type="button" class="secundario">Dejar de revisarlo</button>
             </div>
             <p class="ayuda"><b>Cerrar</b> un fragmento es firmarlo: queda con la fecha de hoy y con una huella de su contenido, y a partir de ahí <b>nada del programa lo reescribe</b> —ni al analizar, ni al importar, ni al cambiar los acordes de la lección—. Si alguna vez la huella no cuadra con lo guardado, se avisa aquí abajo con el identificador delante. Para cambiar un fragmento cerrado hay que reabrirlo a mano.</p>
-            <p class="ayuda">Se guardan la <b>tonalidad</b>, las <b>modulaciones</b> y los <b>cifrados armónicos admisibles</b> de esta voz, con el modelo delante, y se recalculan las etiquetas. Si cambias la tonalidad, la otra voz se vuelve a analizar sola. El banco vive en este navegador: cuando termines de corregir, <b>descarga <code>banco.json</code> y súbelo a GitHub</b>.</p>
+            <p class="ayuda">Se guardan la <b>tonalidad</b>, las <b>modulaciones</b> y los <b>cifrados interválicos admisibles</b> de esta voz, con el modelo delante, y se recalculan las etiquetas. Si cambias la tonalidad, la otra voz se vuelve a analizar sola. El banco vive en este navegador: cuando termines de corregir, <b>descarga <code>banco.json</code> y súbelo a GitHub</b>.</p>
           </div>
         </div>
 
@@ -477,7 +481,7 @@
 
           <div id="todos-fragmentos" hidden>
             <h3>Todos los fragmentos del archivo importado</h3>
-            <p class="ayuda">Genera una dirección por fragmento con los cifrados armónicos que propone el motor y las opciones actuales (sin revisión manual). Conviene comprobar en la lista si algún fragmento tiene notas sin propuesta.</p>
+            <p class="ayuda">Genera una dirección por fragmento con los cifrados interválicos que propone el motor y las opciones actuales (sin revisión manual). Conviene comprobar en la lista si algún fragmento tiene notas sin propuesta.</p>
             <div class="botonera">
               <button id="btn-todos" type="button">Generar direcciones de todos los fragmentos</button>
               <button id="btn-copiar-todos" type="button" disabled>Copiar la lista</button>
@@ -523,19 +527,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260930-0100</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260930-0700</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20260930-0100"></script>
-  <script src="js/reglas.js?v=20260930-0100"></script>
-  <script src="js/ejercicios.js?v=20260930-0100"></script>
-  <script src="js/partitura.js?v=20260930-0100"></script>
-  <script src="js/musicxml.js?v=20260930-0100"></script>
-  <script src="js/musescore.js?v=20260930-0100"></script>
-  <script src="js/banco.js?v=20260930-0100"></script>
-  <script src="js/realizacion.js?v=20260930-0100"></script>
-  <script src="js/tecnicas.js?v=20260930-0100"></script>
-  <script src="js/configurador.js?v=20260930-0100"></script>
+  <script src="js/teoria.js?v=20260930-0700"></script>
+  <script src="js/reglas.js?v=20260930-0700"></script>
+  <script src="js/ejercicios.js?v=20260930-0700"></script>
+  <script src="js/partitura.js?v=20260930-0700"></script>
+  <script src="js/musicxml.js?v=20260930-0700"></script>
+  <script src="js/musescore.js?v=20260930-0700"></script>
+  <script src="js/banco.js?v=20260930-0700"></script>
+  <script src="js/realizacion.js?v=20260930-0700"></script>
+  <script src="js/tecnicas.js?v=20260930-0700"></script>
+  <script src="js/configurador.js?v=20260930-0700"></script>
 </body>
 </html>

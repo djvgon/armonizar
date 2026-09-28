@@ -41,6 +41,11 @@
   --linea: #e2dce8;
   --acento: #241630;
   --acento-suave: #f1e9f6;
+  /* La tinta de LO QUE ESCRIBIÓ EL PROFESOR en la partitura del configurador (decisión
+     167): sus dos voces, bajo y soprano, frente a las que escribe el motor, en negro. No
+     es --marca, que es la identidad y la llamada a la acción; es su hermano hondo, que
+     sobre blanco da contraste de sobra para una cabeza de nota. */
+  --voz-dada: #9412DC;
 
   --bien: #2e7d4f;
   --bien-suave: #e2f3e8;
@@ -274,6 +279,18 @@ svg.partitura .casilla-fun.mal .fun { fill: var(--mal); }
 svg.partitura .casilla-fun.bien .fun { fill: var(--bien); }
 svg.partitura .bajo-alumno.mal text { fill: var(--mal); }
 svg.partitura .bajo-alumno.mal .plica, svg.partitura .bajo-alumno.mal .linea { stroke: var(--mal); }
+
+/* LAS DOS VOCES DADAS (configurador, decisión 167). Lo que escribió el profesor —el bajo y
+   la melodía— en el morado de «lo dado»; lo que escribe el motor —tenor y contralto—, en
+   negro. El rojo del error manda sobre los dos. */
+svg.partitura .acorde .nota.dada { fill: var(--voz-dada); }
+svg.partitura .bajo.dada text, svg.partitura .bajo-alumno.dada text { fill: var(--voz-dada); }
+svg.partitura .bajo.dada .plica, svg.partitura .bajo.dada .linea,
+svg.partitura .bajo-alumno.dada .plica, svg.partitura .bajo-alumno.dada .linea { stroke: var(--voz-dada); }
+svg.partitura .acorde.mal .nota.dada { fill: var(--mal); }
+svg.partitura .bajo-alumno.mal.dada text, svg.partitura .bajo.mal.dada text { fill: var(--mal); }
+.aviso-voces .voces-mal { color: var(--mal); }
+.aviso-voces .voces-bien { color: var(--bien); }
 .tecla-fun { min-width: 48px; min-height: 42px; font-size: 1.05rem; font-weight: bold; font-family: Georgia, "Times New Roman", serif; }
 svg.partitura .etiqueta-ton rect { fill: var(--acento-suave); stroke: var(--acento); stroke-width: 1.1; }
 svg.partitura .etiqueta-ton text { font-family: Georgia, "Times New Roman", serif; font-size: 13px; fill: var(--acento); pointer-events: none; }
@@ -681,6 +698,16 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 }
 .sello-estado[data-estado="cerrado"] { border-left-color: var(--bien); background: var(--bien-suave); }
 .sello-estado[data-estado="rota"] { border-left-color: var(--mal); background: var(--mal-suave); font-weight: 600; }
+/* La chapa junto al título de la partitura: el estado y el gesto, sin subir a la tabla */
+.sello-chip {
+  font: inherit; font-size: .8rem; font-weight: 500; vertical-align: middle;
+  margin-left: .6rem; padding: .18rem .6rem; cursor: pointer;
+  border: 1px solid var(--linea); border-radius: 999px;
+  background: var(--papel); color: var(--tinta-suave);
+}
+.sello-chip:hover { border-color: var(--tinta-suave); }
+.sello-chip[data-estado="cerrado"] { background: var(--bien-suave); border-color: var(--bien); color: var(--bien); }
+.sello-chip[data-estado="rota"] { background: var(--mal-suave); border-color: var(--mal); color: var(--mal); font-weight: 600; }
 
 /* Cartel del paso 4 cuando se está revisando un fragmento que viene del banco */
 .banco-origen { margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--linea); border-radius: var(--radio-control); background: rgba(36, 22, 48, .05); }

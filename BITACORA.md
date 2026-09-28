@@ -11,7 +11,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-0100.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-0700.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Archivos tocados: las ocho páginas
   HTML (marca de versión; `index.html`, `configurar.html` y `cifrados.html` además por el
   vocabulario), `css/estilo.css`, y `js/app.js`, `js/banco.js`, `js/configurador.js`,
@@ -23,7 +23,14 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   «Analizar» y «Guardar» se niegan sobre un cerrado; al cerrar con la cola en «sin cerrar»
   se pasa solo al siguiente; y un banco tocado por debajo dispara el aviso con el id delante.
 - **Lo siguiente es de Diego: revisar los 140 y firmarlos.** El procedimiento técnico ya
-  está; la revisión es suya. Contador en la tabla: «N de 140 fragmentos cerrados».
+  está; la revisión es suya. Contador en la tabla: «N de 140 fragmentos cerrados», y el
+  candado junto a la partitura para cerrar sin subir a la tabla (168).
+- **El configurador ya enseña las dos voces** (167) y audita la realización con ellas. Al
+  revisar saldrán problemas de conducción que antes no se veían: no son nuevos, es que
+  hasta ahora una de las dos voces no entraba en el cálculo.
+- **`REGLAS-DEL-MOTOR.md`**: el borrador de las 57 reglas que el motor aplica hoy, escritas
+  en lenguaje de armonía, para que Diego las marque (✓ / ✗ / ~ / fuera). Cuando esté
+  corregido, cada regla del código citará su número.
 - **Queda decidido cómo tratar la variedad de armonizaciones** de un mismo fragmento a dos
   voces (Diego, 29/9): lo que cambia el fragmento entero —sol menor o si♭ mayor, modular o
   no— pide **varias lecturas** del mismo fragmento, no copias; la variedad dentro de una
@@ -496,6 +503,8 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-0700 | El configurador enseña **las dos voces** del fragmento —el bajo y la soprano del profesor, en morado, como voces extremas— y la realización pasa a ser una comprobación: los acordes que no admiten las dos voces salen en rojo (167). El candado, junto a la partitura (168) |
+| 20260930-0330 | «Cifrado interválico» en vez de «cifrado armónico»; «sonido fundamental» se queda a secas (165, afinada) |
 | 20260930-0100 | **El sello**: un fragmento cerrado es criterio del profesor, nada del programa lo reescribe y su huella se comprueba al cargar el banco; cola de repaso en la tabla (166). Vocabulario: «sonido fundamental» y «cifrado armónico» en todo lo que se lee (165) |
 | 20260929-2200 | Nada reanaliza un fragmento del banco sin pedirlo: los dos caminos silenciosos que borraban las cifras asignadas a mano quedan cerrados (163). Botón «Ver los resultados» en la cabecera del configurador (164) |
 | 20260929-2130 | El acorde pivote rompía el nombre de la cadencia: su grado llega como cadena compuesta («I = V») y degradaba a imperfecta una auténtica perfecta, como en `A4-10-05` (162) |

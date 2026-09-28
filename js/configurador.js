@@ -274,7 +274,7 @@
     const r = leerBajo();
     if (r.errores.length || !r.compases.length) { aviso('Corrige ' + (esSoprano() ? 'la melodía' : 'el bajo') + ' antes de analizar.'); return; }
     const rep = repertorio();
-    if (!rep.length) { aviso('Marca al menos un cifrado armónico en el repertorio.'); return; }
+    if (!rep.length) { aviso('Marca al menos un cifrado interválico en el repertorio.'); return; }
     // Con las funciones «dadas», los acordes admisibles de la melodía se limitan a los de la
     // función que ve el alumno (análisis con las funciones fijadas); con «pedirlas» no se limitan
     // (se acepta cualquier función de un acorde admisible).
@@ -524,6 +524,55 @@
     guardarBorrador();
   }
 
+  /* La OTRA voz del fragmento del banco, la que no se está revisando, y si encaja nota a
+     nota con esta. Encajan cuando tienen el mismo número de ataques y en los mismos
+     tiempos: entonces una sola rejilla de acordes vale para las dos. Medido sobre el banco
+     el 29/9/2026: de los 110 fragmentos con las dos voces, 104 comparten ritmo; los seis
+     que no —A3-1-29, A3-2-11, A3-3-04, A3-5-11, A4-11-01 y A4-11-07— se dicen y se dejan
+     como estaban. */
+  function vocesDelBanco(ej) {
+    const b = estado.banco;
+    if (!b) return null;
+    const e = b.entrada;
+    if (!e || !e.bajo || !e.soprano) return { hayDos: false };
+    const otraParte = b.voz === 'bajo' ? e.soprano : e.bajo;
+    try {
+      const propias = MusicXML.conTiempos(ej.compases);
+      const otras = MusicXML.conTiempos(otraParte.compases);
+      const alineadas = propias.length === otras.length
+        && propias.every((p, i) => Math.abs(p.tiempo - otras[i].tiempo) < 0.01);
+      return { hayDos: true, alineadas, notas: otras.map(o => o.nota), cuantas: otras.length, propias: propias.length,
+        cual: b.voz === 'bajo' ? 'soprano' : 'bajo' };
+    } catch (err) { return { hayDos: true, alineadas: false, cuantas: 0, propias: 0, cual: b.voz === 'bajo' ? 'soprano' : 'bajo' }; }
+  }
+
+  // Qué se está viendo, dicho en una línea bajo la partitura
+  function pintarAvisoVoces(dos, extremas, avisos, sop) {
+    const p = $('#aviso-voces');
+    if (!p) return;
+    if (!estado.banco) { p.hidden = true; return; }
+    p.hidden = false;
+    if (extremas) {
+      let t = 'Se ven tus <b>dos voces</b> —el bajo abajo y la melodía arriba, en morado— y, en negro, el tenor y la contralto que escribe el motor con los acordes asignados.';
+      if (avisos.length) {
+        const lista = avisos.slice(0, 4).map(a => 'acorde ' + ((a.i || 0) + 1) + ': ' + a.texto.replace(/<[^>]*>/g, '')).join(' · ');
+        t += ' <b class="voces-mal">⚠ ' + avisos.length + (avisos.length > 1 ? ' problemas' : ' problema') + ' de conducción</b> con esos acordes y estas dos voces — ' + lista
+          + (avisos.length > 4 ? ' · y ' + (avisos.length - 4) + ' más' : '') + '.';
+      } else {
+        t += ' <b class="voces-bien">Sin problemas de conducción.</b>';
+      }
+      p.innerHTML = t;
+      return;
+    }
+    if (!dos || !dos.hayDos) {
+      p.innerHTML = 'Este fragmento solo tiene escrita <b>una voz</b> (' + (sop ? 'la melodía' : 'el bajo') + '), así que las voces superiores son las que el motor deduce de los acordes.';
+      return;
+    }
+    p.innerHTML = 'Este fragmento tiene las dos voces, pero <b>no comparten ritmo</b> ('
+      + dos.propias + ' ataques en la que revisas y ' + dos.cuantas + ' en ' + (dos.cual === 'bajo' ? 'el bajo' : 'la melodía')
+      + '), así que no caben en una sola rejilla de acordes: se muestra solo la voz del ejercicio.';
+  }
+
   function pintarVistaPrevia() {
     const ej = construirEjercicio(estado.compases, tonalidad(), estado.respuestas);
     const n = Ejercicios.numNotas(ej);
@@ -543,8 +592,33 @@
       return Teoria.romanoEscrito(a[0], notas[i], ton);
     };
     const romanos = ver ? ej.respuestas.map((a, i) => romanoModelo(a, i, pivotes.has(i) ? Ejercicios.tonalidadAntes(ej, i) : Ejercicios.tonalidadEn(ej, i))) : new Array(n).fill(null);
+    /* LAS DOS VOCES DEL FRAGMENTO, NO UNA (decisión 167, Diego 29/9/2026: «al revisar el
+       fragmento quiero conocer qué dos voces suministré, a la vez que los acordes que han
+       sido asignados»). Hasta aquí la vista previa enseñaba la voz del tipo de ejercicio
+       elegido y el motor ponía las otras tres a su gusto: en la armonización de bajo la
+       soprano de Diego no se dibujaba, y en la de soprano su bajo ni se dibujaba ni se
+       usaba —se deducía otro—. Ahora, cuando el fragmento tiene las dos voces y comparten
+       ritmo, se FUERZAN como voces extremas: su bajo abajo, su soprano arriba, y el motor
+       solo escribe tenor y contralto. Así la vista previa deja de ser un dibujo y pasa a ser
+       una comprobación: si los acordes asignados no admiten las dos voces a la vez, salen
+       los errores de conducción. */
+    const dos = vocesDelBanco(ej);
+    const extremas = !!(ver && dos && dos.alineadas);
     const opReal = { modo: 'auto', rotacion: 0 };
-    if (sop) { opReal.bajos = Ejercicios.bajosDe(ej, romanos, ver ? modelos : new Array(n).fill(null)); opReal.sopranos = notas; }
+    if (sop) {
+      opReal.bajos = extremas ? dos.notas : Ejercicios.bajosDe(ej, romanos, ver ? modelos : new Array(n).fill(null));
+      opReal.sopranos = notas;
+    } else if (extremas) {
+      opReal.sopranos = dos.notas;
+    }
+    const real = ver ? Realizacion.realizar(ej, modelos, opReal) : null;
+    let avisosVoces = [];
+    if (extremas && real) {
+      try { avisosVoces = Realizacion.auditar(ej, sop ? opReal.bajos : notas, real.acordes) || []; } catch (e) { avisosVoces = []; }
+    }
+    const malos = new Array(n).fill(false);
+    avisosVoces.forEach(a => { if (typeof a.i === 'number' && a.i >= 0) malos[a.i] = true; });
+    pintarAvisoVoces(dos, extremas, avisosVoces, sop);
     const est = {
       respuestas: ver ? modelos : new Array(n).fill(null),
       // Grado en la tonalidad que rige; en el pivote, también en la anterior (casilla partida)
@@ -554,7 +628,9 @@
       etiquetas: mods.map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'dada' })),
       pedirRomano: opciones().pedirRomano || sop,
       activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
-      realizacion: ver ? Realizacion.realizar(ej, modelos, opReal).acordes : null,   // el profesor siempre puede ver la realización modelo
+      realizacion: real ? real.acordes : null,   // el profesor siempre puede ver la realización modelo
+      realizacionMal: extremas ? malos : null,   // los acordes en los que las dos voces dadas chocan
+      extremasDadas: extremas,                   // bajo y soprano son los suyos: van en color
       vozDada: sop ? 'soprano' : null,
       bajos: sop ? opReal.bajos : null,
       /* La fila de funciones, con el pivote partido en dos (decisión 95): arriba la función
@@ -1323,7 +1399,7 @@
       bRep.disabled = false;
       bRep.textContent = 'Dar a ' + filtro.leccion + ' el repertorio del paso 3';
     } else {
-      pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —los cifrados armónicos y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección arriba para verlo o rehacerlo.';
+      pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —los cifrados interválicos y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección arriba para verlo o rehacerlo.';
       bRep.disabled = true;
       bRep.textContent = 'Dar a esta lección el repertorio del paso 3';
     }
@@ -1459,6 +1535,10 @@
     if (!parte) { aviso('Ese fragmento no tiene esa voz escrita.'); return; }
     elegirModo(modo);
     ajustarCampoAudicion();
+    /* El origen se apunta AQUÍ, antes de pintar nada (decisión 167). Estaba al final, y
+       entonces la vista previa se dibujaba sin saber todavía de qué fragmento del banco
+       venía: la otra voz llegaba un paso tarde y el cartel hablaba del fragmento anterior. */
+    estado.banco = { entrada: e, voz: Banco.vozDeModo(modo) };
     estado.fragmentos = null; estado.fragmentoActual = null; estado.companera = null;
     $('#fragmentos').hidden = true;
     $('#texto-bajo').value = Teoria.textoDesdeBajo(parte.compases);
@@ -1491,7 +1571,6 @@
       pintarRevision();
       $('#paso-direccion').hidden = false;
     }
-    estado.banco = { entrada: e, voz: Banco.vozDeModo(modo) };
     pintarOrigenBanco();
     pintarRecorrido();
     guardarBorrador();
@@ -1539,6 +1618,7 @@
      explícito. La huella no es una promesa mía: se comprueba al cargar el banco. */
   function pintarSello() {
     const caja = $('#banco-sello'), b = estado.banco;
+    pintarSelloChip();
     if (!caja) return;
     const bCerrar = $('#btn-banco-cerrar'), bAbrir = $('#btn-banco-abrir'), bGuardar = $('#btn-banco-guardar');
     if (!b) { caja.hidden = true; return; }
@@ -1553,6 +1633,24 @@
     if (bCerrar) { bCerrar.hidden = cerrada; }
     if (bAbrir) { bAbrir.hidden = !cerrada; }
     if (bGuardar) { bGuardar.disabled = cerrada; bGuardar.title = cerrada ? 'Este fragmento está cerrado: reábrelo si quieres cambiarlo.' : ''; }
+  }
+
+  /* La chapa del sello, pegada al título de la partitura (Diego, 29/9/2026). Repasar
+     fragmento por fragmento obligaba a subir a la tabla para saber si este estaba cerrado.
+     Ahora se ve aquí, junto a la música, y además se cierra y se reabre desde aquí. */
+  function pintarSelloChip() {
+    const chip = $('#sello-chip'), b = estado.banco;
+    if (!chip) return;
+    chip.hidden = !b;
+    if (!b) return;
+    const e = b.entrada, cerrada = Banco.estaCerrada(e), rota = Banco.huellaRota(e);
+    chip.dataset.estado = cerrada ? (rota ? 'rota' : 'cerrado') : 'abierto';
+    chip.textContent = cerrada
+      ? (rota ? '⚠🔒 ' + (e.id || '') + ' · cerrado el ' + e.cerrado + ', pero cambiado — reabrir' : '🔒 ' + (e.id || '') + ' · cerrado el ' + e.cerrado + ' — reabrir')
+      : '🔓 ' + (e.id || '') + ' · sin cerrar — cerrar ahora';
+    chip.title = cerrada
+      ? 'Este fragmento está firmado por ti y nada del programa lo reescribe. Pulsa para reabrirlo.'
+      : 'Este fragmento todavía no está firmado. Pulsa para cerrarlo.';
   }
 
   /* Cerrar el que se está revisando. Si la cola de repaso está puesta en «sin cerrar», el
@@ -2077,6 +2175,10 @@
     $('#btn-banco-guardar').addEventListener('click', guardarEnBanco);
     $('#btn-banco-cerrar').addEventListener('click', cerrarActual);
     $('#btn-banco-abrir').addEventListener('click', abrirActual);
+    $('#sello-chip').addEventListener('click', () => {
+      if (!estado.banco) return;
+      if (Banco.estaCerrada(estado.banco.entrada)) abrirActual(); else cerrarActual();
+    });
     $('#banco-revision').addEventListener('change', pintarBanco);
     $('#btn-banco-soltar').addEventListener('click', () => { estado.banco = null; pintarOrigenBanco(); guardarBorrador(); });
     $('#btn-banco-descargar').addEventListener('click', descargarBanco);
