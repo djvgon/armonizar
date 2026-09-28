@@ -3589,6 +3589,14 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     coherente —el cuadro describe precisamente ese cifrado naranja— y en el ciruela de la
     marca se leían como una anotación ajena a la corrección.
 
+    Pero **no el mismo naranja**: el de la corrección, un punto más claro; el de las técnicas,
+    «naranja oscuro —no marrón— todavía vivo pero un poco más condensado» (Diego). Dos
+    tonos, `--cambio: #D95F00` y `--tecnica: #B84A00`. Lo que separa el naranja oscuro del
+    marrón es la **saturación**, no el tono: el marrón es justo un naranja oscuro y apagado,
+    así que el segundo baja de claridad manteniéndola arriba. Y así los dos oranges se
+    distinguen entre sí: el cifrado de la solución y el cuadro que lo describe no son lo
+    mismo.
+
 160. **La síncopa se comprueba también en la armonización de soprano** (28/9/2026, Diego).
     La corrección del alumno la excluía con un `!esSop`, puesto cuando la regla no servía
     allí (decisión 158). Arreglada aquella, se le pide lo mismo que en los demás modos.
@@ -3603,6 +3611,121 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     exactamente ese modelo recibirá ahora el aviso. Es verdad —la síncopa está ahí—, pero es
     incómodo. Reanalizar esos fragmentos en el configurador repara 4; el quinto,
     `A3-3-22`, necesita cambiar una nota de la melodía (decisión 158).
+
+161. **La semicadencia frigia, en sus dos versiones** (28/9/2026, Diego). Estaba reconocida
+    a medias —solo el par final— y ahora entra entera en el repertorio de técnicas:
+
+    - **corta**: `IV6 – V` en modo menor;
+    - **larga**: `I – V6 – IV6 – V`, también en menor, y el cuadro la abarca **entera**,
+      porque la fórmula se aprende como una sola cosa: la tónica y el V6 del principio
+      llevan el bajo por grados hasta ese 6.º grado.
+
+    Lo que la hace frigia es el **bajo**, que baja del 6.º grado al 5.º por **semitono** —el
+    paso característico del modo—. En modo mayor la misma sucesión sale como semicadencia a
+    secas, y así se ha comprobado.
+
+    De paso, **el modo lo manda ahora la tonalidad que rige EN LA CADENCIA**, no la del final
+    del fragmento: en una frase interior de una pieza que modula no tienen por qué ser la
+    misma, y con la decisión 157 las frases interiores ya cadencian por su cuenta.
+
+162. **El acorde pivote rompía el nombre de la cadencia** (28/9/2026, Diego: «la cadencia de
+    la imagen es auténtica perfecta… corrígelo»). El fragmento era `A4-10-05`, en
+    armonización de bajo: `I – IV – V6/5̸ – V – I` en Sol M, con la soprano acabando en la
+    **tónica** y la dominante en **estado fundamental** —perfecta de manual—, y salía
+    rotulada **imperfecta**.
+
+    El motivo no estaba en la regla sino en lo que le llegaba. Cuando el alumno falla la
+    cifra, el detector toma el grado del modelo de `r.modeloRomano`; y en un acorde **pivote**
+    ese campo viene como **cadena compuesta con las dos lecturas**, `«I = V»`. Con eso, la
+    comprobación «¿es el V?» no casaba con nada y la cadencia se degradaba a imperfecta. La
+    nota 4 de ese fragmento es justamente el pivote de la vuelta a Sol M.
+
+    - Ahora el grado se pide a la **pareja modelo** de esa nota —`Ejercicios.gradoDe` sobre
+      `Ejercicios.parejas`—, que lo da limpio y en la tonalidad que rige.
+    - Y `tecnicas.js` pone una **barandilla**: si le llega el compuesto, se queda con la
+      lectura de después del `=`, que es la de la tonalidad vigente. Quien llama debe mandar
+      un romano limpio, pero más vale leer el que toca que no reconocer ninguno.
+
+    **Medido**: en el banco, las cadencias auténticas perfectas pasan de 20 a **21** y las
+    imperfectas de 5 a **3**; las que cambian son exactamente las que tocaban un pivote. Y se
+    comprobó aparte, sin la aplicación de por medio, que `A4-10-05` da «perfecta» con la
+    soprano en sol y la tónica en Sol.
+
+163. **Nada reanaliza un fragmento del banco por su cuenta** (28/9/2026, Diego: «si yo
+    asigno algo a un fragmento no puedes modificarlo, porque mi criterio es experto y el
+    tuyo es ciego aplicando reglas que aún no están bien formuladas»). Tiene razón, y había
+    **dos caminos silenciosos** por los que el motor le borraba el trabajo:
+
+    - Cambiar los **acordes de la lección**, la casilla **«Fórmula T S T»** o el selector de
+      **funciones de la ficha** con un fragmento abierto disparaba `analizar(true, true)`:
+      un reanálisis completo que sustituía las cifras asignadas a mano, sin avisar. Ahora,
+      **si el fragmento viene del banco** (`estado.banco`), no se reanaliza: se avisa y queda
+      el botón «Analizar la melodía» para quien de verdad lo quiera.
+    - `fundir()`, al reimportar un fragmento **ya presente** con las dos voces y **otra
+      tonalidad**, reemplaza la entrada entera —respuestas incluidas—. Tiene motivo: las
+      viejas estaban leídas en una tonalidad equivocada. Pero pasaba callando. Ahora se
+      anotan los identificadores y se dicen aparte, en un aviso propio: «OJO: N fragmentos
+      venían en otra tonalidad y se han reemplazado enteros… Si los tenías revisados,
+      vuelve a revisarlos».
+
+    **Lo que ya estaba bien y conviene dejar escrito**: la pantalla del alumno **nunca**
+    reanaliza. `Banco.ejercicio` sirve las respuestas guardadas tal cual; el motor se llama
+    solo para la explicación del globo y para «Escuchar propuesta», y esa explicación se
+    muestra **únicamente cuando el motor coincide con el modelo guardado**.
+
+    **Comprobado sobre el archivo**, para poder afirmarlo y no suponerlo: de las 1304 notas
+    guardadas en `banco.json`, **85 se apartan de lo que el motor propondría hoy** —65 en el
+    bajo (39 fragmentos) y 20 en la soprano (15 fragmentos)—. Esas discrepancias son la mano
+    de Diego: si algo hubiera reescrito sus asignaciones, el archivo coincidiría con el motor
+    al cien por cien.
+
+164. **Botón a la hoja de respuestas** (28/9/2026, Diego). En la cabecera del configurador,
+    junto a «Ir a la página del alumno», aparece **«Ver los resultados →»** cuando su
+    dirección está puesta, abajo en «Recogida de resultados».
+    - La dirección se guarda **solo en el navegador** (`armonizar.respuestas`) y **no entra
+      en `envio.json`**, a propósito: ese archivo se sube a GitHub y la hoja es del profesor.
+    - Se aceptan direcciones de Hojas de cálculo, Documentos y Drive; cualquier otra cosa no
+      enciende el botón.
+
+165. **«Sonido fundamental» y «cifrado armónico»** (29/9/2026, Diego: «no digas *grado +
+    cifra* sino sonido fundamental, en vez de grado, y cifrado armónico, en vez de cifra»).
+    Cambia el vocabulario de todo lo que se lee, en la pantalla del alumno y en el
+    configurador: la paleta de romanos pasa a **«Sonido fundamental»** (en el móvil,
+    «Fundamental»), la de cifras a **«Cifrado armónico»**, el renglón de referencia a
+    «Sonidos fundamentales en este ejercicio», el plegable del móvil a «Fundamentales y
+    cifrados», y las frases del enunciado, de la corrección y de la solución se rehacen en
+    consecuencia; en el informe que se envía, las columnas de fallo son ahora `fundamental`
+    y `cifrado`.
+    - **No cambia** el *grado de la escala del bajo* —los circulitos de Gjerdingen—, que ahí
+      sí es un grado: se sigue llamando así en la pantalla y en el configurador.
+    - Tampoco cambian los identificadores internos (`romano`, `cifra`): el vocabulario es de
+      lo que se lee, no del código.
+
+166. **EL SELLO: un fragmento cerrado es criterio del profesor** (29/9/2026, Diego: «prefiero
+    empezar por establecer el procedimiento técnico para poder señalar un fragmento como
+    *cerrado* y revisarlos todos a partir de ahí»). La decisión 163 tapó los dos caminos
+    conocidos; esta cambia la regla de fondo: **el banco deja de ser algo en lo que hay que
+    confiar y pasa a ser algo que se comprueba**.
+
+    - Un fragmento cerrado guarda dos campos nuevos: **`cerrado`**, la fecha en que el
+      profesor lo firmó, y **`huella`**, 16 dígitos hexadecimales sacados de su contenido
+      armónico —tonalidad, compás y, de cada voz, su música, sus modulaciones y sus cifrados
+      admisibles con el modelo delante—. **No** entra el repertorio de la lección, que se
+      cambia a propósito desde otro sitio y haría saltar avisos falsos.
+    - **Nada del programa reescribe un fragmento cerrado.** «Analizar» se niega y lo dice;
+      «Guardar los cambios en el banco» se desactiva; `fundir()` lo deja intacto al importar
+      —incluso el reemplazo por cambio de tonalidad— y lo cuenta al terminar. Para tocarlo
+      hay que pulsar **«Reabrir para cambiarlo»**, que es un gesto del profesor.
+    - **La huella se comprueba sola**: al abrir el configurador y al cargar un `banco.json`
+      se recalculan todas las de los cerrados y, si alguna no cuadra, salta un aviso con los
+      identificadores delante y la fila sale marcada en la tabla. Si ese aviso no aparece, lo
+      que hay es exactamente lo que se firmó.
+    - **La cola de repaso**: sobre la tabla del banco, «Repaso» con «Ver todos · Solo los que
+      están sin cerrar · Solo los cerrados», y el contador «N de 140 fragmentos cerrados».
+      Filtra **la tabla y las flechas de recorrido, no la ficha**. Al cerrar el fragmento en
+      revisión con la cola puesta en «sin cerrar», se pasa solo al siguiente: repasar ciento
+      y pico fragmentos es mirar, firmar, siguiente.
+    - Cerrar exige no tener cambios sin guardar: primero «Guardar los cambios en el banco».
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

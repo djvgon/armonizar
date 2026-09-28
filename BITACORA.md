@@ -9,6 +9,34 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
+## Estado a 29 de septiembre de 2026
+
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-0100.** Pendiente de que
+  Diego haga el *commit* y el *push* desde GitHub Desktop. Archivos tocados: las ocho páginas
+  HTML (marca de versión; `index.html`, `configurar.html` y `cifrados.html` además por el
+  vocabulario), `css/estilo.css`, y `js/app.js`, `js/banco.js`, `js/configurador.js`,
+  `js/partitura.js`, `js/registro.js`, `js/teoria.js`. **`banco.json` no cambia.**
+- **El sello (decisión 166) está puesto y probado.** Comprobado en el navegador sobre los 140
+  fragmentos de verdad: la huella es estable y distinta en los 140; cualquier cambio en la
+  tonalidad, en una nota, en una modulación, en un cifrado admisible o en cuál es el modelo
+  la rompe; cambiar el repertorio de la lección, el nivel o las etiquetas no la rompe;
+  «Analizar» y «Guardar» se niegan sobre un cerrado; al cerrar con la cola en «sin cerrar»
+  se pasa solo al siguiente; y un banco tocado por debajo dispara el aviso con el id delante.
+- **Lo siguiente es de Diego: revisar los 140 y firmarlos.** El procedimiento técnico ya
+  está; la revisión es suya. Contador en la tabla: «N de 140 fragmentos cerrados».
+- **Queda decidido cómo tratar la variedad de armonizaciones** de un mismo fragmento a dos
+  voces (Diego, 29/9): lo que cambia el fragmento entero —sol menor o si♭ mayor, modular o
+  no— pide **varias lecturas** del mismo fragmento, no copias; la variedad dentro de una
+  lectura —T-D-T o T-S-T— es lo que ya hacen los cifrados admisibles más las reglas de
+  sucesión. **Falta implementar las lecturas**: hoy un fragmento tiene una sola.
+- **Pendiente de acordar**: escribir las reglas en palabras de Diego, numeradas, en un
+  documento del Proyecto, y que cada regla del código cite su número. Es la condición que él
+  puso para que el algoritmo no vaya dando palos de ciego.
+- **Sigue abierto** de antes: las marcas Berklee (141) cuando haya acordes suficientes;
+  `A3-3-22`, el único fragmento cuyo modelo de soprano sincopa y que necesita que él cambie
+  una nota de la melodía; `A3-7-12`, con quintas entre bajo y soprano en el modelo; y los
+  fragmentos a cuatro voces, aparcados a petición suya.
+
 ## Estado a 25 de septiembre de 2026
 
 - **Versión en la carpeta de Drive:** 20260927-0940. **Pendiente de subir**, además de
@@ -468,6 +496,11 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-0100 | **El sello**: un fragmento cerrado es criterio del profesor, nada del programa lo reescribe y su huella se comprueba al cargar el banco; cola de repaso en la tabla (166). Vocabulario: «sonido fundamental» y «cifrado armónico» en todo lo que se lee (165) |
+| 20260929-2200 | Nada reanaliza un fragmento del banco sin pedirlo: los dos caminos silenciosos que borraban las cifras asignadas a mano quedan cerrados (163). Botón «Ver los resultados» en la cabecera del configurador (164) |
+| 20260929-2130 | El acorde pivote rompía el nombre de la cadencia: su grado llega como cadena compuesta («I = V») y degradaba a imperfecta una auténtica perfecta, como en `A4-10-05` (162) |
+| 20260929-2100 | La semicadencia frigia entra entera en las técnicas: `IV6 – V` y la versión larga `I – V6 – IV6 – V`, y el modo lo manda la tonalidad de la cadencia, no la del final del fragmento (161) |
+| 20260929-2030 | Los cuadros de las técnicas, en su propio naranja oscuro (`#B84A00`), separado del de la corrección y con la saturación arriba para que no vire a marrón (159, afinada) |
 | 20260929-2000 | La síncopa armónica se comprueba también en la corrección de la armonización de soprano, dándole el acorde entero para que deduzca el bajo (160) |
 | 20260929-1930 | Lo que separa la prolongación de la cadencia es el bajo: `T D T` con bordadura o bordadura incompleta es prolongación; si el bajo salta, es cadencia. Y los cuadros de las técnicas pasan a naranja (159) |
 | 20260929-1900 | Varias subdominantes seguidas ya no son «prolongación de la subdominante»: cuentan como una sola y la cadencia se las lleva todas, desde la primera (157, afinada) |

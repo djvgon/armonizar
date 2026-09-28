@@ -554,9 +554,9 @@ const Teoria = (() => {
 
   const CIFRADOS = {
     '53': {
-      etiqueta: '—', nombre: '5/3 (sin cifra)',
+      etiqueta: '—', nombre: '5/3 (sin cifrar)',
       filas: [[{ signo: '—' }]],
-      descripcion: 'Tríada en estado fundamental (3ª y 5ª). No lleva cifra.',
+      descripcion: 'Tríada en estado fundamental (3ª y 5ª). No se cifra.',
       voces: vocesDiatonicas([3, 5])
     },
     '6': {

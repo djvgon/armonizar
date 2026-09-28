@@ -392,6 +392,9 @@ const Banco = (() => {
     if (f.modula === false && et.modula) return false;
     if (f.cifras && f.cifras.length && !f.cifras.every(c => (et.cifras || []).includes(c))) return false;
     if (f.nivel) { const n = nivel(e, f.modo); if (n < f.nivel[0] || n > f.nivel[1]) return false; }
+    // El sello (decisión 166): para repasar, «sin cerrar» convierte la tabla en una cola
+    if (f.cerrado === 'si' && !e.cerrado) return false;
+    if (f.cerrado === 'no' && e.cerrado) return false;
     return true;
   }
   const filtrar = (entradas, filtro) => (entradas || []).filter(e => cumple(e, filtro));
@@ -674,6 +677,59 @@ const Banco = (() => {
     const e = (entradas || []).find(x => x.leccion === leccion);
     return e ? { cifras: (e.leccionRepertorio || []).slice(), acordes: (e.leccionAcordes || []).slice() } : null;
   }
+  /* ---------- EL SELLO: un fragmento CERRADO es criterio del profesor ----------
+     (decisión 166, Diego 29/9/2026: «si yo asigno algo a un fragmento no puedes
+     modificarlo porque mi criterio es experto y el tuyo es ciego aplicando reglas que aún
+     no están terminadas de formular bien»).
+
+     Un fragmento CERRADO lleva dos cosas: la fecha en que el profesor lo firmó (`cerrado`)
+     y una HUELLA de su contenido armónico (`huella`). La fecha es el permiso —ningún
+     camino del programa reescribe un fragmento cerrado— y la huella es la prueba: al
+     cargar el banco se recalcula y, si no cuadra, se avisa con el identificador delante.
+     Así el profesor no tiene que fiarse de que nada lo haya tocado: lo comprueba.
+
+     Qué entra en la huella: lo que él asigna —tonalidad, compás, y de cada voz su música,
+     sus modulaciones y sus cifrados admisibles con el modelo delante—. NO entra el
+     repertorio de la lección: eso se cambia a propósito desde el panel de lecciones y
+     haría saltar el aviso en fragmentos que nadie ha tocado. */
+  function contenidoArmonico(e) {
+    const voz = v => (e[v]
+      ? [JSON.stringify(e[v].compases || []), JSON.stringify(e[v].modulaciones || []), JSON.stringify(e[v].respuestas || [])].join('|')
+      : '—');
+    return [JSON.stringify(e.tonalidad || {}), JSON.stringify(e.compas || []), voz('bajo'), voz('soprano')].join('#');
+  }
+  /* Dos pasadas distintas sobre el mismo texto (FNV-1a y la de Java), en hexadecimal: 16
+     dígitos. No es criptografía —no hace falta: aquí nadie falsifica nada—, es detección de
+     cambios, y para eso sobra. */
+  function huellaDe(e) {
+    const t = contenidoArmonico(e);
+    let a = 0x811c9dc5, b = 0;
+    for (let i = 0; i < t.length; i++) {
+      const c = t.charCodeAt(i);
+      a = ((a ^ c) >>> 0);
+      a = (a + ((a << 1) + (a << 4) + (a << 7) + (a << 8) + (a << 24))) >>> 0;
+      b = (Math.imul(b, 31) + c) >>> 0;
+    }
+    return ('0000000' + a.toString(16)).slice(-8) + ('0000000' + b.toString(16)).slice(-8);
+  }
+  const estaCerrada = e => !!(e && e.cerrado);
+  function cerrar(e, fecha) {
+    if (!e) return e;
+    e.cerrado = fecha || new Date().toISOString().slice(0, 10);
+    e.huella = huellaDe(e);
+    return e;
+  }
+  function abrir(e) {
+    if (!e) return e;
+    delete e.cerrado;
+    delete e.huella;
+    return e;
+  }
+  // ¿Cerrado y con el contenido cambiado desde que se firmó? Eso es lo que nunca debería pasar.
+  const huellaRota = e => !!(e && e.cerrado && e.huella && huellaDe(e) !== e.huella);
+  const rotas = entradas => (entradas || []).filter(huellaRota);
+  const cuentaCerradas = entradas => (entradas || []).filter(estaCerrada).length;
+
   // Nombre de cada lección del banco, por si alguna entrada vieja no lo trae
   function nombresDeLecciones(entradas) {
     const out = {};
@@ -689,5 +745,6 @@ const Banco = (() => {
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, comparaLecciones, etiquetar,
     transportarEntrada, transportada, tonicasDeFicha, tonicaEn,
     analizarVoz: analizar, companeraDe: companera,
+    huellaDe, estaCerrada, cerrar, abrir, huellaRota, rotas, cuentaCerradas,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
 })();

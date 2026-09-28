@@ -192,8 +192,8 @@
        filas ha de rellenar y qué significan las notas en rojo. */
     const señala = [];
     if (estado.modoFun === 'pedir') señala.push('su <b>función tonal</b>');
-    if (pideGrado()) señala.push('el <b>grado</b> de su fundamental');
-    señala.push('el <b>cifrado</b> (la inversión en que lo escribes)');
+    if (pideGrado()) señala.push('su <b>sonido fundamental</b>');
+    señala.push('su <b>cifrado armónico</b> (la inversión en que lo escribes)');
     const que = señala.length > 1
       ? señala.slice(0, -1).join(', ') + ' y ' + señala[señala.length - 1]
       : señala[0];
@@ -219,7 +219,7 @@
     if (estado.modoFun === 'dadas') notas.push('La fila <b>Función</b> te da la función tonal de cada acorde: elige acordes que la cumplan.');
     if (estado.modoTon === 'dadas' && mods.length) {
       notas.push('<b>Modula</b> ' + mods.map(m => 'a <b>' + Teoria.nombreTonalidad(m.tonalidad) + '</b> desde la nota ' + (m.nota + 1)).join(' y ')
-        + '; ese acorde es común a las dos tonalidades, así que se te piden sus dos grados.');
+        + '; ese acorde es común a las dos tonalidades, así que se te pide su sonido fundamental en las dos.');
     }
     if (estado.modoEj === 'armonizar' || estado.modoEj === 'soprano') {
       notas.push('La realización a cuatro voces se va escribiendo a medida que cifras'
@@ -295,7 +295,7 @@
     const gr = $('#grados');
     gr.innerHTML = '';
     const ayuda = Ejercicios.ayudaGrados(ej);
-    $('#etiqueta-grados').textContent = 'Grados en este ejercicio';
+    $('#etiqueta-grados').textContent = 'Sonidos fundamentales en este ejercicio';
     $('#grados-fila').hidden = !pideGrado() || ayuda === 'ninguna' || (estado.modoEj === 'soprano' && !!acordes);
     if (pideGrado() && ayuda !== 'ninguna') Ejercicios.grados(ej).forEach(r => {
       const s = document.createElement('span');
@@ -371,10 +371,10 @@
           num.textContent = String(k);
           cont.appendChild(num);
         }
-        const b = tecla('tecla-romano', cont, 'Grado ' + r + (k !== null ? ' (tecla ' + k + ')' : ''), () => responderRomano(r));
+        const b = tecla('tecla-romano', cont, 'Sonido fundamental ' + r + (k !== null ? ' (tecla ' + k + ')' : ''), () => responderRomano(r));
         b.dataset.romano = r;
         if (k !== null) b.dataset.atajo = String(k);
-        b.setAttribute('aria-label', 'Grado ' + r);
+        b.setAttribute('aria-label', 'Sonido fundamental ' + r);
         pr.appendChild(b);
       });
     }
@@ -413,7 +413,7 @@
       const b = tecla('tecla-cifra', cont, c.nombre + ' — ' + c.descripcion + (atajo(k) ? ' (tecla ' + atajo(k) + ')' : ''), () => responderCifra(id));
       b.dataset.id = id;
       b.dataset.atajo = atajo(k);
-      b.setAttribute('aria-label', 'Cifra ' + c.nombre);
+      b.setAttribute('aria-label', 'Cifrado armónico ' + c.nombre);
       caja.appendChild(b);
     });
     pc.appendChild(tecla('tecla-borrar', 'Borrar', 'Vaciar la casilla activa (Retroceso)', borrar));
@@ -673,6 +673,13 @@
      Se calculan AL COMPROBAR y sobre lo que escribió el ALUMNO, acertado o no: lo que
      enseña es ver qué ha construido él. Con la solución a la vista se redibujan sobre la
      buena, que es la que entonces está en el papel. */
+  /* El grado del acorde modelo de una nota, en la tonalidad que rige ahí y como un solo
+     romano (sin la doble lectura del pivote). */
+  function gradoModeloEn(i) {
+    try { return Ejercicios.gradoDe(estado.ejercicio, Ejercicios.parejas(estado.ejercicio, i)[0]) || null; }
+    catch (e) { return null; }
+  }
+
   function prepararTecnicas() {
     estado.tecnicas = [];
     if (!estado.corregido || typeof Tecnicas === 'undefined') return;
@@ -691,7 +698,15 @@
            calculado: el del modelo en `modeloRomano` y el del alumno en `gradoReal`. Sin
            esto, en esos dos modos no salía ni un solo cuadro. */
         let rom = sol[i].romano;
-        if (!rom && r) rom = (sol[i].cifra === (r.cifraReal || r.cifra) ? r.gradoReal : r.modeloRomano) || r.modeloRomano;
+        if (!rom && r) {
+          /* OJO CON `modeloRomano`: en un acorde PIVOTE viene como cadena compuesta —«I = V»,
+             las dos lecturas—, y con eso el detector no reconocía ni un grado. Así se perdía
+             la cadencia de `A4-10-05`, que salía «imperfecta» porque el «I = V» no casaba con
+             «V» (Diego, 28/9/2026). Aquí hace falta UN grado, el de la tonalidad que rige, y
+             quien lo da limpio es la pareja modelo de esa nota. */
+          const suyo = (sol[i].cifra === (r.cifraReal || r.cifra)) ? r.gradoReal : null;
+          rom = suyo || gradoModeloEn(i);
+        }
         if (!rom) return null;
         let f = null;
         try { f = funcionSolucionEn(sol, i, null); } catch (e) { f = null; }
@@ -1202,7 +1217,7 @@
 
   function escucharPropuesta() { if (propuestaAudible()) reproducir(acordesPropuesta(), estado.modoEj !== 'soprano'); }
   function escucharMio() {
-    if (!estado.respuestas.some((_, i) => notaCompleta(i))) { aviso('Todavía no hay ninguna nota con cifra y grado.'); return; }
+    if (!estado.respuestas.some((_, i) => notaCompleta(i))) { aviso('Todavía no hay ninguna nota con sonido fundamental y cifrado armónico.'); return; }
     reproducir(acordesMios());
   }
 
@@ -1310,7 +1325,7 @@
     const et = c => (Teoria.CIFRADOS[c] ? Teoria.CIFRADOS[c].etiqueta : c);
     let rom = null;
     try { rom = Teoria.romano(cifra, notas[i], ton); } catch (e) { rom = null; }
-    if (!rom) return 'la cifra ' + et(cifra) + ' sobre esta nota no da ningún acorde de ' + Teoria.nombreCorto(ton);
+    if (!rom) return 'el cifrado armónico ' + et(cifra) + ' sobre esta nota no da ningún acorde de ' + Teoria.nombreCorto(ton);
     const acorde = rom + ' ' + et(cifra);
     const lista = ej.acordes;
     if (lista && lista.length && !lista.includes(rom + '|' + cifra)) return 'el ' + acorde + ' no entra en esta lección';
@@ -1449,7 +1464,7 @@
       let que;
       if (!r.okEnlace) que = r.enlace;
       else if (!r.okCifra) que = r.porQue || 'el acorde que has puesto no vale aquí';
-      else if (!(r.okRomano && r.okRomano2)) que = 'el acorde está bien, pero no el grado de su fundamental';
+      else if (!(r.okRomano && r.okRomano2)) que = 'el acorde está bien, pero no su sonido fundamental';
       else if (!(r.okFuncion && r.okFuncion2)) que = 'el acorde está bien, pero no su función tonal';
       else return;
       malas.push('Nota ' + (i + 1) + ', ' + Teoria.nombreEs(Teoria.nota(notas[i])) + ': ' + que + '.');
@@ -1721,7 +1736,7 @@
         : 'la nota ' + notasArreglar[0];
       const queArreglar = (porArreglar > 1 ? 'hay ' + porArreglar + ' errores de conducción de voces' : 'hay un error de conducción de voces') + ' en ' + listaNotas;
       html += '<p>' + (respuestasBien
-        ? 'Los grados y los cifrados están bien, pero en la armonización que producen ' + queArreglar + '. Pulsa esas notas en el pentagrama (están en <span class="ref-mal">rojo</span>) para ver por qué, y prueba otra de las cifras admisibles.'
+        ? 'Los sonidos fundamentales y los cifrados armónicos están bien, pero en la armonización que producen ' + queArreglar + '. Pulsa esas notas en el pentagrama (están en <span class="ref-mal">rojo</span>) para ver por qué, y prueba otro de los cifrados admitidos.'
         : 'Las casillas en rojo tienen algún error' + (hayQueArreglar ? ', y en la armonización ' + queArreglar : '') + '. Toca cualquier casilla —también las verdes— para cambiarla, y vuelve a pulsar «Comprobar».')
         + '</p>'
         + '<div class="botonera botonera-resultado">'
@@ -1742,8 +1757,8 @@
         // Las lecturas que este ejercicio pide, que son las que lleva el renglón naranja
         const lect = [];
         if (estado.modoFun) lect.push('su función');
-        if (pideGrado()) lect.push('su grado');
-        lect.push('su cifra');
+        if (pideGrado()) lect.push('su sonido fundamental');
+        lect.push('su cifrado armónico');
         const lectTexto = lect.length > 1 ? lect.slice(0, -1).join(', ') + ' y ' + lect[lect.length - 1] : lect[0];
         const donde = fallos.length === n ? 'cada nota'
           : fallos.length === 1 ? 'la nota ' + fallos[0]
@@ -1758,7 +1773,7 @@
         /* Caso raro pero real: las respuestas están todas bien y lo que la solución arregla
            es la conducción de voces. Entonces no hay nada en naranja, y prometerlo sería
            mandar al alumno a buscar lo que no está. */
-        partes.push('los grados y los cifrados están todos bien; lo que la solución arregla es la armonización que producen.');
+        partes.push('los sonidos fundamentales y los cifrados armónicos están todos bien; lo que la solución arregla es la armonización que producen.');
       }
       partes.push('Las casillas siguen diciendo lo tuyo: en <span class="ref-bien">verde</span> lo que acertaste, en <span class="ref-mal">rojo</span> lo que no.');
       /* El porqué no se cuenta aquí: se ofrece (decisión 154). Y solo si de verdad hay
@@ -2172,7 +2187,7 @@
       const abierto = document.body.classList.toggle('datos-abiertos');
       const b = $('#btn-datos');
       b.setAttribute('aria-expanded', abierto ? 'true' : 'false');
-      b.textContent = 'Grados y cifrados ' + (abierto ? '▴' : '▾');
+      b.textContent = 'Fundamentales y cifrados ' + (abierto ? '▴' : '▾');
       enfocarActiva();
     });
     window.addEventListener('hashchange', () => { if (!estado.ficha) cargar(ejercicioDesdeURL()); });

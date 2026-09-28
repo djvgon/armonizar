@@ -194,8 +194,8 @@ const Registro = (() => {
         let ton = e.tonalidad;
         try { ton = Ejercicios.tonalidadEn(e, i); } catch (x) { /* la inicial */ }
         const falla = [];
-        if (!r.okCifra) falla.push('cifra');
-        if (!r.okRomano || !r.okRomano2) falla.push('grado');
+        if (!r.okCifra) falla.push('cifrado');
+        if (!r.okRomano || !r.okRomano2) falla.push('fundamental');
         if (!r.okFuncion) falla.push('función');
         if (!r.okEnlace) falla.push('enlace');
         const esSop = Ejercicios.esSoprano(e);

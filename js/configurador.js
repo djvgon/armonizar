@@ -122,7 +122,7 @@
     $('#texto-bajo').placeholder = sop ? 'mi4 fa4n mi4n | re4 si3 | do4r' : 'do3 re3 | mi3 do3 | sol3r | do3r';
     $('#ayuda-octava-soprano').hidden = !sop;
     $('#btn-analizar').textContent = sop ? 'Analizar la melodía' : 'Analizar el bajo';
-    $('#th-admisibles').textContent = sop ? 'Acordes admisibles (● modelo)' : 'Cifras admisibles (● modelo)';
+    $('#th-admisibles').textContent = sop ? 'Acordes admisibles (● modelo)' : 'Cifrados admisibles (● modelo)';
     $('#repertorio-opciones').hidden = sop; $('#ayuda-repertorio').hidden = sop;
     // El panel de acordes está siempre (plegado); en la soprano se abre solo, porque allí
     // no hay otra manera de decidir el repertorio.
@@ -264,10 +264,17 @@
      (por ejemplo al reducir el repertorio), se vuelven a deducir del modelo, para no dejar
      el ejercicio bloqueado por una función que ya no puede cumplirse. */
   function analizar(conservarFunciones = false, reajustar = false) {
+    /* EL SELLO (decisión 166). Un fragmento cerrado no se reanaliza ni aunque se pulse el
+       botón: primero hay que reabrirlo, y eso es un gesto consciente del profesor. */
+    if (estado.banco && Banco.estaCerrada(estado.banco.entrada)) {
+      aviso('El fragmento ' + (estado.banco.entrada.id || '') + ' está cerrado: lo firmaste el '
+        + estado.banco.entrada.cerrado + ' y el motor no lo toca. Si de verdad quieres rehacerlo, pulsa «Reabrir para cambiarlo».', 10000);
+      return;
+    }
     const r = leerBajo();
     if (r.errores.length || !r.compases.length) { aviso('Corrige ' + (esSoprano() ? 'la melodía' : 'el bajo') + ' antes de analizar.'); return; }
     const rep = repertorio();
-    if (!rep.length) { aviso('Marca al menos una cifra en el repertorio.'); return; }
+    if (!rep.length) { aviso('Marca al menos un cifrado armónico en el repertorio.'); return; }
     // Con las funciones «dadas», los acordes admisibles de la melodía se limitan a los de la
     // función que ve el alumno (análisis con las funciones fijadas); con «pedirlas» no se limitan
     // (se acepta cualquier función de un acorde admisible).
@@ -587,7 +594,7 @@
     if (!r.opciones.length) {
       const v = document.createElement('div');
       v.className = 'globo-vacio';
-      v.textContent = 'Sin ninguna cifra admisible.';
+      v.textContent = 'Sin ningún cifrado admisible.';
       caja.appendChild(v);
     } else {
       const ops = document.createElement('div');
@@ -946,7 +953,7 @@
         lab.title = a.rom + ' ' + c.nombre + ' — ' + c.descripcion + (a.nota ? ' (' + a.nota + ')' : '');
         const cb = document.createElement('input');
         cb.type = 'checkbox'; cb.value = a.id; cb.checked = a.defecto;
-        cb.addEventListener('change', () => { contarAcordes(); guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true, true); });
+        cb.addEventListener('change', () => { contarAcordes(); guardarBorrador(); limpiarDireccion(); reanalizarSalvoBanco(); });
         lab.appendChild(cb);
         const r = document.createElement('span'); r.className = 'acorde-rom'; r.textContent = a.rom; lab.appendChild(r);
         lab.appendChild(Partitura.iconoCifra(p.cifra, 30));
@@ -955,7 +962,7 @@
       });
       cont.appendChild(fila);
     });
-    $('#formula-tst').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); if (estado.respuestas && esSoprano()) analizar(true, true); });
+    $('#formula-tst').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); reanalizarSalvoBanco(); });
     contarAcordes();
   }
 
@@ -976,7 +983,7 @@
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
-    $('#ficha-funciones').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) { if (esSoprano()) analizar(true, true); else pintarRevision(); } });
+    $('#ficha-funciones').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) { if (esSoprano()) reanalizarSalvoBanco(); else pintarRevision(); } });
     // Si cambia la tonalidad inicial, las modulaciones dejan de tener sentido
     ['#tonica', '#modo'].forEach(sel => $(sel).addEventListener('change', () => { if (estado.modulaciones.length) { estado.modulaciones = []; if (estado.respuestas) analizar(); } }));
     document.querySelectorAll('input[name="modo-ej"]').forEach(r => r.addEventListener('change', () => {
@@ -1077,11 +1084,23 @@
     });
   }
   // Completa la entrada vieja con la voz que le falte; devuelve true si ha añadido algo
+  // Fragmentos cuya entrada se ha reemplazado entera en la última importación
+  let reemplazados = [];
+  let intactos = [];        // cerrados que la importación ha dejado como estaban (decisión 166)
+
   function fundir(viejo, nuevo) {
     /* Si las dos lecturas no coinciden en la tonalidad, manda la del fragmento que trae
        LAS DOS VOCES: es el que tiene la prueba. Se sustituye entero —también sus
        respuestas, leídas ya en la tonalidad buena—, conservando el identificador. */
+    /* UN FRAGMENTO CERRADO NO SE TOCA (decisión 166). Ni siquiera aquí, que era el único
+       sitio donde una entrada se reemplazaba entera. Se anota para decirlo al terminar. */
+    if (Banco.estaCerrada(viejo)) { intactos.push(viejo.id || '(sin id)'); return false; }
     if (!Teoria.mismaTonalidad(viejo.tonalidad, nuevo.tonalidad) && nuevo.bajo && nuevo.soprano) {
+      /* Este es el único sitio donde una entrada del banco se reemplaza ENTERA, respuestas
+         incluidas. Tiene motivo —las viejas estaban leídas en una tonalidad equivocada—,
+         pero pasaba callando, y el profesor podía perder ahí una revisión hecha a mano. Se
+         anota para decirlo en el resumen (Diego, 28/9/2026). */
+      reemplazados.push(viejo.id || '(sin id)');
       const id = viejo.id, lec = viejo.leccion, nom = viejo.leccionNombre;
       Object.keys(viejo).forEach(k => { delete viejo[k]; });
       Object.assign(viejo, nuevo);
@@ -1113,6 +1132,7 @@
     const fuente = estado.nombreArchivo || '';
     const op = { leccion, leccionNombre, fuente, repertorio: repertorio(), acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked };
     let nuevos = 0, repetidos = 0, fallidos = 0, conAviso = 0, fundidos = 0;
+    reemplazados = []; intactos = [];
     estado.fragmentos.forEach((f, k) => {
       let e;
       try { e = Banco.entrada(f, Object.assign({ compas: f.compas }, op)); } catch (err) { e = null; }
@@ -1133,7 +1153,14 @@
       + (fundidos ? ', ' + fundidos + ' completados con la otra voz' : '')
       + (repetidos ? ', ' + repetidos + ' ya estaban' : '')
       + (fallidos ? ', ' + fallidos + ' sin música aprovechable' : '')
-      + (conAviso ? ' · ' + conAviso + ' con alguna nota sin propuesta (revísalos)' : '') + '.', 7000);
+      + (conAviso ? ' · ' + conAviso + ' con alguna nota sin propuesta (revísalos)' : '')
+      + (intactos.length ? ' · ' + intactos.length + ' cerrados, que se han dejado intactos' : '') + '.', 7000);
+    /* Y, aparte y bien visible, lo único que puede haberse llevado por delante una revisión
+       hecha a mano: una entrada reemplazada entera por venir en otra tonalidad. */
+    if (reemplazados.length) setTimeout(() => aviso('OJO: ' + reemplazados.length
+      + (reemplazados.length > 1 ? ' fragmentos venían' : ' fragmento venía') + ' en otra tonalidad y se '
+      + (reemplazados.length > 1 ? 'han reemplazado enteros' : 'ha reemplazado entero') + ', con sus cifras: '
+      + reemplazados.join(', ') + '. Si los tenías revisados, vuelve a revisarlos.', 15000), 7200);
   }
 
   /* ---------- Las tonalidades de la ficha (decisión 102) ----------
@@ -1263,7 +1290,14 @@
 
     const filtro = filtroFicha();
     const lista = Banco.filtrar(banco, filtro);
-    const conAvisos = Banco.filtrar(banco, Object.assign({}, filtro, { conAvisos: true }));
+    /* La cola de repaso (decisión 166) afecta a LA TABLA y a las flechas, no a la ficha:
+       una ficha se reparte por lección y nivel, no por si el profesor ya lo ha firmado. */
+    const repaso = ($('#banco-revision') || {}).value || '';
+    const conAvisos = Banco.filtrar(banco, Object.assign({}, filtro, { conAvisos: true, cerrado: repaso }));
+    const nCerrados = Banco.cuentaCerradas(banco);
+    const elCont = $('#banco-cerrados');
+    if (elCont) elCont.textContent = nCerrados + ' de ' + banco.length + ' fragmentos cerrados'
+      + (nCerrados < banco.length ? ' · quedan ' + (banco.length - nCerrados) + ' por revisar.' : ' · el banco entero está firmado.');
     /* El recorrido va sobre LOS MISMOS fragmentos y en el mismo orden que la tabla —los
        que cumplen el filtro, incluidos los que tienen avisos—: si no, «siguiente» no
        llevaría a donde el ojo espera. Son los objetos del banco, no copias, para poder
@@ -1289,7 +1323,7 @@
       bRep.disabled = false;
       bRep.textContent = 'Dar a ' + filtro.leccion + ' el repertorio del paso 3';
     } else {
-      pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —las cifras y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección arriba para verlo o rehacerlo.';
+      pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —los cifrados armónicos y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección arriba para verlo o rehacerlo.';
       bRep.disabled = true;
       bRep.textContent = 'Dar a esta lección el repertorio del paso 3';
     }
@@ -1301,7 +1335,11 @@
       const tr = document.createElement('tr');
       const mal = !!(e.avisos && e.avisos.length);
       if (mal) tr.className = 'con-aviso';
-      tr.innerHTML = '<td class="celda-id"><code>' + (e.id || '—') + '</code></td>'
+      const cerrada = Banco.estaCerrada(e), rota = Banco.huellaRota(e);
+      if (cerrada) tr.classList.add(rota ? 'sello-roto' : 'sello-cerrado');
+      tr.innerHTML = '<td class="celda-sello" title="' + (cerrada ? (rota ? 'Cerrado el ' + e.cerrado + ', pero su contenido ya no coincide con la huella' : 'Cerrado el ' + e.cerrado) : 'Sin cerrar') + '">'
+        + (cerrada ? (rota ? '⚠🔒' : '🔒') : '') + '</td>'
+        + '<td class="celda-id"><code>' + (e.id || '—') + '</code></td>'
         + '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '') + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
@@ -1325,10 +1363,19 @@
       const bCargar = document.createElement('button');
       bCargar.type = 'button'; bCargar.className = 'enlace-texto'; bCargar.textContent = 'Cargar';
       bCargar.addEventListener('click', () => cargarDelBanco(e, filtro.modo));
+      const bSello = document.createElement('button');
+      bSello.type = 'button'; bSello.className = 'enlace-texto';
+      bSello.textContent = cerrada ? 'Reabrir' : 'Cerrar';
+      bSello.title = cerrada ? 'Quitarle el sello para poder cambiarlo' : 'Firmarlo: quedará con la fecha de hoy y nada del programa lo reescribirá';
+      bSello.addEventListener('click', () => {
+        if (cerrada) Banco.abrir(e); else Banco.cerrar(e);
+        guardarBanco(); pintarBanco(); pintarSello();
+      });
       const bQuitar = document.createElement('button');
       bQuitar.type = 'button'; bQuitar.className = 'enlace-texto'; bQuitar.textContent = 'Quitar';
       bQuitar.addEventListener('click', () => { banco = banco.filter(x => x !== e); guardarBanco(); pintarBanco(); });
-      acc.appendChild(bCargar); acc.appendChild(document.createTextNode(' · ')); acc.appendChild(bQuitar);
+      acc.appendChild(bCargar); acc.appendChild(document.createTextNode(' · '));
+      acc.appendChild(bSello); acc.appendChild(document.createTextNode(' · ')); acc.appendChild(bQuitar);
       cuerpo.appendChild(tr);
     });
     pintarRecorrido();
@@ -1457,6 +1504,21 @@
 
   /* ---------- Guardar en el banco lo revisado a mano ---------- */
 
+  /* NADA REANALIZA UN FRAGMENTO DEL BANCO POR SU CUENTA (Diego, 28/9/2026: «si yo asigno
+     algo a un fragmento no puedes modificarlo porque mi criterio es experto y el tuyo es
+     ciego»). Cambiar los acordes de la lección, la casilla «Fórmula T S T» o la opción de
+     funciones de la ficha disparaba un reanálisis automático que borraba EN SILENCIO las
+     cifras asignadas a mano. Con un fragmento del banco en revisión ya no ocurre: se avisa
+     y queda el botón «Analizar la melodía» para quien de verdad lo quiera. */
+  function reanalizarSalvoBanco() {
+    if (!estado.respuestas || !esSoprano()) return;
+    if (estado.banco) {
+      aviso('Este fragmento es del banco y conserva las cifras que le asignaste: no se ha vuelto a analizar. Si quieres que el motor las rehaga con lo que acabas de cambiar, pulsa «Analizar la melodía».', 10000);
+      return;
+    }
+    analizar(true, true);
+  }
+
   // Cartel del paso 4 que dice qué fragmento del banco se está revisando
   function pintarOrigenBanco() {
     const caja = $('#banco-origen');
@@ -1468,6 +1530,77 @@
     $('#banco-origen-texto').textContent = 'Estás revisando el fragmento ' + (e.id || '(sin identificador)')
       + (e.leccion ? ' de la lección ' + Banco.etiquetaLeccion(e) : '')
       + ' · voz: ' + (b.voz === 'bajo' ? 'el bajo' : 'la melodía') + '.';
+    pintarSello();
+  }
+
+  /* ---------- El sello (decisión 166) ----------
+     Cerrar un fragmento es firmarlo: queda la fecha y una huella de su contenido armónico,
+     y a partir de ahí ninguna parte del programa lo reescribe. Reabrirlo es un gesto
+     explícito. La huella no es una promesa mía: se comprueba al cargar el banco. */
+  function pintarSello() {
+    const caja = $('#banco-sello'), b = estado.banco;
+    if (!caja) return;
+    const bCerrar = $('#btn-banco-cerrar'), bAbrir = $('#btn-banco-abrir'), bGuardar = $('#btn-banco-guardar');
+    if (!b) { caja.hidden = true; return; }
+    const e = b.entrada, cerrada = Banco.estaCerrada(e);
+    caja.hidden = false;
+    caja.dataset.estado = cerrada ? (Banco.huellaRota(e) ? 'rota' : 'cerrado') : 'abierto';
+    caja.textContent = !cerrada
+      ? 'Sin cerrar. Cuando lo des por bueno, ciérralo: quedará firmado con la fecha de hoy y nada del programa volverá a tocarlo.'
+      : Banco.huellaRota(e)
+        ? '⚠ CERRADO el ' + e.cerrado + ', pero su contenido NO coincide con la huella que se guardó. Algo lo ha cambiado después de firmarlo. Revísalo y vuelve a cerrarlo.'
+        : '🔒 Cerrado el ' + e.cerrado + ' · huella ' + e.huella + '. Nada del programa lo reescribe.';
+    if (bCerrar) { bCerrar.hidden = cerrada; }
+    if (bAbrir) { bAbrir.hidden = !cerrada; }
+    if (bGuardar) { bGuardar.disabled = cerrada; bGuardar.title = cerrada ? 'Este fragmento está cerrado: reábrelo si quieres cambiarlo.' : ''; }
+  }
+
+  /* Cerrar el que se está revisando. Si la cola de repaso está puesta en «sin cerrar», el
+     fragmento sale de la lista al firmarlo, así que se pasa solo al siguiente: repasar
+     ciento y pico fragmentos ha de ser cerrar, mirar, cerrar. */
+  function cerrarActual() {
+    const b = estado.banco;
+    if (!b) { aviso('No hay ningún fragmento del banco en revisión.'); return; }
+    if (hayCambiosSinGuardar()) {
+      aviso('Has cambiado algo y no lo has guardado. Pulsa antes «Guardar los cambios en el banco» (o vuelve a cargarlo para descartar) y ciérralo después.', 10000);
+      return;
+    }
+    const r = estado.recorrido, i = indiceRecorrido();
+    const siguiente = (r && i >= 0) ? (r.lista[i + 1] || r.lista[i - 1] || null) : null;
+    Banco.cerrar(b.entrada);
+    guardarBanco();
+    pintarBanco();
+    pintarSello();
+    if (indiceRecorrido() < 0 && siguiente && estado.recorrido.lista.includes(siguiente)) {
+      cargarDelBanco(siguiente, estado.recorrido.modo);
+      aviso('Cerrado ' + (b.entrada.id || '') + '. Siguiente: ' + (siguiente.id || '') + '.');
+    } else if (indiceRecorrido() < 0) {
+      aviso('Cerrado ' + (b.entrada.id || '') + '. No quedan más fragmentos en la cola de repaso.', 8000);
+    } else {
+      aviso('Cerrado ' + (b.entrada.id || '') + ' · huella ' + b.entrada.huella + '.');
+    }
+  }
+
+  function abrirActual() {
+    const b = estado.banco;
+    if (!b) return;
+    Banco.abrir(b.entrada);
+    guardarBanco();
+    pintarBanco();
+    pintarSello();
+    aviso('Reabierto ' + (b.entrada.id || '') + ': ya se puede analizar y guardar. Acuérdate de volver a cerrarlo cuando lo des por bueno.', 8000);
+  }
+
+  /* La comprobación que hace innecesario fiarse: al cargar el banco se recalculan las
+     huellas de todos los cerrados y se dice, con los identificadores delante, cuáles no
+     cuadran. Si esto sale vacío, lo que hay es exactamente lo que se firmó. */
+  function revisarHuellas(donde) {
+    const malas = Banco.rotas(banco);
+    if (!malas.length) return 0;
+    setTimeout(() => aviso('⚠ ' + malas.length + (malas.length > 1 ? ' fragmentos cerrados no coinciden' : ' fragmento cerrado no coincide')
+      + ' con la huella que se guardó al firmarlo' + (donde ? ' (' + donde + ')' : '') + ': '
+      + malas.map(e => e.id || '(sin id)').join(', ') + '. Revísalos y vuelve a cerrarlos.', 20000), 400);
+    return malas.length;
   }
 
   /* Escribe en el fragmento del banco lo que hay ahora en el configurador: la tonalidad,
@@ -1482,6 +1615,11 @@
     if (estado.respuestas.some(a => !a.length)) { aviso('Hay notas sin ninguna cifra marcada: márcalas antes de guardar.'); return; }
     const e = b.entrada;
     if (!banco.includes(e)) { aviso('Ese fragmento ya no está en el banco.'); return; }
+    // El sello (decisión 166): un fragmento cerrado no se sobrescribe sin reabrirlo antes
+    if (Banco.estaCerrada(e)) {
+      aviso('El fragmento ' + (e.id || '') + ' está cerrado (lo firmaste el ' + e.cerrado + '). Pulsa «Reabrir para cambiarlo» si de verdad quieres tocarlo.', 10000);
+      return;
+    }
     const ton = tonalidad();
     const mods = estado.modulaciones.filter(m => m && m.tonalidad && Number.isInteger(m.nota))
       .map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }))
@@ -1813,6 +1951,31 @@
      imprime CrearFormularioPractica.gs con sus marcas ZZ…ZZ. Se guarda en el navegador
      para no tener que pegarla otra vez, y se descarga como envio.json. */
   const CLAVE_ENVIO = 'armonizar.envio';
+  /* La hoja de respuestas se guarda SOLO en este navegador (Diego, 28/9/2026). No entra en
+     `envio.json` a propósito: ese archivo se sube a GitHub, y la dirección de la hoja es
+     suya. Aquí basta con tenerla a mano para el botón de la cabecera. */
+  const CLAVE_RESPUESTAS = 'armonizar.respuestas';
+
+  const hojaValida = t => {
+    t = (t || '').trim();
+    return /^https:\/\/docs\.google\.com\/(spreadsheets|document)\//.test(t) || /^https:\/\/drive\.google\.com\//.test(t);
+  };
+
+  function conectarResultados() {
+    const campo = $('#envio-respuestas'), boton = $('#btn-resultados');
+    if (!campo || !boton) return;
+    try { campo.value = localStorage.getItem(CLAVE_RESPUESTAS) || ''; } catch (e) { /* sin almacenamiento */ }
+    const revisar = () => {
+      const t = campo.value.trim();
+      const ok = hojaValida(t);
+      boton.hidden = !ok;
+      if (ok) boton.href = t;
+      campo.setAttribute('aria-invalid', t && !ok ? 'true' : 'false');
+      try { localStorage.setItem(CLAVE_RESPUESTAS, ok ? t : ''); } catch (e) { /* nada */ }
+    };
+    campo.addEventListener('input', revisar);
+    revisar();
+  }
 
   function plantillaValida(t) {
     t = (t || '').trim();
@@ -1834,6 +1997,7 @@
     };
     campo.addEventListener('input', revisar);
     revisar();
+    conectarResultados();
     btn.addEventListener('click', () => {
       const blob = new Blob([JSON.stringify({ plantilla: campo.value.trim() }, null, 2) + '\n'], { type: 'application/json' });
       const a = document.createElement('a');
@@ -1880,6 +2044,7 @@
         });
         guardarBanco(); pintarBanco();
         aviso(nuevos + ' fragmentos añadidos al banco' + (fundidos ? ', ' + fundidos + ' completados' : '') + ' (los repetidos se han omitido).');
+        revisarHuellas('al cargar el archivo');
       } catch (err) { aviso('No se ha podido leer el banco: ' + err.message); }
     };
     lector.readAsText(file);
@@ -1891,6 +2056,7 @@
     sel.value = 'armonizar';
     leerBanco();
     pintarBanco();
+    revisarHuellas('al abrir el configurador');      // decisión 166: comprobar, no fiarse
     /* El filtro guardado se repone DESPUÉS de llenar los desplegables (el de lecciones
        lo llena pintarBanco con las que hay en el banco), y se vuelve a pintar con él. */
     const g = estado.fichaGuardada;
@@ -1909,6 +2075,9 @@
     bancoPublicado();
     $('#btn-banco-anadir').addEventListener('click', anadirAlBanco);
     $('#btn-banco-guardar').addEventListener('click', guardarEnBanco);
+    $('#btn-banco-cerrar').addEventListener('click', cerrarActual);
+    $('#btn-banco-abrir').addEventListener('click', abrirActual);
+    $('#banco-revision').addEventListener('change', pintarBanco);
     $('#btn-banco-soltar').addEventListener('click', () => { estado.banco = null; pintarOrigenBanco(); guardarBorrador(); });
     $('#btn-banco-descargar').addEventListener('click', descargarBanco);
     $('#btn-banco-cargar').addEventListener('click', () => $('#banco-archivo').click());

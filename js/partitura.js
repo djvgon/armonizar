@@ -864,7 +864,7 @@ const Partitura = (() => {
              lecturas del pivote son las barras verticales. */
           const alto = ALTO_ROMANO;
           const g = el('g', { 'data-indice': i, 'data-campo': campo, tabindex: 0, role: 'button',
-            'aria-label': 'Grado de la nota ' + (i + 1) + (sinBajo ? '' : ' (' + Teoria.nombreEs(n) + ')') + (esPivote ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
+            'aria-label': 'Sonido fundamental de la nota ' + (i + 1) + (sinBajo ? '' : ' (' + Teoria.nombreEs(n) + ')') + (esPivote ? (k ? ' en la tonalidad nueva' : ' en la tonalidad anterior') : '') });
           const clases = ['casilla', 'casilla-romano'];
           if (esPivote) clases.push(k ? 'pivote-abajo' : 'pivote-arriba');
           const bloqueadaAqui = !!bloq[campo];

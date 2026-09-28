@@ -7,8 +7,8 @@
   <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
   <meta property="og:title" content="Práctica armónica">
   <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
-  <link rel="stylesheet" href="css/bravura.css?v=20260929-2000">
-  <link rel="stylesheet" href="css/estilo.css?v=20260929-2000">
+  <link rel="stylesheet" href="css/bravura.css?v=20260930-0100">
+  <link rel="stylesheet" href="css/estilo.css?v=20260930-0100">
 </head>
 <body>
   <nav class="barra-app" aria-label="Secciones">
@@ -36,7 +36,7 @@
     <p class="instruccion" id="instruccion"></p>
 
 
-  <section class="repertorio-caja" aria-label="Cifras y grados del ejercicio">
+  <section class="repertorio-caja" aria-label="Cifrados armónicos y sonidos fundamentales del ejercicio">
     <!-- El renglón «Tonalidad» se retira de la vista (Diego, 28/9/2026): la tonalidad la
          dice el cifrado del ejercicio —si la ficha lo pide así— o la pone el propio alumno
          en la fila de tonalidades, también según el configurador. Tenerla además aquí la
@@ -59,14 +59,14 @@
       </span>
     </div>
     <div class="repertorio-fila" id="grados-fila">
-      <span class="repertorio-etiqueta" id="etiqueta-grados">Grados en este ejercicio</span>
+      <span class="repertorio-etiqueta" id="etiqueta-grados">Sonidos fundamentales en este ejercicio</span>
       <div id="grados" class="repertorio"></div>
     </div>
     <!-- Solo aparece en ventana BAJA (el móvil en horizontal): allí las dos filas de
-         referencia —grados y cifrados— se pliegan detrás de este botón, porque son
-         casi 60 px de preámbulo y lo que muestran está repetido en las paletas de
-         abajo. No se borran: se pliegan, y un toque las devuelve. -->
-    <button type="button" id="btn-datos" class="btn-datos" aria-expanded="false">Grados y cifrados ▾</button>
+         referencia —sonidos fundamentales y cifrados armónicos— se pliegan detrás de este
+         botón, porque son casi 60 px de preámbulo y lo que muestran está repetido en las
+         paletas de abajo. No se borran: se pliegan, y un toque las devuelve. -->
+    <button type="button" id="btn-datos" class="btn-datos" aria-expanded="false">Fundamentales y cifrados ▾</button>
   </section>
 
   <main>
@@ -74,7 +74,7 @@
       <span class="control control-sonido">
         <button type="button" id="btn-cadencia" class="boton-pequeno" title="Cadencia I–IV–V7–I en la tonalidad inicial del ejercicio, para situar el oído">▶ Escuchar tono</button>
         <button type="button" id="btn-propuesta" class="boton-pequeno" title="Escuchar lo que propone el ejercicio: la armonización (Análisis y Audición), el bajo solo (Armonización de bajo) o la melodía sola (Armonización de soprano)">▶ Escuchar propuesta</button>
-        <button type="button" id="btn-mio" class="boton-pequeno" title="Escuchar la realización de lo que has cifrado hasta ahora (las notas sin grado y cifrado suenan solo con el bajo)">▶ Escuchar mi cifrado</button>
+        <button type="button" id="btn-mio" class="boton-pequeno" title="Escuchar la realización de lo que has cifrado hasta ahora (las notas sin sonido fundamental y cifrado armónico suenan solo con el bajo)">▶ Escuchar mi cifrado</button>
         <button type="button" id="btn-parar" class="boton-pequeno parar" hidden title="Detener la reproducción (también con Esc)">■ Parar</button>
         <label class="control control-instrumento" title="Con qué instrumento suena todo (muestras reales de piano, clave y órgano)"><span class="control-etiqueta">Instrumento</span><select id="instrumento" class="selector-pequeno"></select><span id="instrumento-estado" class="instrumento-estado" hidden>cargando…</span></label>
       </span>
@@ -109,12 +109,12 @@
         <div id="paleta-funciones" class="paleta" role="group" aria-label="Paleta de funciones tonales"></div>
       </div>
       <div id="paleta-romanos-caja" class="paleta-caja">
-        <span class="paleta-etiqueta"><span class="etq-larga">Grado de la fundamental</span><span class="etq-corta">Grado</span></span>
-        <div id="paleta-romanos" class="paleta" role="group" aria-label="Paleta de grados"></div>
+        <span class="paleta-etiqueta"><span class="etq-larga">Sonido fundamental</span><span class="etq-corta">Fundamental</span></span>
+        <div id="paleta-romanos" class="paleta" role="group" aria-label="Paleta de sonidos fundamentales"></div>
       </div>
       <div id="paleta-caja" class="paleta-caja">
-        <span class="paleta-etiqueta"><span class="etq-larga">Cifrados</span><span class="etq-corta">Cifrado</span></span>
-        <div id="paleta" class="paleta" role="group" aria-label="Paleta de cifrados"></div>
+        <span class="paleta-etiqueta"><span class="etq-larga">Cifrado armónico</span><span class="etq-corta">Cifrado</span></span>
+        <div id="paleta" class="paleta" role="group" aria-label="Paleta de cifrados armónicos"></div>
       </div>
       <div id="paleta-tonalidades-caja" class="paleta-caja" hidden>
         <span class="paleta-etiqueta"><span class="etq-larga">Tonalidad nueva desde la nota activa</span><span class="etq-corta">Tono</span></span>
@@ -152,21 +152,21 @@
        vistazo qué versión está publicada. -->
   <footer class="pie">
     <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
-    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260929-2000</span></p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260930-0100</span></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20260929-2000"></script>
-  <script src="js/reglas.js?v=20260929-2000"></script>
-  <script src="js/ejercicios.js?v=20260929-2000"></script>
-  <script src="js/partitura.js?v=20260929-2000"></script>
-  <script src="js/realizacion.js?v=20260929-2000"></script>
-  <script src="js/tecnicas.js?v=20260929-2000"></script>
-  <script src="js/banco.js?v=20260929-2000"></script>
-  <script src="js/registro.js?v=20260929-2000"></script>
-  <script src="js/envio.js?v=20260929-2000"></script>
-  <script src="js/sonido.js?v=20260929-2000"></script>
-  <script src="js/voz.js?v=20260929-2000"></script>
-  <script src="js/app.js?v=20260929-2000"></script>
+  <script src="js/teoria.js?v=20260930-0100"></script>
+  <script src="js/reglas.js?v=20260930-0100"></script>
+  <script src="js/ejercicios.js?v=20260930-0100"></script>
+  <script src="js/partitura.js?v=20260930-0100"></script>
+  <script src="js/realizacion.js?v=20260930-0100"></script>
+  <script src="js/tecnicas.js?v=20260930-0100"></script>
+  <script src="js/banco.js?v=20260930-0100"></script>
+  <script src="js/registro.js?v=20260930-0100"></script>
+  <script src="js/envio.js?v=20260930-0100"></script>
+  <script src="js/sonido.js?v=20260930-0100"></script>
+  <script src="js/voz.js?v=20260930-0100"></script>
+  <script src="js/app.js?v=20260930-0100"></script>
 </body>
 </html>

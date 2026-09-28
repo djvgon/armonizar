@@ -48,6 +48,12 @@ window.Tecnicas = (function () {
     return par === 'dom7+triada' || par === 'sep7+triada';
   }
 
+  /* Un acorde PIVOTE se escribe en la aplicación con sus dos lecturas, «I = V»: la de la
+     tonalidad de partida y la de la nueva. Aquí manda la que RIGE, que es la segunda. Esto
+     es una barandilla: quien llama ha de mandar un romano limpio, pero si se le cuela el
+     compuesto, más vale leer el que toca que no reconocer ninguno. */
+  const soloUnGrado = r => String(r == null ? '' : r).split(' = ').pop().trim();
+
   const NOMBRE = { T: 'tónica', S: 'subdominante', D: 'dominante', DD: 'dominante de la dominante', N: 'sin función' };
   const nombreFuncion = f => NOMBRE[f] || f;
 
@@ -101,11 +107,15 @@ window.Tecnicas = (function () {
     const o = opciones || {};
     const F = (fin === undefined || fin === null) ? acs.length - 1 : fin;
     if (F < 1) return null;
-    const u = acs[F], p = acs[F - 1];
-    if (!u || !p || !u.romano || !p.romano) return null;
+    const crudoU = acs[F], crudoP = acs[F - 1];
+    if (!crudoU || !crudoP || !crudoU.romano || !crudoP.romano) return null;
+    const u = Object.assign({}, crudoU, { romano: soloUnGrado(crudoU.romano) });
+    const p = Object.assign({}, crudoP, { romano: soloUnGrado(crudoP.romano) });
     const par = texto(p) + ' – ' + texto(u);
     const raiz = ac => ac.cifra === '53' || (ac.romano === 'V' && ac.cifra === '7+');
-    const enMenor = !!o.menor;
+    /* El modo lo manda la tonalidad que rige EN LA CADENCIA, no la del final del fragmento:
+       en una frase interior de una pieza que modula, no tienen por qué ser la misma. */
+    const enMenor = (u.ton && u.ton.modo) ? u.ton.modo === 'menor' : !!o.menor;
 
     /* ¿La soprano llega a la tónica? Se compara la CLASE de la nota, no la octava. */
     let sopranoTonica = null;
@@ -170,9 +180,22 @@ window.Tecnicas = (function () {
         porque: par + ': acaba en la tónica, pero en primera inversión, así que el bajo no salta de quinta y no cierra del todo.' };
     }
     if (u.romano === 'V') {
+      /* LA SEMICADENCIA FRIGIA, en sus dos versiones (Diego, 28/9/2026):
+           · corta : `IV6 – V` en modo menor;
+           · larga : `I – V6 – IV6 – V`, también en menor.
+         Lo que la hace frigia es el bajo, que baja del 6.º grado al 5.º por SEMITONO —el
+         paso característico del modo frigio—. La versión larga es la misma con su arranque:
+         la tónica y el V6 que llevan el bajo por grados hasta ese 6.º. El cuadro la abarca
+         entera, porque la fórmula se aprende como una sola cosa. */
       if (enMenor && p.romano === 'IV' && p.cifra === '6') {
-        return { desde: empieza, hasta: F, clase: 'cadencia', nombre: 'Semicadencia frigia',
-          porque: par + ': en el modo menor, el bajo baja del 6.º grado al 5.º por semitono. Queda abierta, esperando.' };
+        const largaV6 = acs[F - 2], largaI = acs[F - 3];
+        const larga = !!(largaV6 && largaI && largaV6.romano === 'V' && largaV6.cifra === '6'
+          && largaI.romano === 'I' && largaI.funcion === 'T');
+        return { desde: larga ? F - 3 : empieza, hasta: F, clase: 'cadencia', nombre: 'Semicadencia frigia',
+          porque: (larga ? 'I – V6 – ' : '') + par
+            + ': en el modo menor, el bajo baja del 6.º grado al 5.º por semitono — el paso del modo frigio.'
+            + (larga ? ' La tónica y el V6 del principio son el arranque de la fórmula: llevan el bajo por grados hasta ese 6.º.' : '')
+            + ' Queda abierta, esperando.' };
       }
       return { desde: empieza, hasta: F, clase: 'cadencia', nombre: 'Semicadencia',
         porque: par + ': la frase acaba en la dominante, no en la tónica. Queda abierta: pide continuación.' };
