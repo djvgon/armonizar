@@ -242,7 +242,15 @@ const Realizacion = (() => {
         if (!perms.some(q => q.k === k)) perms.push({ k, v: p.map(i => tonos[i]) });
       });
       perms.forEach(({ v }) => {
-        const t0 = desde(v[0], mb, true);
+        /* EL UNÍSONO ENTRE EL BAJO Y EL TENOR (decisión 172, Diego 29/9/2026, sobre
+           `A3-2-01`: «podrías hacer en la mano derecha sol2 si2 re3; el unísono está
+           justificado y sería correcto»). El tenor tenía que estar ESTRICTAMENTE por encima
+           del bajo, así que la disposición que él propone —el tenor doblando el bajo en la
+           misma nota— ni siquiera se generaba, y el motor terminaba cayendo en octavas
+           seguidas entre la contralto y la soprano. El unísono con el bajo es de manual y
+           resuelve justo estos apuros; lleva su coste para que salga solo cuando evita algo
+           peor. */
+        const t0 = desde(v[0], mb, false);
         /* TRES octavas de tenor, no dos, y hasta dos octavas y una quinta por encima del
            bajo (Diego, 28/9/2026). Con un bajo grave —un fa2 al final de la frase— las dos
            octavas de antes dejaban fuera las disposiciones altas, y el motor tenía que
@@ -261,7 +269,8 @@ const Realizacion = (() => {
               const clave = [midi(t), midi(a), midi(s)].join(',');
               if (vistas.has(clave)) return;
               vistas.add(clave);
-              out.push({ voces: [t, a, s], incompleta: cj.incompleta, doblaBajo: cj.doblaBajo, unisono: midi(a) === midi(t) || midi(s) === midi(a) });
+              out.push({ voces: [t, a, s], incompleta: cj.incompleta, doblaBajo: cj.doblaBajo,
+                unisono: midi(a) === midi(t) || midi(s) === midi(a), unisonoBajo: midi(t) === mb });
             });
           });
         });
@@ -281,6 +290,8 @@ const Realizacion = (() => {
     /* El unísono, en el acorde final, pesa más que la tónica en la soprano: no vale
        cerrar en la octava a base de juntar dos voces en la misma nota. */
     if (c.unisono) coste += esFinal ? 60 : 5;
+    // El unísono con el bajo (decisión 172): correcto, pero no gratis
+    if (c.unisonoBajo) coste += esFinal ? 60 : 20;
     if (c.abierta) coste += 30;        // soprano y tenor a más de una octava: solo si no hay otra
     /* LA NOVENA, POR ENCIMA DE LA SENSIBLE (Diego, 27/9/2026). En el acorde de novena la
        tercera del acorde —la sensible— ha de sonar POR DEBAJO de la novena. Puestas al

@@ -3803,6 +3803,27 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       `A4-11-06` (7 y 16)—, de las que dos se ven también en la pantalla del alumno. No son
       faltas nuevas: son faltas que hasta ahora nadie decía.
 
+172. **El unísono entre el bajo y el tenor** (29/9/2026, Diego, sobre `A3-2-01`: «podrías
+    hacer en la mano derecha, penúltimo acorde, sol2 si2 re3; el unísono está justificado y
+    sería correcto»). El tenor tenía que estar **estrictamente por encima del bajo**
+    (`desde(v[0], mb, true)`), así que la disposición que él propone —el tenor doblando el
+    bajo en la misma nota— no se generaba nunca. Sin ella, en el V de `A3-2-01` el motor no
+    tenía más salida que juntar contralto y soprano en re4, y de ahí salían **octavas
+    seguidas** al resolver en el I.
+    - Ahora el tenor puede ir al unísono con el bajo. Lleva coste propio (20; 60 en el acorde
+      final, donde cerrar juntando dos voces no vale), de modo que aparece solo cuando evita
+      algo peor.
+    - `A3-2-01` pasa a ser exactamente lo que él escribió: sol3 (bajo) · sol3 · si3 · re4, y
+      el fragmento se queda **sin ningún aviso**: desaparecen a la vez las octavas seguidas y
+      la sensible sin resolver, porque ahora el si está en la contralto y sube al do.
+    - **Medido sobre los 140 fragmentos** antes de aplicarlo, con las dos voces forzadas: los
+      avisos bajan de 28 a 25 y los fragmentos con algún aviso de 24 a 20. **Ninguno empeora**
+      —8as 2→1, sensible 4→3, directa 9→8, séptima 10→8, el resto igual—. Es el primer cambio
+      del motor de esta tanda que mejora sin contrapartida.
+    - No hace falta tocar el banco: la realización no es dato guardado, se recalcula. Las
+      cifras que Diego tenía asignadas en `A3-2-01` eran correctas; lo que estaba mal era la
+      realización.
+
 168. **El candado, junto a la partitura** (29/9/2026, Diego: «a veces voy repasando
     fragmento por fragmento y no quiero perder tiempo teniendo que subir a ver en la tabla si
     está cerrado o no»). Una chapa pegada al título «Revisión de las respuestas» que dice el

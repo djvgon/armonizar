@@ -11,7 +11,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-1130.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-1330.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Archivos tocados: las ocho páginas
   HTML (marca de versión; `index.html`, `configurar.html` y `cifrados.html` además por el
   vocabulario), `css/estilo.css`, y `js/app.js`, `js/banco.js`, `js/configurador.js`,
@@ -33,6 +33,11 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   melodía —re5 por do5—; hecho, con la pareja de esa nota puesta a `I|53`, que es lo que
   manda su propio bajo). **Para que la corrección entre en su navegador**: quitar `A3-1-28`
   de la tabla y volver a cargar `banco.json`.
+- **`A3-2-10`, fuera del banco** (Diego, 29/9): su bajo —re fa | mi do♯ | re— obliga a un
+  VII6 sobre el mi y él quiere ahí una tónica, que sobre un mi no existe en re menor. El
+  banco pasa a **139 fragmentos**; A3-2 se queda con 12. No se renumera nada: los
+  identificadores son direcciones y renumerarlos rompería los enlaces ya repartidos.
+  **Falta quitarlo también en su navegador**, con «Quitar» en la tabla.
 - **Cuatro sensibles sin resolver** que el auditor nuevo destapa en las realizaciones
   modelo: `A3-2-01` (acorde 6), `A4-11-01` (13) y `A4-11-06` (7 y 16). Dos de ellas se ven
   también en la pantalla del alumno. No son faltas nuevas: son faltas que nadie decía.
@@ -511,6 +516,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-1330 | El unísono entre el bajo y el tenor, admitido: la disposición que faltaba. `A3-2-01` queda sin ningún aviso y el banco entero baja de 28 avisos a 25, sin que ninguno empeore (172) |
 | 20260930-1130 | La sensible sube a la tónica salvo que el acorde se quede sin quinta: el auditor pasa a avisar también en tenor y contralto, y el motor no se toca porque subirle el peso cambia una falta por dos peores (171). `A3-1-28`: la primera nota de la melodía, corregida a do |
 | 20260930-0930 | Lo que da el ejercicio, en color; lo que sale de lo que escribe el alumno, en negro —el circulito del grado, del color de su voz—; análisis y audición, en negro entero (169). El candado, solo cuando está cerrado (170) |
 | 20260930-0700 | El configurador enseña **las dos voces** del fragmento —el bajo y la soprano del profesor, en morado, como voces extremas— y la realización pasa a ser una comprobación: los acordes que no admiten las dos voces salen en rojo (167). El candado, junto a la partitura (168) |

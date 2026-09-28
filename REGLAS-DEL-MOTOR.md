@@ -250,6 +250,12 @@ posible, se admite hasta la novena y se marca como abierta.
 □ **R‑41 · El techo de la soprano es el la5** (el la4 del índice español, 880 Hz). Solo se
 pasa de ahí si con el techo no hay ninguna disposición posible para el acorde.
 
+□ **R‑42b · El bajo y el tenor pueden ir al unísono.**
+No es un defecto: es un recurso de manual, y a veces el único que evita unas octavas
+seguidas entre las voces de arriba. Lleva un coste para que no salga gratis, y no se
+admite en el acorde final. (Decidida por Diego el 29/9/2026 sobre `A3-2-01`: «el
+unísono está justificado y sería correcto».)
+
 □ **R‑42 · La soprano de la realización acaba en la tónica siempre que se puede.**
 
 ---
