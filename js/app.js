@@ -665,25 +665,21 @@
     calcularAvisosVoces();
   }
 
-  /* En qué se diferencia la realización BUENA de la que escribió el alumno, voz a voz
-     (Diego, 28/9/2026). Se vuelve a realizar con SUS respuestas —y, en la melodía de
-     soprano, con el bajo que deducían— y se comparan nota a nota: lo que no coincide se
-     pinta en naranja. Una nota que él no llegó a cifrar cuenta como distinta. */
+  /* Qué acordes de la solución hay que mirar: los que el alumno FALLÓ (Diego, 28/9/2026).
+     Se probó a comparar nota a nota con su realización, pero entonces un acorde bien
+     respondido salía marcado solo porque la disposición cambiaba —la conducción se decide
+     para la frase entera—, y eso confunde más que ayuda. Se marca el acorde entero.
+     El acorde depende del CIFRADO; en la melodía de soprano, también del grado, porque de
+     él se deduce el bajo. */
   function diferenciasConLaSuya(buenos) {
-    try {
-      const suyas = estado.respuestas.map((c, i) => (notaCompleta(i) ? c : null));
-      const op = { modo: estado.rigida ? 'rigida' : 'auto', rotacion: estado.rotacion };
-      if (estado.modoEj === 'soprano') {
-        op.bajos = Ejercicios.bajosDe(estado.ejercicio, estado.romanos, estado.respuestas);
-        op.sopranos = melodia();
-      }
-      const suya = Realizacion.realizar(estado.ejercicio, suyas, op).acordes;
-      return buenos.map((ac, i) => {
-        if (!ac) return null;
-        const mio = suya[i];
-        return ac.map((n, k) => !mio || !mio[k] || Teoria.midi(n) !== Teoria.midi(mio[k]));
-      });
-    } catch (e) { return null; }
+    const res = estado.resultados;
+    if (!Array.isArray(res)) return null;
+    return buenos.map((ac, i) => {
+      if (!ac) return null;
+      const r = res[i] || {};
+      const fallo = !r.okCifra || (estado.modoEj === 'soprano' && !r.okRomano);
+      return ac.map(() => fallo);
+    });
   }
 
   /* Errores de conducción de voces de la realización que se está viendo (octavas y quintas

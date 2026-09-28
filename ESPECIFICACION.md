@@ -3139,14 +3139,16 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     5.ª** en todas las ventanas —en el cuadro de cifrados decía «Posición» y numeraba 1.ª,
     2.ª, 3.ª—.
 
-147. **Al ver la solución, en naranja lo que cambia** (28/9/2026, Diego). Con la
-    realización del modelo a la vista (decisión 145), se vuelve a realizar el ejercicio con
-    las respuestas del ALUMNO —y, en la melodía de soprano, con el bajo que deducían— y se
-    comparan nota a nota: las cabezas que no coinciden se pintan en naranja `#D95F00`. Una
-    nota que no llegó a cifrar cuenta como distinta.
-    Ojo a una consecuencia que es correcta aunque sorprenda: un acorde bien respondido puede
-    salir en naranja si su **disposición** cambia, porque la conducción de voces se decide
-    para la frase entera y un error posterior mueve lo anterior.
+147. **Al ver la solución, en naranja los acordes que fallaron** (28/9/2026, Diego). Con la
+    realización del modelo a la vista (decisión 145), los acordes en los que el alumno se
+    equivocó se pintan enteros en naranja `#D95F00`, para que vea de un vistazo qué le
+    cambia. El acorde depende del **cifrado**; en la melodía de soprano, también del grado,
+    porque de él se deduce el bajo. Un acorde con el cifrado bien y el grado mal —el mismo
+    acorde con otro nombre— no se marca: lo que suena es idéntico.
+    Se probó antes a comparar nota a nota con la realización del alumno, pero entonces un
+    acorde bien respondido salía marcado solo porque su disposición cambiaba —la conducción
+    se decide para la frase entera y un error posterior mueve lo anterior—, y eso confunde
+    más de lo que enseña.
 
 148. **El recorrido de las casillas, siempre en el mismo orden** (28/9/2026, Diego).
     **Función → fundamental → cifrado**, y a la nota siguiente, **aunque la casilla ya tenga
