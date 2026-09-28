@@ -418,6 +418,21 @@
       if (sop) {
         const ids = adm.slice();                                   // primero las admisibles (la modelo delante), luego el resto de acordes con la nota
         if (prop && prop.candidatos) prop.candidatos.forEach(x => { if (!ids.includes(x.id)) ids.push(x.id); });
+        /* SIN ANÁLISIS RECIENTE, LOS ACORDES QUE CONTIENEN LA NOTA (decisión 176, Diego
+           29/9/2026: «¿cómo hago para que aparezcan como opciones para el acorde 4 el
+           V7?»). Al traer un fragmento del banco no hay `propuesta` —se cargan sus
+           respuestas tal cual, que es lo que se quiere—, y entonces en la melodía solo se
+           veían los acordes YA marcados: se podían quitar, pero no añadir ninguno. En el
+           bajo nunca pasó, porque allí se pintan siempre todas las cifras del repertorio.
+           Ahora, cuando no hay análisis, se añaden sin marcar todos los acordes de la
+           lección que contienen esa nota. No cambia nada de lo guardado: solo deja verlos
+           para poder marcarlos. */
+        if (!prop) {
+          try {
+            Reglas.candidatosSoprano(n, ton, rep, i === notas.length - 1, acordesElegidos())
+              .forEach(c => { if (!ids.includes(c.id)) ids.push(c.id); });
+          } catch (e) { /* si el repertorio no da para tanto, se queda con lo marcado */ }
+        }
         opcionesNota = ids.map(id => {
           const p = Ejercicios.par(id);
           const cand = prop && prop.candidatos ? prop.candidatos.find(x => x.id === id) : null;

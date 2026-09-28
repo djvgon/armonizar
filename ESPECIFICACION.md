@@ -3880,6 +3880,22 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+176. **En la melodía, los acordes que contienen la nota salen siempre, marcados o no**
+    (29/9/2026, Diego: «¿cómo hago para que aparezcan como opciones para el acorde 4 el
+    V7?», y «NO puedo introducir ningún acorde aquí» en una nota sin nada marcado). En la
+    armonización de bajo, la columna «Acordes admisibles» pinta **todas** las cifras del
+    repertorio de la lección; en la de soprano pintaba solo los acordes que ya estaban
+    marcados más los que hubiera propuesto el último análisis. Al traer un fragmento del
+    banco no hay análisis —se cargan sus respuestas tal cual, que es lo que se quiere—, y
+    entonces solo se veía lo marcado: se podía **quitar**, pero no **añadir** nada. Si la
+    nota se había quedado sin ningún acorde marcado, no había ni una casilla que pulsar, y
+    en un fragmento cerrado tampoco valía volver a analizar, porque el cierre lo impide.
+    - Sin análisis reciente, se añaden **sin marcar** todos los acordes de la lista de la
+      lección que contienen esa nota (`Reglas.candidatosSoprano`), detrás de los marcados.
+      En la última nota se piden como final, para no ofrecer lo que no cierra.
+    - No cambia nada de lo guardado: solo los deja a la vista para poder marcarlos con un
+      clic. La modelo sigue siendo la primera marcada.
+
 168. **El candado, junto a la partitura** (29/9/2026, Diego: «a veces voy repasando
     fragmento por fragmento y no quiero perder tiempo teniendo que subir a ver en la tabla si
     está cerrado o no»). Una chapa pegada al título «Revisión de las respuestas» que dice el

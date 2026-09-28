@@ -2647,8 +2647,8 @@
       "I|53"
      ],
      [
-      "V|53",
-      "V|7+"
+      "V|7+",
+      "V|53"
      ],
      [
       "I|53"
@@ -2673,7 +2673,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "303e30b53701d8c0"
+   "huella": "b2fa5d55c381b194"
   },
   {
    "id": "A3-1-26",
@@ -2964,8 +2964,8 @@
       "V|7+"
      ],
      [
-      "V|53",
-      "V|7+"
+      "V|7+",
+      "V|53"
      ],
      [
       "I|53"
@@ -2990,7 +2990,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "9ebe7f1fd95b8390"
+   "huella": "097f1aff65db5c64"
   },
   {
    "id": "A3-1-29",
@@ -3074,8 +3074,8 @@
       "I|53"
      ],
      [
-      "V|53",
-      "V|7+"
+      "V|7+",
+      "V|53"
      ],
      [
       "I|53"
@@ -3102,7 +3102,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "e79e289c4a9aef77"
+   "huella": "6ed1716ca13fc523"
   },
   {
    "id": "A3-1-30",
@@ -3194,12 +3194,12 @@
       "I|53"
      ],
      [
-      "V|7+",
-      "V|53"
-     ],
-     [
       "V|53",
       "V|7+"
+     ],
+     [
+      "V|7+",
+      "V|53"
      ],
      [
       "I|53"
@@ -3224,7 +3224,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "aa3c2f2279e95ed1"
+   "huella": "9b24a66a37ed86d1"
   },
   {
    "id": "A3-1-31",
@@ -3425,8 +3425,8 @@
       "V|53"
      ],
      [
-      "V|53",
-      "V|7+"
+      "V|7+",
+      "V|53"
      ],
      [
       "I|53"
@@ -3451,7 +3451,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "a8392ea309e924e2"
+   "huella": "4c478e339668fdb6"
   },
   {
    "id": "A3-2-01",
@@ -3599,10 +3599,12 @@
      [
       "V|53",
       "V|6",
-      "V|7+"
+      "V|7+",
+      "VII|6"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -3624,7 +3626,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "30f6c4dea5565b83"
+   "huella": "5186f8bb3e2ead50"
   },
   {
    "id": "A3-2-02",
@@ -3857,9 +3859,8 @@
       "V|7+"
      ],
      [
-      "V|53",
       "V|6",
-      "V|7+"
+      "V|53"
      ],
      [
       "I|53"
@@ -3884,7 +3885,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "e5c37bf4366a607b"
+   "huella": "86dc810acb12f8d9"
   },
   {
    "id": "A3-2-04",
@@ -3997,17 +3998,17 @@
       "I|53"
      ],
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
+      "VII|6",
       "V|53",
-      "V|7+",
-      "VII|6"
+      "V|7+"
      ],
      [
-      "V|53",
       "V|6",
+      "V|53",
       "V|7+"
      ],
      [
@@ -4033,7 +4034,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "ad54f4cdfedb744a"
+   "huella": "9b03d8f3af224dc4"
   },
   {
    "id": "A3-2-05",
@@ -4058,7 +4059,7 @@
     "tonica": "A",
     "modo": "menor"
    },
-   "tonalidadSegura": false,
+   "tonalidadSegura": true,
    "compas": [
     4,
     4
@@ -4121,8 +4122,8 @@
       "I|6"
      ],
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
       "V|53"
@@ -4147,7 +4148,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "b70125d8c1481b71"
+   "huella": "112f39de5b8c967b"
   },
   {
    "id": "A3-2-06",
@@ -4235,8 +4236,8 @@
       "I|6"
      ],
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
       "V|53"
@@ -4261,7 +4262,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "cfb583cc39914905"
+   "huella": "ec8c0c92d3d5c40f"
   },
   {
    "id": "A3-2-07",
@@ -4286,7 +4287,7 @@
     "tonica": "E",
     "modo": "menor"
    },
-   "tonalidadSegura": false,
+   "tonalidadSegura": true,
    "compas": [
     4,
     4
@@ -4349,8 +4350,8 @@
       "I|6"
      ],
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
       "V|53"
@@ -4375,7 +4376,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "2bfc8e5ca5965fc5"
+   "huella": "5cf439623fdadacf"
   },
   {
    "id": "A3-2-08",
@@ -4462,8 +4463,8 @@
       "I|53"
      ],
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
       "V|53"
@@ -4488,7 +4489,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "55bb3b48eaf1d9d7"
+   "huella": "a6de93ce853654e1"
   },
   {
    "id": "A3-2-09",
@@ -4608,8 +4609,8 @@
       "VII|6"
      ],
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
       "I|53"
@@ -4637,7 +4638,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "2f2d9f64ce281639"
+   "huella": "dc913f26549c666f"
   },
   {
    "id": "A3-2-10",
@@ -4751,18 +4752,17 @@
       "I|6"
      ],
      [
-      "V|53",
-      "I|53",
       "I|6",
+      "I|53",
       "V|6",
       "V|7+"
      ],
      [
-      "V|7+",
-      "I|53",
-      "I|6",
       "V|53",
-      "V|6"
+      "I|53",
+      "V|7+",
+      "V|6",
+      "I|6"
      ],
      [
       "V|53",
@@ -4942,8 +4942,8 @@
       "VII|6"
      ],
      [
-      "V|53",
       "V|7+",
+      "V|53",
       "VII|6"
      ],
      [
@@ -4969,7 +4969,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "10628a2bcbbefebc"
+   "huella": "76f1f78bef92c390"
   },
   {
    "id": "A3-2-12",
@@ -5080,15 +5080,15 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
       "I|53"
      ],
      [
-      "V|53",
       "V|6",
+      "V|53",
       "V|7+",
       "VII|6"
      ],
@@ -5121,7 +5121,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "aac86c7eaa2867ab"
+   "huella": "4e74af7c15102751"
   },
   {
    "id": "A3-2-13",
@@ -5309,12 +5309,14 @@
       "I|6"
      ],
      [
-      "V|53",
       "V|+6",
+      "V|53",
       "V|7+",
+      "V|+4",
       "VII|6"
      ],
      [
+      "I|6",
       "I|53"
      ]
     ]
@@ -5338,7 +5340,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "24488d16227d9bed"
+   "huella": "f9391c262737760d"
   },
   {
    "id": "A3-3-02",
@@ -5425,12 +5427,12 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
-      "V|53",
       "V|+6",
+      "V|53",
       "V|7+",
       "VII|6"
      ],
@@ -5458,7 +5460,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "b0c08be8a2af0377"
+   "huella": "db9c428cb53b89a7"
   },
   {
    "id": "A3-3-03",
@@ -5489,7 +5491,7 @@
     "tonica": "C",
     "modo": "mayor"
    },
-   "tonalidadSegura": false,
+   "tonalidadSegura": true,
    "compas": [
     4,
     4
@@ -5544,16 +5546,18 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ],
      [
-      "V|53",
+      "V|+4",
       "V|+6",
+      "V|53",
       "V|7+",
       "VII|6"
      ],
      [
+      "I|6",
       "I|53"
      ]
     ]
@@ -5576,7 +5580,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "905cba90ec0ac547"
+   "huella": "201d1536cda3f02d"
   },
   {
    "id": "A3-3-04",
@@ -5983,9 +5987,9 @@
       "I|6"
      ],
      [
+      "V|65d",
       "V|53",
       "V|+6",
-      "V|65d",
       "V|6",
       "V|7+",
       "VII|6"
@@ -6013,7 +6017,7 @@
    },
    "formulaTST": false,
    "cerrado": "2026-09-28",
-   "huella": "fd6435f7ea12f114"
+   "huella": "447cfb0b766fd454"
   },
   {
    "id": "A3-3-08",
@@ -6131,9 +6135,7 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "f21642d61cc8ea99"
+   "formulaTST": false
   },
   {
    "id": "A3-3-09",
@@ -6224,8 +6226,8 @@
       "I|6"
      ],
      [
-      "V|53",
       "V|+6",
+      "V|53",
       "V|7+",
       "VII|6"
      ],
@@ -6251,7 +6253,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "b924ce500a98d7a7"
   },
   {
    "id": "A3-3-10",
