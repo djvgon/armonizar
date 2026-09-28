@@ -284,9 +284,14 @@ svg.partitura .bajo-alumno.mal .plica, svg.partitura .bajo-alumno.mal .linea { s
    la melodía— en el morado de «lo dado»; lo que escribe el motor —tenor y contralto—, en
    negro. El rojo del error manda sobre los dos. */
 svg.partitura .acorde .nota.dada { fill: var(--voz-dada); }
-svg.partitura .bajo.dada text, svg.partitura .bajo-alumno.dada text { fill: var(--voz-dada); }
+svg.partitura .bajo.dada text, svg.partitura .bajo-alumno.dada text,
+svg.partitura .melodia.dada text { fill: var(--voz-dada); }
 svg.partitura .bajo.dada .plica, svg.partitura .bajo.dada .linea,
-svg.partitura .bajo-alumno.dada .plica, svg.partitura .bajo-alumno.dada .linea { stroke: var(--voz-dada); }
+svg.partitura .bajo-alumno.dada .plica, svg.partitura .bajo-alumno.dada .linea,
+svg.partitura .melodia.dada .plica, svg.partitura .melodia.dada .linea { stroke: var(--voz-dada); }
+/* Y el circulito del grado, del color de la voz que anota (decisión 169) */
+svg.partitura .grado-bajo.dada .grado-circulo { stroke: var(--voz-dada); }
+svg.partitura .grado-bajo.dada .grado-cifra { fill: var(--voz-dada); }
 svg.partitura .acorde.mal .nota.dada { fill: var(--mal); }
 svg.partitura .bajo-alumno.mal.dada text, svg.partitura .bajo.mal.dada text { fill: var(--mal); }
 .aviso-voces .voces-mal { color: var(--mal); }

@@ -3757,6 +3757,29 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       modo que la vista previa se dibujaba sin saber de qué fragmento venía y la otra voz
       llegaba un paso tarde. Ahora se apunta antes de pintar.
 
+169. **Lo que da el ejercicio, en color; lo que sale de lo que escribe el alumno, en negro**
+    (29/9/2026, Diego: «destacar en morado las notas propuestas por el ejercicio —y los
+    circulitos del mismo color—, de manera que se distinga fácilmente lo propuesto de lo
+    escrito por el estudiante»). Sale de un desajuste que había creado la 167: en el
+    configurador el bajo pasaba a morado y **sus circulitos de grado seguían en negro**, que
+    es justo al revés.
+    - **El circulito del grado toma el color de la voz que anota.** Con el bajo dado, en
+      color como él; con el bajo deducido de los acordes del alumno, en negro.
+    - **Armonización de bajo**: el bajo y sus grados, en color; la realización que sale de
+      su cifrado, en negro. **Armonización de soprano**: la melodía, en color; el bajo
+      deducido y las voces de en medio, en negro.
+    - **Análisis y audición, en negro entero.** El color solo dice algo cuando en la misma
+      partitura hay también algo del alumno; ahí no escribe ninguna nota —se le dan el bajo
+      y la realización y solo los nombra—, así que todo iría en color y el color dejaría de
+      distinguir nada.
+    - En el configurador, las dos voces del profesor en color y el tenor y la contralto del
+      motor en negro, como en la 167.
+
+170. **El candado, solo cuando está cerrado** (29/9/2026, Diego). La chapa junto a la
+    partitura llevaba un candado abierto cuando el fragmento no estaba firmado, y confundía:
+    un candado dibujado se lee como «aquí hay cerradura», esté o no echada. Ahora, sin
+    cerrar, no hay candado; cerrado, 🔒 con su fecha.
+
 168. **El candado, junto a la partitura** (29/9/2026, Diego: «a veces voy repasando
     fragmento por fragmento y no quiero perder tiempo teniendo que subir a ver en la tabla si
     está cerrado o no»). Una chapa pegada al título «Revisión de las respuestas» que dice el

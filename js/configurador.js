@@ -631,6 +631,12 @@
       realizacion: real ? real.acordes : null,   // el profesor siempre puede ver la realización modelo
       realizacionMal: extremas ? malos : null,   // los acordes en los que las dos voces dadas chocan
       extremasDadas: extremas,                   // bajo y soprano son los suyos: van en color
+      /* Qué voces son del profesor y cuáles las escribe el motor (decisión 169). En la
+         armonización de bajo el bajo es suyo siempre; en la de soprano, solo cuando se han
+         podido forzar las dos voces extremas —si no, el bajo dibujado es deducido—. */
+      bajoDado: sop ? extremas : true,
+      sopranoDada: sop || extremas,
+      realizacionDada: false,                    // tenor y contralto siempre los pone el motor
       vozDada: sop ? 'soprano' : null,
       bajos: sop ? opReal.bajos : null,
       /* La fila de funciones, con el pivote partido en dos (decisión 95): arriba la función
@@ -1647,7 +1653,9 @@
     chip.dataset.estado = cerrada ? (rota ? 'rota' : 'cerrado') : 'abierto';
     chip.textContent = cerrada
       ? (rota ? '⚠🔒 ' + (e.id || '') + ' · cerrado el ' + e.cerrado + ', pero cambiado — reabrir' : '🔒 ' + (e.id || '') + ' · cerrado el ' + e.cerrado + ' — reabrir')
-      : '🔓 ' + (e.id || '') + ' · sin cerrar — cerrar ahora';
+      /* Candado SOLO cuando está cerrado (Diego, 29/9/2026): el candado abierto confundía,
+         porque un candado dibujado se lee como «aquí hay cerradura», esté o no echada. */
+      : (e.id || '') + ' · sin cerrar — cerrar ahora';
     chip.title = cerrada
       ? 'Este fragmento está firmado por ti y nada del programa lo reescribe. Pulsa para reabrirlo.'
       : 'Este fragmento todavía no está firmado. Pulsa para cerrarlo.';

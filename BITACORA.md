@@ -11,7 +11,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-0700.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-0930.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Archivos tocados: las ocho páginas
   HTML (marca de versión; `index.html`, `configurar.html` y `cifrados.html` además por el
   vocabulario), `css/estilo.css`, y `js/app.js`, `js/banco.js`, `js/configurador.js`,
@@ -503,6 +503,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-0930 | Lo que da el ejercicio, en color; lo que sale de lo que escribe el alumno, en negro —el circulito del grado, del color de su voz—; análisis y audición, en negro entero (169). El candado, solo cuando está cerrado (170) |
 | 20260930-0700 | El configurador enseña **las dos voces** del fragmento —el bajo y la soprano del profesor, en morado, como voces extremas— y la realización pasa a ser una comprobación: los acordes que no admiten las dos voces salen en rojo (167). El candado, junto a la partitura (168) |
 | 20260930-0330 | «Cifrado interválico» en vez de «cifrado armónico»; «sonido fundamental» se queda a secas (165, afinada) |
 | 20260930-0100 | **El sello**: un fragmento cerrado es criterio del profesor, nada del programa lo reescribe y su huella se comprueba al cargar el banco; cola de repaso en la tabla (166). Vocabulario: «sonido fundamental» y «cifrado armónico» en todo lo que se lee (165) |

@@ -822,7 +822,31 @@
 
   const conBajoDoblado = (bajo, voces) => [{ letra: bajo.letra, alt: bajo.alt, octava: bajo.octava - 1 }, bajo, ...voces];
 
+  /* LO QUE DA EL EJERCICIO, EN COLOR; LO QUE SALE DE LO QUE ESCRIBE EL ALUMNO, EN NEGRO
+     (decisión 169, Diego 29/9/2026: «destacar en morado las notas propuestas por el
+     ejercicio —y los circulitos del mismo color—, de manera que se distinga fácilmente lo
+     propuesto de lo escrito por el estudiante»).
+
+       · Armonización de bajo: el bajo es dado; las voces superiores salen de su cifrado.
+       · Armonización de soprano: la melodía es dada; el bajo y las voces de en medio salen
+         de los acordes que él elige.
+       · Análisis: se le dan el bajo Y la realización a cuatro voces — no escribe ninguna
+         nota, solo las nombra—, así que va todo en color.
+       · Audición: igual que el análisis, pero solo cuando se destapa al terminar. */
+  function marcarVocesDadas() {
+    const m = estado.modoEj;
+    /* El color solo dice algo cuando en la MISMA partitura hay también algo del alumno. En
+       análisis y en audición él no escribe ninguna nota —se le dan el bajo y la realización
+       enteros y solo los nombra—, de modo que todo iría en color y el color dejaría de
+       distinguir nada: allí la partitura va en negro, como cualquier partitura. */
+    const mezcla = m === 'armonizar' || m === 'soprano';
+    estado.bajoDado = mezcla && m !== 'soprano';          // en soprano el bajo se deduce de sus acordes
+    estado.sopranoDada = mezcla && m === 'soprano';
+    estado.realizacionDada = false;                       // las voces de en medio nunca las da el ejercicio
+  }
+
   function calcularRealizacion() {
+    marcarVocesDadas();
     if (!realizacionVisible()) { estado.realizacion = null; estado.realizacionMal = null; estado.realizacionCambio = null; estado.paralelas = []; estado.avisosVoces = []; return; }
     const r = Realizacion.realizar(estado.ejercicio, cifrasParaRealizar(), opcionesRealizacion());
     estado.realizacion = r.acordes;
