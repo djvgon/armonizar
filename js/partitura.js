@@ -383,7 +383,10 @@ const Partitura = (() => {
        grado y cifra en una sola línea centrada en la nota. Se encoge si no cabe entre nota
        y nota —el caso malo es un VII con una DD—, que es preferible a que se solapen. */
     const Y_SOLUCION = Y_FIN_CASILLAS + 2.4 * SP;          // centro del renglón de la solución
-    const TAM_SOL_FUN = 1.5 * SP, TAM_SOL_ROM = 1.8 * SP, ESCALA_SOL = 0.7;
+    /* La FUNCIÓN, un punto por encima del grado (Diego, 28/9/2026): en este renglón la
+       función es la lectura que manda —es lo que se pregunta primero y lo que ordena la
+       frase—, y el grado viene detrás. Ligeramente, no más: 18 contra 16. */
+    const TAM_SOL_FUN = 1.8 * SP, TAM_SOL_ROM = 1.6 * SP, ESCALA_SOL = 0.7;
     const HUECO_SOL = 0.5 * SP, ANCHO_SOL_MAX = 5.4 * SP;  // el hueco mínimo entre notas es 6 SP
     /* Si hay errores de conducción de voces, se reserva al pie una banda para el globo de
        explicación, de modo que nunca tape la música. Se calcula la altura del globo más

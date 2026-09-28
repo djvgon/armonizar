@@ -3244,6 +3244,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       justo lo que faltaba por explicar en el pentagrama.
     - Las **casillas** se quedan diciendo **solo lo del alumno**: verde, rojo o vacía. La
       función del modelo sale de dentro de la casilla.
+    - La **función** va un punto por encima del **grado**: **18 px contra 16**
+      (Diego, 28/9/2026). Ligeramente, no más: en este renglón la función es la lectura que
+      manda —es lo que se pregunta primero y lo que ordena la frase— y el grado viene detrás.
+      La cifra se dibuja a escala 0,7 de la de las casillas.
     - Si la línea no cabe entre nota y nota —el caso malo es un `VII` con una `DD`— se
       **encoge** en vez de pisar a la vecina. Medido en el banco entero: el más ancho llega a
       53 px sobre 54 disponibles, así que en la práctica no llega a encogerse nunca.
