@@ -373,28 +373,64 @@ const Reglas = (() => {
 
      El **6/4 cadencial** queda fuera de todo esto: I6/4 → V sobre el mismo bajo es la
      fórmula, no un defecto. */
+  /* La nota escrita es el BAJO en la armonización de bajo, pero en la de SOPRANO es la
+     melodía: allí el acorde viene como pareja «grado|cifra» y el bajo hay que DEDUCIRLO de
+     ella. Sin esto la regla de la síncopa comparaba, en soprano, acordes construidos sobre
+     la melodía —otro acorde, otra clave—, de modo que no veía nada y el 6/4 cadencial
+     tampoco quedaba exento, porque «I|64» no es «64» (Diego, 28/9/2026). */
+  function acordeDeId(id, nota, ton) {
+    const txt = String(id), k = txt.indexOf('|');
+    const cifra = k < 0 ? txt : txt.slice(k + 1);
+    if (k < 0) return { cifra: cifra, bajo: nota, ton: ton };
+    try {
+      const r = Teoria.gradoInterno(txt.slice(0, k));
+      const t = Teoria.tonParaAcorde(r, cifra, ton, nota);
+      const bajo = Teoria.bajoDe(r, cifra, t, false);
+      /* `bajoDe` da la nota SIN octava, y `claveAcorde` la necesita: sin ella reventaba
+         —«Cannot read properties of undefined»—, la excepción se tragaba el error y la regla
+         devolvía «no hay síncopa» para todo el modo soprano. Se le pone una octava
+         cualquiera: lo que se compara es la clase de altura, no el registro. */
+      return bajo ? { cifra: cifra, bajo: { letra: bajo.letra, alt: bajo.alt, octava: 3 }, ton: t } : null;
+    } catch (e) { return null; }
+  }
+
   function sincopaBajo(ej, i, cifraAnt, cifraAct) {
     if (i < 1 || !cifraAnt || !cifraAct) return false;
-    if (cifraAnt === '64' || cifraAct === '64') return false;        // el 6/4 cadencial es otra armonía
     const fuerzas = Teoria.fuerzasMetricas(ej.compases, ej.compas);
     if (!Teoria.pideCambio(fuerzas, i) || cortesDe(ej)[i]) return false;
     const notas = notasDe(ej), tons = Teoria.tonalidadesPorNota(ej);
     try {
-      const nAnt = notas[i - 1], nAct = notas[i], tAnt = tons[i - 1], tAct = tons[i];
+      const tAnt = tons[i - 1], tAct = tons[i];
+      const a = acordeDeId(cifraAnt, notas[i - 1], tAnt), b = acordeDeId(cifraAct, notas[i], tAct);
+      if (!a || !b) return false;
+      if (a.cifra === '64' || b.cifra === '64') return false;        // el 6/4 cadencial es otra armonía
+      const nAnt = a.bajo, nAct = b.bajo;
       // El mismo acorde: síncopa, mueva o no el bajo
-      if (Teoria.claveAcorde(cifraAnt, nAnt, tAnt) === Teoria.claveAcorde(cifraAct, nAct, tAct)) return true;
+      if (Teoria.claveAcorde(a.cifra, nAnt, a.ton) === Teoria.claveAcorde(b.cifra, nAct, b.ton)) return true;
       /* Excepción: el MISMO acorde sobre el MISMO bajo que gana o suelta su séptima —el
          V que pasa a V7 antes de resolver, la fórmula I–V–V7–I de A3-1—. No es una
-         dominante nueva, es la misma completándose, igual que el 6/4 cadencial de arriba. */
-      if (Teoria.clase(Teoria.nota(nAnt)) === Teoria.clase(Teoria.nota(nAct))
-        && Teoria.clase(Teoria.fundamental(cifraAnt, Teoria.nota(nAnt), tAnt))
-         === Teoria.clase(Teoria.fundamental(cifraAct, Teoria.nota(nAct), tAct))) return false;
+         dominante nueva, es la misma completándose, igual que el 6/4 cadencial de arriba.
+
+         PERO NO EN LA CABEZA DEL COMPÁS (Diego, 28/9/2026: «esto genera síncopa armónica y
+         no es posible»). La excepción la añadí yo con la decisión 80 y quedó anotada como
+         el único punto en que me apartaba de lo que él dijo; aquí la veta, y con razón: el
+         tiempo fuerte del compás es donde la armonía TIENE que cambiar, y una dominante que
+         entra en parte débil y se prolonga sobre la barra es exactamente la síncopa que la
+         regla persigue, se complete con la séptima o no.
+         Medido en el banco antes de tocarlo, los casos que salvaba la excepción partían en
+         dos sin solaparse: 4 DENTRO del compás (fuerza 1→2) —los cuatro de A3-1 para los que
+         se hizo— y 2 que CRUZAN la barra (fuerza 2→3), que son los que él señala. Así que
+         basta pedir que no caiga en la cabeza del compás. */
+      if (fuerzas[i] < 3
+        && Teoria.clase(Teoria.nota(nAnt)) === Teoria.clase(Teoria.nota(nAct))
+        && Teoria.clase(Teoria.fundamental(a.cifra, Teoria.nota(nAnt), a.ton))
+         === Teoria.clase(Teoria.fundamental(b.cifra, Teoria.nota(nAct), b.ton))) return false;
       /* Acordes distintos: solo sincopan si los dos son de dominante Y DEL MISMO TONO. Dos
          dominantes de tonos distintos —la secundaria y luego la de la tonalidad— son dos
          armonías de verdad distintas y renuevan el acorde (decisión 84). */
       if (!Teoria.mismaTonalidad(tAnt, tAct)) return false;
-      const fAnt = funcionDeId(cifraAnt, nAnt, tAnt, cifraAct, nAct, tAct);
-      const fAct = funcionDeId(cifraAct, nAct, tAct, null, null, null);
+      const fAnt = funcionDeId(a.cifra, nAnt, a.ton, b.cifra, nAct, b.ton);
+      const fAct = funcionDeId(b.cifra, nAct, b.ton, null, null, null);
       return fAnt === 'D' && fAct === 'D';
     } catch (e) { return false; }
   }
@@ -919,7 +955,10 @@ const Reglas = (() => {
         k = (k === null || k === undefined) ? null : capas[i][k].ant;   // al comienzo de una frase, ant es null: se toma el mejor de la anterior
       } }
 
-    return notas.map((s, i) => {
+    /* Y la misma pasada que en la armonización de bajo: LA RESPUESTA MODELO NO SINCOPA
+       NUNCA. `evitarSincopas` solo corría en `proponer`, así que en soprano el modelo podía
+       sincopar tranquilamente; se vio al vetar la excepción de la decisión 158. */
+    return evitarSincopas(ej, notas.map((s, i) => {
       const cs = cands[i];
       const admIdx = cs.map((_, k) => k).filter(k => util[i][k]);
       const orden = k => (modeloIdx[i] === k ? -1 : cs[k].coste);
@@ -939,7 +978,7 @@ const Reglas = (() => {
           + ' (bajo ' + Teoria.nombreEs(modelo.bajo) + (modelo.melodica ? ', menor melódica' : '') + '; función ' + f + ', ' + Teoria.NOMBRE_FUNCION[f] + ')' + (modelo.avisos.length ? '; ' + modelo.avisos.join(', ') : '') + '.';
       }
       return { candidatos: candsTodos[i], admisibles, modelo: modelo ? modelo.id : null, explicacion, regla: 'Melodía', contexto: { i, nota: Teoria.nota(s), grado: Teoria.grado(s, tons[i]).grado } };
-    });
+    }));
   }
 
   // Candidato (como los de proponerSoprano) que corresponde a la respuesta del alumno en la

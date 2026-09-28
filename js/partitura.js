@@ -1094,6 +1094,7 @@ const Partitura = (() => {
          más. Con el carril decidido solo por el cuadro, dos pastillas vecinas se tocaban
          aunque los cuadros no llegaran a rozarse. */
       const piezas = [];
+      const t0 = p => p.t.desde, t1 = p => p.t.hasta;
       tecnicas.forEach(t => {
         const a = cxNota[t.desde], b = cxNota[t.hasta];
         if (a === undefined || b === undefined || b <= a) return;
@@ -1111,14 +1112,24 @@ const Partitura = (() => {
       });
       const finCarril = [];                       // hasta dónde llega lo ocupado en cada carril
       const capa = el('g', { class: 'tecnicas' });
-      piezas.forEach(p => {
+      piezas.forEach((p, k) => {
         let carril = 0;
         while (finCarril[carril] !== undefined && finCarril[carril] >= p.izq - 0.3 * SP) carril++;
         finCarril[carril] = p.der;
         const dentro = carril * 0.55 * SP;
         const x1 = p.x1 + dentro, x2 = p.x2 - dentro;
-        const y1 = (sinSistema ? Y_CASILLA - SP : Y_SISTEMA_TOP - 0.8 * SP) + dentro;
-        const y2 = Y_FIN_CASILLAS + 0.5 * SP - dentro;
+        /* Los topes se ALTERNAN (Diego, 28/9/2026): uno un poco más alto, el siguiente a la
+           altura de siempre, y así. Con todos a la misma altura, dos cuadros seguidos se
+           leían como uno solo; escalonados se distingue dónde acaba cada uno. */
+        const y1 = (sinSistema ? Y_CASILLA - SP : Y_SISTEMA_TOP - 0.8 * SP) - (k % 2 === 0 ? 1.1 * SP : 0);
+        /* Y por abajo el cuadro llega hasta el CIFRADO NARANJA de la solución, «pues es
+           precisamente este el que cumple la técnica que describe el cuadro» (Diego). Solo
+           cuando lo hay: si el alumno acertó esos acordes no hay renglón naranja debajo, y
+           el cuadro no ha de bajar a encerrar un hueco vacío. */
+        let hastaSolucion = false;
+        for (let q = t0(p); q <= t1(p) && !hastaSolucion; q++)
+          if (estado.filaSolucion && estado.filaSolucion[q]) hastaSolucion = true;
+        const y2 = (hastaSolucion ? Y_SOLUCION + 1.7 * SP : Y_FIN_CASILLAS + 0.5 * SP);
         const t = p.t;
         const g = el('g', { class: 'tecnica tecnica-' + (t.clase || 'prolongacion') });
         g.appendChild(el('rect', { x: x1, y: y1, width: x2 - x1, height: y2 - y1, rx: 0.8 * SP, class: 'tecnica-caja' }));

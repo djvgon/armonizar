@@ -3452,6 +3452,97 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     línea del bajo sino el acorde que elige el modelo, y hace falta decidir si es una regla
     —estado fundamental en los reposos de frase— o una corrección del fragmento.
 
+157. **Las cadencias son de cada FRASE, no solo del fragmento** (28/9/2026, Diego,
+    corrigiendo la decisión 155). Tres cosas, las tres suyas:
+
+    - **«Los compases 2 y 3 no son prolongación de tónica, sino semicadencia (S S D)».** La
+      cadencia se buscaba solo al final del fragmento, así que los reposos interiores se
+      quedaban sin nombre y una prolongación se los comía. Ahora el fragmento se parte en
+      **frases** —las cortan los silencios, que es como ya las parte el motor con
+      `cortesDe`— y **cada frase resuelve primero su cadencia**, que manda sobre cualquier
+      prolongación que quisiera ocupar esos acordes, y después las prolongaciones de lo que
+      queda por delante.
+    - **«No solo hay prolongación de dominante, sino también cadencia auténtica: S D con
+      cuarta y sexta cadencial y T».** El cuadro de la cadencia se extiende hacia atrás por
+      **toda la dominante** —el 6/4 cadencial es dominante en esta aplicación (decisión
+      130), así que `II6 – I6/4 – V – I` es S + D + T y no una prolongación suelta más una
+      cadencia— y, delante de ella, por la **subdominante** que la prepara.
+    - **Perfecta o imperfecta**, con sus palabras: es **imperfecta** cuando acaba en V – I
+      pero «o bien el bajo no hace salto de quinta —porque use una inversión, bien en la
+      dominante o bien en la tónica—, o bien la melodía de soprano no acaba en la tónica».
+      Es lo que ya hacía la decisión 155; ahora está dicho así en el código y en el globo,
+      que además explica **cuál de las dos cosas** falla en cada caso.
+
+    Y dos cosas del dibujo:
+
+    - El cuadro **baja hasta el cifrado naranja** de la solución, «pues es precisamente este
+      el que cumple la técnica que describe el cuadro» (Diego). Solo cuando lo hay: si el
+      alumno acertó esos acordes no hay renglón naranja debajo y el cuadro no baja a
+      encerrar un hueco vacío.
+    - Los **topes se alternan**: uno un poco más alto, el siguiente a la altura de siempre, y
+      así. Con todos a la misma altura, dos cuadros seguidos se leían como uno solo.
+
+    Medido en los tres modos por las nueve lecciones: de 67 cuadros a **49**, ninguno fuera
+    del dibujo, ningún rótulo pisado, sin errores. Bajan porque la cadencia absorbe ahora lo
+    que antes se contaba aparte, que era justo la confusión.
+
+158. **La excepción de la síncopa no vale en la cabeza del compás** (28/9/2026, Diego: «esto
+    genera síncopa armónica y no es posible, ¿recuerdas?»). La decisión 80 eximió de la
+    regla de la síncopa al **mismo acorde sobre el mismo bajo que gana o suelta su séptima**
+    —el `V → V7` de la fórmula I–V–V7–I de A3-1— y quedó anotada como el único punto en que
+    me aparté de lo que él dijo, para que pudiera vetarla. La veta, y con razón: el tiempo
+    fuerte del compás es donde la armonía **tiene** que cambiar.
+
+    Medido antes de tocar nada, los casos que la excepción salvaba partían en dos sin
+    solaparse:
+
+    | | casos | fuerza métrica | |
+    |---|---|---|---|
+    | **dentro del compás** | 4 (`A3-1-08`, `-09`, `-30`, `-32`) | 1→2 | los cuatro para los que se hizo |
+    | **cruzando la barra** | 2 (`A3-2-10`, `A3-7-04`) | 2→3 | los que él señala |
+
+    Así que basta pedir que la excepción **no caiga en la cabeza del compás** (fuerza 3). Con
+    eso, `A3-7-04` se arregla solo —el modelo pasa a `I – II7 – V7 – I`— y `A3-2-10` queda al
+    descubierto.
+
+    **Y al descubrirlo apareció algo mayor: la regla estaba CIEGA en la armonización de
+    soprano.** `sincopaBajo` tomaba la nota escrita como bajo, y en soprano la nota escrita
+    es la **melodía**: construía los acordes sobre ella —otro acorde, otra clave—, y el 6/4
+    cadencial tampoco quedaba exento, porque el identificador allí es `I|64` y no `64`. Por
+    debajo había además un error mudo: al deducir el bajo con `Teoria.bajoDe` la nota venía
+    **sin octava**, `claveAcorde` reventaba con un «Cannot read properties of undefined», el
+    `try/catch` se tragaba el error y la regla contestaba «aquí no hay síncopa» **para todo
+    el modo soprano**. Ahora el acorde se deduce de la pareja `grado|cifra` y el bajo lleva
+    octava.
+
+    **Rectifico una cifra que di mal.** Con la regla ciega llegué a contar «8 fragmentos que
+    sincopan en soprano»: esa medición no valía —le pasaba cifras sueltas a una regla que
+    tomaba la melodía por bajo—. Con la regla arreglada son **5**, y son estos:
+
+    | | | |
+    |---|---|---|
+    | `A3-2-01` nota 3 | `I6 → I` | el mismo acorde sobre el tiempo fuerte |
+    | `A3-2-03` nota 3 | `I6 → I` | ídem |
+    | `A3-2-10` nota 3 | `V → V7` | el que vio Diego, cruzando la barra |
+    | `A3-3-22` nota 4 | `I → I6` | |
+    | `A3-3-23` nota 5 | `I6 → I` | |
+
+    Y `evitarSincopas` —«la respuesta modelo no sincopa nunca»— corría solo en `proponer`;
+    ahora corre también en `proponerSoprano`. **Al reanalizar, 4 de los 5 se reparan solos**;
+    el que no es `A3-3-22`, donde ninguna cifra admisible de esa nota evita la síncopa: hace
+    falta mano de Diego, como en su día con `A3-5-11`.
+
+    **Medido sobre los 124 fragmentos de soprano**, reanalizándolos todos: el motor no falla
+    en ninguno, **ninguna nota se queda sin acordes admisibles** y la media por nota no se
+    mueve (3,37 antes y después), así que el alumno no pierde ni una opción. Los fragmentos
+    cuyo modelo cambiaría al reanalizar pasan de 11 a 15 —los 4 reparados—, y las síncopas
+    que quedarían, de 0 (que era mentira: no las veía) a 1 (`A3-3-22`, la real).
+
+    **Pendiente, para decidir**: la corrección del alumno sigue sin mirar la síncopa en
+    soprano (`app.js` lo excluye con `!esSop`, puesto cuando la regla no servía allí). Ahora
+    ya sirve. Activarlo sería coherente con los otros modos, pero cambia lo que se le cuenta
+    como error, así que lo decide Diego.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

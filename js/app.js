@@ -702,13 +702,23 @@
       if (!r || !r.gradoReal) return null;
       return { romano: r.gradoReal, cifra: r.cifraReal || r.cifra, funcion: funs[i], ton };
     });
-    // La soprano del último acorde: es lo que separa la cadencia perfecta de la imperfecta
-    const ultimo = (estado.realizacion || [])[acordes.length - 1];
+    /* La soprano de CADA acorde: es lo que separa la cadencia perfecta de la imperfecta, y
+       hace falta por frase, no solo al final del fragmento (decisión 157). Y los cortes, que
+       son los que dicen dónde acaba cada frase: los mismos que usa el motor. */
+    const voces = estado.realizacion || [];
+    const sopranos = acordes.map((_, i) => {
+      const ac = voces[i];
+      return ac && ac.length ? ac[ac.length - 1] : null;
+    });
+    let cortes = [];
+    try { cortes = Reglas.cortesDe(ej) || []; } catch (e) { cortes = []; }
+    const ultimo = acordes[acordes.length - 1];
     const opciones = {
-      soprano: ultimo && ultimo.length ? ultimo[ultimo.length - 1] : null,
-      ton: acordes[acordes.length - 1] ? acordes[acordes.length - 1].ton : ej.tonalidad,
-      menor: !!(acordes[acordes.length - 1] && acordes[acordes.length - 1].ton
-        && acordes[acordes.length - 1].ton.modo === 'menor')
+      sopranos: sopranos,
+      cortes: cortes,
+      soprano: sopranos[sopranos.length - 1],
+      ton: ultimo ? ultimo.ton : ej.tonalidad,
+      menor: !!(ultimo && ultimo.ton && ultimo.ton.modo === 'menor')
     };
     try { estado.tecnicas = Tecnicas.detectar(acordes, opciones) || []; } catch (e) { estado.tecnicas = []; }
   }
