@@ -344,7 +344,7 @@
         + '<td class="chips"></td>'
         + '<td class="otra-voz">' + textoOtraVoz(i) + '</td>'
         + '<td class="explicacion">' + (prop ? '<b>' + prop.regla + '</b> · ' + prop.explicacion : '') + '</td>';
-      // Columna «Función»: T · S · D; en la melodía de soprano, cambiarla vuelve a analizar con esa función fijada
+      // Columna «Función»: T · S · D; cambiarla toca SOLO esa nota, nunca el resto (decisión 178)
       const cf = tr.querySelector('.celda-fun');
       cf.hidden = !conFun;
       {
@@ -355,28 +355,38 @@
         sel.addEventListener('change', () => {
           limpiarDireccion();
           estado.funciones[i] = sel.value;
-          if (sop) { analizar(true); return; }
-          /* En el bajo, cambiar la función VUELVE A MARCAR los acordes (decisión 82). Antes
-             solo se repintaba la vista previa y había que ir quitando a mano las cifras de
-             la función vieja y poniendo las de la nueva. Ahora se marcan solas las cifras
-             del repertorio de la lección que sobre ESTE bajo dan un acorde de la función
-             elegida —incluido el 6/4 cadencial entre las de dominante, que es I con cifra
-             6/4—. Si no hay ninguna, no se toca nada: más vale dejarlo como estaba que
-             vaciar la nota. */
+          /* CAMBIAR LA FUNCIÓN TOCA SOLO ESA NOTA (decisión 178, Diego 29/9/2026: «si cambio
+             la función de un acorde, después de haber introducido varios acordes o modificado
+             las asignaciones, no quiero que elimines las que he introducido… me haces perder
+             todo el trabajo hecho»). En la melodía esto llamaba a `analizar(true)`, que rehace
+             el fragmento ENTERO con el motor y, por tanto, sustituye todo lo asignado a mano:
+             era el tercer camino silencioso de los que cerró la 163, y se había quedado
+             abierto. Ahora las dos voces se comportan igual que el bajo desde la 82: se
+             marcan los acordes de esa función que caben en ESA nota y no se toca ninguna
+             otra. Y lo que él ya tuviera marcado de esa función se conserva, y se conserva
+             DELANTE, así que su modelo sigue siendo el modelo. Si no cabe ninguno, no se
+             toca nada: más vale dejarlo como estaba que vaciar la nota. */
           try {
-            const cand = Reglas.candidatosFuncion(Teoria.nota(n), ton, rep, acordesElegidos(), sel.value,
-              null, null, null);
+            const cand = sop
+              ? Reglas.candidatosSoprano(n, ton, rep, i === notas.length - 1, acordesElegidos())
+                .filter(c => (c.funciones || []).indexOf(sel.value) >= 0)
+                .sort((a, b) => a.coste - b.coste).map(c => c.id)
+              : Reglas.candidatosFuncion(Teoria.nota(n), ton, rep, acordesElegidos(), sel.value, null, null, null);
             if (cand.length) {
-              estado.respuestas[i] = cand.slice();
+              const mios = (estado.respuestas[i] || []).filter(id => cand.indexOf(id) >= 0);
+              estado.respuestas[i] = mios.concat(cand.filter(id => mios.indexOf(id) < 0));
               guardarBorrador();
               pintarRevision();
-              aviso('Nota ' + (i + 1) + ': marcados los acordes de función ' + sel.value + ' que caben sobre '
-                + Teoria.nombreEs(Teoria.nota(n)) + ' — ' + cand.map(x => Teoria.romanoEscrito(x, n, ton)).join(', ')
-                + '. La modelo es la primera; cámbiala si quieres otra.', 8000);
+              const nombra = id => (sop ? Teoria.gradoEscrito(Ejercicios.par(id).romano, Ejercicios.par(id).cifra)
+                : Teoria.romanoEscrito(id, n, ton));
+              aviso('Nota ' + (i + 1) + ': marcados los acordes de función ' + sel.value + ' que caben en '
+                + Teoria.nombreEs(Teoria.nota(n)) + ' — ' + estado.respuestas[i].map(nombra).join(', ')
+                + '. Solo cambia esta nota; el resto queda como lo tenías.'
+                + (mios.length ? ' Tu modelo se conserva.' : ' La modelo es la primera; cámbiala si quieres otra.'), 9000);
               return;
             }
-            aviso('Nota ' + (i + 1) + ': ninguna cifra del repertorio de la lección da un acorde de función '
-              + sel.value + ' sobre ' + Teoria.nombreEs(Teoria.nota(n)) + '. Se dejan los acordes como estaban.', 8000);
+            aviso('Nota ' + (i + 1) + ': ningún acorde del repertorio de la lección con función '
+              + sel.value + ' cabe en ' + Teoria.nombreEs(Teoria.nota(n)) + '. Se dejan los acordes como estaban.', 8000);
           } catch (e) { /* si algo falla, se deja como estaba */ }
           guardarBorrador(); pintarVistaPrevia();
         });

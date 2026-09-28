@@ -3880,6 +3880,24 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+178. **Cambiar la función toca solo esa nota** (29/9/2026, Diego: «si cambio la función de
+    un acorde, después de haber introducido varios acordes o modificado las asignaciones, no
+    quiero que elimines las que he introducido… me haces perder todo el trabajo hecho»). En la
+    melodía de soprano, el desplegable de función llamaba a `analizar(true)`, que rehace el
+    fragmento **entero** con el motor: cada cambio de función borraba todo lo asignado a mano
+    en las demás notas. Era el tercer camino silencioso de los que cerró la 163 y se había
+    quedado abierto —el bajo no lo tenía, porque desde la 82 allí el cambio ya era local—.
+    - Las dos voces se comportan ahora igual: se marcan los acordes del repertorio de la
+      lección con esa función que caben en **esa** nota (`Reglas.candidatosFuncion` en el
+      bajo, `Reglas.candidatosSoprano` filtrado por función en la melodía) y **no se toca
+      ninguna otra**.
+    - **Lo ya marcado de esa función se conserva, y se conserva delante**, así que el modelo
+      elegido por Diego sigue siendo el modelo.
+    - Si ningún acorde de esa función cabe en la nota, no se toca nada y se avisa: más vale
+      dejarla como estaba que vaciarla.
+    - Comprobado en el navegador, en las dos voces: al cambiar una función, de las 5 y 4
+      notas del fragmento solo cambia la que se tocó.
+
 177. **Cada ejercicio enseña su voz; la otra es otro ejercicio** (29/9/2026, Diego: «si
     estoy introduciendo los acordes de la soprano, entonces no debería aparecer la melodía
     del bajo, ¿no? Y viceversa cuando introduzco los del bajo»). **Deroga la 167**, que era

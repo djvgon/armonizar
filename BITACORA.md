@@ -11,10 +11,11 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-2115.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-2230.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la
   melodía de soprano, los acordes que contienen la nota salen siempre, marcados o no— y la
-  **177, que deroga la 167**: cada ejercicio enseña su voz y el motor deduce las demás.
+  **177, que deroga la 167** —cada ejercicio enseña su voz y el motor deduce las demás— y la
+  **178**: cambiar la función de una nota ya no rehace el fragmento entero.
   Archivos tocados en esta entrega: `js/configurador.js`, `js/reglas.js` y las ocho páginas
   HTML (marca de versión). **`banco.json` no cambia.**
 - **Lo que destapó la 176** (Diego, 29/9, revisando `A3-3-01` en melodía): una nota que se
@@ -563,6 +564,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-2230 | Cambiar la función de una nota marca los acordes de esa función que caben en ella y no toca ninguna otra: en la melodía llamaba a un reanálisis completo y borraba todo lo asignado a mano. Lo ya marcado de esa función se conserva, y delante (178) |
 | 20260930-2115 | Cada ejercicio enseña su voz y el motor deduce las demás: la vista de las dos voces a la vez (167) queda derogada, porque el bajo y la soprano de un fragmento son dos ejercicios distintos y no tienen por qué casar. 92 de los 103 avisos de conducción de la vista previa eran de eso (177) |
 | 20260930-2015 | En la melodía, los acordes que contienen la nota salen siempre, marcados o no: al traer un fragmento del banco solo se veía lo marcado, así que se podía quitar pero no añadir, y una nota sin nada marcado no tenía ni una casilla que pulsar (176) |
 | 20260930-1930 | «Revisando: el bajo · la melodía», un mando propio junto al editor de fragmentos: hasta aquí la voz la decidía el desplegable de la ficha, y solo al pulsar «Cargar» (175) |
