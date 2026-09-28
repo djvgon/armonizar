@@ -3486,6 +3486,22 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     del dibujo, ningún rótulo pisado, sin errores. Bajan porque la cadencia absorbe ahora lo
     que antes se contaba aparte, que era justo la confusión.
 
+    **La subdominante, afinada** (28/9/2026, Diego, el mismo día): «varias subdominantes
+    seguidas **no** lo vamos a llamar prolongación de la subdominante. Cuentan como una sola
+    si luego hay una cadencia». Así que:
+
+    - la cadencia se lleva hacia atrás **todas** las subdominantes seguidas, no solo la
+      última: en `T S S S D T` la cadencia auténtica abarca `S S S D T`, y en `S S D` la
+      semicadencia empieza también en la **primera** S;
+    - una tirada de subdominantes que **no** desemboca en una cadencia no se marca: no toda
+      sucesión tiene nombre. El **marco** `S – T – S` —«el I dentro del II»— sí sigue siendo
+      prolongación de la subdominante, porque ahí la subdominante se abandona y se recupera.
+
+    Comprobado primero contra las sucesiones que él escribió, sin navegador y sin banco
+    —`T S S S D T`, `T S S D`, `T S C6/4 D7 T`, `T T6 S D T`—, y después sobre las 27
+    pantallas del banco: de 49 cuadros a **43**, y «Prolongación de la subdominante»
+    desaparece del todo, absorbida por las cadencias.
+
 158. **La excepción de la síncopa no vale en la cabeza del compás** (28/9/2026, Diego: «esto
     genera síncopa armónica y no es posible, ¿recuerdas?»). La decisión 80 eximió de la
     regla de la síncopa al **mismo acorde sobre el mismo bajo que gana o suelta su séptima**
@@ -3542,6 +3558,51 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     soprano (`app.js` lo excluye con `!esSop`, puesto cuando la regla no servía allí). Ahora
     ya sirve. Activarlo sería coherente con los otros modos, pero cambia lo que se le cuenta
     como error, así que lo decide Diego.
+
+159. **Lo que separa la prolongación de la cadencia es el BAJO** (28/9/2026, Diego). Un
+    fragmento de tres acordes, `I – V6/5 – I`, salía rotulado «Cadencia auténtica
+    imperfecta»: «en este caso, breve y que no llega a más, se trata de una prolongación del
+    I». Y la regla, con sus palabras: «prolongación es T D T y el bajo haciendo un
+    movimiento de **bordadura** o de **bordadura incompleta**».
+
+    Eso es lo que faltaba, y resuelve un problema que la sola distinción de funciones no
+    podía resolver: `T – D – T` aparece en los dos sitios.
+
+    | | bajo | qué es |
+    |---|---|---|
+    | `I – V6/5 – I` | do – **si** – do | bordadura: **prolongación** |
+    | `I – V4/3 – I6` | do – **re** – mi | bordadura incompleta: **prolongación** |
+    | `I – V – I` | do – **sol** – do | salto: sigue siendo **cadencia** |
+
+    Así que la cadencia se devuelve sin nombre —y el detector de prolongaciones la recoge
+    como el marco que es— cuando se dan las tres cosas: acaba en el I, **no** hay
+    subdominante delante de la dominante, y el bajo va **por grado conjunto** de punta a
+    punta del marco. Si el bajo salta, está cadenciando, no adornando. El bajo se lo pasa
+    `app.js`: en la melodía de soprano, el que deduce la respuesta; en los demás modos, la
+    nota escrita.
+
+    Comprobado primero contra los tres patrones de arriba, sin banco de por medio, y después
+    sobre las 27 pantallas: 44 cuadros, ninguno fuera del dibujo, sin errores.
+
+    **Y los cuadros pasan a ser NARANJAS**, como el cifrado que encierran: «los cuadros que
+    señalan las técnicas creo que se verían mejor si se mostraran en naranja también». Es
+    coherente —el cuadro describe precisamente ese cifrado naranja— y en el ciruela de la
+    marca se leían como una anotación ajena a la corrección.
+
+160. **La síncopa se comprueba también en la armonización de soprano** (28/9/2026, Diego).
+    La corrección del alumno la excluía con un `!esSop`, puesto cuando la regla no servía
+    allí (decisión 158). Arreglada aquella, se le pide lo mismo que en los demás modos.
+    - Lo que cambia es **qué hay que darle**: en la armonización de bajo basta la cifra sobre
+      el bajo escrito; aquí hace falta el acorde entero, `grado|cifra`, para que pueda
+      deducir el bajo.
+    - Si el alumno **aún no ha puesto el grado**, no hay acorde que juzgar y se deja pasar:
+      no se le señala una síncopa que todavía no ha escrito.
+
+    **Aviso sobre el banco tal como está guardado.** El modelo de **5 fragmentos** sincopa
+    —`A3-2-01`, `A3-2-03`, `A3-2-10`, `A3-3-22` y `A3-3-23`—, así que un alumno que responda
+    exactamente ese modelo recibirá ahora el aviso. Es verdad —la síncopa está ahí—, pero es
+    incómodo. Reanalizar esos fragmentos en el configurador repara 4; el quinto,
+    `A3-3-22`, necesita cambiar una nota de la melodía (decisión 158).
 
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 

@@ -208,19 +208,23 @@ svg.partitura .globo-solucion .globo-guia { stroke: var(--cambio); }
    es en esta aplicación el color de lo que se anota SOBRE la música —los rótulos de
    tonalidad, las barras del pivote—, y no compite con el verde, el rojo ni el naranja de la
    corrección. La caja no recoge el puntero: si lo hiciera, taparía las casillas. */
-svg.partitura .tecnica-caja { fill: none; stroke: var(--acento); stroke-width: 1.5; opacity: .75; pointer-events: none; }
+/* En NARANJA, como el cifrado que encierran (Diego, 28/9/2026): «los cuadros que señalan
+   las técnicas creo que se verían mejor si se mostraran en naranja también». Es coherente:
+   el cuadro describe precisamente ese cifrado naranja, y en ciruela se leía como una
+   anotación ajena. */
+svg.partitura .tecnica-caja { fill: none; stroke: var(--cambio); stroke-width: 1.5; opacity: .8; pointer-events: none; }
 svg.partitura .tecnica-cadencia .tecnica-caja { stroke-width: 2.2; opacity: .9; }
 svg.partitura .tecnica-arpegio .tecnica-caja { stroke-dasharray: 5 4; }
 svg.partitura .tecnica-rotulo { pointer-events: none; }
-svg.partitura .tecnica-pastilla { fill: var(--papel); stroke: var(--acento); stroke-width: 1.2; }
+svg.partitura .tecnica-pastilla { fill: var(--papel); stroke: var(--cambio); stroke-width: 1.2; }
 svg.partitura .tecnica-texto {
-  font-family: Georgia, "Times New Roman", serif; font-weight: bold; fill: var(--acento); }
+  font-family: Georgia, "Times New Roman", serif; font-weight: bold; fill: var(--cambio); }
 svg.partitura .tecnica-zona { fill: transparent; cursor: help; }
 svg.partitura .tecnica-zona:focus { outline: none; }
 svg.partitura .tecnica-zona.activo, svg.partitura .tecnica-zona:focus-visible {
-  fill: var(--acento); fill-opacity: .12; }
-svg.partitura .globo-tecnica .globo-fondo { stroke: var(--acento); }
-svg.partitura .globo-tecnica .globo-guia { stroke: var(--acento); }
+  fill: var(--cambio); fill-opacity: .12; }
+svg.partitura .globo-tecnica .globo-fondo { stroke: var(--cambio); }
+svg.partitura .globo-tecnica .globo-guia { stroke: var(--cambio); }
 svg.partitura .solucion-cifrado .sol-fun,
 svg.partitura .solucion-cifrado .sol-romano {
   font-family: Georgia, "Times New Roman", serif; font-weight: bold; letter-spacing: .5px; fill: var(--cambio); }

@@ -10,8 +10,10 @@
        I – I6, V – V6, II – II6. «Arpegiar en el bajo las notas de ese acorde».
        Es la más sencilla y vale para cualquier acorde.
      · PROLONGACIÓN DE UNA FUNCIÓN — varios acordes seguidos de la misma
-       función, pero distintos: IV – II6 (dos subdominantes), V – I6/4 – V7
-       (el 6/4 cadencial vive dentro de la dominante, decisión 130).
+       función, pero distintos: V – I6/4 – V7 (el 6/4 cadencial vive dentro
+       de la dominante, decisión 130). NO vale para la SUBDOMINANTE: varias
+       subdominantes seguidas cuentan como una sola y, si detrás hay una
+       cadencia, es ella quien se las lleva (Diego, 28/9/2026).
      · PROLONGACIÓN CON MARCO — se sale de una función y se vuelve a ella:
        T – D – T y T – S – T (la bordadura del tema 12), y también S – T – S,
        «el I dentro del II». La distinción entre prolongar y cadenciar es,
@@ -73,6 +75,28 @@ window.Tecnicas = (function () {
      en V – I pero «o bien el bajo no hace salto de quinta —porque use una inversión, bien en
      la dominante o bien en la tónica—, o bien la melodía de soprano no acaba en la tónica,
      sino, por ejemplo, en la tercera o, menos frecuente, en la quinta». */
+  /* ¿El bajo hace BORDADURA entre dos acordes? Es lo que distingue de verdad la
+     prolongación de la cadencia (Diego, 28/9/2026): «prolongación es T D T y el bajo
+     haciendo un movimiento de bordadura o de bordadura incompleta». El bajo se mueve por
+     GRADO CONJUNTO y vuelve a la nota de partida (bordadura) o sigue por grado hasta otra
+     nota del mismo acorde (incompleta: do – re – mi del `I – V4/3 – I6`). Si en vez de eso
+     SALTA —do – sol – do del `I – V – I`—, no está adornando la tónica: está cadenciando,
+     y el cuadro sigue diciendo cadencia. */
+  function bordaduraEnElBajo(o, ini, fin) {
+    const b = o && o.bajos;
+    if (!b || ini < 0 || fin <= ini) return false;
+    const midi = k => { try { return b[k] ? Teoria.midi(Teoria.nota(b[k])) : null; } catch (e) { return null; } };
+    let algunMovimiento = false;
+    for (let k = ini; k < fin; k++) {
+      const a = midi(k), c = midi(k + 1);
+      if (a === null || c === null) return false;
+      const d = Math.abs(c - a);
+      if (d > 2) return false;                 // un salto no es bordadura
+      if (d > 0) algunMovimiento = true;
+    }
+    return algunMovimiento;
+  }
+
   function cadencia(acs, opciones, fin) {
     const o = opciones || {};
     const F = (fin === undefined || fin === null) ? acs.length - 1 : fin;
@@ -101,14 +125,30 @@ window.Tecnicas = (function () {
       let k = F - 1;
       const f = p.funcion;
       while (k > 0 && acs[k - 1] && acs[k - 1].funcion === f) k--;
-      if (f !== 'S' && k > 0 && acs[k - 1] && acs[k - 1].funcion === 'S') k--;
+      /* TODAS las subdominantes que preparan la dominante, no solo la última (Diego,
+         28/9/2026): «varias subdominantes seguidas cuentan como una sola si luego hay una
+         cadencia». En `T S S S D T`, la cadencia auténtica empieza en la PRIMERA S; en
+         `S S D`, la semicadencia también. */
+      if (f !== 'S') while (k > 0 && acs[k - 1] && acs[k - 1].funcion === 'S') k--;
       return k;
     };
+
+    /* T – D – T NO es cadencia, es PROLONGACIÓN de la tónica: la cadencia pide una
+       subdominante delante de la dominante. Es la distinción que Diego llama «un punto
+       fundamental del aprendizaje» —prolongación T – D – T contra cadencia S – D – T— y la
+       que echó en falta en un fragmento de tres acordes, `I – V6/5 – I`: «en este caso,
+       breve y que no llega a más, se trata de una prolongación del I». Si la dominante
+       viene de la tónica y vuelve a ella, esto se devuelve sin nombre y el detector de
+       prolongaciones lo recoge como el marco que es. */
+    const empieza = desde();
+    const conSubdominante = acs[empieza] && acs[empieza].funcion === 'S';
+    const vieneDeLaTonica = empieza > 0 && acs[empieza - 1] && acs[empieza - 1].funcion === 'T';
+    if (u.romano === 'I' && !conSubdominante && vieneDeLaTonica && bordaduraEnElBajo(o, empieza - 1, F)) return null;
 
     if (u.romano === 'I' && u.cifra === '53' && p.funcion === 'D') {
       const saltoDeQuinta = raiz(p) && p.romano === 'V';       // el bajo salta de la fundamental a la fundamental
       if (saltoDeQuinta && sopranoTonica !== false) {
-        return { desde: desde(), hasta: F, clase: 'cadencia',
+        return { desde: empieza, hasta: F, clase: 'cadencia',
           nombre: 'Cadencia auténtica' + (sopranoTonica ? ' perfecta' : ''),
           porque: par + ': la dominante resuelve en la tónica, las dos en estado fundamental'
             + (sopranoTonica ? ' y con la tónica en la soprano. Es la conclusión más rotunda que hay.' : '.') };
@@ -117,28 +157,28 @@ window.Tecnicas = (function () {
         ? (p.romano === 'VII' ? 'con el VII6 en lugar del V, así que el bajo no salta de quinta'
                               : 'pero el bajo no salta de quinta, porque la dominante va invertida')
         : 'pero la soprano no acaba en la tónica';
-      return { desde: desde(), hasta: F, clase: 'cadencia', nombre: 'Cadencia auténtica imperfecta',
+      return { desde: empieza, hasta: F, clase: 'cadencia', nombre: 'Cadencia auténtica imperfecta',
         porque: par + ': la dominante resuelve en la tónica, ' + porQue + ', y eso le quita rotundidad.' };
     }
     if (u.romano === 'I' && u.cifra === '53' && p.funcion === 'S') {
-      return { desde: desde(), hasta: F, clase: 'cadencia',
+      return { desde: empieza, hasta: F, clase: 'cadencia',
         nombre: 'Cadencia plagal' + (raiz(p) && sopranoTonica ? ' perfecta' : raiz(p) && sopranoTonica === false ? ' imperfecta' : ''),
         porque: par + ': la subdominante va directamente a la tónica, sin pasar por la dominante. Es la cadencia «de amén».' };
     }
     if (u.romano === 'I' && u.cifra === '6') {
-      return { desde: desde(), hasta: F, clase: 'cadencia', nombre: 'Cadencia auténtica imperfecta',
+      return { desde: empieza, hasta: F, clase: 'cadencia', nombre: 'Cadencia auténtica imperfecta',
         porque: par + ': acaba en la tónica, pero en primera inversión, así que el bajo no salta de quinta y no cierra del todo.' };
     }
     if (u.romano === 'V') {
       if (enMenor && p.romano === 'IV' && p.cifra === '6') {
-        return { desde: desde(), hasta: F, clase: 'cadencia', nombre: 'Semicadencia frigia',
+        return { desde: empieza, hasta: F, clase: 'cadencia', nombre: 'Semicadencia frigia',
           porque: par + ': en el modo menor, el bajo baja del 6.º grado al 5.º por semitono. Queda abierta, esperando.' };
       }
-      return { desde: desde(), hasta: F, clase: 'cadencia', nombre: 'Semicadencia',
+      return { desde: empieza, hasta: F, clase: 'cadencia', nombre: 'Semicadencia',
         porque: par + ': la frase acaba en la dominante, no en la tónica. Queda abierta: pide continuación.' };
     }
     if (p.funcion === 'D' && (u.romano === 'VI' || (u.romano === 'IV' && u.cifra === '6'))) {
-      return { desde: desde(), hasta: F, clase: 'cadencia', nombre: 'Cadencia rota',
+      return { desde: empieza, hasta: F, clase: 'cadencia', nombre: 'Cadencia rota',
         porque: par + ': la dominante no resuelve en la tónica, sino en el acorde que la sustituye. Pide una cadencia auténtica detrás.' };
     }
     return null;
@@ -173,6 +213,12 @@ window.Tecnicas = (function () {
     }
     const dentroEsF = acs.slice(i + 1, j).every(a => a.funcion === f);
     if (dentroEsF) {
+      /* Una tirada de SUBDOMINANTES seguidas no es una prolongación (Diego, 28/9/2026):
+         «varias subdominantes seguidas no lo vamos a llamar prolongación de la
+         subdominante». Cuentan como una sola, y cuando detrás viene una cadencia es ella
+         quien se las lleva —el `desde()` de arriba—. Si no hay cadencia detrás, no se marca
+         nada: no toda sucesión tiene nombre. El marco `S – T – S` sí lo es, y sigue abajo. */
+      if (f === 'S') return null;
       return { clase: 'prolongacion', nombre: 'Prolongación de la ' + nombreFuncion(f),
         porque: hay + ': acordes distintos, pero todos de ' + nombreFuncion(f) + ' (' + funciones(acs, i, j) + '). La armonía no avanza: se sostiene.' };
     }
@@ -233,6 +279,7 @@ window.Tecnicas = (function () {
         }
         if (mejor < 0) { i++; continue; }
         const d = describir(acs, i, mejor);
+        if (!d) { i++; continue; }           // hay sucesiones que no tienen nombre
         salida.push({ desde: i, hasta: mejor, nombre: d.nombre, porque: d.porque, clase: d.clase });
         i = mejor;                           // el acorde de cierre puede abrir la siguiente
       }
@@ -242,5 +289,5 @@ window.Tecnicas = (function () {
     return salida;
   }
 
-  return { detectar, cadencia, mismoAcorde, nombreFuncion };
+  return { detectar, cadencia, mismoAcorde, nombreFuncion, bordaduraEnElBajo };
 })();

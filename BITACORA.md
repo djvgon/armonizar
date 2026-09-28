@@ -468,6 +468,9 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-2000 | La síncopa armónica se comprueba también en la corrección de la armonización de soprano, dándole el acorde entero para que deduzca el bajo (160) |
+| 20260929-1930 | Lo que separa la prolongación de la cadencia es el bajo: `T D T` con bordadura o bordadura incompleta es prolongación; si el bajo salta, es cadencia. Y los cuadros de las técnicas pasan a naranja (159) |
+| 20260929-1900 | Varias subdominantes seguidas ya no son «prolongación de la subdominante»: cuentan como una sola y la cadencia se las lleva todas, desde la primera (157, afinada) |
 | 20260929-1830 | La regla de la síncopa estaba ciega en armonización de soprano —tomaba la melodía por bajo y un error mudo se tragaba el resto—; arreglada, y la pasada de «el modelo no sincopa nunca» corre ya también allí: 4 de los 5 fragmentos afectados se reparan solos (158) |
 | 20260929-1800 | Las cadencias, de cada frase y no solo del fragmento; el cuadro abarca toda la dominante —6/4 cadencial incluido— y la subdominante que la prepara, baja hasta el cifrado naranja y alterna los topes (157). La excepción de la síncopa deja de valer en la cabeza del compás (158) |
 | 20260929-1730 | El bajo deducido se elige para la línea entera, no nota a nota: ni una por debajo del mi2 (eran 5), ni una séptima (eran 4), ni una sexta sin compensar (eran 6); el hueco de octava bajo la melodía pasa de filtro duro a preferencia (156) |

@@ -712,10 +712,16 @@
     });
     let cortes = [];
     try { cortes = Reglas.cortesDe(ej) || []; } catch (e) { cortes = []; }
+    /* El BAJO de cada acorde: en la melodía de soprano lo deduce la respuesta y en los demás
+       modos es la nota escrita. Hace falta para distinguir la prolongación de la cadencia,
+       que es cosa de si el bajo borda o salta (decisión 159). */
+    let bajos = [];
+    try { bajos = estado.modoEj === 'soprano' ? (estado.bajos || []) : Reglas.notasDe(ej); } catch (e) { bajos = []; }
     const ultimo = acordes[acordes.length - 1];
     const opciones = {
       sopranos: sopranos,
       cortes: cortes,
+      bajos: bajos,
       soprano: sopranos[sopranos.length - 1],
       ton: ultimo ? ultimo.ton : ej.tonalidad,
       menor: !!(ultimo && ultimo.ton && ultimo.ton.modo === 'menor')
@@ -1557,15 +1563,24 @@
       const ant = estado.resultados[i - 1];
       if (!ant.okCifra) return;
       const esSop = estado.modoEj === 'soprano';
-      if (!esSop && Reglas.sincopaBajo(ej, i, ant.cifra, r.cifra)) {
-        r.okEnlace = false; r.ok = false;
-        r.enlace = 'síncopa armónica: el acorde entra en parte débil y se prolonga sobre la fuerte; en el tiempo fuerte la armonía ha de cambiar';
-        return;
-      }
       /* En la melodía manda el grado que ha escrito el alumno —la misma cifra puede ser de
          dos acordes distintos—; en el bajo, el que sale de su cifra sobre esa nota, que es
          uno solo y no depende de que se le pida el grado. */
       const grado = res => (esSop ? res.romano : res.romanoReal);
+      /* LA SÍNCOPA, TAMBIÉN EN LA MELODÍA DE SOPRANO (Diego, 28/9/2026, decisión 160).
+         Estaba excluida con un `!esSop` porque la regla no servía allí: tomaba la melodía
+         por bajo, y un error mudo hacía que contestara «aquí no hay síncopa» a todo
+         (decisión 158). Arreglada aquella, se le pide lo mismo que en los demás modos. Lo
+         que cambia es lo que hay que darle: allí basta la cifra sobre el bajo escrito; aquí
+         hace falta el acorde entero —«grado|cifra»— para que pueda deducir el bajo. Si el
+         alumno aún no ha puesto el grado, no hay acorde que juzgar y se deja pasar. */
+      const idDe = res => (esSop ? (grado(res) ? grado(res) + '|' + res.cifra : null) : res.cifra);
+      const idAnt = idDe(ant), idAct = idDe(r);
+      if (idAnt && idAct && Reglas.sincopaBajo(ej, i, idAnt, idAct)) {
+        r.okEnlace = false; r.ok = false;
+        r.enlace = 'síncopa armónica: el acorde entra en parte débil y se prolonga sobre la fuerte; en el tiempo fuerte la armonía ha de cambiar';
+        return;
+      }
       if (!grado(ant) || !grado(r)) return;
       if (esSop && (!ant.okRomano || !r.okRomano)) return;
       const e = Reglas.enlaceAlumno(ej, i, { romano: grado(ant), cifra: ant.cifra }, { romano: grado(r), cifra: r.cifra });
