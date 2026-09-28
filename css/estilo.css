@@ -195,6 +195,32 @@ svg.partitura .casilla.mal .cifra-texto { stroke: none; }
    justo lo contrario de la verdad) y la cifra se quedaba negra, porque su regla apuntaba
    a `.casilla .modelo` y el grupo nunca colgó de una casilla. */
 svg.partitura .solucion-cifrado { pointer-events: none; }
+/* La zona sensible del renglón: invisible, pero es la que recoge el ratón y el dedo para
+   abrir el globo del porqué (decisión 154). El cursor de ayuda anuncia que hay algo. */
+svg.partitura .solucion-zona { fill: transparent; cursor: help; }
+svg.partitura .solucion-zona:focus { outline: none; }
+svg.partitura .solucion-zona.activo, svg.partitura .solucion-zona:focus-visible {
+  fill: var(--cambio); fill-opacity: .12; }
+svg.partitura .globo-solucion .globo-fondo { stroke: var(--cambio); }
+svg.partitura .globo-solucion .globo-guia { stroke: var(--cambio); }
+
+/* Los cuadros de las TÉCNICAS ARMÓNICAS (decisión 155). Van en el ciruela de la marca, que
+   es en esta aplicación el color de lo que se anota SOBRE la música —los rótulos de
+   tonalidad, las barras del pivote—, y no compite con el verde, el rojo ni el naranja de la
+   corrección. La caja no recoge el puntero: si lo hiciera, taparía las casillas. */
+svg.partitura .tecnica-caja { fill: none; stroke: var(--acento); stroke-width: 1.5; opacity: .75; pointer-events: none; }
+svg.partitura .tecnica-cadencia .tecnica-caja { stroke-width: 2.2; opacity: .9; }
+svg.partitura .tecnica-arpegio .tecnica-caja { stroke-dasharray: 5 4; }
+svg.partitura .tecnica-rotulo { pointer-events: none; }
+svg.partitura .tecnica-pastilla { fill: var(--papel); stroke: var(--acento); stroke-width: 1.2; }
+svg.partitura .tecnica-texto {
+  font-family: Georgia, "Times New Roman", serif; font-weight: bold; fill: var(--acento); }
+svg.partitura .tecnica-zona { fill: transparent; cursor: help; }
+svg.partitura .tecnica-zona:focus { outline: none; }
+svg.partitura .tecnica-zona.activo, svg.partitura .tecnica-zona:focus-visible {
+  fill: var(--acento); fill-opacity: .12; }
+svg.partitura .globo-tecnica .globo-fondo { stroke: var(--acento); }
+svg.partitura .globo-tecnica .globo-guia { stroke: var(--acento); }
 svg.partitura .solucion-cifrado .sol-fun,
 svg.partitura .solucion-cifrado .sol-romano {
   font-family: Georgia, "Times New Roman", serif; font-weight: bold; letter-spacing: .5px; fill: var(--cambio); }
@@ -329,8 +355,13 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .desglose.esquema { color: var(--tinta); }
 .desglose.esquema b { letter-spacing: .06em; }
 .enhorabuena { margin: 0; color: var(--bien); }
-.errores { margin: 6px 0 0; padding-left: 22px; }
-.errores li { margin: 6px 0; }
+/* La frase que manda mirar el pentagrama al ver la solución (decisión 153). Ocupa el sitio
+   que tenía la lista numerada de errores, y los nombres de los colores van pintados de su
+   color: es lo que convierte la frase en leyenda de la partitura. */
+.mira-partitura { margin: 8px 0 0; }
+.resultado .ref-cambio { color: var(--cambio); font-weight: bold; }
+.resultado .ref-bien { color: var(--bien); font-weight: bold; }
+.resultado .ref-mal { color: var(--mal); font-weight: bold; }
 .cif { font-weight: bold; padding: 0 4px; border-radius: var(--radio-control); }
 .cif.mal { color: var(--mal); background: var(--mal-suave); }
 .cif.bien { color: var(--bien); background: var(--bien-suave); }

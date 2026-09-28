@@ -3273,6 +3273,185 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     alumno pulsaba Comprobar y no pasaba nada. Ahora la pareja se separa y el bajo se deduce
     del grado y la cifra, como en `bajosDe`.
 
+153. **Al ver la solución, una frase y no una lista** (28/9/2026, Diego). Debajo del informe
+    se desplegaba la **lista numerada de errores** —«Nota 3 (la): has puesto ¿función? ·
+    ¿grado? · ¿cifra?; la respuesta modelo es T · I —»— nota por nota. Era decir por segunda
+    vez lo que la partitura ya dice mejor: cada casilla lleva su ✓ o su ✗, y desde la
+    decisión 152 bajo cada nota fallada está en naranja lo que pone la solución. Y hacía
+    daño: la lista tira la mirada **hacia abajo**, que es justo donde NO está la corrección.
+
+    En su lugar, **una frase que manda mirar el pentagrama y hace de leyenda**, con el
+    nombre de cada color pintado de su color. Se adapta a lo que pasó:
+
+    - **Nada acertado**: «Lo que pone la solución va en *naranja*: bajo **cada nota**, su
+      función, su grado y su cifra…».
+    - **Algo acertado**: «…bajo **las notas 1 y 2**…», y añade: «Donde acertaste se queda tu
+      acorde, aunque el modelo prefiriese otro de los admitidos» —que es la decisión 147
+      corregida, dicha en voz alta.
+    - Las **lecturas** que nombra son las que ese ejercicio pide: si no hay fila de función,
+      no la nombra; si no se pide el grado, tampoco.
+    - En **Análisis** el pentagrama no cambia —la realización es la del ejercicio—, así que
+      dice «los acordes que no analizaste bien» en vez de «las notas que por eso cambian».
+    - **Todo bien salvo la conducción de voces**: no hay nada en naranja, y prometerlo sería
+      mandar al alumno a buscar lo que no está; dice que los grados y los cifrados están bien
+      y que lo que se arregla es la armonización que producen.
+    - Cierra siempre con el reparto de colores: «Las casillas siguen diciendo lo tuyo: en
+      *verde* lo que acertaste, en *rojo* lo que no».
+
+    El **detalle nota a nota** —qué falla exactamente en cada una— sigue estando en
+    «Escuchar el comentario», que no se toca. La **explicación de la regla** del motor, que
+    iba bajo cada renglón de la lista, vuelve en la decisión 154, en un globo.
+
+154. **El porqué, en un globo sobre el cifrado naranja** (28/9/2026, Diego). La explicación
+    de la regla —lo único que la lista tenía de suyo— vuelve, pero **a petición**: con el
+    ratón encima del cifrado naranja, o tocándolo con el dedo. Reaprovecha el globo que ya
+    existía para los avisos de conducción de voces; cambia el borde, que aquí es naranja, y
+    comparten la banda reservada al pie, de modo que el globo nunca tapa la música.
+
+    - **Ratón**: abre al entrar y cierra al salir. **Dedo**: un toque abre, el siguiente
+      cierra. **Teclado**: la zona entra en el recorrido del tabulador y el foco lo abre.
+    - Ratón y dedo **no se pueden tratar igual**, y costó dos intentos. El móvil sintetiza
+      un `mouseenter` antes del toque, así que con `mouseenter` + `click` el dedo abría el
+      globo y lo cerraba en el mismo gesto. Y al arreglarlo apareció el mismo parpadeo por
+      otra puerta: el `pointerdown` del toque también da el **foco**, y el `focus` volvía a
+      abrirlo. Se mira `ev.pointerType` para el puntero y `:focus-visible` para el foco, que
+      es justo la distinción entre «me han tabulado hasta aquí» y «me han tocado».
+    - La zona sensible es un **rectángulo transparente aparte**: el renglón lleva
+      `pointer-events: none`, y sin él el ratón tropezaría con cada glifo y el globo
+      parpadearía al pasar de la función al grado.
+    - El globo solo se ofrece donde el acorde que se enseña **es el del modelo**, que es el
+      que el motor razonó. Donde se conserva el del alumno —acertó con otra admisible— la
+      regla no habla de ese acorde, y colgarle la explicación sería mentir. La frase de la
+      decisión 153 solo lo anuncia si de verdad hay alguno.
+
+    **Al grano** (Diego: «no repitas lo que ya está en el cifrado naranja»). Las
+    explicaciones del motor tienen la forma «*por qué*: *qué acorde*», y ese acorde es justo
+    lo que se lee debajo de la nota. Así que `alGrano()` en `app.js`:
+
+    - **corta por los dos puntos** cuando lo que sigue es corto —un acorde y poco más, 45
+      caracteres— y deja el texto entero cuando lo que sigue trae razonamiento («la armonía
+      ha de cambiar…»);
+    - **no corta** si la cabeza es un jirón de menos de 14 caracteres: «Grado 1» a secas no
+      es una frase;
+    - **quita el paréntesis final** del modo soprano —«(bajo do; función T, tónica)»—, que
+      repite el bajo y la función una por una.
+
+    Medido sobre el banco entero: 174 textos distintos, 152 recortados, el más largo queda en
+    152 caracteres. Quedan sin tocar los de la **regla de la octava** («Grado 1: estado
+    fundamental»), porque la cabeza es demasiado corta para cortar por ahí; son los únicos
+    que siguen repitiendo lo que dice la cifra, y reescribirlos es cosa de la redacción de
+    las reglas, no del recorte.
+
+155. **Las técnicas armónicas, en un cuadro sobre los acordes que las forman**
+    (28/9/2026, Diego). Módulo nuevo, `js/tecnicas.js`. Lee la cadena de acordes y devuelve
+    los tramos que forman una técnica; la partitura los encierra en un cuadro que abarca
+    **de arriba abajo lo que la forma** —los acordes en el pentagrama y sus casillas—, con
+    el nombre en el centro y la explicación en un globo al pasar el ratón o tocar.
+
+    **Qué se reconoce.** Un tramo válido de *i* a *j* empieza y acaba en la misma función y,
+    por dentro, **o es todo esa función o no la toca ninguna vez**. Lo que no vale es
+    mezclar las dos cosas —T D T D T—, porque entonces no es una técnica sino dos.
+
+    | | Forma | Ejemplo | Cómo se rotula |
+    |---|---|---|---|
+    | **Arpegio** | el mismo acorde, cambiando de inversión | `I – I6`, `V – V6`, `II – II6` | «I arpegiado», caja de trazo discontinuo |
+    | **Prolongación de una función** | acordes distintos, todos de la misma función | `IV – II6`, `I6/4 – V7` | «Prolongación de la subdominante» |
+    | **Prolongación con marco** | se sale de la función y se vuelve a ella | `T – D – T`, `T – S – T`, `S – T – S` | «Prolongación de la tónica» |
+    | **Cadencia** | el final del fragmento | `V – I` | «Cadencia auténtica perfecta», caja más gruesa |
+
+    - La **tríada que gana o suelta su séptima** cuenta como el mismo acorde —`V – V7` es la
+      dominante completándose, no una nueva—, que es la excepción ya medida en la decisión 80.
+    - La **cadencia manda**: se reserva antes que nada, y las prolongaciones no pueden
+      ocupar sus acordes. Empieza en la **subdominante** cuando la hay pegada a la dominante,
+      que es el `S – D – T` que Diego opone a la prolongación `T – D – T`.
+    - **Perfecta o imperfecta**: perfecta si los dos acordes van en estado fundamental y la
+      soprano llega a la tónica; si falta cualquiera de las dos cosas, imperfecta. La soprano
+      sale de la realización dibujada.
+    - Una nota sin contestar o un **cambio de tonalidad cortan** el tramo: las funciones de
+      un lado y del otro no se leen en el mismo tono, y el cuadro engañaría.
+
+    **Cuándo y sobre qué.** Al **comprobar**, y sobre lo que escribió el **alumno**, acertado
+    o no: lo que enseña es ver qué ha construido él. Con la solución a la vista se redibujan
+    sobre la buena. En Análisis y en la armonización de bajo las respuestas del banco son
+    cifras a secas, sin grado, así que el grado se toma de la corrección —`modeloRomano` o
+    `gradoReal`—; sin eso, en esos dos modos no salía ni un solo cuadro.
+
+    **El dibujo, en dos pasadas.** Primero se mide todo y después se dibuja, porque el
+    carril no lo decide el cuadro sino **lo que de verdad ocupa la técnica: el cuadro o su
+    rótulo, lo que sobresalga más**. Se probó a decidirlo solo por el cuadro y dos pastillas
+    vecinas se tocaban aunque los cuadros no llegaran a rozarse.
+    - Dos técnicas seguidas **comparten el acorde de cierre**, así que sus cuadros se pisan:
+      la segunda baja de carril y se mete medio espacio hacia dentro.
+    - El **rótulo no va al centro geométrico** del cuadro: ahí caía sobre el pentagrama del
+      bajo y tapaba las notas. Va al **hueco entre el sistema y las casillas**, que es el
+      único sitio del cuadro donde no hay nada dibujado, y cada carril baja un escalón.
+    - El rótulo se encoge para caber, pero **no por debajo de 0,8**: ajustarlo a un cuadro de
+      dos acordes lo dejaba en letra de mosca. Por debajo de ahí la pastilla asoma por los
+      lados —es opaca, se lee igual— y del solape se encarga la medida.
+    - La **caja no recoge el puntero** (`pointer-events: none`): si lo hiciera, no se podrían
+      pulsar las casillas. Quien abre el globo es la **pastilla del rótulo**, con el mismo
+      reparto ratón / dedo / teclado de la decisión 154.
+    - Color: el **ciruela de la marca**, que en esta aplicación es el color de lo que se
+      anota *sobre* la música —rótulos de tonalidad, barras del pivote—, y no compite con el
+      verde, el rojo ni el naranja de la corrección.
+
+    **Pendiente, de la misma conversación**: las marcas de Berklee (decisión 141, de prueba)
+    han de aparecer en cuanto el alumno tenga acordes suficientes para usarlas —`V – I`,
+    `II – V – I`—. Queda para el paso siguiente.
+
+156. **El bajo deducido es una línea, no una sucesión de elecciones** (28/9/2026, Diego,
+    revisando el banco). En la armonización de soprano el bajo lo deduce la respuesta: el
+    grado y la cifra dicen **qué nota** va abajo, y lo único que queda por elegir es **en qué
+    octava**. Eso se hacía nota a nota, cogiendo la más cercana a la anterior (decisión 143).
+    Es una mirada miope: cada paso parecía razonable y la línea entera salía mal. Diego
+    señaló tres cosas, cada una en un fragmento distinto, y la auditoría las encontró todas:
+
+    | Lo que dijo | Dónde | Medido en el banco |
+    |---|---|---|
+    | «se va más allá del extremo grave del bajo» | `A3-3-23` | **5 notas** por debajo del mi2, la más grave un **do♯2** (MIDI 37) |
+    | «salto de séptima sin justificar» | `A3-3-24` (sol–la), `A3-5-15` (si2–do2) | **4 séptimas** |
+    | «salto de sexta sin compensar, sin movimiento en sentido contrario a continuación» | `A3-3-23` | **6 sextas** sin compensar |
+
+    El comentario del código decía «dentro de mi2 … mi4», pero la condición dejaba pasar
+    hasta el **do2**: el límite estaba escrito en la prosa y no en el código.
+
+    Ahora la octava se elige para la **línea entera**, con programación dinámica. Y como lo
+    que hace admisible un salto de sexta es **lo que viene después**, el estado guarda las dos
+    últimas octavas: el coste del salto *i−1 → i* se cobra cuando ya se sabe hacia dónde va
+    *i → i+1*. Los costes: hasta la quinta, en proporción al salto; la **octava** es
+    idiomática en el bajo y se cobra poco; la **sexta** es cara; la **séptima**, prohibitiva;
+    y una sexta o séptima que no se sigue de movimiento contrario paga aparte.
+
+    **El nudo que había que deshacer.** La prescripción de Diego para `A3-3-23` —«subir una
+    octava a partir de la cuarta nota, el fa negra»— pone el bajo en **fa3**, que queda a
+    **menos de una octava** de la melodía; y el hueco de una octava bajo la melodía era un
+    **filtro duro** (decisión 143, puesto para que el tenor y la contralto quepan sin
+    unísonos). En un fragmento de melodía grave las dos cosas no pueden ser absolutas a la
+    vez: exigir la octava es lo que empujaba el bajo al fa2. Así que el hueco pasa a ser una
+    **preferencia cara** —18 por debajo de la octava, 60 por debajo de la quinta— y la decide
+    la línea entera junto con la tesitura y los saltos. **Y no ha costado nada**: los
+    unísonos entre voces contiguas incluso bajan.
+
+    **Medido sobre los 124 fragmentos de soprano (647 notas de bajo):**
+
+    | | antes | después |
+    |---|---|---|
+    | notas por debajo del mi2 | 5 (la más grave, 37) | **0** (la más grave, 41) |
+    | saltos de séptima | 4 | **0** |
+    | sextas sin compensar | 6 | **0** |
+    | paralelas | 1 | **1** (la misma, `A3-7-12`) |
+    | unísonos entre voces contiguas | 51 | **49** |
+    | bajo medio (MIDI) | 50,3 | 49,7 |
+
+    En `A3-3-23` la línea sale ya exactamente como él la pidió: sube en la nota 4 y baja en la
+    antepenúltima.
+
+    **Pendiente, del mismo mensaje**: en `A3-3-24`, la **nota 9 —una redonda, reposo de
+    frase— lleva `V +6`**, o sea la en el bajo, cuando la semicadencia debería reposar en un
+    acorde en estado fundamental y consonante (`V`, con **re** en el bajo). Eso no es la
+    línea del bajo sino el acorde que elige el modelo, y hace falta decidir si es una regla
+    —estado fundamental en los reposos de frase— o una corrección del fragmento.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

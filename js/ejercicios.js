@@ -502,38 +502,166 @@ const Ejercicios = (() => {
   }
 
   /* ---- Bajo deducido (melodía de soprano) ----
-     Para cada nota con fundamental y cifra, la nota del bajo: {letra, alt, octava}, en la
-     octava más cercana al bajo anterior (o a do3), dentro de mi2 … mi4. */
+     Para cada nota con fundamental y cifra, la nota del bajo: {letra, alt, octava}.
+
+     LA CLASE del bajo la manda el acorde: el grado y la cifra dicen qué nota va abajo, y eso
+     no se toca. Lo que hay que elegir es la OCTAVA, y esa elección es una línea melódica: el
+     bajo canta.
+
+     Se elegía nota a nota, cogiendo la octava más cercana a la anterior (decisión 143). Es
+     una mirada miope: cada paso parecía razonable y la línea entera salía mal. Diego,
+     revisando el banco el 28/9/2026, señaló tres cosas en tres fragmentos distintos:
+       · el bajo bajaba por debajo del MI2, que es el extremo grave que él fijó —el comentario
+         de aquí decía «dentro de mi2 … mi4», pero la condición dejaba pasar hasta el do2—;
+       · salían SALTOS DE SÉPTIMA sin justificación (A3-3-24, sol–la; A3-5-15, si2–do2);
+       · y SALTOS DE SEXTA sin compensar, esto es, sin movimiento melódico en sentido
+         contrario a continuación (A3-3-23).
+
+     Así que la octava ya no se elige paso a paso sino para la LÍNEA ENTERA, con programación
+     dinámica. Y como lo que hace admisible un salto de sexta es lo que viene DESPUÉS, el
+     estado guarda las dos últimas octavas: el coste del salto i−1 → i se cobra cuando ya se
+     sabe hacia dónde va i → i+1. */
+  const BAJO_MIN = 40, BAJO_MAX = 64;            // mi2 … mi4, la tesitura que fijó Diego
+  const BAJO_CENTRO = 50;                        // re3, el centro cómodo del registro
+
+  /* Lo que cuesta ir de una nota del bajo a la siguiente. Hasta la quinta, en proporción al
+     salto; la octava es idiomática en el bajo y se cobra poco; la sexta es cara, y la
+     séptima, prohibitiva. El unísono no es un salto: repetir la nota del bajo es normal. */
+  function costeSalto(m1, m2) {
+    const a = Math.abs(m2 - m1);
+    if (a > 12) return Infinity;
+    if (a === 0) return 0.5;
+    if (a <= 7) return a * 0.8;
+    if (a === 12) return 7;
+    if (a <= 9) return 14;                       // sexta
+    return 60;                                   // séptima: no se justifica nunca
+  }
+  /* La compensación: un salto de sexta o de séptima ha de seguirse de movimiento en sentido
+     CONTRARIO. Si sigue en la misma dirección, o se queda quieto, o no hay nada detrás, la
+     línea queda colgada. */
+  function costeCompensacion(m0, m1, m2) {
+    const d = m1 - m0, a = Math.abs(d);
+    if (a < 8 || a > 11) return 0;
+    if (m2 === null) return 20;                  // el salto se queda sin respuesta
+    const d2 = m2 - m1;
+    if (d2 === 0 || (d2 > 0) === (d > 0)) return 40;
+    return 0;
+  }
+  const costeCentro = m => 0.6 * Math.abs(m - BAJO_CENTRO);
+  /* Lo que cuesta acercarse a la melodía: por debajo de la octava, el tenor y la contralto
+     empiezan a no caber; por debajo de la quinta, no caben de ninguna manera. */
+  function costeHueco(m, melodia) {
+    if (!melodia) return 0;
+    const h = melodia - m;
+    if (h >= 12) return 0;
+    if (h >= 7) return 18;
+    return 60;
+  }
+
   function bajosDe(ej, romanos, cifras) {
     const tons = Teoria.tonalidadesPorNota(ej);
     const notas = Teoria.notasDeCompases(ej.compases);
     const melodia = notas.map(n => Teoria.midi(Teoria.nota(n)));
-    let ref = Teoria.midi(Teoria.nota('C3'));
-    return romanos.map((rEscrito, i) => {
+
+    // 1) La nota del bajo de cada acorde, sin octava todavía
+    const clases = romanos.map((rEscrito, i) => {
       const id = cifras[i];
       if (!rEscrito || !id) return null;
-      const r = Teoria.gradoInterno(rEscrito);          // V/V → II (el grado real de la fundamental)
+      const r = Teoria.gradoInterno(rEscrito);   // V/V → II (el grado real de la fundamental)
       // Menor melódica: la inflexión que hace que el acorde contenga la nota de la melodía
       const ton = Teoria.tonParaAcorde(r, id, tons[i], notas[i]);
-      const b = Teoria.bajoDe(r, id, ton, false);              // lo que el alumno ha escrito, sin arreglarlo
-      if (!b) return null;
-      /* La octava más cercana al bajo anterior, con una ligera preferencia por el centro del
-         registro (do3) y dejando sitio a las dos voces intermedias bajo la melodía: al menos
-         una OCTAVA (Diego, 28/9/2026). Con una quinta —lo que se pedía antes— el tenor y la
-         contralto no cabían sin unísonos, y de ahí salían octavas paralelas que el motor no
-         podía evitar: exigiendo la octava desaparecen dos de los tres casos del banco, y el
-         bajo medio apenas se mueve (de 51,0 a 50,8 en cifra MIDI, ninguno por debajo del mi2). */
-      const coste = x => Math.abs(x - ref) + 0.5 * Math.abs(x - 52) + (x > melodia[i] - 12 ? 50 : 0);
-      let mejor = null;
-      for (let o = 1; o <= 4; o++) {
-        const n = { letra: b.letra, alt: b.alt, octava: o };
-        const m = Teoria.midi(n);
-        if (m < 36 || m > 64) continue;
-        if (!mejor || coste(m) < coste(Teoria.midi(mejor))) mejor = n;
-      }
-      if (mejor) ref = Teoria.midi(mejor);
-      return mejor;
+      return Teoria.bajoDe(r, id, ton, false) || null;   // lo que el alumno escribió, sin arreglarlo
     });
+
+    /* 2) Las octavas que caben en cada una. El hueco de una OCTAVA bajo la melodía —para que
+       quepan el tenor y la contralto sin unísonos (decisión 143)— era un filtro DURO, y ahí
+       estaba el nudo: en un fragmento de melodía grave como A3-3-23, exigirlo obligaba al
+       bajo a irse al fa2, que es justo lo que Diego señaló como demasiado grave. Las dos
+       cosas no pueden ser absolutas a la vez, así que el hueco pasa a ser una PREFERENCIA
+       cara y la decide la línea entera junto con la tesitura y los saltos. */
+    const cand = clases.map((b, i) => {
+      if (!b) return [];
+      const todas = [];
+      for (let o = 0; o <= 6; o++) {
+        const n = { letra: b.letra, alt: b.alt, octava: o };
+        let m;
+        try { m = Teoria.midi(n); } catch (e) { continue; }
+        if (m < BAJO_MIN || m > BAJO_MAX) continue;
+        todas.push({ n: n, m: m, apretado: costeHueco(m, melodia[i]) });
+      }
+      return todas;
+    });
+
+    /* 3) Cada TRAMO continuo de notas con candidatas se resuelve entero. Una nota sin
+       contestar corta el tramo: sobre un hueco no hay línea que cuidar. */
+    const salida = clases.map(() => null);
+    let i = 0;
+    while (i < cand.length) {
+      if (!cand[i].length) { i++; continue; }
+      let j = i;
+      while (j + 1 < cand.length && cand[j + 1].length) j++;
+      resolverLineaDelBajo(cand, salida, i, j);
+      i = j + 1;
+    }
+    return salida;
+  }
+
+  /* Viterbi de segundo orden sobre las octavas: el estado es el par (octava anterior,
+     octava actual), que es lo que hace falta para saber si un salto queda compensado. */
+  function resolverLineaDelBajo(cand, salida, ini, fin) {
+    const suelto = x => costeCentro(x.m) + x.apretado;
+    const mejorSuelta = k => cand[k].reduce((a, x) => (!a || suelto(x) < suelto(a) ? x : a), null);
+    const n = fin - ini + 1;
+    if (n === 1) { const c = mejorSuelta(ini); salida[ini] = c ? c.n : null; return; }
+
+    let ant = cand[ini], act = cand[ini + 1];
+    let dp = ant.map(x => act.map(y => {
+      const c = costeSalto(x.m, y.m);
+      return c === Infinity ? Infinity : suelto(x) + suelto(y) + c;
+    }));
+    const rastro = [];                           // una capa por paso, para reconstruir al final
+
+    for (let k = ini + 2; k <= fin; k++) {
+      const sig = cand[k];
+      const nuevo = act.map(() => sig.map(() => Infinity));
+      const deDonde = act.map(() => sig.map(() => 0));
+      act.forEach((y, iy) => sig.forEach((z, iz) => {
+        const paso = costeSalto(y.m, z.m);
+        if (paso === Infinity) return;
+        ant.forEach((x, ix) => {
+          if (dp[ix][iy] === Infinity) return;
+          const c = dp[ix][iy] + paso + suelto(z) + costeCompensacion(x.m, y.m, z.m);
+          if (c < nuevo[iy][iz]) { nuevo[iy][iz] = c; deDonde[iy][iz] = ix; }
+        });
+      }));
+      rastro.push(deDonde);
+      dp = nuevo; ant = act; act = sig;
+    }
+
+    // El final: se cobra además la compensación del salto que se queda sin respuesta
+    let mejor = null;
+    dp.forEach((fila, ix) => fila.forEach((c, iy) => {
+      if (c === Infinity) return;
+      const total = c + costeCompensacion(ant[ix].m, act[iy].m, null);
+      if (!mejor || total < mejor.total) mejor = { total: total, ix: ix, iy: iy };
+    }));
+    if (!mejor) {                                // nada admisible: cada nota, a su centro
+      for (let k = ini; k <= fin; k++) { const c = mejorSuelta(k); salida[k] = c ? c.n : null; }
+      return;
+    }
+    const idx = new Array(n).fill(0);
+    idx[n - 2] = mejor.ix; idx[n - 1] = mejor.iy;
+    let ix = mejor.ix, iy = mejor.iy;
+    for (let t = rastro.length - 1; t >= 0; t--) {
+      const anterior = rastro[t][ix][iy];
+      idx[t] = anterior;
+      iy = ix; ix = anterior;
+    }
+    for (let k = 0; k < n; k++) {
+      const lista = cand[ini + k];
+      const e = lista[idx[k]] || lista[0];
+      salida[ini + k] = e ? e.n : null;
+    }
   }
   // Qué ve el alumno mientras trabaja (decidido por Diego el 20/9/2026):
   //   Análisis: bajo y realización modelo. Armonización: solo el bajo. Audición: nada

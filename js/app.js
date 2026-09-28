@@ -31,6 +31,7 @@
     bajos: [],                // melodía de soprano: bajo deducido de cada respuesta (nota o null)
     bajosMal: null,           // melodía de soprano: tras corregir, qué bajos van en rojo
     avisosVoces: [],          // errores de conducción de voces de la realización que se ve (notas en rojo + globo)
+    tecnicas: [],             // prolongaciones y cadencias detectadas, para los cuadros (decisión 155)
     marcas: {},               // modulación según el alumno: índice de nota → tonalidad que rige desde ahí
     modoTon: null,            // fila «Tonalidad»: null (no hay) | 'dadas' (rellena) | 'pedir' (la pone el alumno)
     tonalidadBloqueada: false,// la fila «Tonalidad» ya no se edita (modo completo, o marcas acertadas en un reintento)
@@ -648,6 +649,70 @@
                             i > 0 ? pares[i - 1] : null);
   }
 
+  /* EL PORQUÉ QUE VA EN EL GLOBO (decisión 154, Diego 28/9/2026): «ve al grano, no repitas
+     lo que ya está en el cifrado naranja». Las explicaciones del motor vienen con la forma
+     «<por qué>: <qué acorde>», y ese acorde es justo lo que se lee debajo de la nota. Así
+     que se corta por los dos puntos cuando lo que sigue es corto —un acorde y poco más— y
+     se deja entero cuando lo que sigue trae razonamiento de verdad («la armonía ha de
+     cambiar…»). Si al cortar queda un jirón de tres palabras, no se corta: «Grado 1» a
+     secas no es una frase. Y se quita el paréntesis final del modo soprano —«(bajo do;
+     función T, tónica)»—, que repite el bajo y la función una por una. */
+  function alGrano(texto) {
+    let t = String(texto || '').trim();
+    t = t.replace(/\s*\(bajo [^)]*\)\s*(?=\.?$)/i, '');
+    const k = t.indexOf(': ');
+    if (k >= 14) {
+      const cola = t.slice(k + 2);
+      if (cola.length <= 45 && !/\.\s/.test(cola)) t = t.slice(0, k);
+    }
+    return t ? t.replace(/[.;,\s]+$/, '') + '.' : '';
+  }
+
+  /* ---------- LAS TÉCNICAS ARMÓNICAS (decisión 155, Diego 28/9/2026) ----------
+     Prolongaciones y cadencias, encerradas en un cuadro sobre los acordes que las forman.
+     Se calculan AL COMPROBAR y sobre lo que escribió el ALUMNO, acertado o no: lo que
+     enseña es ver qué ha construido él. Con la solución a la vista se redibujan sobre la
+     buena, que es la que entonces está en el papel. */
+  function prepararTecnicas() {
+    estado.tecnicas = [];
+    if (!estado.corregido || typeof Tecnicas === 'undefined') return;
+    const ej = estado.ejercicio, res = estado.resultados || [];
+    if (!res.length) return;
+    const sol = estado.mostrarSolucion ? paresSolucion() : null;
+    const funs = sol ? null : cadenaDeFunciones(res);
+    const acordes = res.map((r, i) => {
+      let ton = null;
+      try { ton = Ejercicios.tonalidadEn(ej, i); } catch (e) { ton = ej.tonalidad; }
+      if (sol) {
+        if (!sol[i] || !sol[i].cifra) return null;
+        /* En Análisis y en la armonización de BAJO las respuestas del banco son cifras a
+           secas, sin grado, así que `paresSolucion()` trae `romano: null`. El grado existe
+           igual —la cifra sobre esa nota del bajo lo determina—, y la corrección ya lo tiene
+           calculado: el del modelo en `modeloRomano` y el del alumno en `gradoReal`. Sin
+           esto, en esos dos modos no salía ni un solo cuadro. */
+        let rom = sol[i].romano;
+        if (!rom && r) rom = (sol[i].cifra === (r.cifraReal || r.cifra) ? r.gradoReal : r.modeloRomano) || r.modeloRomano;
+        if (!rom) return null;
+        let f = null;
+        try { f = funcionSolucionEn(sol, i, null); } catch (e) { f = null; }
+        return { romano: rom, cifra: sol[i].cifra, funcion: f, ton };
+      }
+      /* La cadena del alumno: su grado y su cifra reales —los que de verdad escribió,
+         los pida el ejercicio o los deduzca de la cifra— y la función que de ahí sale. */
+      if (!r || !r.gradoReal) return null;
+      return { romano: r.gradoReal, cifra: r.cifraReal || r.cifra, funcion: funs[i], ton };
+    });
+    // La soprano del último acorde: es lo que separa la cadencia perfecta de la imperfecta
+    const ultimo = (estado.realizacion || [])[acordes.length - 1];
+    const opciones = {
+      soprano: ultimo && ultimo.length ? ultimo[ultimo.length - 1] : null,
+      ton: acordes[acordes.length - 1] ? acordes[acordes.length - 1].ton : ej.tonalidad,
+      menor: !!(acordes[acordes.length - 1] && acordes[acordes.length - 1].ton
+        && acordes[acordes.length - 1].ton.modo === 'menor')
+    };
+    try { estado.tecnicas = Tecnicas.detectar(acordes, opciones) || []; } catch (e) { estado.tecnicas = []; }
+  }
+
   function prepararSolucion() {
     if (!estado.corregido || !estado.mostrarSolucion || !estado.resultados) { estado.filaSolucion = null; return; }
     const ej = estado.ejercicio, pares = paresSolucion();
@@ -660,9 +725,21 @@
         if (esDobleFun(i)) funciones.push(Teoria.textoFuncion(funcionSolucionEn(pares, i, Ejercicios.tonalidadAntes(ej, i))));
         funciones.push(Teoria.textoFuncion(funcionSolucionEn(pares, i, null)));
       }
+      /* El porqué solo se ofrece cuando el acorde que se enseña ES el del modelo: es el que
+         el motor razonó. Donde se conserva el del alumno —acertó con otra admisible— la
+         regla no habla de ese acorde, y colgarle la explicación sería mentir. */
+      const mod = modeloPar(i);
+      let porque = '';
+      if (pares[i].romano === mod.romano && pares[i].cifra === mod.cifra) {
+        const prop = estado.propuesta && estado.propuesta[i];
+        const parejas = Ejercicios.parejas(ej, i);
+        const modeloId = parejas[0] ? parejas[0].id : r.modelo;
+        if (prop && prop.explicacion && prop.modelo === modeloId) porque = alGrano(prop.explicacion);
+      }
       return { funcion: funciones.filter(Boolean).join('/'),
                romano: pideGrado() ? pares[i].romano : null,
-               cifra: pares[i].cifra };
+               cifra: pares[i].cifra,
+               porque };
     });
   }
 
@@ -864,6 +941,7 @@
     prepararModulacion();
     prepararFunciones();
     prepararSolucion();
+    prepararTecnicas();
     estado.ocultarBajo = !bajoVisible();
     Partitura.dibujar($('#partitura'), estado.ejercicio, estado, seleccionar);
     pintarPaletaTonalidades();
@@ -1560,7 +1638,6 @@
     const res = estado.resultados;
     const n = res.length;
     const aciertos = res.filter(r => r.ok).length;
-    const notas = Reglas.notasDe(ej);
     const caja = $('#resultado');
     const pct = Math.round(100 * aciertos / n);
     let html = '<h2>' + aciertos + ' de ' + n + ' acordes correctos <span class="pct">(' + pct + ' %' + (estado.intento > 1 ? ' · intento ' + estado.intento : '') + ')</span></h2>';
@@ -1625,30 +1702,46 @@
         + '<div class="botonera botonera-resultado">'
         + '<button type="button" id="btn-solucion">Ver la solución</button></div>';
     } else {
-      html += '<ol class="errores">';
-      res.forEach((r, i) => {
-        if (r.ok) return;
-        const nombre = Teoria.nombreEs(notas[i]);
-        const parejas = Ejercicios.parejas(ej, i);
-        const ver = p => (pideGrado() ? Ejercicios.gradoDe(ej, p) + ' ' : '') + Teoria.CIFRADOS[p.cifra].etiqueta;
-        const gradoDado = esDoble(i) ? (r.romano || '¿?') + ' = ' + (r.romano2 || '¿?') : (r.romano || '¿grado?');
-        const funDada = estado.modoFun === 'pedir' ? ((esDobleFun(i) ? (r.funcion || '¿?') + ' = ' + (r.funcion2 || '¿?') : (r.funcion || '¿función?'))) + ' · ' : '';
-        const dada = funDada + (pideGrado() ? gradoDado + ' ' : '') + (r.cifra ? Teoria.CIFRADOS[r.cifra].etiqueta : '¿cifra?');
-        const modelo = (estado.modoFun === 'pedir' ? r.modeloFuncion + ' · ' : '') + (pideGrado() ? r.modeloRomano + ' ' : '') + Teoria.CIFRADOS[r.modelo].etiqueta;
-        let expl = '';
-        const modeloId = parejas[0] ? parejas[0].id : r.modelo;
-        if (estado.propuesta && estado.propuesta[i] && estado.propuesta[i].modelo === modeloId) expl = estado.propuesta[i].explicacion;
-        const otras = parejas.slice(1).map(ver);
-        let que = '';
-        if (!r.okEnlace) que = ' (falla el enlace: ' + r.enlace + ')';
-        else if (!(r.okFuncion && r.okFuncion2) && r.okCifra && r.okRomano && r.okRomano2) que = ' (falla la función)';
-        else if (!(!r.okCifra && !(r.okRomano && r.okRomano2))) que = !r.okCifra ? ' (falla la cifra' + (r.porQue ? ': ' + r.porQue : '') + ')' : !(r.okRomano && r.okRomano2) ? ' (falla el grado)' : '';
-        html += '<li><b>Nota ' + (i + 1) + ' (' + nombre + ')</b>' + que + ': has puesto <span class="cif mal">' + dada + '</span>; '
-          + 'la respuesta modelo es <span class="cif bien">' + modelo + '</span>'
-          + (otras.length ? ' (también se admite ' + otras.join(', ') + ')' : '') + '.'
-          + (expl ? '<br><span class="explicacion">' + expl + '</span>' : '') + '</li>';
-      });
-      html += '</ol>';
+      /* AL VER LA SOLUCIÓN, UNA FRASE Y NO UNA LISTA (decisión 153, Diego 28/9/2026).
+         Aquí iba la lista numerada de errores —«Nota 3 (la): has puesto…; la respuesta
+         modelo es…»— y era decir por segunda vez lo que la partitura ya dice mejor: las
+         casillas llevan su ✓ y su ✗ y, desde la decisión 152, bajo cada nota fallada está en
+         naranja lo que pone la solución. La lista además tiraba la mirada hacia abajo, que
+         es justo donde NO está la corrección. Ahora una frase manda mirar el pentagrama y
+         explica qué significa cada color; el detalle nota a nota, que es lo único que la
+         lista tenía de suyo, sigue en «Escuchar el comentario». */
+      const fallos = res.map((r, i) => (r.ok ? 0 : i + 1)).filter(Boolean);
+      const naranja = '<span class="ref-cambio">naranja</span>';
+      const partes = ['<b>Mira el pentagrama</b>:'];
+      if (fallos.length) {
+        // Las lecturas que este ejercicio pide, que son las que lleva el renglón naranja
+        const lect = [];
+        if (estado.modoFun) lect.push('su función');
+        if (pideGrado()) lect.push('su grado');
+        lect.push('su cifra');
+        const lectTexto = lect.length > 1 ? lect.slice(0, -1).join(', ') + ' y ' + lect[lect.length - 1] : lect[0];
+        const donde = fallos.length === n ? 'cada nota'
+          : fallos.length === 1 ? 'la nota ' + fallos[0]
+          : 'las notas ' + fallos.slice(0, -1).join(', ') + ' y ' + fallos[fallos.length - 1];
+        partes.push('ahí está el ejercicio resuelto.');
+        partes.push('Lo que pone la solución va en ' + naranja + ': bajo ' + donde + ', ' + lectTexto
+          + '; y, en la partitura, ' + (estado.modoEj === 'cifrar'
+            ? 'los acordes que no analizaste bien.'
+            : 'las notas que por eso cambian.'));
+        if (fallos.length < n) partes.push('Donde acertaste se queda tu acorde, aunque el modelo prefiriese otro de los admitidos.');
+      } else {
+        /* Caso raro pero real: las respuestas están todas bien y lo que la solución arregla
+           es la conducción de voces. Entonces no hay nada en naranja, y prometerlo sería
+           mandar al alumno a buscar lo que no está. */
+        partes.push('los grados y los cifrados están todos bien; lo que la solución arregla es la armonización que producen.');
+      }
+      partes.push('Las casillas siguen diciendo lo tuyo: en <span class="ref-bien">verde</span> lo que acertaste, en <span class="ref-mal">rojo</span> lo que no.');
+      /* El porqué no se cuenta aquí: se ofrece (decisión 154). Y solo si de verdad hay
+         alguno que enseñar —el motor no razona todos los acordes—, que prometer una ayuda
+         que no aparece es peor que no ofrecerla. */
+      if ((estado.filaSolucion || []).some(s => s && s.porque))
+        partes.push('Pon el ratón sobre un cifrado ' + naranja + ' —o tócalo— y te dice por qué va ahí.');
+      html += '<p class="mira-partitura">' + partes.join(' ') + '</p>';
     }
     // En una ficha, el paso al ejercicio siguiente (o al resumen) va siempre a la vista
     if (estado.ficha) {

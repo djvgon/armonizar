@@ -468,6 +468,10 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260929-1730 | El bajo deducido se elige para la línea entera, no nota a nota: ni una por debajo del mi2 (eran 5), ni una séptima (eran 4), ni una sexta sin compensar (eran 6); el hueco de octava bajo la melodía pasa de filtro duro a preferencia (156) |
+| 20260929-1700 | Las técnicas armónicas, en un cuadro sobre los acordes que las forman: arpegio, prolongación de cada función, prolongación con marco (T–D–T, T–S–T) y cadencia con su nombre completo, con la explicación en un globo (155); `js/tecnicas.js` |
+| 20260929-1630 | El porqué de cada acorde vuelve, en un globo sobre el cifrado naranja: con el ratón encima o tocándolo con el dedo, y recortado para no repetir la cifra (154) |
+| 20260929-1620 | Al ver la solución, la lista numerada de errores se sustituye por una frase que manda mirar el pentagrama y hace de leyenda de los colores, adaptada a lo que se acertó (153) |
 | 20260929-1610 | En el renglón de la solución, la letra de la función sube a 18 y el grado baja a 16: la función manda y el grado viene detrás (152, afinada) |
 | 20260929-1600 | La solución se dice en una sola tinta y en un solo sitio: bajo cada nota fallada, una línea naranja con función · grado · cifra, sacada de los mismos pares que realizan el pentagrama; la función del modelo sale de dentro de la casilla (152). Arreglado el `Cifrado desconocido: I\|53` que dejaba sin efecto Comprobar en `A4-11` en melodía de soprano |
 | 20260929-1500 | Las teclas bajan a 40, igual que las acciones y por debajo de la banda; la escala queda 48 banda · 40 teclas y acciones · 32 barra, herramientas y fichas (151) |

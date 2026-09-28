@@ -391,8 +391,14 @@ const Partitura = (() => {
     /* Si hay errores de conducción de voces, se reserva al pie una banda para el globo de
        explicación, de modo que nunca tape la música. Se calcula la altura del globo más
        alto que puede abrirse (el texto se reparte en líneas de 46 caracteres). */
-    const maxLineas = avisosVoces.reduce((m, av) => Math.max(m, lineasDe(av).length), 0);
-    const ALTO_GLOBO = avisosVoces.length ? maxLineas * ALTO_LINEA + 3.2 * SP : 0;
+    /* La banda la comparten los dos globos: el del aviso de voces y el del porqué de la
+       solución (decisión 154), así que la reserva mira los dos. */
+    const porques = (estado.filaSolucion || []).map(s => (s && s.porque) || '').filter(Boolean)
+      .concat((estado.tecnicas || []).map(t => (t && t.porque) ? t.porque + ' ' : '').filter(Boolean));
+    const maxLineas = Math.max(
+      avisosVoces.reduce((m, av) => Math.max(m, lineasDe(av).length), 0),
+      porques.reduce((m, t) => Math.max(m, trozos(t, ANCHO_LINEA).length + 1), 0));
+    const ALTO_GLOBO = (avisosVoces.length || porques.length) ? maxLineas * ALTO_LINEA + 3.2 * SP : 0;
     const Y_GLOBO = Y_SOLUCION + 2.6 * SP;                 // borde superior de la banda del globo
     const ALTO_TOTAL = Y_SOLUCION + 2.6 * SP + ALTO_GLOBO;
 
@@ -573,23 +579,21 @@ const Partitura = (() => {
     let globoAbierto = null;
     function cerrarGlobo() {
       if (globoAbierto) { globoAbierto.remove(); globoAbierto = null; }
-      svg.querySelectorAll('.voz-mal.activo').forEach(e => e.classList.remove('activo'));
+      svg.querySelectorAll('.voz-mal.activo, .solucion-zona.activo, .tecnica-zona.activo').forEach(e => e.classList.remove('activo'));
     }
-    // El globo se dibuja en la banda reservada al pie, con una línea fina hasta la nota pulsada
-    function abrirGlobo(cx, cy, indices, elementos) {
+    /* El globo se dibuja en la banda reservada al pie, con una línea fina hasta lo que se
+       ha señalado. Sirve para dos cosas: los avisos de conducción de voces (borde rojo, se
+       abre al pulsar una nota marcada) y, desde la decisión 154, el porqué de cada acorde
+       de la solución (borde naranja, se abre al pasar el ratón o tocar su cifrado). */
+    function abrirGlobo(cx, cy, lineas, elementos, clase) {
       cerrarGlobo();
       elementos.forEach(e => e.classList.add('activo'));
       const ANCHO_CAR = 4.6, TAM = 11;
-      const lineas = [];
-      indices.forEach((k, j) => {
-        if (j) lineas.push('');
-        lineasDe(avisosVoces[k]).forEach(l => lineas.push(l));
-      });
       const anchoTexto = Math.max(...lineas.map(l => l.length)) * ANCHO_CAR + 2.2 * SP;
       const alto = lineas.length * ALTO_LINEA + 1.6 * SP;
       const x = Math.min(Math.max(cx - anchoTexto / 2, 0.5 * SP), Math.max(0.5 * SP, ANCHO_TOTAL - anchoTexto - 0.5 * SP));
       const y = Y_GLOBO + 1.3 * SP;
-      const g = el('g', { class: 'globo-aviso' });
+      const g = el('g', { class: 'globo-aviso' + (clase ? ' ' + clase : '') });
       const px = Math.min(Math.max(cx, x + 2 * SP), x + anchoTexto - 2 * SP);
       g.appendChild(el('line', { x1: cx, y1: cy + 1 * SP, x2: px, y2: y, class: 'globo-guia' }));
       g.appendChild(el('rect', { x, y, width: anchoTexto, height: alto, rx: 0.9 * SP, class: 'globo-fondo' }));
@@ -630,7 +634,9 @@ const Partitura = (() => {
           m.indices.forEach(k => (avisosVoces[k].notas || []).forEach(nv => {
             svg.querySelectorAll('[data-voz="' + nv.i + ':' + nv.voz + '"]').forEach(e => hermanas.push(e));
           }));
-          abrirGlobo(m.cx, m.cy, m.indices, hermanas);
+          const lineas = [];
+          m.indices.forEach((k, j) => { if (j) lineas.push(''); lineasDe(avisosVoces[k]).forEach(l => lineas.push(l)); });
+          abrirGlobo(m.cx, m.cy, lineas, hermanas);
         };
         z.addEventListener('click', abrir);
         z.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(ev); } });
@@ -641,7 +647,7 @@ const Partitura = (() => {
     // Al pulsar fuera de una nota señalada o del propio globo, se cierra
     svg.addEventListener('click', ev => {
       const t = ev.target;
-      if (t && typeof t.closest === 'function' && t.closest('.voz-zona, .globo-aviso')) return;
+      if (t && typeof t.closest === 'function' && t.closest('.voz-zona, .solucion-zona, .tecnica-zona, .globo-aviso')) return;
       cerrarGlobo();
     });
 
@@ -1016,11 +1022,12 @@ const Partitura = (() => {
         if (sol.romano) partes.push({ txt: sol.romano, tam: TAM_SOL_ROM, clase: 'sol-romano', ancho: anchoTexto(sol.romano, TAM_SOL_ROM) });
         if (sol.cifra) partes.push({ cifra: sol.cifra, ancho: anchoCifra(sol.cifra, ESCALA_SOL, ctxCifra(i, nb)) });
         if (partes.length) {
-          const ancho = partes.reduce((a, p) => a + p.ancho, 0) + HUECO_SOL * (partes.length - 1);
-          const escala = Math.min(1, ANCHO_SOL_MAX / ancho);
+          // Ojo con el nombre: `ancho` ya existe arriba y es el de la cabeza de nota.
+          const anchoSol = partes.reduce((a, p) => a + p.ancho, 0) + HUECO_SOL * (partes.length - 1);
+          const escala = Math.min(1, ANCHO_SOL_MAX / anchoSol);
           const gm = el('g', { class: 'solucion-cifrado',
             transform: 'translate(' + cx.toFixed(2) + ',' + Y_SOLUCION.toFixed(2) + ') scale(' + escala.toFixed(3) + ')' });
-          let xp = -ancho / 2;
+          let xp = -anchoSol / 2;
           partes.forEach(p => {
             const cp = xp + p.ancho / 2;
             if (p.cifra) dibujarCifra(gm, p.cifra, cp, 0, ESCALA_SOL, null, ctxCifra(i, nb));
@@ -1029,9 +1036,131 @@ const Partitura = (() => {
             xp += p.ancho + HUECO_SOL;
           });
           svg.appendChild(gm);
+          /* EL PORQUÉ, EN UN GLOBO (decisión 154): con el ratón encima del cifrado naranja
+             o tocándolo con el dedo. La zona sensible es un rectángulo transparente aparte,
+             porque el renglón lleva `pointer-events: none` —si no, el ratón tropezaría con
+             cada glifo y el globo parpadearía al pasar entre ellos—. Con el dedo no hay
+             «pasar por encima», así que el toque lo abre y lo cierra. */
+          if (sol.porque) {
+            const anchoZ = Math.max(anchoSol * escala, 3 * SP) + SP, altoZ = 3 * SP;
+            const z = el('rect', { x: cx - anchoZ / 2, y: Y_SOLUCION - altoZ / 2, width: anchoZ, height: altoZ,
+              class: 'solucion-zona', tabindex: 0, role: 'button',
+              'aria-label': 'Por qué la solución pone este acorde: ' + sol.porque });
+            z.appendChild(el('title', {}, sol.porque));
+            const lineas = trozos(sol.porque, ANCHO_LINEA);
+            const abrir = () => abrirGlobo(cx, Y_SOLUCION + SP, lineas, [z], 'globo-solucion');
+            /* Ratón y dedo no se pueden tratar igual. El móvil sintetiza un `mouseenter`
+               antes del toque, así que con `mouseenter` + `click` el dedo abría el globo y
+               lo cerraba en el mismo gesto: parpadeo y nada más. Se mira de qué es el
+               puntero: si es ratón, abre al entrar y cierra al salir, y el clic no hace nada
+               —ya está abierto—; si es dedo (o lápiz), el toque abre y el siguiente cierra. */
+            let porRaton = false;
+            z.addEventListener('pointerenter', ev => { porRaton = ev.pointerType === 'mouse'; if (porRaton) abrir(); });
+            z.addEventListener('pointerleave', ev => { if (porRaton) cerrarGlobo(); porRaton = false; });
+            /* El foco abre el globo SOLO cuando viene del teclado. Al tocar con el dedo, el
+               `pointerdown` también da el foco, y entonces el globo se abría aquí y el clic
+               que venía detrás lo cerraba: otra vez el parpadeo. `:focus-visible` es justo
+               la distinción que hace falta; si el navegador no la conoce, se abre igual. */
+            z.addEventListener('focus', () => {
+              let soloTeclado = true;
+              try { soloTeclado = z.matches(':focus-visible'); } catch (e) { soloTeclado = true; }
+              if (soloTeclado) abrir();
+            });
+            z.addEventListener('blur', cerrarGlobo);
+            z.addEventListener('click', ev => {
+              ev.stopPropagation();
+              if (porRaton) return;
+              if (globoAbierto && z.classList.contains('activo')) cerrarGlobo(); else abrir();
+            });
+            svg.appendChild(z);
+          }
         }
       }
     });
+
+    /* ---- LOS CUADROS DE LAS TÉCNICAS ARMÓNICAS (decisión 155, Diego 28/9/2026) ----
+       Cada prolongación y cada cadencia, encerrada en un cuadro que abarca DE ARRIBA ABAJO
+       lo que la forma: los acordes en el pentagrama y sus casillas, que es como Diego lo
+       pidió. El rótulo va en el centro del cuadro, sobre una pastilla opaca para que no se
+       confunda con la música, y es él —no el cuadro entero— quien recoge el ratón y el
+       dedo: si el rectángulo capturase el puntero, no se podrían pulsar las casillas.
+       Dos técnicas seguidas COMPARTEN el acorde de cierre, así que sus cuadros se pisarían;
+       se reparten en carriles, y cada carril se mete un poco hacia dentro. */
+    const tecnicas = Array.isArray(estado.tecnicas) ? estado.tecnicas : [];
+    if (tecnicas.length && cxNota.length) {
+      const TAM_TEC = 1.2 * SP;
+      /* Primero se MIDE todo y después se dibuja, porque el carril no lo decide el cuadro
+         sino lo que de verdad ocupa la técnica: el cuadro O su rótulo, lo que sobresalga
+         más. Con el carril decidido solo por el cuadro, dos pastillas vecinas se tocaban
+         aunque los cuadros no llegaran a rozarse. */
+      const piezas = [];
+      tecnicas.forEach(t => {
+        const a = cxNota[t.desde], b = cxNota[t.hasta];
+        if (a === undefined || b === undefined || b <= a) return;
+        const x1 = a - ANCHO_CASILLA / 2 - 0.45 * SP;
+        const x2 = b + ANCHO_CASILLA / 2 + 0.45 * SP;
+        const anchoR = anchoTexto(t.nombre, TAM_TEC);
+        /* Un suelo al encogido: en un cuadro de dos acordes, ajustar el rótulo a lo ancho
+           lo dejaba en letra de mosca. Por debajo de 0,8 se deja que la pastilla ASOME por
+           los lados —es opaca, así que se lee igual—, y del carril se encarga la medida. */
+        const escala = Math.max(0.8, Math.min(1, (x2 - x1 - 1.2 * SP) / Math.max(anchoR + 1.6 * SP, 1)));
+        const anchoP = (anchoR + 1.6 * SP) * escala;
+        const cxR = (x1 + x2) / 2;
+        piezas.push({ t, x1, x2, anchoR, escala, cxR,
+          izq: Math.min(x1, cxR - anchoP / 2), der: Math.max(x2, cxR + anchoP / 2) });
+      });
+      const finCarril = [];                       // hasta dónde llega lo ocupado en cada carril
+      const capa = el('g', { class: 'tecnicas' });
+      piezas.forEach(p => {
+        let carril = 0;
+        while (finCarril[carril] !== undefined && finCarril[carril] >= p.izq - 0.3 * SP) carril++;
+        finCarril[carril] = p.der;
+        const dentro = carril * 0.55 * SP;
+        const x1 = p.x1 + dentro, x2 = p.x2 - dentro;
+        const y1 = (sinSistema ? Y_CASILLA - SP : Y_SISTEMA_TOP - 0.8 * SP) + dentro;
+        const y2 = Y_FIN_CASILLAS + 0.5 * SP - dentro;
+        const t = p.t;
+        const g = el('g', { class: 'tecnica tecnica-' + (t.clase || 'prolongacion') });
+        g.appendChild(el('rect', { x: x1, y: y1, width: x2 - x1, height: y2 - y1, rx: 0.8 * SP, class: 'tecnica-caja' }));
+        /* El rótulo no va al centro geométrico del cuadro —ahí caía sobre el pentagrama del
+           bajo y tapaba las notas—, sino al HUECO entre el sistema y las casillas, que es el
+           único sitio del cuadro donde no hay nada dibujado. Cada carril baja un escalón. */
+        const hueco = sinSistema ? (y1 + y2) / 2 : (Y_SISTEMA_BOT + Y_CASILLA) / 2;
+        const cyR = Math.min(Math.max(hueco + carril * 2.4 * SP, y1 + 1.2 * SP), y2 - 1.2 * SP);
+        const gr = el('g', { class: 'tecnica-rotulo',
+          transform: 'translate(' + p.cxR.toFixed(2) + ',' + cyR.toFixed(2) + ') scale(' + p.escala.toFixed(3) + ')' });
+        gr.appendChild(el('rect', { x: -(p.anchoR / 2 + 0.8 * SP), y: -1.05 * SP,
+          width: p.anchoR + 1.6 * SP, height: 2.1 * SP, rx: 0.7 * SP, class: 'tecnica-pastilla' }));
+        gr.appendChild(el('text', { x: 0, y: 0.45 * SP, 'text-anchor': 'middle', 'font-size': TAM_TEC, class: 'tecnica-texto' }, t.nombre));
+        capa.appendChild(g);
+        g.appendChild(gr);
+        if (t.porque) {
+          // La zona sensible cubre la pastilla; el globo cuelga de ella, como el del porqué
+          const anchoP = (p.anchoR + 1.6 * SP) * p.escala, altoP = 2.1 * SP * p.escala;
+          const z = el('rect', { x: p.cxR - anchoP / 2, y: cyR - altoP / 2, width: anchoP, height: altoP, rx: 0.7 * SP,
+            class: 'tecnica-zona', tabindex: 0, role: 'button', 'aria-label': t.nombre + '. ' + t.porque });
+          z.appendChild(el('title', {}, t.porque));
+          const lineas = [t.nombre].concat(trozos(t.porque, ANCHO_LINEA));
+          const abrir = () => abrirGlobo(p.cxR, y2, lineas, [z], 'globo-tecnica');
+          let porRaton = false;
+          z.addEventListener('pointerenter', ev => { porRaton = ev.pointerType === 'mouse'; if (porRaton) abrir(); });
+          z.addEventListener('pointerleave', ev => { if (porRaton) cerrarGlobo(); porRaton = false; });
+          z.addEventListener('focus', () => {
+            let soloTeclado = true;
+            try { soloTeclado = z.matches(':focus-visible'); } catch (e) { soloTeclado = true; }
+            if (soloTeclado) abrir();
+          });
+          z.addEventListener('blur', cerrarGlobo);
+          z.addEventListener('click', ev => {
+            ev.stopPropagation();
+            if (porRaton) return;
+            if (globoAbierto && z.classList.contains('activo')) cerrarGlobo(); else abrir();
+          });
+          g.appendChild(z);
+        }
+      });
+      svg.appendChild(capa);
+    }
 
     /* ---- Los símbolos de Berklee (prueba, Diego 27/9/2026) ----
        Los mismos dos signos que usa la armonía de Berklee —y con ellos el «Mapping Tonal
