@@ -2988,7 +2988,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "9ebe7f1fd95b8390"
   },
   {
    "id": "A3-1-29",
@@ -3620,7 +3622,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "30f6c4dea5565b83"
   },
   {
    "id": "A3-2-02",
@@ -9586,8 +9590,8 @@
       "53"
      ],
      [
-      "+6",
-      "6"
+      "6",
+      "+6"
      ],
      [
       "6"
@@ -9685,14 +9689,15 @@
     "modula": false,
     "cifras": [
      "53",
-     "+6",
      "6",
      "7+"
     ],
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "acccbb57f3ed8e6c"
   },
   {
    "id": "A3-4-10",
@@ -9777,8 +9782,7 @@
       "6"
      ],
      [
-      "6",
-      "53"
+      "6"
      ],
      [
       "53",
@@ -9870,7 +9874,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "500d5f9c5f015749"
   },
   {
    "id": "A3-4-11",
@@ -10067,7 +10073,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "3b78d69f9668ada2"
   },
   {
    "id": "A3-4-12",
@@ -10227,7 +10235,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "ac0d0bb233427a1f"
   },
   {
    "id": "A3-4-13",
@@ -10297,7 +10307,7 @@
       "53"
      ],
      [
-      "53",
+      "6",
       "+4"
      ],
      [
@@ -10365,12 +10375,15 @@
     "modula": false,
     "cifras": [
      "53",
+     "6",
      "65d"
     ],
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "a96a5ffe94301737"
   },
   {
    "id": "A3-5-01",
@@ -10548,7 +10561,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "0a47d82016520e61"
   },
   {
    "id": "A3-5-02",
@@ -10631,8 +10646,7 @@
       "6"
      ],
      [
-      "6",
-      "53"
+      "6"
      ],
      [
       "64",
