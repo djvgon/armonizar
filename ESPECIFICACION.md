@@ -3162,6 +3162,13 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       número iba a parar a la paleta de cifrados y el recorrido se quedaba dando vueltas
       entre el cifrado y la función.
 
+149. **Vuelven los acordes del ejercicio, y el botón de las estructuras deja de depender de
+    los grados** (28/9/2026, Diego). El renglón «En este ejercicio entran» (o «En esta ficha
+    entran») se había retirado por repetir lo que hay en la paleta; en el aula se echaba en
+    falta y vuelve. Con él se lleva el acceso al **cuadro de estructuras de la lección**, que
+    vivía en el renglón de los grados: ese renglón se oculta en los ejercicios que no piden
+    el grado, y el botón se iba con él sin que nadie lo hubiera pedido.
+
 ## 4. Vocabulario de cifrado (catálogo en `js/teoria.js`)
 
 | id | Se ve | Significado | Voces superiores |

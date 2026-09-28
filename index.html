@@ -7,8 +7,8 @@
   <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
   <meta property="og:title" content="Práctica armónica">
   <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
-  <link rel="stylesheet" href="css/bravura.css?v=20260929-0900">
-  <link rel="stylesheet" href="css/estilo.css?v=20260929-0900">
+  <link rel="stylesheet" href="css/bravura.css?v=20260929-0940">
+  <link rel="stylesheet" href="css/estilo.css?v=20260929-0940">
 </head>
 <body>
   <nav class="barra-app" aria-label="Secciones">
@@ -45,23 +45,22 @@
       <span class="repertorio-etiqueta">Tonalidad</span>
       <div id="tonalidad-fragmento" class="repertorio repertorio-texto"></div>
     </div>
-    <!-- El inventario de cifrados del ejercicio se retira de la vista (Diego, 28/9/2026):
-         lo que entra ya se ve en la paleta de abajo, y el renglón ocupaba sitio repitiéndolo.
-         Los elementos siguen en el documento, ocultos, porque `app.js` los rellena. -->
-    <div class="repertorio-fila" id="cifrados-fila" hidden>
+    <!-- Los acordes que entran en el ejercicio (o en la ficha), otra vez a la vista
+         (Diego, 28/9/2026): se habían retirado por repetir lo que hay en la paleta, y en
+         el aula se echaban en falta. Con ellos, el acceso al cuadro de estructuras de la
+         lección, que vive aquí y no en el renglón de los grados: aquel se oculta en los
+         ejercicios que no piden el grado, y el botón se iba con él. -->
+    <div class="repertorio-fila" id="cifrados-fila">
       <span class="repertorio-etiqueta" id="etiqueta-repertorio"></span>
       <div id="repertorio" class="repertorio"></div>
-    </div>
-    <div class="repertorio-fila" id="grados-fila">
-      <span class="repertorio-etiqueta" id="etiqueta-grados">Grados en este ejercicio</span>
-      <div id="grados" class="repertorio"></div>
-      <!-- Las dos ayudas, a continuación de los grados: son material de consulta del mismo
-           nivel que lo que hay en este renglón, no acciones (Diego, 28/9/2026).
-           El nombre de la lección ya lo dice la banda, así que su renglón desapareció. -->
       <span id="leccion-fila" class="ayudas-fila" hidden>
         <span id="leccion" hidden></span>
         <button type="button" id="btn-estructuras" class="boton-pequeno" hidden>Estructuras armónicas que incluye esta lección</button>
       </span>
+    </div>
+    <div class="repertorio-fila" id="grados-fila">
+      <span class="repertorio-etiqueta" id="etiqueta-grados">Grados en este ejercicio</span>
+      <div id="grados" class="repertorio"></div>
     </div>
     <!-- Solo aparece en ventana BAJA (el móvil en horizontal): allí las dos filas de
          referencia —grados y cifrados— se pliegan detrás de este botón, porque son
@@ -153,20 +152,20 @@
        vistazo qué versión está publicada. -->
   <footer class="pie">
     <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
-    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260929-0900</span></p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20260929-0940</span></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20260929-0900"></script>
-  <script src="js/reglas.js?v=20260929-0900"></script>
-  <script src="js/ejercicios.js?v=20260929-0900"></script>
-  <script src="js/partitura.js?v=20260929-0900"></script>
-  <script src="js/realizacion.js?v=20260929-0900"></script>
-  <script src="js/banco.js?v=20260929-0900"></script>
-  <script src="js/registro.js?v=20260929-0900"></script>
-  <script src="js/envio.js?v=20260929-0900"></script>
-  <script src="js/sonido.js?v=20260929-0900"></script>
-  <script src="js/voz.js?v=20260929-0900"></script>
-  <script src="js/app.js?v=20260929-0900"></script>
+  <script src="js/teoria.js?v=20260929-0940"></script>
+  <script src="js/reglas.js?v=20260929-0940"></script>
+  <script src="js/ejercicios.js?v=20260929-0940"></script>
+  <script src="js/partitura.js?v=20260929-0940"></script>
+  <script src="js/realizacion.js?v=20260929-0940"></script>
+  <script src="js/banco.js?v=20260929-0940"></script>
+  <script src="js/registro.js?v=20260929-0940"></script>
+  <script src="js/envio.js?v=20260929-0940"></script>
+  <script src="js/sonido.js?v=20260929-0940"></script>
+  <script src="js/voz.js?v=20260929-0940"></script>
+  <script src="js/app.js?v=20260929-0940"></script>
 </body>
 </html>
