@@ -672,13 +672,18 @@
      El acorde depende del CIFRADO; en la melodía de soprano, también del grado, porque de
      él se deduce el bajo. */
   function diferenciasConLaSuya(buenos) {
-    const res = estado.resultados;
-    if (!Array.isArray(res)) return null;
+    const modeloC = cifrasSolucion(), modeloR = romanosSolucion();
     return buenos.map((ac, i) => {
       if (!ac) return null;
-      const r = res[i] || {};
-      const fallo = !r.okCifra || (estado.modoEj === 'soprano' && !r.okRomano);
-      return ac.map(() => fallo);
+      /* Lo que cambia en el pentagrama es el ACORDE, y el acorde lo fija el cifrado sobre
+         el bajo dado; en la melodía de soprano, también el grado, porque de él se deduce el
+         bajo. No vale mirar si la respuesta estaba «bien»: una cifra puede ser admisible
+         —y salir en verde— y no ser la del modelo, y entonces el acorde dibujado no es el
+         que escribió el alumno y hay que señalarlo igual (Diego, 28/9/2026). */
+      const suyaC = notaCompleta(i) ? estado.respuestas[i] : null;
+      const distinto = modeloC[i] !== suyaC
+        || (estado.modoEj === 'soprano' && modeloR[i] !== (estado.romanos[i] || null));
+      return ac.map(() => distinto);
     });
   }
 

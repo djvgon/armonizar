@@ -3140,11 +3140,14 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     2.ª, 3.ª—.
 
 147. **Al ver la solución, en naranja los acordes que fallaron** (28/9/2026, Diego). Con la
-    realización del modelo a la vista (decisión 145), los acordes en los que el alumno se
-    equivocó se pintan enteros en naranja `#D95F00`, para que vea de un vistazo qué le
-    cambia. El acorde depende del **cifrado**; en la melodía de soprano, también del grado,
-    porque de él se deduce el bajo. Un acorde con el cifrado bien y el grado mal —el mismo
-    acorde con otro nombre— no se marca: lo que suena es idéntico.
+    realización del modelo a la vista (decisión 145), los acordes que **no son los que
+    escribió el alumno** se pintan enteros en naranja `#D95F00`, para que vea de un vistazo
+    qué le cambia. El acorde lo fija el **cifrado** sobre el bajo dado; en la melodía de
+    soprano, también el grado, porque de él se deduce el bajo. Un acorde con el cifrado bien
+    y el grado mal —el mismo acorde con otro nombre— no se marca: lo que suena es idéntico.
+    Ojo: NO vale mirar si la respuesta estaba «bien». Una cifra puede ser **admisible** —y
+    salir en verde— sin ser la del modelo; entonces el pentagrama enseña un acorde que el
+    alumno no escribió, y hay que señalarlo igual.
     Se probó antes a comparar nota a nota con la realización del alumno, pero entonces un
     acorde bien respondido salía marcado solo porque su disposición cambiaba —la conducción
     se decide para la frase entera y un error posterior mueve lo anterior—, y eso confunde
