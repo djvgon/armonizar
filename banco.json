@@ -2671,7 +2671,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "303e30b53701d8c0"
   },
   {
    "id": "A3-1-26",
@@ -2942,7 +2944,7 @@
     "compases": [
      [
       [
-       "C5",
+       "D5",
        1
       ],
       [
@@ -2958,7 +2960,8 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "I|53"
+      "V|53",
+      "V|7+"
      ],
      [
       "V|53",
@@ -3095,7 +3098,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "e79e289c4a9aef77"
   },
   {
    "id": "A3-1-30",
@@ -3215,7 +3220,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "aa3c2f2279e95ed1"
   },
   {
    "id": "A3-1-31",
@@ -3318,7 +3325,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "924f3f2f1dd226a6"
   },
   {
    "id": "A3-1-32",
@@ -3438,7 +3447,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "a8392ea309e924e2"
   },
   {
    "id": "A3-2-01",
@@ -3713,7 +3724,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "bcee3326a842d7fb"
   },
   {
    "id": "A3-2-03",
@@ -3865,7 +3878,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "e5c37bf4366a607b"
   },
   {
    "id": "A3-2-04",
@@ -4012,7 +4027,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "ad54f4cdfedb744a"
   },
   {
    "id": "A3-2-05",
@@ -4124,7 +4141,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "b70125d8c1481b71"
   },
   {
    "id": "A3-2-06",
@@ -4236,7 +4255,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "cfb583cc39914905"
   },
   {
    "id": "A3-2-07",
@@ -4348,7 +4369,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "2bfc8e5ca5965fc5"
   },
   {
    "id": "A3-2-08",
@@ -4459,7 +4482,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "55bb3b48eaf1d9d7"
   },
   {
    "id": "A3-2-09",
@@ -4598,6 +4623,161 @@
     "compases": 3,
     "modo": "menor",
     "alteraciones": 0,
+    "modula": false,
+    "cifras": [
+     "53",
+     "6"
+    ],
+    "grados": [],
+    "nivel": 2
+   },
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "2f2d9f64ce281639"
+  },
+  {
+   "id": "A3-2-10",
+   "leccion": "A3-2",
+   "leccionNombre": "I6, V6 y VII6",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "7+"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "VII|6"
+   ],
+   "fuente": "04.mscz",
+   "titulo": "",
+   "tonalidad": {
+    "tonica": "D",
+    "modo": "menor"
+   },
+   "tonalidadSegura": true,
+   "compas": [
+    4,
+    4
+   ],
+   "bajo": {
+    "compases": [
+     [
+      [
+       "D3",
+       2
+      ],
+      [
+       "F3",
+       2
+      ]
+     ],
+     [
+      [
+       "E3",
+       2
+      ],
+      [
+       "C#3",
+       2
+      ]
+     ],
+     [
+      [
+       "D3",
+       4
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "6"
+     ],
+     [
+      "6"
+     ],
+     [
+      "6"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       "A4",
+       2
+      ],
+      [
+       "A4",
+       2
+      ]
+     ],
+     [
+      [
+       "A4",
+       2
+      ],
+      [
+       "A4",
+       2
+      ]
+     ],
+     [
+      [
+       "F4",
+       4
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "V|53",
+      "I|53",
+      "I|6",
+      "V|6",
+      "V|7+"
+     ],
+     [
+      "V|7+",
+      "I|53",
+      "I|6",
+      "V|53",
+      "V|6"
+     ],
+     [
+      "V|53",
+      "V|6",
+      "V|7+"
+     ],
+     [
+      "I|53"
+     ]
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 5,
+    "compases": 3,
+    "modo": "menor",
+    "alteraciones": 1,
     "modula": false,
     "cifras": [
      "53",
@@ -4783,7 +4963,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "10628a2bcbbefebc"
   },
   {
    "id": "A3-2-12",
@@ -4854,8 +5036,8 @@
       "6"
      ],
      [
-      "53",
-      "7+"
+      "7+",
+      "53"
      ],
      [
       "53"
@@ -4927,12 +5109,15 @@
     "modula": false,
     "cifras": [
      "6",
-     "53"
+     "53",
+     "7+"
     ],
     "grados": [],
-    "nivel": 1
+    "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "aac86c7eaa2867ab"
   },
   {
    "id": "A3-2-13",
@@ -5027,7 +5212,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "0f6ad259a5d00d08"
   },
   {
    "id": "A3-3-01",
@@ -5145,7 +5332,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "24488d16227d9bed"
   },
   {
    "id": "A3-3-02",
@@ -5263,7 +5452,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "b0c08be8a2af0377"
   },
   {
    "id": "A3-3-03",
@@ -5379,7 +5570,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "905cba90ec0ac547"
   },
   {
    "id": "A3-3-04",
@@ -5521,7 +5714,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "ded41176144bd517"
   },
   {
    "id": "A3-3-05",
@@ -5605,7 +5800,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "1de71def55db503e"
   },
   {
    "id": "A3-3-06",
@@ -5689,7 +5886,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "0c226b184a20c789"
   },
   {
    "id": "A3-3-07",
@@ -5808,7 +6007,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "fd6435f7ea12f114"
   },
   {
    "id": "A3-3-08",
@@ -5926,7 +6127,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "f21642d61cc8ea99"
   },
   {
    "id": "A3-3-09",
@@ -6162,7 +6365,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "eea7b4a805d4e523"
   },
   {
    "id": "A3-3-11",
@@ -6278,7 +6483,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "fe04c69b301d03da"
   },
   {
    "id": "A3-3-12",
@@ -6395,7 +6602,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "d62c35a3cf3458f2"
   },
   {
    "id": "A3-3-13",
@@ -6511,7 +6720,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "57ce24284a619f17"
   },
   {
    "id": "A3-3-14",
@@ -6627,7 +6838,9 @@
     "grados": [],
     "nivel": 1
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "3204e91373fb2500"
   },
   {
    "id": "A3-3-15",
@@ -7214,7 +7427,9 @@
     "grados": [],
     "nivel": 3
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "bac203f3733d92ee"
   },
   {
    "id": "A3-3-21",
@@ -7369,7 +7584,9 @@
     "grados": [],
     "nivel": 3
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "18666eb9c12807ae"
   },
   {
    "id": "A3-3-22",
@@ -8406,7 +8623,6 @@
       "6"
      ],
      [
-      "6",
       "53"
      ],
      [
@@ -8513,7 +8729,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "dd710d479f4ded42"
   },
   {
    "id": "A3-4-04",
@@ -8590,6 +8808,7 @@
       "6"
      ],
      [
+      "6",
       "53"
      ],
      [
@@ -8674,7 +8893,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "95749f6b42788962"
   },
   {
    "id": "A3-4-05",
@@ -9005,8 +9226,8 @@
       "53"
      ],
      [
-      "+6",
-      "6"
+      "6",
+      "+6"
      ],
      [
       "6"
@@ -9116,14 +9337,15 @@
     "modula": false,
     "cifras": [
      "53",
-     "+6",
      "6",
      "7+"
     ],
     "grados": [],
     "nivel": 3
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "7d04cd792c1e4e00"
   },
   {
    "id": "A3-4-08",
@@ -9200,8 +9422,7 @@
       "6"
      ],
      [
-      "6",
-      "53"
+      "+4"
      ],
      [
       "+4"
@@ -9285,7 +9506,9 @@
     "grados": [],
     "nivel": 2
    },
-   "formulaTST": false
+   "formulaTST": false,
+   "cerrado": "2026-09-28",
+   "huella": "80f3cd186caeca2f"
   },
   {
    "id": "A3-4-09",
