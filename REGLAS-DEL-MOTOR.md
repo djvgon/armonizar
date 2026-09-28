@@ -206,7 +206,10 @@ otra cosa antes que dejar unas paralelas.
 □ **R‑30 · Ni octava ni quinta por movimiento directo.**
 Dos voces que van en la misma dirección y llegan a la octava o a la quinta. Con el bajo se
 admite si la voz superior llega por grado conjunto; entre las voces agudas, si cualquiera de
-las dos llega por grado conjunto. Un cambio de disposición del mismo acorde queda exento.
+las dos llega por grado conjunto. **Un cambio de posición del mismo acorde queda exento**:
+mientras la armonía no cambie no hay enlace que juzgar, y la duplicación puede cambiar sin
+que el acorde sea otro (II6 → II, I → I6). Lo mismo vale para la séptima y para la sensible:
+no se les pide que resuelvan hasta que la armonía cambie de verdad.
 
 □ **R‑31 · Ninguna voz canta una segunda aumentada.**
 Dos notas seguidas en la misma voz a distancia de segunda por nombre y tres semitonos. Es el

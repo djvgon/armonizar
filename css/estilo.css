@@ -689,6 +689,19 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .tabla-banco .celda-sello { width: 3.2rem; text-align: center; font-size: .95rem; white-space: nowrap; }
 .tabla-banco tr.sello-cerrado td.celda-id { color: var(--bien); }
 .tabla-banco tr.sello-roto { background: var(--mal-suave); }
+/* Lo que admite la OTRA voz del fragmento (decisión 174): al lado de los admisibles de la
+   voz que se revisa, en gris y solo de lectura. Cada voz lleva su propia lista, y por eso un
+   acorde puede valer armonizando el bajo y no armonizando la melodía. */
+.tabla-revision .otra-voz { white-space: nowrap; font-size: .9rem; color: var(--tinta-suave); }
+.otra-chip {
+  display: inline-block; padding: .05rem .38rem; margin: .1rem .12rem 0 0;
+  border: 1px solid var(--linea); border-radius: var(--radio-control);
+  background: var(--fondo); font-variant: small-caps;
+}
+.otra-cifra { font-variant: normal; font-size: .82em; margin-left: .15em; vertical-align: .15em; }
+.otra-chip.otra-modelo { border-color: var(--tinta-suave); color: var(--tinta); font-weight: 600; }
+.otra-nada { color: var(--tinta-suave); }
+
 .cola-revision {
   display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
   margin: 0 0 .6rem; padding: .5rem .7rem;

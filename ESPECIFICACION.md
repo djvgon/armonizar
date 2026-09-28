@@ -3817,12 +3817,53 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       el fragmento se queda **sin ningún aviso**: desaparecen a la vez las octavas seguidas y
       la sensible sin resolver, porque ahora el si está en la contralto y sube al do.
     - **Medido sobre los 140 fragmentos** antes de aplicarlo, con las dos voces forzadas: los
-      avisos bajan de 28 a 25 y los fragmentos con algún aviso de 24 a 20. **Ninguno empeora**
+      avisos bajan de 38 a 33 y los fragmentos con algún aviso de 24 a 20. **Ninguno empeora**
       —8as 2→1, sensible 4→3, directa 9→8, séptima 10→8, el resto igual—. Es el primer cambio
       del motor de esta tanda que mejora sin contrapartida.
     - No hace falta tocar el banco: la realización no es dato guardado, se recalcula. Las
       cifras que Diego tenía asignadas en `A3-2-01` eran correctas; lo que estaba mal era la
       realización.
+
+173. **El cambio de posición del mismo acorde, reconocido de verdad** (29/9/2026, Diego,
+    sobre `A3-4-11` y `A3-4-12`: «señalas error por movimiento directo, pero es la excepción
+    por cambio de posición del acorde»). La excepción estaba escrita en el auditor —los
+    directos no se señalan cuando el acorde no cambia— pero **no llegaba a aplicarse casi
+    nunca**: comparaba las cuatro voces CON SUS DUPLICACIONES. En `A3-4-11`, el II6 da
+    `2,5,5,9` y el II en estado fundamental `2,5,9,9`; mismo acorde, distinto multiconjunto,
+    así que el programa los tomaba por acordes distintos y señalaba la quinta directa.
+    - Ahora se compara el **conjunto** de notas, sin duplicaciones: `2,5,9` contra `2,5,9`.
+    - Vale para todo lo que colgaba de esa condición, no solo para los directos: tampoco se
+      le pide a la séptima que resuelva ni a la sensible que suba mientras la armonía no
+      cambie, que es lo correcto.
+    - **Medido**: `A3-4-11` y `A3-4-12` se quedan **sin ningún aviso**, los directos bajan de
+      8 a 6 y **no aparece ninguno nuevo**. Con el banco en 139 fragmentos, el total queda en
+      30 avisos repartidos por 17 fragmentos.
+
+174. **Cada voz tiene su propia lista de admisibles, y ahora se ve** (29/9/2026, Diego,
+    sobre `A3-5-02`: «si se armoniza la soprano sola solo se podrá armonizar ese acorde con
+    II6, pero si se armoniza el bajo solo también se podría usar el IV… ¿qué se puede
+    hacer?»).
+    - **No había nada que arreglar en el modelo de datos**: el banco guarda `bajo.respuestas`
+      y `soprano.respuestas` por separado desde siempre, y en ese mismo fragmento ya decían
+      lo que él quiere. Nota 3: el bajo admite **II6 y IV**, la melodía solo **II 5/3 y II6**.
+      Nota 4: el bajo admite **I6/4, V y V7**, la melodía solo **I6/4 y IV**. En análisis y
+      audición, donde se ven las dos voces y suena un solo acorde, la corrección exige el
+      acorde modelo exacto (`exigeAcordeExacto`), así que tampoco hay ambigüedad.
+    - Lo que faltaba era **verlo**: el configurador enseña solo la lista de la voz que se
+      revisa —la del tipo de ejercicio elegido arriba— y por eso parecía haber una sola.
+    - Nueva columna en la tabla de revisión, **«El bajo admite» / «La melodía admite»**: los
+      admisibles de la otra voz en esa misma nota, con su cifrado, el modelo destacado, en
+      gris y solo de lectura. Aparece únicamente cuando el fragmento tiene las dos voces y
+      comparten ritmo; si no, las notas no se corresponden una a una y comparar no
+      significaría nada.
+    - **Medido de paso**, sobre los 103 fragmentos con las dos voces alineadas (461 notas):
+      **303** tienen el mismo modelo en las dos voces; **116** difieren solo en el cifrado con
+      el mismo fundamental —casi todas V contra V7, el mismo acorde con la séptima o sin
+      ella—; y **42** tienen **acordes distintos**, es decir, el fragmento dice una cosa al
+      armonizar el bajo y otra al armonizar la melodía. No es necesariamente un error —son
+      dos ejercicios distintos y en cada uno falta la otra voz—, pero conviene saber si es a
+      propósito. Ejemplos: `A3-4-03` nota 4 (bajo II6 · soprano IV), `A3-6-01` nota 3 (bajo IV
+      · soprano I6/4), `A4-11-06` nota 15 (bajo V · soprano II).
 
 168. **El candado, junto a la partitura** (29/9/2026, Diego: «a veces voy repasando
     fragmento por fragmento y no quiero perder tiempo teniendo que subir a ver en la tabla si

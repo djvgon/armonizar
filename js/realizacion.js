@@ -613,9 +613,18 @@ const Realizacion = (() => {
       const antes = voces(i - 1), ahora = voces(i);
       if (!antes || !ahora) continue;
       const mismaNota = q => midi(antes[q]) === midi(ahora[q]);
-      // ¿Es un cambio de disposición del mismo acorde? (entonces los directos se admiten)
-      const clasesA = antes.map(clase).sort().join(','), clasesB = ahora.map(clase).sort().join(',');
-      const mismoAcorde = clasesA === clasesB;
+      /* ¿Es un CAMBIO DE POSICIÓN del mismo acorde? Entonces la quinta y la octava por
+         movimiento directo no se señalan, ni se le pide todavía a la séptima que resuelva
+         ni a la sensible que suba: no ha habido cambio de armonía.
+
+         Se compara el CONJUNTO de notas, no el multiconjunto (decisión 173, Diego
+         29/9/2026: «es la excepción posible por cambio de posición del acorde»). Antes se
+         comparaban las cuatro voces con sus duplicaciones —`2,5,5,9` contra `2,5,9,9`—, y
+         como al cambiar de inversión cambia casi siempre la duplicación, el mismo acorde
+         casi nunca se reconocía como el mismo y la excepción no llegaba a aplicarse nunca.
+         Es lo que pasaba en `A3-4-11` (II6 → II) y en `A3-4-12` (I → I6). */
+      const clasesDe = v => [...new Set(v.map(clase))].sort((a, b) => a - b).join(',');
+      const mismoAcorde = clasesDe(antes) === clasesDe(ahora);
       for (let q = 0; q < 4; q++) for (let r = q + 1; r < 4; r++) {
         const ia = ((midi(antes[r]) - midi(antes[q])) % 12 + 12) % 12;
         const ib = ((midi(ahora[r]) - midi(ahora[q])) % 12 + 12) % 12;

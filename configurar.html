@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20260930-1330">
-  <link rel="stylesheet" href="css/estilo.css?v=20260930-1330">
+  <link rel="stylesheet" href="css/bravura.css?v=20260930-1730">
+  <link rel="stylesheet" href="css/estilo.css?v=20260930-1730">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -448,7 +448,7 @@
           <p class="ayuda">Marca los cifrados interválicos admisibles de cada nota y elige cuál es el modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. En una <b>armonización de soprano</b> cada opción es un acorde (sonido fundamental y cifrado interválico; entre paréntesis, el bajo que resulta): el motor propone los que caben en una sucesión válida y deja sin marcar los demás acordes que contienen la nota. Cambiar la <b>función</b> de una nota vuelve a analizar la melodía con esa función fijada. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
           <div class="tabla-caja">
             <table id="tabla-revision" class="tabla-revision">
-              <thead><tr><th>#</th><th>Nota</th><th>Tonalidad <small class="th-ayuda">(despliega para modular desde esa nota)</small></th><th>Fundamental</th><th class="col-fun">Función</th><th id="th-admisibles">Cifrados admisibles (● modelo)</th><th>Regla</th></tr></thead>
+              <thead><tr><th>#</th><th>Nota</th><th>Tonalidad <small class="th-ayuda">(despliega para modular desde esa nota)</small></th><th>Fundamental</th><th class="col-fun">Función</th><th id="th-admisibles">Cifrados admisibles (● modelo)</th><th id="th-otra-voz" title="Lo que admite la otra voz del fragmento en esa misma nota. Solo de lectura: cada voz lleva su propia lista, y por eso un acorde puede valer armonizando el bajo y no armonizando la melodía.">La otra voz</th><th>Regla</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
@@ -527,19 +527,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20260930-1330</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20260930-1730</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20260930-1330"></script>
-  <script src="js/reglas.js?v=20260930-1330"></script>
-  <script src="js/ejercicios.js?v=20260930-1330"></script>
-  <script src="js/partitura.js?v=20260930-1330"></script>
-  <script src="js/musicxml.js?v=20260930-1330"></script>
-  <script src="js/musescore.js?v=20260930-1330"></script>
-  <script src="js/banco.js?v=20260930-1330"></script>
-  <script src="js/realizacion.js?v=20260930-1330"></script>
-  <script src="js/tecnicas.js?v=20260930-1330"></script>
-  <script src="js/configurador.js?v=20260930-1330"></script>
+  <script src="js/teoria.js?v=20260930-1730"></script>
+  <script src="js/reglas.js?v=20260930-1730"></script>
+  <script src="js/ejercicios.js?v=20260930-1730"></script>
+  <script src="js/partitura.js?v=20260930-1730"></script>
+  <script src="js/musicxml.js?v=20260930-1730"></script>
+  <script src="js/musescore.js?v=20260930-1730"></script>
+  <script src="js/banco.js?v=20260930-1730"></script>
+  <script src="js/realizacion.js?v=20260930-1730"></script>
+  <script src="js/tecnicas.js?v=20260930-1730"></script>
+  <script src="js/configurador.js?v=20260930-1730"></script>
 </body>
 </html>

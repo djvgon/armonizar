@@ -123,6 +123,7 @@
     $('#ayuda-octava-soprano').hidden = !sop;
     $('#btn-analizar').textContent = sop ? 'Analizar la melodía' : 'Analizar el bajo';
     $('#th-admisibles').textContent = sop ? 'Acordes admisibles (● modelo)' : 'Cifrados admisibles (● modelo)';
+    pintarColumnaOtraVoz();
     $('#repertorio-opciones').hidden = sop; $('#ayuda-repertorio').hidden = sop;
     // El panel de acordes está siempre (plegado); en la soprano se abre solo, porque allí
     // no hay otra manera de decidir el repertorio.
@@ -308,6 +309,7 @@
   }
 
   function pintarRevision() {
+    prepararOtraVoz();                 // qué admite la otra voz del fragmento (decisión 174)
     const rep = repertorio();
     const notas = Teoria.notasDeCompases(estado.compases);      // los silencios no llevan fila
     const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(notas.length) };
@@ -340,6 +342,7 @@
         + '<td>' + (esPivote ? gradoTxt(Teoria.grado(n, tonAntes)) + ' = ' + gradoTxt(gradoBajo) : gradoTxt(gradoBajo)) + '</td>'
         + '<td class="col-fun celda-fun"></td>'
         + '<td class="chips"></td>'
+        + '<td class="otra-voz">' + textoOtraVoz(i) + '</td>'
         + '<td class="explicacion">' + (prop ? '<b>' + prop.regla + '</b> · ' + prop.explicacion : '') + '</td>';
       // Columna «Función»: T · S · D; en la melodía de soprano, cambiarla vuelve a analizar con esa función fijada
       const cf = tr.querySelector('.celda-fun');
@@ -485,6 +488,7 @@
     }
     if (partes.length) { av.textContent = partes.join(' · '); av.hidden = false; }
     else av.hidden = true;
+    pintarColumnaOtraVoz();
     pintarVistaPrevia();
   }
 
@@ -571,6 +575,70 @@
     p.innerHTML = 'Este fragmento tiene las dos voces, pero <b>no comparten ritmo</b> ('
       + dos.propias + ' ataques en la que revisas y ' + dos.cuantas + ' en ' + (dos.cual === 'bajo' ? 'el bajo' : 'la melodía')
       + '), así que no caben en una sola rejilla de acordes: se muestra solo la voz del ejercicio.';
+  }
+
+  /* LO QUE ADMITE LA OTRA VOZ (decisión 174, Diego 29/9/2026, sobre `A3-5-02`: «si se
+     armoniza la soprano sola solo se podrá armonizar ese acorde con II6, pero si se armoniza
+     el bajo solo también se podría usar el IV… ¿qué se puede hacer?»).
+
+     La respuesta es que **ya está resuelto en los datos**: cada voz guarda su propia lista de
+     admisibles, así que el bajo puede admitir el IV y la soprano no. Lo que faltaba era
+     VERLO: el configurador enseña solo la lista de la voz que se está revisando —la del tipo
+     de ejercicio elegido arriba— y por eso parecía que había una sola. Esta columna pone al
+     lado, en gris y solo de lectura, lo que admite la otra voz en esa misma nota. */
+  function textoOtraVoz(i) {
+    const dos = estado.otraVoz;
+    if (!dos || !dos.respuestas || !dos.respuestas[i]) return '';
+    const adm = dos.respuestas[i];
+    if (!adm.length) return '<span class="otra-nada">—</span>';
+    // El grado y, detrás, su cifrado: sin él, «II 5/3» y «II 6» salían los dos como «II»
+    const conCifra = (rom, cifra) => rom + (cifra === '53' || !Teoria.CIFRADOS[cifra] ? ''
+      : '<span class="otra-cifra">' + Teoria.CIFRADOS[cifra].etiqueta + '</span>');
+    const pinta = (id, k) => {
+      let txt = id;
+      try {
+        if (dos.esSoprano) { const p = Ejercicios.par(id); txt = conCifra(Teoria.gradoEscrito(p.romano, p.cifra), p.cifra); }
+        else txt = conCifra(Teoria.romanoEscrito(id, dos.notas[i], dos.tonalidades[i] || tonalidad()), id);
+      } catch (e) { txt = id; }
+      return '<span class="otra-chip' + (k === 0 ? ' otra-modelo' : '') + '">' + txt + '</span>';
+    };
+    return adm.map(pinta).join(' ');
+  }
+
+  // La columna de la otra voz solo tiene sentido cuando el fragmento trae las dos (decisión 174)
+  function pintarColumnaOtraVoz() {
+    const th = $('#th-otra-voz');
+    if (!th) return;
+    const hay = !!estado.otraVoz;
+    th.hidden = !hay;
+    th.textContent = hay ? (estado.otraVoz.esSoprano ? 'La melodía admite' : 'El bajo admite') : 'La otra voz';
+    document.querySelectorAll('#tabla-revision .otra-voz').forEach(c => { c.hidden = !hay; });
+  }
+
+  /* Prepara esa lista una sola vez por repintado: la otra voz del fragmento del banco,
+     cuando existe y comparte ritmo con la que se revisa (si no, las notas no se
+     corresponden una a una y comparar no significaría nada). */
+  function prepararOtraVoz() {
+    estado.otraVoz = null;
+    const b = estado.banco;
+    if (!b || !b.entrada) return;
+    const e = b.entrada;
+    if (!e.bajo || !e.soprano) return;
+    const otra = b.voz === 'bajo' ? e.soprano : e.bajo;
+    try {
+      const propias = MusicXML.conTiempos(estado.compases);
+      const otras = MusicXML.conTiempos(otra.compases);
+      if (propias.length !== otras.length
+        || !propias.every((p, k) => Math.abs(p.tiempo - otras[k].tiempo) < 0.01)) return;
+      const esSoprano = b.voz === 'bajo';          // la OTRA voz es la soprano
+      const notas = Teoria.notasDeCompases(otra.compases);
+      let tons = [];
+      try {
+        tons = Teoria.tonalidadesPorNota({ compases: otra.compases, tonalidad: tonalidad(), modulaciones: otra.modulaciones || [] });
+      } catch (err) { tons = []; }
+      estado.otraVoz = { esSoprano, respuestas: otra.respuestas || [], notas, tonalidades: tons,
+        nombre: esSoprano ? 'la melodía' : 'el bajo' };
+    } catch (err) { estado.otraVoz = null; }
   }
 
   function pintarVistaPrevia() {

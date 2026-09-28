@@ -11,7 +11,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-1330.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20260930-1730.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Archivos tocados: las ocho páginas
   HTML (marca de versión; `index.html`, `configurar.html` y `cifrados.html` además por el
   vocabulario), `css/estilo.css`, y `js/app.js`, `js/banco.js`, `js/configurador.js`,
@@ -38,12 +38,46 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   banco pasa a **139 fragmentos**; A3-2 se queda con 12. No se renumera nada: los
   identificadores son direcciones y renumerarlos rompería los enlaces ya repartidos.
   **Falta quitarlo también en su navegador**, con «Quitar» en la tabla.
-- **Cuatro sensibles sin resolver** que el auditor nuevo destapa en las realizaciones
-  modelo: `A3-2-01` (acorde 6), `A4-11-01` (13) y `A4-11-06` (7 y 16). Dos de ellas se ven
-  también en la pantalla del alumno. No son faltas nuevas: son faltas que nadie decía.
+- **42 notas en las que los modelos de las dos voces son acordes distintos** (de 461
+  comparadas en los 103 fragmentos con las dos voces alineadas; otras 116 difieren solo en
+  V contra V7 y 303 coinciden del todo). No es forzosamente un error —son dos ejercicios
+  distintos—, pero conviene revisarlas cuando haya tiempo. La columna nueva las enseña
+  fragmento a fragmento.
+- **Quedan 17 fragmentos con algún aviso de conducción** (30 avisos en total, banco de 139):
+  `A3-4-03`, `A3-4-08`, `A3-4-13`, `A3-5-14`, `A3-6-05`, `A3-6-08`, `A3-6-09`, `A3-6-10`,
+  `A3-7-06`, `A3-7-11`, `A3-7-13`, `A4-11-01`, `A4-11-03`, `A4-11-04`, `A4-11-05`,
+  `A4-11-06` y `A4-11-08`. Tres sensibles sin resolver (`A4-11-01` y `A4-11-06` ×2) siguen
+  siendo faltas de verdad que hasta ahora nadie decía.
 - **`REGLAS-DEL-MOTOR.md`**: el borrador de las 57 reglas que el motor aplica hoy, escritas
   en lenguaje de armonía, para que Diego las marque (✓ / ✗ / ~ / fuera). Cuando esté
   corregido, cada regla del código citará su número.
+- **Pendiente, acordado con Diego el 29/9 pero APLAZADO por la tesis: una sola lista de
+  acordes por nota.** Hoy el banco guarda dos listas por fragmento —`bajo.respuestas` y
+  `soprano.respuestas`— y el desplegable de tipo de ejercicio del configurador decide cuál se
+  edita. La idea es marcar **una vez** todos los acordes admisibles en ese momento de la
+  música y que el programa derive las tres vistas con dos filtros que ya existen:
+  · **qué voces se ven** — armonización de bajo: los acordes cuyo bajo es la nota escrita;
+    armonización de soprano: los que contienen la nota de la melodía; análisis y audición: la
+    intersección, que normalmente es uno;
+  · **el repertorio de la lección** — `leccionAcordes`, que ya viaja con cada fragmento.
+  Ventaja añadida que pidió Diego: **filtrar por lección al servir, no al marcar**. Hoy la
+  lista guardada ya viene filtrada por la lección que tenía el fragmento al marcarlo, así que
+  el mismo fragmento no se puede reutilizar en una lección más amplia sin volver a marcarlo;
+  con la lista única sí. Lo que se pierde: poder admitir un acorde para el ejercicio de bajo y
+  no para el de soprano por un motivo pedagógico y no de notas.
+- **Pendiente: corregir por función** (Diego, 29/9). El I6/4 y el V son la misma función con
+  notas distintas, y ahí la respuesta del alumno no es una decisión armónica sino de qué notas
+  escribe. Opción de ficha: dar por buena cualquier respuesta cuya función sea la correcta,
+  frente a exigir el acorde exacto. Tiene sentido en las lecciones donde se trabaja la
+  sintaxis funcional, no en las que trabajan el 6/4 cadencial.
+- **La disyuntiva de fondo, planteada por Diego el 29/9**: «¿quiero una máquina que razone
+  sintaxis armónica o un aparato que revise las elecciones de acordes de los alumnos?». La
+  respuesta que le di: no son opuestos, y la aplicación ya es el segundo con una capa fina del
+  primero. Lo que el motor tiene que seguir razonando es lo que no se puede enumerar de
+  antemano —escribir las cuatro voces, juzgar la conducción de la realización concreta del
+  alumno y nombrar la técnica—. Lo que NO tiene que decidir es qué acordes caben: eso es de
+  Diego, y el sello lo garantiza. Decisión aplazada, sin prisa.
+
 - **Queda decidido cómo tratar la variedad de armonizaciones** de un mismo fragmento a dos
   voces (Diego, 29/9): lo que cambia el fragmento entero —sol menor o si♭ mayor, modular o
   no— pide **varias lecturas** del mismo fragmento, no copias; la variedad dentro de una
@@ -516,6 +550,8 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20260930-1730 | Cada voz tiene su propia lista de admisibles —ya la tenía— y ahora se ve: columna «El bajo admite» / «La melodía admite» en la tabla de revisión (174) |
+| 20260930-1530 | El cambio de posición del mismo acorde, reconocido de verdad: se comparaba con las duplicaciones y por eso la excepción de los movimientos directos no se aplicaba nunca. `A3-4-11` y `A3-4-12` se quedan sin avisos (173) |
 | 20260930-1330 | El unísono entre el bajo y el tenor, admitido: la disposición que faltaba. `A3-2-01` queda sin ningún aviso y el banco entero baja de 28 avisos a 25, sin que ninguno empeore (172) |
 | 20260930-1130 | La sensible sube a la tónica salvo que el acorde se quede sin quinta: el auditor pasa a avisar también en tenor y contralto, y el motor no se toca porque subirle el peso cambia una falta por dos peores (171). `A3-1-28`: la primera nota de la melodía, corregida a do |
 | 20260930-0930 | Lo que da el ejercicio, en color; lo que sale de lo que escribe el alumno, en negro —el circulito del grado, del color de su voz—; análisis y audición, en negro entero (169). El candado, solo cuando está cerrado (170) |
