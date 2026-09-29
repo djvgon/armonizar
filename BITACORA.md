@@ -575,6 +575,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261001-2030 | El recorrido del cursor con modulación: el tono de partida se pide el primero —y ya se puede marcar— y en el pivote las dos lecturas van seguidas, con el cifrado al final (197) |
 | 20261001-1830 | En el móvil: la partitura un 10 % menor, y «Sonar al elegir» y «Cuadro de cifrados» fuera del teclado flotante, que queda solo para las teclas (196) |
 | 20261001-1605 | El porcentaje de armadura ajena, en casilla de cifra con flechas en vez de un desplegable de 101 opciones (195, afinada) |
 | 20261001-1520 | El porcentaje de fragmentos con armadura ajena lo elige el profesor, de 0 a 100 %, con cupo exacto y determinista (195) |

@@ -120,20 +120,23 @@
     });
     estado.bajos = new Array(n).fill(null);
     estado.bajosMal = null;
-    estado.activa = 0;
-    estado.campo = estado.modoFun === 'pedir' ? 'funcion' : estado.pedirRomano ? 'romano' : 'cifra';
     estado.corregido = false;
     estado.resultados = null;
     estado.resultadoMod = null;
     estado.intento = 0;
     estado.primerIntento = null;
-    estado.acertadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false, funcion2: false }));
+    estado.acertadas = Array.from({ length: n }, () => ({ cifra: false, romano: false, romano2: false, funcion: false, funcion2: false, tonalidad: false }));
     // Modulación: en modo 'completo' las marcas vienen dadas; en 'existe' las pone el alumno
     estado.modoTon = Ejercicios.tonalidades(ej);
     /* Sin fila y con modulación, el fragmento se cifra igualmente en sus tonalidades
        verdaderas: simplemente no se le dicen al alumno (modulación sin anunciar). */
     estado.marcas = estado.modoTon === 'pedir' ? {} : marcasModelo();
     estado.tonalidadBloqueada = estado.modoTon !== 'pedir';
+    /* La primera casilla, la que dicte el ORDEN de la nota 0 (decisión 197): con las
+       tonalidades por pedir es la del tono de partida, y si no, la función o el grado.
+       Va DESPUÉS de fijar `modoTon` y `marcas`, que son de lo que depende. */
+    estado.activa = 0;
+    estado.campo = campoInicial(0);
     estado.mostrarSolucion = false;
     estado.avisosRespuesta = [];
     estado.notasAviso = null;
@@ -625,7 +628,10 @@
        tonalidad nueva. Se salta a la primera casilla de ESTA nota que quede por rellenar,
        en el orden en que se rellenan, para no pasar al acorde siguiente con el pivote a
        medias (Diego, 25/9). Antes solo se miraba el grado, así que con las funciones
-       pedidas la segunda función se quedaba sin visitar. */
+       pedidas la segunda función se quedaba sin visitar.
+       Con el orden de la 197 —las dos lecturas seguidas y el cifrado al final— esto vale
+       igual se marque el tono antes o después de cifrar el acorde: si se marcó antes, se
+       sigue por la función de partida; si se marcó después, por la del tono nuevo. */
     const pendiente = camposDe(i).find(c => !acertada(i, c) && !valorDe(i, c));
     if (pendiente) estado.campo = pendiente;
     pintar();
@@ -1129,17 +1135,30 @@
      de estar a la vista para que las dos lecturas signifiquen algo (decisión 95). */
   const esDobleFun = i => hayFilaTonalidad() && marcaPivote(i) && !!estado.modoFun;       // la nota 0 incluida (188 y 194)
   /* EL ORDEN EN QUE SE RELLENA UNA NOTA (Diego, 28/9/2026): función → fundamental →
-     cifrado, y a la nota siguiente. En el acorde PIVOTE de una modulación diatónica, primero
-     los datos del acorde en la tonalidad de partida —función, fundamental y cifrado— y luego
-     los de la tonalidad nueva: su función y su fundamental (el cifrado es el mismo acorde y
-     no se repite). */
+     cifrado, y a la nota siguiente.
+
+     DOS CAMBIOS DE LA DECISIÓN 197 (Diego, 29/9/2026: «resulta confuso al llegar al punto
+     del acorde pivote… hemos de clarificar los movimientos automáticos del cursor»):
+
+     · En la NOTA 0, cuando las tonalidades se piden, lo primero es la casilla del tono de
+       PARTIDA: en qué tono empieza el fragmento (decisión 194). Antes no entraba en el
+       recorrido —ni se dejaba pulsar—, y la corrección la exigía igualmente: «Tonalidad de
+       partida: sin marcar» en un ejercicio que no había manera de contestar. En las demás
+       notas la fila «Tonalidad» sigue fuera del recorrido: el cambio de tono se marca
+       cuando se oye, pulsando la casilla, no acorde por acorde.
+
+     · En el acorde PIVOTE, las DOS LECTURAS van seguidas y el cifrado cierra la nota:
+       función y fundamental en el tono de partida, función y fundamental en el nuevo, y
+       después el cifrado, que es uno solo porque el acorde es el mismo. Antes el cifrado se
+       colaba entre las dos lecturas y partía en dos el mismo razonamiento. */
   const camposDe = j => {
     const orden = [];
+    if (j === 0 && tonalidadEditable()) orden.push('tonalidad');
     if (conFuncion()) orden.push('funcion');
     if (pideGrado()) orden.push('romano');
-    orden.push('cifra');
     if (conFuncion() && esDobleFun(j)) orden.push('funcion2');
     if (pideGrado() && esDoble(j)) orden.push('romano2');
+    orden.push('cifra');
     return orden;
   };
   /* Las mismas casillas en su orden VISUAL, de arriba abajo, para las flechas ↑ ↓:
@@ -1151,8 +1170,10 @@
     if (conFuncion()) { out.push('funcion'); if (esDobleFun(j)) out.push('funcion2'); }
     return out;
   };
-  const campoInicial = () => (conFuncion() ? 'funcion' : pideGrado() ? 'romano' : 'cifra');
-  const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : campo === 'funcion2' ? estado.funciones2[j] : campo === 'funcion' ? estado.funciones[j] : estado.romanos[j]);
+  /* La primera casilla de una nota es, sencillamente, la primera de su orden: así el tono
+     de partida de la nota 0 no hay que repetirlo aquí (decisión 197). */
+  const campoInicial = j => camposDe(typeof j === 'number' ? j : estado.activa)[0];
+  const valorDe = (j, campo) => (campo === 'cifra' ? estado.respuestas[j] : campo === 'romano2' ? estado.romanos2[j] : campo === 'funcion2' ? estado.funciones2[j] : campo === 'funcion' ? estado.funciones[j] : campo === 'tonalidad' ? estado.marcas[j] : estado.romanos[j]);
 
   /* ---- Reabrir el ejercicio sin pulsar nada (Diego, 27/9/2026) ----
      Después de corregir, el verde y el rojo son INFORMACIÓN, no una puerta cerrada: en
@@ -1171,10 +1192,12 @@
 
   function seleccionar(i, campo) {
     if (!reabrir()) return;
-    campo = campo || campoInicial();
-    if (campo === 'tonalidad') { if (!tonalidadEditable() || i === 0) return; }
+    campo = campo || campoInicial(i);
+    /* La casilla de tonalidad de la NOTA 0 también se pulsa (decisión 197): ahí se dice en
+       qué tono empieza el fragmento, y hasta ahora el clic no hacía nada. */
+    if (campo === 'tonalidad') { if (!tonalidadEditable()) return; }
     else if ((campo === 'funcion' || campo === 'funcion2') && !conFuncion()) return;
-    else if (!camposDe(i).includes(campo)) campo = campoInicial();
+    else if (!camposDe(i).includes(campo)) campo = campoInicial(i);
     // (Antes, si la casilla estaba acertada se saltaba a otra; ahora se entra en todas.)
     estado.activa = i;
     estado.campo = campo;
@@ -1732,6 +1755,11 @@
       if (estado.modoFun !== 'pedir' || r.okFuncion) estado.acertadas[i].funcion = true;
       if (estado.modoFun !== 'pedir' || !esDobleFun(i) || r.okFuncion2) estado.acertadas[i].funcion2 = true;
     });
+    /* El TONO DE PARTIDA, acertado o no (decisión 197): ahora que la casilla 0 entra en el
+       recorrido, si no se diera por buena el cursor volvería a ella una y otra vez en cada
+       reintento, aunque estuviera bien puesta. */
+    estado.acertadas[0].tonalidad = !estado.resultadoMod || !estado.resultadoMod.partida
+      || estado.resultadoMod.partida.bien;
     /* La tonalidad acertada tampoco se bloquea (decisión 126): mover el pivote puede ser
        justo la salida cuando los acordes de alrededor no cuadran. */
     if (estado.resultadoMod && !estado.resultadoMod.ok) {
@@ -1746,7 +1774,7 @@
     estado.corregido = false;
     estado.resultados = null;
     // Primera casilla editable
-    estado.activa = 0; estado.campo = campoInicial();
+    estado.activa = 0; estado.campo = campoInicial(0);
     busqueda: for (let j = 0; j < estado.respuestas.length; j++)
       for (const c of camposDe(j)) if (!acertada(j, c)) { estado.activa = j; estado.campo = c; break busqueda; }
     $('#resultado').hidden = true;
@@ -2209,10 +2237,11 @@
     if (estado.corregido || ev.ctrlKey || ev.metaKey || ev.altKey) return;
     const n = estado.respuestas.length;
     // Filas de casillas de la nota activa, de arriba abajo (la de tonalidad solo si se edita)
-    const filas = camposVisuales(estado.activa).concat(tonalidadEditable() && estado.activa > 0 ? ['tonalidad'] : []);
+    // La nota 0 también llega a su casilla de tonalidad con las flechas (decisión 197)
+    const filas = camposVisuales(estado.activa).concat(tonalidadEditable() ? ['tonalidad'] : []);
     const pos = Math.max(0, filas.indexOf(estado.campo));
-    if (ev.key === 'ArrowRight') { estado.activa = (estado.activa + 1) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = campoInicial(); pintar(); }
-    else if (ev.key === 'ArrowLeft') { estado.activa = (estado.activa - 1 + n) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = campoInicial(); pintar(); }
+    if (ev.key === 'ArrowRight') { estado.activa = (estado.activa + 1) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = campoInicial(estado.activa); pintar(); }
+    else if (ev.key === 'ArrowLeft') { estado.activa = (estado.activa - 1 + n) % n; if (!camposDe(estado.activa).concat(['tonalidad']).includes(estado.campo)) estado.campo = campoInicial(estado.activa); pintar(); }
     else if (ev.key === 'ArrowDown') { if (pos < filas.length - 1) { estado.campo = filas[pos + 1]; pintar(); } }
     else if (ev.key === 'ArrowUp') { if (pos > 0) { estado.campo = filas[pos - 1]; pintar(); } }
     else if (/^[0-9]$/.test(ev.key)) {

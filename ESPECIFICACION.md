@@ -3880,6 +3880,40 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+197. **El recorrido del cursor en un fragmento que modula** (29/9/2026, Diego: «resulta
+    confuso al llegar al punto del acorde pivote… hemos de clarificar los movimientos
+    automáticos del cursor en este momento y facilitar la entrada al estudiante»).
+    - **Cómo estaba.** El recorrido era *función → fundamental → cifrado* y a la nota
+      siguiente, y la fila **«Tonalidad» no entraba en él nunca**: en un fragmento de quince
+      notas el cursor pasaba por las quince sin detenerse ni una vez en ella. Solo se llegaba
+      pulsando la casilla, o con la flecha ↓, y únicamente de la nota 2 en adelante.
+    - **Un fallo que venía de la 194: el tono de PARTIDA no se podía marcar.** La casilla 0
+      se dibujaba pulsable, pero `seleccionar()` conservaba un candado `i === 0` anterior a
+      aquella decisión y el clic no hacía nada; las flechas tampoco llegaban. La corrección,
+      en cambio, sí lo exigía: **«Tonalidad de partida: sin marcar»**, medido. El alumno
+      perdía ese punto sin manera de contestarlo.
+    - **Ahora, en la NOTA 0 lo primero que se pide es el tono de partida**, cuando las
+      tonalidades se piden: *tonalidad → función → fundamental → cifrado*. En las demás notas
+      la fila «Tonalidad» sigue **fuera** del recorrido automático (Diego, 29/9, eligiendo
+      entre cuatro opciones): el cambio de tono se marca cuando se oye, no acorde por acorde,
+      que sería una pulsación de más en cada nota de un fragmento que casi nunca modula.
+    - **En el acorde PIVOTE, las dos lecturas van seguidas y el cifrado cierra la nota**:
+      *función y fundamental en el tono de partida → función y fundamental en el tono nuevo →
+      cifrado*. Antes el cifrado se colaba entre las dos lecturas y partía en dos el mismo
+      razonamiento. El cifrado es uno solo porque el acorde es el mismo. Matiza el orden de
+      la 95, que ponía el cifrado en medio.
+    - Funciona igual **se marque el tono antes o después** de cifrar el acorde: marcándolo
+      antes, el recorrido sale seguido; marcándolo después —que es lo natural, porque el
+      cambio se reconoce al oírlo— el cursor va a la primera casilla de ESA nota que quede
+      por rellenar, que es ya la función del tono nuevo. Comprobados los dos caminos.
+    - Detalles del arreglo: `camposDe(j)` incluye `tonalidad` en la nota 0 y pone `cifra` al
+      final; `campoInicial(j)` es sencillamente la primera casilla del orden de esa nota;
+      `valorDe` sabía leer todas las casillas menos la de tonalidad; y el tono de partida
+      bien marcado se da por acertado al reabrir, o el cursor volvería a él en cada intento.
+    - Comprobado que **no cambia nada** donde no debe: con las tonalidades dadas, sin fila de
+      tonalidad, sin funciones y en un ejercicio suelto del corpus, el recorrido es el de
+      siempre.
+
 196. **En el móvil, el teclado flotante es solo para las teclas** (29/9/2026, Diego: «en la
     interfaz de móvil, reduce el tamaño de la partitura en un 10 % para que quepa mejor en
     la pantalla más pequeña… saca del espacio flotante de los selectores de cifrado la
