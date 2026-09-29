@@ -3880,6 +3880,33 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+185. **La armadura puede no ser la del fragmento** (29/9/2026, Diego: «que la tonalidad del
+    fragmento no coincida con la armadura. Esto se da cuando, en medio de una composición, la
+    música ha modulado a un tono distinto del que aparece en la armadura de la composición»).
+    Es lo que le pasa a cualquier fragmento sacado del centro de una obra: el pasaje está en
+    un tono y la armadura escrita es la de la obra. El fragmento **no cambia** —sigue en su
+    tonalidad y puede modular dentro—; lo que cambia es la armadura con la que se presenta y,
+    con ella, las alteraciones que hay que escribir: un fragmento en Do M con armadura de Sol
+    M lleva **becuadro en cada fa**.
+    - **Opción de la ficha, no del fragmento** (como él pidió), porque depende del curso.
+      Tope de diferencia, en más o en menos, en el desplegable «Armadura distinta de la
+      tonalidad»: **±1** (2.º de Armonía) · **±2** (1.º de Análisis/Fundamentos) · **±3**
+      (2.º de Análisis/Fundamentos).
+    - Le toca a **uno de cada cuatro como mucho**, y la elección es **determinista**: sale de
+      la semilla de la ficha, del id del fragmento y de su posición, así que el mismo enlace
+      da siempre lo mismo y una ficha a medias se reanuda igual. Medido sobre el banco con
+      cinco semillas: 21,8 % de los servidos, ninguno fuera del tope ni con diferencia 0.
+    - Se decide **después de transportar**, sobre el tono en el que el fragmento se presenta
+      de verdad, y se descarta la armadura que pasaría de siete alteraciones.
+    - Implementación: `ej.armadura = {tonica, modo}`, que solo usa `partitura.js` para elegir
+      qué armadura dibuja y contra qué escala compara cada nota. Todo lo demás —grados,
+      fundamentales, cifrados, corrección, sonido— sigue con `ej.tonalidad`. Al alumno no se
+      le avisa: deducir el tono de verdad es el ejercicio.
+    - Queda una cuestión de grafía por decidir: hoy la alteración se escribe en **todas** las
+      notas que difieren de la armadura, también en la segunda de un mismo compás, donde en
+      rigor ya no hace falta. No es incorrecto —es una alteración de cortesía— pero se puede
+      hacer memoria de compás si Diego lo prefiere.
+
 184. **La tonalidad de partida se puede cambiar aunque haya modulación** (29/9/2026,
     Diego: «en el editor de fragmentos, si incluye modulación, se ha de poder especificar la
     tonalidad en la que comienza el fragmento, aunque ese primer acorde sirva de pivote para

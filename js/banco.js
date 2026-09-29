@@ -547,6 +547,40 @@ const Banco = (() => {
      pide a un reparto. La semilla, que viaja en el enlace, decide por dónde empieza la
      vuelta; la posición la pone la ficha. Antes salía de un revoltijo del id del
      fragmento y, con 7 tónicas y 8 ejercicios, repetía con más frecuencia de la cuenta. */
+  /* ---------- ARMADURA AJENA (decisión 185) ----------
+     Diego, 29/9/2026: «que la tonalidad del fragmento no coincida con la armadura. Esto se
+     da cuando, en medio de una composición, la música ha modulado a un tono distinto del que
+     aparece en la armadura». El fragmento no cambia: sigue en su tono —y puede modular
+     dentro—; lo que cambia es la ARMADURA con que se presenta, y con ella las alteraciones
+     que hay que escribir (un fragmento en Do M con armadura de Sol M lleva becuadro en cada
+     fa). Es opción de la FICHA, no del fragmento, porque depende del curso:
+
+       · 2.º de Armonía                  hasta 1 alteración de diferencia, en más o en menos
+       · 1.º de Análisis/Fundamentos     hasta 2
+       · 2.º de Análisis/Fundamentos     hasta 3
+
+     Le toca a UNO DE CADA CUATRO como mucho, y la elección es determinista —sale de la
+     semilla de la ficha, del id del fragmento y de su posición—, de modo que el mismo enlace
+     da siempre lo mismo y una ficha a medias se reanuda igual. Se calcula DESPUÉS de
+     transportar, sobre el tono en el que el fragmento se va a presentar de verdad. */
+  function armaduraAjena(e, filtro, k) {
+    const f = filtro || {};
+    const max = Math.max(0, Math.min(3, parseInt(f.armaduraAjena, 10) || 0));
+    if (!max || !e || !e.tonalidad) return null;
+    const dado = revoltijo(String(f.semilla || '') + '|' + (e.id || '') + '|' + (k || 0));
+    if (dado % 4 !== 0) return null;                       // hasta un 25 %
+    let n;
+    try { n = Teoria.armadura(e.tonalidad); } catch (err) { return null; }
+    const opciones = [];
+    for (let d = -max; d <= max; d++) {
+      if (!d || Math.abs(n + d) > 7) continue;
+      const t = Teoria.tonalidadPorArmadura(n + d, e.tonalidad.modo);
+      if (t) opciones.push(t);
+    }
+    if (!opciones.length) return null;
+    return opciones[Math.floor(dado / 4) % opciones.length];
+  }
+
   function tonicaEn(filtro, modo, k) {
     const lista = tonicasDeFicha(filtro, modo);
     if (!lista.length) return null;
@@ -612,6 +646,9 @@ const Banco = (() => {
     if (['dadas', 'pedir', 'no'].includes(f.tonalidades)) ej.tonalidades = f.tonalidades;
     if (parte.modulaciones && parte.modulaciones.length) ej.modulaciones = parte.modulaciones;
     if (parte.melodica && parte.melodica.length) ej.melodica = parte.melodica.slice();   // 6.º grado elevado (179)
+    // La armadura con que se presenta puede no ser la del fragmento (decisión 185)
+    const arm = armaduraAjena(e, f, k);
+    if (arm) ej.armadura = arm;
     return ej;
   }
 

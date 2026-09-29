@@ -11,15 +11,15 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-0330.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-0440.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la
   melodía de soprano, los acordes que contienen la nota salen siempre, marcados o no— y la
   **177, que deroga la 167** —cada ejercicio enseña su voz y el motor deduce las demás— y la
   **178** —cambiar la función de una nota ya no rehace el fragmento entero— y la **179**:
   el 6.º grado elevado, marcado nota a nota, y la **180**: las reglas de duplicación avisan en
   vez de esconder acordes, la **181** —la lección, junto al título del revisor—, la **182** —al alumno, solo
-  fragmentos cerrados— la **183** —el primer acorde puede ser pivote— y la **184**: la tonalidad de partida se
-  puede cambiar con una modulación puesta. Toca además
+  fragmentos cerrados— la **183** —el primer acorde puede ser pivote— la **184** —la tonalidad de partida se puede cambiar con una modulación puesta— y la
+  **185**: la armadura puede no ser la del fragmento. Toca además `js/partitura.js` y
   `js/app.js`, `js/ejercicios.js` y `REGLAS-DEL-MOTOR.md`. Toca además `js/teoria.js`, `js/reglas.js`, `js/banco.js` y
   `css/estilo.css`.
   Archivos tocados en esta entrega: `js/configurador.js`, `js/reglas.js` y las ocho páginas
@@ -573,6 +573,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261001-0440 | La armadura puede no ser la del fragmento, como en medio de una obra que ha modulado: opción de la ficha con tope de ±1, ±2 o ±3 alteraciones según el curso, a uno de cada cuatro fragmentos como mucho y de forma determinista (185) |
 | 20261001-0330 | La tonalidad de partida se puede cambiar con una modulación puesta: antes las borraba todas y reanalizaba el fragmento. Y en la primera nota hecha pivote se ve el tono de partida junto al de llegada (184) |
 | 20261001-0235 | Al alumno solo se le sirven fragmentos CERRADOS, y se fuerza en el sorteo, así que vale para los enlaces ya repartidos (182). El primer acorde puede ser pivote de una modulación, con la tonalidad del fragmento como «antes» (183) |
 | 20261001-0140 | La lección, junto al título del revisor: código y nombre en morado delante de la chapa del candado, con la lista de acordes de la lección en el globo (181) |

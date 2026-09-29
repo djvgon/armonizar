@@ -1467,3 +1467,9 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
   color: var(--tinta-suave, #5a5566); cursor: help;
 }
 .ton-partida::after { content: ' →'; opacity: .6; }
+
+/* Pie explicativo de un campo del configurador (decisión 185) */
+.ayuda-campo {
+  display: block; margin-top: .25rem; font-size: .78rem; line-height: 1.35;
+  color: var(--tinta-suave, #5a5566); font-weight: 400; max-width: 46ch;
+}

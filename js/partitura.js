@@ -185,7 +185,15 @@ const Partitura = (() => {
     // Medidas horizontales (en unidades del viewBox)
     const MARGEN = 1.5 * SP;
     const ANCHO_CLAVE = 4.2 * SP;
-    const nArm = Teoria.armadura(ton);
+    /* LA ARMADURA PUEDE NO SER LA DEL FRAGMENTO (decisión 185, Diego 29/9/2026). En medio
+       de una composición la música ha modulado, así que el fragmento está en un tono y la
+       armadura escrita es la del tono de la obra. `ej.armadura` dice cuál se DIBUJA; el
+       fragmento sigue estando en `ej.tonalidad`, y las notas se escriben igual. Lo único
+       que cambia es qué alteraciones hace falta escribir delante de las notas: un fragmento
+       en Do M con armadura de Sol M llevará becuadro en cada fa. Eso sale solo, porque el
+       dibujo de alteraciones compara cada nota con la escala de la armadura. */
+    const tonArm = (ej.armadura && ej.armadura.tonica) ? ej.armadura : ton;
+    const nArm = Teoria.armadura(tonArm);
     const ANCHO_ARM = Math.abs(nArm) * 1.1 * SP + (nArm ? 0.6 * SP : 0);
     const ANCHO_COMPAS = 3.2 * SP;
     const HUECO_BLANCA = 7.5 * SP, HUECO_REDONDA = 9.5 * SP, HUECO_NEGRA = 6 * SP, RELLENO_COMPAS = 1.6 * SP;
@@ -490,7 +498,7 @@ const Partitura = (() => {
     });
 
     // Alteración necesaria según la armadura: solo se dibuja si la nota difiere de ella
-    const escalaArm = Teoria.escalaNatural(ton);
+    const escalaArm = Teoria.escalaNatural(tonArm);
     const altArmadura = letra => { const e = escalaArm.find(x => x.letra === letra); return e ? e.alt : 0; };
     /* Cinco alteraciones, no tres (decisión 114): el doble sostenido y el doble bemol hacen falta
        en cuanto se transporta a sol♯, re♯ o la♯ menor —donde la sensible es fa𝄪, do𝄪 o sol𝄪— y a las

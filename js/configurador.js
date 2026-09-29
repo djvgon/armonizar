@@ -1105,7 +1105,8 @@
         fichaTonalidades: $('#ficha-tonalidades').value,
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
-          '#ficha-modula', '#ficha-n', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
+          '#ficha-modula', '#ficha-n', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
+          '#ficha-armadura'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
         funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
@@ -1528,6 +1529,11 @@
     if (fun === 'dadas' || fun === 'pedir') f.funciones = fun;
     const tons = $('#ficha-tonalidades').value;
     if (['dadas', 'pedir', 'no'].includes(tons)) f.tonalidades = tons;
+    /* Armadura distinta de la tonalidad del fragmento (decisión 185): hasta 1, 2 o 3
+       alteraciones de diferencia según el curso. Necesita semilla, como el transporte, para
+       que el mismo enlace dé siempre los mismos fragmentos con armadura ajena. */
+    const arm = parseInt($('#ficha-armadura').value, 10) || 0;
+    if (arm > 0) f.armaduraAjena = arm;
     /* El transporte (decisión 102). Con un curso elegido viaja el TOPE, que es más corto
        en el enlace y se adapta al modo de cada fragmento; «a medida» manda la lista. La
        semilla va también: es lo que hace que el mismo enlace dé siempre los mismos tonos
@@ -1535,7 +1541,7 @@
     const curso = $('#ficha-curso').value;
     if (curso === 'x') { const t = tonosMarcados(); if (t.length) f.tonos = t; }
     else if (curso) f.maxAlt = parseInt(curso, 10);
-    if (f.tonos || typeof f.maxAlt === 'number') f.semilla = estado.semillaFicha || (estado.semillaFicha = Math.random().toString(36).slice(2, 7));
+    if (f.tonos || typeof f.maxAlt === 'number' || f.armaduraAjena) f.semilla = estado.semillaFicha || (estado.semillaFicha = Math.random().toString(36).slice(2, 7));
     // Las demás siguen viniendo del paso 3
     const op = opciones();
     if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
@@ -2516,7 +2522,8 @@
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n',
      '#ficha-compases-min', '#ficha-compases-max',
-     '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades'].forEach(id => {
+     '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades',
+     '#ficha-armadura'].forEach(id => {
       $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador(); });
     });
     // El título de la ficha no filtra nada, pero sí conviene no perderlo al recargar

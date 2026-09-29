@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261001-0330">
-  <link rel="stylesheet" href="css/estilo.css?v=20261001-0330">
+  <link rel="stylesheet" href="css/bravura.css?v=20261001-0440">
+  <link rel="stylesheet" href="css/estilo.css?v=20261001-0440">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -196,6 +196,16 @@
               <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
               <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
             </select>
+          </label>
+          <label class="campo">
+            <span>Armadura distinta de la tonalidad</span>
+            <select id="ficha-armadura">
+              <option value="0" selected>No: la armadura es la del fragmento</option>
+              <option value="1">Hasta 1 alteración de diferencia (2.º de Armonía)</option>
+              <option value="2">Hasta 2 (1.º de Análisis / Fundamentos)</option>
+              <option value="3">Hasta 3 (2.º de Análisis / Fundamentos)</option>
+            </select>
+            <small class="ayuda-campo">Como en medio de una obra que ha modulado: el fragmento sigue en su tono, pero se presenta con otra armadura y las alteraciones que hagan falta (un fragmento en Do M con armadura de Sol M lleva becuadro en cada fa). Le toca a uno de cada cuatro como mucho, y el alumno ha de deducir el tono de verdad.</small>
           </label>
           <label class="campo">
             <span>Grados de la escala del bajo</span>
@@ -540,19 +550,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261001-0330</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261001-0440</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261001-0330"></script>
-  <script src="js/reglas.js?v=20261001-0330"></script>
-  <script src="js/ejercicios.js?v=20261001-0330"></script>
-  <script src="js/partitura.js?v=20261001-0330"></script>
-  <script src="js/musicxml.js?v=20261001-0330"></script>
-  <script src="js/musescore.js?v=20261001-0330"></script>
-  <script src="js/banco.js?v=20261001-0330"></script>
-  <script src="js/realizacion.js?v=20261001-0330"></script>
-  <script src="js/tecnicas.js?v=20261001-0330"></script>
-  <script src="js/configurador.js?v=20261001-0330"></script>
+  <script src="js/teoria.js?v=20261001-0440"></script>
+  <script src="js/reglas.js?v=20261001-0440"></script>
+  <script src="js/ejercicios.js?v=20261001-0440"></script>
+  <script src="js/partitura.js?v=20261001-0440"></script>
+  <script src="js/musicxml.js?v=20261001-0440"></script>
+  <script src="js/musescore.js?v=20261001-0440"></script>
+  <script src="js/banco.js?v=20261001-0440"></script>
+  <script src="js/realizacion.js?v=20261001-0440"></script>
+  <script src="js/tecnicas.js?v=20261001-0440"></script>
+  <script src="js/configurador.js?v=20261001-0440"></script>
 </body>
 </html>
