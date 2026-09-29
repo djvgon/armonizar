@@ -3884,8 +3884,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     poder especificar el porcentaje de fragmentos que cumplirán la condición… entre 0 y 100 %
     y cualquier porcentaje sin decimales»). La 190 sorteaba el cupo dentro de una banda fija
     del 25 al 75 %; ahora el número lo dice él.
-    - Desplegable **«… en cuántos de la ficha»**, al lado del de la tolerancia, con los 101
-      valores de 0 a 100 %. Con 0 % no le toca a ninguno; con 100 %, a todos.
+    - Casilla de cifra con flechas de subir y bajar **«… en qué % de la ficha»**, al lado
+      del desplegable de la tolerancia y hecha como las de los compases (Diego, 29/9: un
+      desplegable de 101 opciones era incómodo). De 0 a 100, sin decimales. Con 0 % no le
+      toca a ninguno; con 100 %, a todos.
     - El cupo es **exacto**: `redondeo(n · %)` de los `n` ejercicios de la ficha, y **cuáles**
       sale de la semilla, así que el mismo enlace da siempre los mismos. Comprobado con
       cuatro semillas y nueve porcentajes: clavado en todos, y también en fichas de 1, 2, 3,
