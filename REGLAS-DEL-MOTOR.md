@@ -329,6 +329,16 @@ En modo menor: IV6 – V (versión corta) o I – V6 – IV6 – V (versión lar
 6.º grado al 5.º por semitono. El modo lo decide la tonalidad de la cadencia, no la del final
 del fragmento.
 
+□ **R‑53b · La cadencia disimulada es prolongación de la tónica.** Varios acordes que
+hacen **S – D – T** (o **D – T**) llegando a la tónica **sin el salto de quinta en el bajo**
+—porque la dominante va invertida y el bajo sube por grados, 6 – 7 – 1 de la regla de la
+octava— no cierran: prolongan la tónica y dejan que la música siga hasta la cadencia final.
+La tónica de partida puede no sonar; la idea es la misma. (Decidida por Diego el 29/9/2026
+sobre `A4-10-07`: «hace una cadencia hacia la tónica pero disimula el salto en el bajo de
+quinta entre V y I para no interrumpir el fluir de la música hasta la cadencia final».)
+Hacen falta al menos tres acordes, o la pareja `D – T` se cuela dentro de cualquier sucesión
+y despedaza las prolongaciones largas.
+
 □ **R‑54 · La cadencia empieza en la primera subdominante.**
 Varias subdominantes seguidas cuentan como una sola. En T – S – S – S – D – T la cadencia
 auténtica empieza en la primera S; en S – S – D, la semicadencia también.

@@ -251,6 +251,49 @@ window.Tecnicas = (function () {
         + 'La ' + nombreFuncion(dentro) + ' de en medio no cadencia — adorna.' };
   }
 
+  /* LA CADENCIA DISIMULADA: PROLONGACIÓN DE LA TÓNICA SIN SALTO EN EL BAJO
+     (decisión 192, Diego 29/9/2026, sobre un `A4-10` en Re♭/La♭: «la técnica intermedia no
+     es prolongación de la subdominante, sino cadencia imperfecta a la tónica —fa sol la♭,
+     6 7 1 según la regla de la octava—: hace una cadencia hacia la tónica pero disimula el
+     salto en el bajo de quinta entre V y I para no interrumpir el fluir de la música hasta
+     la cadencia final. Podemos denominar a esta técnica prolongación de la tónica… Varios
+     acordes que hacen S – D – T o D – T en inversión evitando el salto V – I en el bajo»).
+
+     El detector de prolongaciones pedía la MISMA función en los dos extremos, así que este
+     tramo solo encajaba estirándolo hasta la subdominante siguiente —`S – D – T – S`— y
+     salía con el nombre de la función equivocada. Aquí se reconoce por lo que es: acaba en
+     la tónica, la dominante va justo antes y el bajo se mueve por grados, sin el salto de
+     quinta. La tónica de partida puede no sonar: la idea es la misma. */
+  function tonicaSinSalto(acs, i, tope, o) {
+    for (let j = Math.min(tope, acs.length - 1); j > i; j--) {
+      const u = acs[j], d = acs[j - 1];
+      if (!u || !d) continue;
+      if (u.funcion !== 'T' || u.romano !== 'I') continue;       // ha de acabar en la tónica
+      if (d.funcion !== 'D') continue;                            // con la dominante justo antes
+      /* Al menos TRES acordes: es la figura que él describe —S – D – T—. Con solo dos
+         (D – T) la pareja se colaba dentro de cualquier sucesión y despedazaba las
+         prolongaciones largas en trocitos de dos acordes. */
+      if (j - i < 2) continue;
+      // Un hueco o un cambio de tono por medio cortan, como en el marco genérico
+      let corta = false;
+      for (let k = i; k <= j && !corta; k++) {
+        if (!acs[k] || !acs[k].funcion) corta = true;
+        else if (acs[i].ton && acs[k].ton && !Teoria.mismaTonalidad(acs[i].ton, acs[k].ton)) corta = true;
+      }
+      if (corta) continue;
+      let soloS = true;                                           // lo de delante, subdominante
+      for (let k = i; k < j - 1 && soloS; k++) if (acs[k].funcion !== 'S') soloS = false;
+      if (!soloS) continue;
+      if (!bordaduraEnElBajo(o, i, j)) continue;                  // si el bajo salta, es cadencia
+      const hay = cadena(acs, i, j);
+      return { desde: i, hasta: j, clase: 'prolongacion', nombre: 'Prolongación de la tónica',
+        porque: funciones(acs, i, j) + ' (' + hay + '): llega a la tónica, pero el bajo va por grados '
+          + '—sin el salto de quinta de la dominante a la tónica—, así que no cierra: prolonga la tónica '
+          + 'y la música sigue hasta la cadencia final.' };
+    }
+    return null;
+  }
+
   /* =====================================================================
      Todo junto
      ===================================================================== */
@@ -289,6 +332,11 @@ window.Tecnicas = (function () {
       let i = f.ini;
       while (i < tope) {
         if (!acs[i] || !acs[i].funcion) { i++; continue; }
+        /* Primero, la cadencia disimulada (decisión 192): acaba en la tónica sin salto en el
+           bajo. Si se dejara al marco genérico, se llevaría la subdominante de después y
+           saldría con su nombre. */
+        const sinSalto = tonicaSinSalto(acs, i, tope, o);
+        if (sinSalto) { salida.push(sinSalto); i = sinSalto.hasta; continue; }
         let mejor = -1;
         for (let j = tope; j > i; j--) {
           if (!acs[j]) continue;

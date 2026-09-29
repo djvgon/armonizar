@@ -516,6 +516,52 @@ const Partitura = (() => {
     const anchoAlt = alt => (alt >= 2 ? ANCHO.dobleSostenido : alt === 1 ? ANCHO.sostenido
       : alt <= -2 ? ANCHO.dobleBemol : alt === -1 ? ANCHO.bemol : ANCHO.becuadro);
 
+    /* MEMORIA DE COMPÁS (decisión 193, Diego 29/9/2026: «es necesario emplear un bemol
+       mostrado explícitamente sobre el si del penúltimo acorde, pues como están dentro del
+       mismo compás, el si becuadro de dos compases antes sigue vigente para ese si»).
+
+       Hasta aquí cada nota se comparaba SOLO con la armadura, sin memoria: una alteración
+       escrita antes en el mismo compás no contaba. Eso escribe mal en los dos sentidos —el
+       si♭ de después de un si♮ se quedaba sin bemol y se leía becuadro, que es el caso que
+       él señala, y una nota alterada repetida en el compás repetía la alteración sin
+       necesidad—. Ahora se lleva la cuenta compás a compás, por LETRA Y OCTAVA, como manda
+       la notación: se escribe la alteración cuando la nota difiere de lo que esté vigente en
+       ese momento, y a partir de ahí lo vigente es ella. Dentro de un mismo acorde, dos
+       voces con la misma nota no la repiten.
+
+       Se decide de una vez para toda la partitura, en orden, y el dibujo solo consulta: las
+       notas se pintan en varias pasadas —el bajo por un lado, los acordes por otro— y con
+       una comprobación suelta no habría manera de llevar la cuenta. */
+    const necesitanAlt = new Set();
+    {
+      const clave = n => n.letra + '|' + n.octava;
+      let ciActual = null, mem = new Map();
+      notas.forEach(it => {
+        if (it.ci !== ciActual) { ciActual = it.ci; mem = new Map(); }   // compás nuevo, memoria en blanco
+        if (it.k < 0) return;
+        const voces = [];
+        const nb = bajoDe(it);
+        if (nb) voces.push({ voz: 0, n: nb });
+        const ac = (Array.isArray(estado.realizacion) && estado.realizacion[it.k]) || null;
+        if (ac) ac.forEach((n, q) => { if (n) voces.push({ voz: q + 1, n }); });
+        else if (sopranoDada && it.nota) voces.push({ voz: 3, n: it.nota });
+        const enEsteAcorde = new Map();
+        voces.forEach(v => {
+          const c = clave(v.n);
+          const vigente = enEsteAcorde.has(c) ? enEsteAcorde.get(c)
+            : (mem.has(c) ? mem.get(c) : altArmadura(v.n.letra));
+          if (v.n.alt !== vigente) necesitanAlt.add(it.k + '|' + v.voz);
+          enEsteAcorde.set(c, v.n.alt);
+        });
+        enEsteAcorde.forEach((val, c) => mem.set(c, val));
+      });
+    }
+    /* `k` es el acorde y `voz` 0 bajo · 1 tenor · 2 contralto · 3 soprano. Sin acorde
+       —dibujos sueltos, como la cadencia de referencia— se cae a la comparación de siempre. */
+    const pideAlt = (k, voz, n) => (typeof k === 'number' && k >= 0
+      ? necesitanAlt.has(k + '|' + voz)
+      : n.alt !== altArmadura(n.letra));
+
     // Números de los acordes (los mismos que la columna # de la tabla de revisión)
     const zonasAcorde = [];
     if (numerar) notas.forEach((it, idx) => {
@@ -686,13 +732,13 @@ const Partitura = (() => {
 
     // Una nota suelta (cabeza, alteración, líneas adicionales, puntillo y plica) en un
     // pentagrama cuya línea inferior está en yBase; p = paso diatónico desde esa línea.
-    function notaSuelta(g, n, p, yBase, xN, f, plicaAbajoDesde = 4) {
+    function notaSuelta(g, n, p, yBase, xN, f, plicaAbajoDesde = 4, k = null, voz = 0) {
       const ancho = f.ancho, y = yBase - p * SP / 2, extra = 0.4 * SP;
       if (p >= 10) for (let q = 10; q <= p; q += 2)
         g.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: yBase - q * SP / 2, y2: yBase - q * SP / 2, class: 'linea' }));
       if (p <= -2) for (let q = -2; q >= p; q -= 2)
         g.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: yBase - q * SP / 2, y2: yBase - q * SP / 2, class: 'linea' }));
-      if (n.alt !== altArmadura(n.letra)) g.appendChild(glifo(xN - (anchoAlt(n.alt) + 0.25) * SP, y, glifoAlt(n.alt)));
+      if (pideAlt(k, voz, n)) g.appendChild(glifo(xN - (anchoAlt(n.alt) + 0.25) * SP, y, glifoAlt(n.alt)));
       const cabeza = glifo(xN, y, f.cabeza, EM, { class: 'nota' });
       g.appendChild(cabeza);
       if (f.puntillo) puntillo(g, xN + ancho * SP, p, yBase);
@@ -714,7 +760,7 @@ const Partitura = (() => {
       if (Array.isArray(estado.realizacion) && estado.realizacion[i]) return;
       const g = el('g', { class: 'melodia' + (estado.sopranoDada || estado.extremasDadas ? ' dada' : '') });
       const f = figura(it.dur);
-      const cabeza = notaSuelta(g, it.nota, pasoSol(it.nota), Y_BOT_SOL, xNotas[idx], f);
+      const cabeza = notaSuelta(g, it.nota, pasoSol(it.nota), Y_BOT_SOL, xNotas[idx], f, 4, i, 3);
       señalar(cabeza, i, 3, xNotas[idx] + f.ancho * SP / 2, Y_BOT_SOL - pasoSol(it.nota) * SP / 2);
       svg.appendChild(g);
     });
@@ -785,7 +831,7 @@ const Partitura = (() => {
       let columna = 0;
       for (let k = ac.length - 1; k >= 0; k--) {
         const n = ac[k];
-        if (n.alt === altArmadura(n.letra)) continue;
+        if (!pideAlt(i, k + 1, n)) continue;
         const y = Y_BOT_SOL - pasos[k] * SP / 2;
         g.appendChild(glifo(xIzq - (anchoAlt(n.alt) + 0.25) * SP - columna * 1.1 * SP, y, glifoAlt(n.alt)));
         columna++;
@@ -820,7 +866,7 @@ const Partitura = (() => {
       bajoNota[i] = nb;
       if (!sinBajo && nb) {
         const g = el('g', { class: (sopranoDada ? 'bajo-alumno' : 'bajo') + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') + (estado.bajoDado ? ' dada' : '') });
-        const cabeza = notaSuelta(g, nb, paso(nb), Y_BOT, xN, f);
+        const cabeza = notaSuelta(g, nb, paso(nb), Y_BOT, xN, f, 4, i, 0);
         señalar(cabeza, i, 0, xN + ancho * SP / 2, Y_BOT - paso(nb) * SP / 2);
         svg.appendChild(g);
       }

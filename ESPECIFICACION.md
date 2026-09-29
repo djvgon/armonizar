@@ -3880,6 +3880,42 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+193. **Las alteraciones llevan memoria de compás** (29/9/2026, Diego: «es necesario
+    emplear un bemol mostrado explícitamente sobre el si del penúltimo acorde, pues como
+    están dentro del mismo compás, el si becuadro de dos compases antes sigue vigente para
+    ese si»). Cada nota se comparaba **solo con la armadura**, sin memoria de lo escrito
+    antes en el compás, y eso escribía mal en los dos sentidos: el si♭ que viene detrás de un
+    si♮ se quedaba sin bemol y se leía becuadro —el caso que él señala, que cambia la nota
+    que suena—, y una alterada repetida en el compás repetía la alteración sin necesidad.
+    - Ahora se lleva la cuenta **compás a compás, por letra y octava**, como manda la
+      notación: se escribe la alteración cuando la nota difiere de lo vigente en ese momento,
+      y a partir de ahí lo vigente es ella. Dentro de un mismo acorde, dos voces con la misma
+      nota no la repiten.
+    - Se decide **de una vez para toda la partitura, en orden**, y el dibujo solo consulta:
+      las notas se pintan en varias pasadas —el bajo por un lado, los acordes por otro— y con
+      una comprobación suelta no había manera de llevar la cuenta.
+    - Cierra de paso la cuestión que quedaba abierta en la 185: la alteración ya no se repite
+      en la segunda nota del compás.
+    - Comprobado: en Fa M, `fa – si♮ – si♮ – si♭` en un compás sale con ♮ en el primer si,
+      nada en el segundo y **♭ escrito en el tercero**.
+
+192. **La cadencia disimulada es prolongación de la tónica** (29/9/2026, Diego, sobre
+    `A4-10-07`: «la técnica intermedia no es prolongación de la subdominante, sino cadencia
+    imperfecta a la tónica —fa sol la♭, 6 7 1 según la regla de la octava—: hace una cadencia
+    hacia la tónica pero disimula el salto en el bajo de quinta entre V y I para no
+    interrumpir el fluir de la música hasta la cadencia final… Varios acordes que hacen
+    S – D – T o D – T en inversión evitando el salto V – I en el bajo»).
+    - El detector de prolongaciones pedía la **misma función en los dos extremos**, así que
+      este tramo solo encajaba estirándolo hasta la subdominante siguiente —`S – D – T – S`—
+      y salía con el nombre de la función equivocada.
+    - Se reconoce ahora por lo que es: acaba en la tónica, la dominante va justo antes y el
+      bajo se mueve por grados, sin el salto de quinta. La tónica de partida puede no sonar.
+    - Hacen falta **al menos tres acordes**: con dos (`D – T`) la pareja se colaba dentro de
+      cualquier sucesión y despedazaba las prolongaciones largas en trocitos.
+    - **Medido sobre el banco: cambian 2 fragmentos de 125, y son los dos suyos.** `A4-10-07`
+      pasa de «Prolongación de la subdominante» a «Prolongación de la tónica»; `A4-10-08`,
+      igual, y además se parte en los dos tramos que de verdad tiene. Queda como **R‑53b**.
+
 191. **La ficha se llena hasta el máximo de compases** (29/9/2026, Diego: «se muestran muy
     pocos fragmentos por ficha, solo 1 ó 2… los dos controles que filtran por número de
     compases total están pensados para los fragmentos que se imprimen en papel; me interesa
