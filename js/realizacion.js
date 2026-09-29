@@ -752,6 +752,14 @@ const Realizacion = (() => {
            descendente (7 → 6), que es lo correcto ahí. */
         if (d.sensibles.has(pc) && !mismoAcorde && contiene((pc + 1) % 12) && q > 0) {
           if (delta === 1 || (delta === 0 && contiene(pc))) continue;
+          /* RESOLUCIÓN INDIRECTA (decisión 189, Diego 29/9/2026, sobre un `A4-11` en fa
+             menor: «la sensible (sol) hace resolución indirecta hacia el la♭ que hace sonar
+             la voz superior; suena sol3 – la♭3, sensible – tónica, aunque cada sonido lo
+             haga sonar una voz diferente. Es correcto»). La norma XS4c pide que la sensible
+             resuelva, no que la resuelva esa voz: si OTRA voz hace sonar la tónica EN LA
+             ALTURA ESPERADA —el semitono justo por encima de la sensible, no en otra
+             octava—, el oído oye la resolución y no hay falta. */
+          if (ahora.some((n, k) => k !== q && midi(n) === midi(de) + 1)) continue;
           let calla = false;
           if (q !== 3) {
             const dc = describirDesde(ej, i, bajos, acordes, tons);
@@ -763,7 +771,8 @@ const Realizacion = (() => {
           if (calla) continue;
           avisos.push({ i, tipo: 'sensible', notas: [{ i: i - 1, voz: q }, { i, voz: q }],
             texto: 'La sensible (' + nombre(de) + ', en ' + NOMBRE_VOZ_N[q] + ') ha de subir a la tónica; aquí va a ' + nombre(a) + '.'
-              + (q === 3 ? '' : ' Solo se le perdona cuando es la única voz que sostiene la quinta del acorde, y aquí no es el caso.') });
+              + ' Se le perdona si otra voz hace sonar la tónica justo un semitono por encima —resolución indirecta—'
+              + (q === 3 ? '' : ', o si esta es la única voz que sostiene la quinta del acorde') + ', y aquí no es el caso.' });
         }
       }
     }

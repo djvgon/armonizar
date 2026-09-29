@@ -2062,6 +2062,9 @@
         + 'Díselo a tu profesor: los ejercicios se publican cuando él los da por buenos.', 12000);
       cargar(Ejercicios.CORPUS[0]); return;
     }
+    /* Cuántos ejercicios tiene la ficha: lo necesita el cupo de la armadura ajena
+       (decisión 190), que reparte entre el 25 % y el 75 % de los sitios. */
+    filtro.nFicha = lista.length;
     estado.ficha = { filtro, lista, k: 0, marcador: [], hash: texto };
     Registro.iniciarPractica({ tipo: 'ficha', titulo: nombreDeFicha(filtro, lista), modo: filtro.modo, n: lista.length });
     guardarFicha();
@@ -2100,7 +2103,9 @@
     const k = p.ejercicios.length;
     if (k <= 0 || k >= lista.length) return null;        // ni empezada ni terminada: nada que reanudar
     Registro.restaurar(p);
-    return { filtro: Banco.decodificar(texto), lista, k, marcador: (g.marcador || []).slice(0, k), hash: texto };
+    const filtro = Banco.decodificar(texto);
+    filtro.nFicha = lista.length;                      // el cupo de la armadura ajena (190)
+    return { filtro, lista, k, marcador: (g.marcador || []).slice(0, k), hash: texto };
   }
 
   function reiniciar() { cargar(estado.ejercicio); }

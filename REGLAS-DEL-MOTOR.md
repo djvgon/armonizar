@@ -242,6 +242,18 @@ admiten Aldwell y Schachter—. En la soprano sube siempre. (Decidida por Diego 
 29/9/2026 a partir de `A3-1-22`: allí, con la melodía en la tercera y la séptima
 bajando a ella, resolver la sensible dejaría la tónica sin quinta.)
 
+□ **R‑35b · La resolución de la sensible puede ser INDIRECTA.** Lo que la norma pide es
+que la sensible resuelva, no que la resuelva esa voz: si **otra voz hace sonar la tónica en
+la altura esperada** —el semitono justo por encima de la sensible, no en otra octava—, el
+oído oye la resolución y no hay falta, aunque cada sonido lo cante una voz distinta.
+(Decidida por Diego el 29/9/2026 sobre un fragmento de `A4-11` en fa menor: «la sensible
+(sol) hace resolución indirecta hacia el la♭ que hace sonar la voz superior; suena sol3 –
+la♭3, sensible – tónica, aunque cada sonido lo haga sonar una voz diferente. Es correcto».)
+Medido sobre el banco: quita exactamente un aviso, el del acorde 13 de `A4-11-01` —si4 en
+la contralto baja a la mientras la soprano canta do5—, y no cambia ningún otro. El motor
+sigue **prefiriendo** la resolución directa al escribir las voces; la indirecta la da por
+buena, no la busca.
+
 □ **R‑36 · En el acorde de novena, la sensible no va por encima de la novena.**
 Chocarían en segunda con la sensible arriba. Salvo que la novena venga preparada del acorde
 anterior.

@@ -567,8 +567,7 @@ const Banco = (() => {
     const f = filtro || {};
     const max = Math.max(0, Math.min(3, parseInt(f.armaduraAjena, 10) || 0));
     if (!max || !e || !e.tonalidad) return null;
-    const dado = revoltijo(String(f.semilla || '') + '|' + (e.id || '') + '|' + (k || 0));
-    if (dado % 4 !== 0) return null;                       // hasta un 25 %
+    if (!leToca(f, k)) return null;
     let n;
     try { n = Teoria.armadura(e.tonalidad); } catch (err) { return null; }
     const opciones = [];
@@ -578,7 +577,31 @@ const Banco = (() => {
       if (t) opciones.push(t);
     }
     if (!opciones.length) return null;
-    return opciones[Math.floor(dado / 4) % opciones.length];
+    const dado = revoltijo(String(f.semilla || '') + '|' + (e.id || '') + '|' + (k || 0));
+    return opciones[dado % opciones.length];
+  }
+
+  /* ¿Le toca a ESTE sitio de la ficha? (decisión 190, Diego 29/9/2026: «afecta a entre un
+     25 % y un 75 % de los fragmentos presentados al estudiante; como mínimo un 25 %, como
+     máximo un 75 %»). Antes era una moneda por fragmento —25 % de media—, y con eso una
+     ficha corta podía salir sin ninguno o con todos. Ahora es un CUPO sobre la ficha entera:
+     sabiendo cuántos ejercicios tiene (`f.nFicha`), se sortea con la semilla cuántos llevan
+     armadura ajena, entre ⌈n/4⌉ y ⌊3n/4⌋, y qué sitios son. Todo sale de la semilla y del
+     número de ejercicios, así que el mismo enlace da siempre lo mismo y una ficha a medias
+     se reanuda igual. Sin `nFicha` —la vista previa del configurador, un ejercicio suelto—
+     se vuelve a la moneda de antes, que para un fragmento aislado es lo único que cabe. */
+  function leToca(f, k) {
+    const n = parseInt(f.nFicha, 10) || 0;
+    const sitio = Math.max(0, parseInt(k, 10) || 0);
+    if (!n || sitio >= n) return revoltijo(String(f.semilla || '') + '|sitio|' + sitio) % 4 === 0;
+    const min = Math.ceil(n / 4);
+    const tope = Math.max(min, Math.floor(3 * n / 4));
+    const cuantos = min + (revoltijo(String(f.semilla || '') + '|cuantos|' + n) % (tope - min + 1));
+    // Los `cuantos` sitios de dado más bajo: determinista y con el cupo exacto
+    const dados = [];
+    for (let j = 0; j < n; j++) dados.push({ j, d: revoltijo(String(f.semilla || '') + '|sitio|' + j) });
+    dados.sort((a, b) => (a.d - b.d) || (a.j - b.j));
+    return dados.slice(0, cuantos).some(x => x.j === sitio);
   }
 
   function tonicaEn(filtro, modo, k) {

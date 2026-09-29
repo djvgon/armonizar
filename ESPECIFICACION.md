@@ -3880,6 +3880,39 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+190. **La armadura ajena es un cupo de la ficha, no una moneda por fragmento**
+    (29/9/2026, Diego: «la opción Armadura distinta de la tonalidad afecta a entre un 25 % y
+    un 75 % de los fragmentos presentados al estudiante. Como mínimo un 25 %, como máximo un
+    75 %»). Como estaba (185) era un 25 % de media, decidido fragmento a fragmento e
+    independiente, de modo que una ficha corta podía salir sin ninguno o con todos.
+    - Ahora es un **cupo sobre la ficha entera**: con `n` ejercicios se sortea con la semilla
+      cuántos llevan armadura ajena, entre **⌈n/4⌉ y ⌊3n/4⌋**, y qué sitios son —los `n`
+      sitios se ordenan por un dado sacado de la semilla y se toman los primeros—. Todo sale
+      de la semilla y del número de ejercicios, así que el mismo enlace da siempre lo mismo y
+      una ficha a medias se reanuda igual.
+    - La ficha le dice su tamaño al banco (`filtro.nFicha`, puesto donde se conoce la lista).
+      Sin él —la vista previa del configurador, un ejercicio suelto— se vuelve a la moneda de
+      antes, que para un fragmento aislado es lo único que cabe.
+    - **Comprobado** con ocho semillas y once tamaños de ficha (1 a 20 ejercicios): ninguno
+      fuera del cupo, determinista, y ninguno con la opción apagada. Con 1 o 2 ejercicios no
+      cabe estar dentro de la banda —25 % de 2 es medio ejercicio—: ahí toma el mínimo, uno.
+
+189. **La resolución de la sensible puede ser indirecta** (29/9/2026, Diego, sobre un
+    `A4-11` transportado a fa menor: «aquí señala un error —sensible que no va a la tónica—
+    que no es tal. La sensible (sol) hace resolución indirecta hacia el la♭ que hace sonar la
+    voz superior; suena sol3 – la♭3, sensible – tónica, aunque cada sonido lo haga sonar una
+    voz diferente. Es correcto. Incorpóralo al repertorio»). Es una excepción de la XS4c: la
+    norma pide que la sensible resuelva, **no que la resuelva esa voz**. Si otra voz hace
+    sonar la tónica **en la altura esperada** —el semitono justo por encima, no en otra
+    octava—, no hay falta.
+    - Va en el **auditor**, que es donde estaba la falta. El motor sigue prefiriendo la
+      resolución directa al escribir las voces: la indirecta la da por buena, no la busca.
+    - **Medido sobre el banco: quita exactamente un aviso y no cambia ningún otro** —el del
+      acorde 13 de `A4-11-01`, donde el si de la contralto baja al la mientras la soprano
+      canta el do—. Es el mismo caso que él vio, transportado.
+    - Queda como **R‑35b** en `REGLAS-DEL-MOTOR.md`. El texto del aviso, cuando sí procede,
+      nombra ahora las dos excepciones.
+
 188. **El pivote de la primera nota, también en la pantalla del alumno** (29/9/2026,
     Diego: «si el primer acorde es pivote y pertenece a dos tonalidades, ha de mostrarse al
     comienzo; las tonalidades mostradas no tienen sentido: no se puede modular de la menor a
