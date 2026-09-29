@@ -3880,6 +3880,26 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+184. **La tonalidad de partida se puede cambiar aunque haya modulación** (29/9/2026,
+    Diego: «en el editor de fragmentos, si incluye modulación, se ha de poder especificar la
+    tonalidad en la que comienza el fragmento, aunque ese primer acorde sirva de pivote para
+    comenzar modulación a otro tono —así, el primer acorde puede ser I de la menor y, al
+    mismo tiempo, VI de Do Mayor—»). Es el complemento de la 183, y lo que lo impedía era un
+    atajo viejo: tocar «Tónica» o «Modo» con una modulación puesta **las borraba todas** y
+    además volvía a analizar el fragmento entero, con lo que se perdía también lo asignado a
+    mano. Con eso, el caso que pide era imposible: al poner la tónica correcta desaparecía el
+    pivote.
+    - Ahora se **conservan** las modulaciones que siguen partiendo de un tono vecino desde la
+      tonalidad nueva, se descartan solo las que dejan de serlo —y se dice cuántas— y **no se
+      vuelve a analizar nada**: lo marcado es suyo. Lo que sí cambia es la lectura —las mismas
+      cifras dan otros grados—, y eso se avisa.
+    - En la primera nota hecha pivote, el tono de **partida** no aparecía en ninguna parte de
+      la tabla, porque no hay fila anterior de donde leerlo. Ahora se escribe en la propia
+      celda, delante del desplegable (`la m →` · `→ Do M`), con el recordatorio de que se
+      cambia arriba, en «Tónica» y «Modo».
+    - Comprobado con su ejemplo: fragmento en **la m**, primer acorde pivote a **Do M**; la
+      casilla de grado lee `1 = 6` y la chapa del acorde, `I = VI`.
+
 183. **El primer acorde también puede ser pivote** (29/9/2026, Diego: «el primer acorde del
     fragmento ya ha de servir para modular; se ha de poder emplear como acorde pivote para
     modular ese mismo primer acorde»). La columna «Tonalidad» del revisor solo daba

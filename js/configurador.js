@@ -411,6 +411,17 @@
           : (i === 0
             ? 'El fragmento está en ' + Teoria.nombreCorto(tonAntes) + '. Si el primer acorde ya es el pivote de una inflexión a otro tono, elígelo aquí.'
             : 'Rige ' + Teoria.nombreCorto(tonAntes) + '. Despliega y elige una tonalidad vecina para que la modulación empiece en esta nota (acorde pivote).');
+        /* En la primera nota hecha pivote, el tono de PARTIDA no se ve en ninguna otra fila
+           —no hay fila anterior—, así que se escribe aquí delante (decisión 184). */
+        if (i === 0 && esPivote) {
+          const de = document.createElement('span');
+          de.className = 'ton-partida';
+          de.textContent = Teoria.nombreCorto(tonAntes);
+          de.title = 'El fragmento empieza en ' + Teoria.nombreCorto(tonAntes)
+            + ', y este primer acorde es a la vez el pivote hacia ' + Teoria.nombreCorto(ton)
+            + '. La tonalidad de partida se cambia arriba, en «Tónica» y «Modo».';
+          ct.appendChild(de);
+        }
         const o0 = document.createElement('option'); o0.value = ''; o0.textContent = esPivote ? '(quitar)' : Teoria.nombreCorto(tonAntes); sel.appendChild(o0);
         Teoria.tonalidadesVecinas(tonAntes).forEach(t => {
           const o = document.createElement('option'); o.value = t.tonica + '/' + t.modo; o.textContent = '→ ' + Teoria.nombreCorto(t);
@@ -1227,8 +1238,37 @@
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
     $('#ficha-funciones').addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) { if (esSoprano()) reanalizarSalvoBanco(); else pintarRevision(); } });
-    // Si cambia la tonalidad inicial, las modulaciones dejan de tener sentido
-    ['#tonica', '#modo'].forEach(sel => $(sel).addEventListener('change', () => { if (estado.modulaciones.length) { estado.modulaciones = []; if (estado.respuestas) analizar(); } }));
+    /* LA TONALIDAD DE PARTIDA SE PUEDE CAMBIAR AUNQUE HAYA MODULACIÓN (decisión 184, Diego
+       29/9/2026: «si incluye modulación, se ha de poder especificar la tonalidad en la que
+       comienza el fragmento, aunque ese primer acorde sirva de pivote para comenzar
+       modulación a otro tono —así, el primer acorde puede ser I de la menor y, al mismo
+       tiempo, VI de Do Mayor—»). Hasta aquí, tocar «Tónica» o «Modo» con una modulación
+       puesta las BORRABA TODAS y además volvía a analizar el fragmento entero, con lo que se
+       perdía también lo asignado a mano: justo el camino que hacía imposible lo que pide.
+       Ahora se conservan las que siguen siendo vecinas desde el tono nuevo, se descartan solo
+       las que dejan de serlo —diciendo cuáles— y no se vuelve a analizar nada: lo marcado es
+       suyo. Lo que sí cambia es la LECTURA (las mismas cifras dan otros grados), y eso se
+       avisa. */
+    ['#tonica', '#modo'].forEach(sel => $(sel).addEventListener('change', () => {
+      if (!estado.modulaciones.length) return;
+      const antes = estado.modulaciones.length;
+      let ton = tonalidad();
+      const validas = [];
+      estado.modulaciones.slice().sort((a, b) => a.nota - b.nota).forEach(m => {
+        if (!m || !m.tonalidad) return;
+        if (Teoria.mismaTonalidad(ton, m.tonalidad)) return;          // modular al mismo tono no es modular
+        if (!Teoria.tonalidadesVecinas(ton).some(x => Teoria.mismaTonalidad(x, m.tonalidad))) return;
+        validas.push(m); ton = m.tonalidad;
+      });
+      estado.modulaciones = validas;
+      guardarBorrador();
+      if (estado.respuestas) pintarRevision();
+      const caidas = antes - validas.length;
+      aviso('Tonalidad de partida: ' + Teoria.nombreCorto(tonalidad()) + '. '
+        + (caidas ? 'Se han quitado ' + caidas + (caidas > 1 ? ' modulaciones que ya no parten de un tono vecino' : ' modulación que ya no parte de un tono vecino') + '; las demás se conservan. '
+          : 'Las modulaciones se conservan. ')
+        + 'No se ha vuelto a analizar nada: los acordes que marcaste siguen ahí, pero ahora se leen en el tono nuevo.', 11000);
+    }));
     document.querySelectorAll('input[name="modo-ej"]').forEach(r => r.addEventListener('change', () => {
       // La armonización de soprano parte de la función tonal de cada acorde: si no había fila, se activa
       if (esSoprano() && !$('#ficha-funciones').value) $('#ficha-funciones').value = 'dadas';

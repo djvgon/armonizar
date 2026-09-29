@@ -1460,3 +1460,10 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
   color: var(--voz-dada, #9412DC); background: color-mix(in srgb, var(--voz-dada, #9412DC) 10%, transparent);
   border-radius: .4rem; vertical-align: middle; cursor: help;
 }
+
+/* El tono de partida, en la primera nota hecha pivote (decisión 184) */
+.ton-partida {
+  display: block; font-size: .78rem; font-weight: 600; line-height: 1.2;
+  color: var(--tinta-suave, #5a5566); cursor: help;
+}
+.ton-partida::after { content: ' →'; opacity: .6; }
