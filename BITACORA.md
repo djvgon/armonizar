@@ -575,6 +575,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261001-1830 | En el móvil: la partitura un 10 % menor, y «Sonar al elegir» y «Cuadro de cifrados» fuera del teclado flotante, que queda solo para las teclas (196) |
 | 20261001-1605 | El porcentaje de armadura ajena, en casilla de cifra con flechas en vez de un desplegable de 101 opciones (195, afinada) |
 | 20261001-1520 | El porcentaje de fragmentos con armadura ajena lo elige el profesor, de 0 a 100 %, con cupo exacto y determinista (195) |
 | 20261001-1400 | Con las tonalidades por pedir, el tono de partida también lo marca el alumno: la casilla 0 sale vacía, el rótulo del renglón no se escribe hasta que marca, y la corrección y el comentario lo tratan aparte (194) |

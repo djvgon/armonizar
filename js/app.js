@@ -418,18 +418,48 @@
     });
     pc.appendChild(tecla('tecla-borrar', 'Borrar', 'Vaciar la casilla activa (Retroceso)', borrar));
     pintarPaletaTonalidades();
-    colocarSonar();
+    colocarMandos();
   }
 
-  /* «Sonar al elegir» vive EN el primer renglón de paletas que esté a la vista —el de la
-     función tonal cuando se piden— pegado al borde derecho del recuadro de la partitura,
-     mientras el rótulo de ese renglón ocupa el borde izquierdo (Diego, 28/9/2026). Se
-     mueve el nodo, no se vuelve a crear: conserva su estado y su escuchador. */
-  function colocarSonar() {
+  /* DÓNDE VAN «SONAR AL ELEGIR» Y «CUADRO DE CIFRADOS»
+
+     En pantalla grande, donde sobra sitio, siguen con las paletas (Diego, 28/9/2026):
+     «Sonar al elegir» EN el primer renglón que esté a la vista —el de la función tonal
+     cuando se piden— pegado al borde derecho del recuadro de la partitura, porque no es
+     una herramienta de audio como las de arriba sino lo que hacen ESTAS teclas; y el
+     acceso al cuadro de cifrados al pie, centrado bajo las teclas que explica.
+
+     En el MÓVIL los dos salen del teclado flotante y se van al segundo renglón de la
+     barra, bajo el encabezado (decisión 196, Diego 29/9/2026): «saca del espacio flotante
+     de los selectores de cifrado la casilla de sonar cuando se selecciona y el botón sobre
+     cifrados… de manera que se aproveche más espacio en el espacio flotante». Abajo solo
+     quedan TECLAS, y el renglón de la función tonal —que iba estrujado contra «Sonar al
+     elegir», con T, S y D en poco más de media pantalla— recupera el ancho entero.
+
+     Se MUEVE el nodo, no se vuelve a crear: conserva su estado (la casilla marcada) y su
+     escuchador. Y se recoloca en cada repintado y en cada `resize`, que es cuando puede
+     cambiar el tamaño de la pantalla o la paleta que encabeza. */
+  function colocarMandos() {
+    const barra = $('#realizacion-barra');
+    if (!barra) return;
     const etiqueta = $('#sonar') && $('#sonar').closest('label');
-    if (!etiqueta) return;
-    const caja = [...document.querySelectorAll('#paletas .paleta-caja')].find(c => !c.hidden);
-    if (caja && etiqueta.parentElement !== caja) caja.appendChild(etiqueta);
+    const pie = document.querySelector('.paletas-pie');
+    if (compacto()) {
+      let hueco = $('#mandos-movil');
+      if (!hueco) {
+        hueco = document.createElement('span');
+        hueco.id = 'mandos-movil';
+        hueco.className = 'control mandos-movil';
+        barra.appendChild(hueco);
+      }
+      if (etiqueta && etiqueta.parentElement !== hueco) hueco.appendChild(etiqueta);
+      if (pie && pie.parentElement !== hueco) hueco.appendChild(pie);
+    } else {
+      const caja = [...document.querySelectorAll('#paletas .paleta-caja')].find(c => !c.hidden);
+      if (etiqueta && caja && etiqueta.parentElement !== caja) caja.appendChild(etiqueta);
+      const panel = $('#paletas');
+      if (pie && panel && pie.parentElement !== panel) panel.appendChild(pie);
+    }
   }
 
   /* ---------- Modulación: lecturas y marcas ---------- */
@@ -1066,6 +1096,9 @@
     // uno hay que cambiar el otro, o el CSS y el JS dejarán de estar de acuerdo.
     const estrecho = window.innerWidth < 720 || window.innerHeight < 560;
     document.body.classList.toggle('compacto', estrecho);
+    // Antes de medir: en el móvil, «Sonar al elegir» y el cuadro de cifrados se van
+    // arriba, y el teclado flotante mide menos (decisión 196)
+    colocarMandos();
     const panel = $('#paletas');
     document.body.style.paddingBottom = estrecho ? (panel.offsetHeight + 12) + 'px' : '';
   }

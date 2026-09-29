@@ -3880,6 +3880,34 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+196. **En el móvil, el teclado flotante es solo para las teclas** (29/9/2026, Diego: «en la
+    interfaz de móvil, reduce el tamaño de la partitura en un 10 % para que quepa mejor en
+    la pantalla más pequeña… saca del espacio flotante de los selectores de cifrado la
+    casilla de sonar cuando se selecciona y el botón sobre cifrados. Muévelos a la parte
+    baja del encabezado, de manera que se aproveche más espacio en el espacio flotante.
+    Incorpora en estos controles flotantes los botones sobre funciones tonales»).
+    - **La partitura, un 10 % más pequeña** en pantalla estrecha o baja (los dos mismos
+      umbrales de siempre: 719 px de ancho o 559 de alto). Se multiplica la **anchura** del
+      `svg` por 0,9 y el alto va en `auto`, así que la proporción se mantiene: medido, 666 →
+      599 px (0,899). Matiza la 115 —«siempre a su tamaño natural»—, que era contra el
+      estirón del fragmento corto, no contra el tamaño en sí: una negra sigue midiendo lo
+      mismo tenga el fragmento 3 notas o 17, solo que un 10 % menos en el móvil.
+    - **«Sonar al elegir» y «Cuadro de cifrados» salen del teclado flotante** y se van al
+      **segundo renglón de la barra**, bajo el encabezado, junto a «Grados del bajo» y
+      «Posición melódica». Abajo quedan **solo teclas**. En pantalla grande siguen donde
+      estaban (128 y 132): la casilla en el primer renglón de paletas a la vista y el
+      acceso al cuadro al pie, centrado bajo las teclas que explica.
+    - Con eso, **el renglón de la función tonal recupera el ancho entero**: T, S y D iban
+      estrujados en poco más de media pantalla porque compartían línea con «Sonar al
+      elegir». El teclado flotante pasa de 222 a 192 px de alto en el móvil en vertical
+      (390 × 844) y de 178 a 148 en horizontal (844 × 390).
+    - Lo hace `colocarMandos()` en `app.js`, que **mueve el nodo** —no lo vuelve a crear—,
+      así que la casilla conserva su estado y su escuchador, y el botón sigue abriendo el
+      cuadro. Se recoloca en cada repintado de paletas y en cada `resize`, y antes de medir
+      el hueco que el teclado deja al cuerpo. Comprobado el vaivén escritorio → móvil →
+      escritorio → horizontal: los dos mandos van y vuelven, la casilla desmarcada sigue
+      desmarcada y no salta ningún error.
+
 195. **El porcentaje de armadura ajena lo pone el profesor** (29/9/2026, Diego: «quiero
     poder especificar el porcentaje de fragmentos que cumplirán la condición… entre 0 y 100 %
     y cualquier porcentaje sin decimales»). La 190 sorteaba el cupo dentro de una banda fija

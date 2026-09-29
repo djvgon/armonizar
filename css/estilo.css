@@ -1269,9 +1269,34 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
   flex: 0 0 auto; white-space: nowrap;
 }
 .paletas-pie { display: flex; justify-content: center; margin: 6px 0 0; }
+
+/* =======================================================================================
+   DECISIÓN 196 · EN EL MÓVIL, EL TECLADO FLOTANTE ES SOLO PARA LAS TECLAS
+   (Diego, 29/9/2026)
+
+   «Sonar al elegir» y «Cuadro de cifrados» se van al segundo renglón de la barra, bajo el
+   encabezado, y el hueco que dejan abajo se lo quedan las teclas —el renglón de la función
+   tonal, que compartía línea con «Sonar al elegir», pasa a tener la pantalla entera—. El
+   contenedor lo crea y lo llena `colocarMandos()` en app.js: el CSS no puede mudar nodos
+   de sitio, solo vestirlos, así que aquí únicamente se dice cómo se ven en cada tamaño.
+   ======================================================================================= */
+#mandos-movil { display: none; }
 @media (max-width: 719px), (max-height: 559px) {
   .paletas-pie { margin: 2px 0 0; }
-  .paletas-pie #btn-cifrados { font-size: .7rem; padding: 2px 8px; }
+  #mandos-movil {
+    order: 4; display: inline-flex; align-items: center; gap: 10px;
+    margin-left: 0; margin-right: 0;
+  }
+  /* En el segundo renglón de la barra van con el tamaño de la barra, no con el diminuto
+     que tenían apretados entre las teclas */
+  #mandos-movil .control-sonar { margin: 0; padding: 0; font-size: .8rem; gap: 6px; }
+  #mandos-movil .control-sonar input { width: 16px; height: 16px; }
+  #mandos-movil .paletas-pie { margin: 0; }
+  #mandos-movil #btn-cifrados { font-size: .8rem; padding: 4px 8px; }
+  /* Con tres grupos en el renglón, el empujón a la derecha de «Grados del bajo» sobra:
+     se leen de izquierda a derecha, como el resto de la barra. */
+  #control-grados { margin-left: 0; }
+  #control-realizacion { padding-left: 10px; }
 }
 
 /* =======================================================================================

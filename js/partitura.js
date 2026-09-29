@@ -440,7 +440,16 @@ const Partitura = (() => {
 
     // Tamaño en pantalla: ESCALA_PX píxeles por unidad (SP = 10 unidades → 10 px por espacio);
     // si no cabe, el CSS lo reduce proporcionalmente (max-width: 100 %)
-    const svg = el('svg', { viewBox: `0 0 ${ANCHO_TOTAL} ${ALTO_TOTAL}`, width: Math.round(ANCHO_TOTAL * ESCALA_PX), class: 'partitura', role: 'img',
+    /* EN EL MÓVIL, UN 10 % MÁS PEQUEÑA (decisión 196, Diego 29/9/2026: «reduce el tamaño de
+       la partitura en un 10 % para que quepa mejor en la pantalla más pequeña»). Matiza la
+       115 —«siempre a su tamaño natural»—, que era contra el estiramiento del fragmento
+       corto, no contra el tamaño en sí. Basta con la anchura: el alto va en `auto` y la
+       proporción se mantiene. */
+    const escalaPantalla = (() => {
+      try { return window.matchMedia('(max-width: 719px), (max-height: 559px)').matches ? 0.9 : 1; }
+      catch (e) { return 1; }
+    })();
+    const svg = el('svg', { viewBox: `0 0 ${ANCHO_TOTAL} ${ALTO_TOTAL}`, width: Math.round(ANCHO_TOTAL * ESCALA_PX * escalaPantalla), class: 'partitura', role: 'img',
       'aria-label': sinBajo ? 'Casillas de cifrado del ejercicio (el bajo no se muestra)' : sopranoDada ? 'Melodía del ejercicio, bajo deducido y casillas de cifrado' : 'Bajo del ejercicio con casillas de cifrado' });
     const yLinea = i => Y_BOT - i * SP;                    // i = 0 (inferior) … 4 (superior)
 
