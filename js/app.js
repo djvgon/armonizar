@@ -2052,7 +2052,10 @@
     }
     const lista = Banco.elegir(entradas, filtro);
     if (!lista.length) {
-      aviso('En el banco no hay ningún ejercicio que cumpla lo que pide esta ficha.', 10000);
+      /* Al alumno solo se le sirven fragmentos CERRADOS (decisión 182). Si la ficha se
+         queda vacía, casi siempre es eso: los que cumplen el filtro están aún sin revisar. */
+      aviso('En el banco no hay todavía ningún ejercicio revisado que cumpla lo que pide esta ficha. '
+        + 'Díselo a tu profesor: los ejercicios se publican cuando él los da por buenos.', 12000);
       cargar(Ejercicios.CORPUS[0]); return;
     }
     estado.ficha = { filtro, lista, k: 0, marcador: [], hash: texto };
@@ -2086,6 +2089,8 @@
     const porId = new Map(entradas.map(e => [e.id, e]));
     const lista = g.ids.map(id => porId.get(id));
     if (!lista.every(Boolean)) return null;
+    // Si alguno se ha reabierto desde que empezó la ficha, se empieza de nuevo (decisión 182)
+    if (!lista.every(e => Banco.estaCerrada(e))) return null;
     const p = Registro.recuperar();
     if (!p || p.tipo !== 'ficha' || !Array.isArray(p.ejercicios)) return null;
     const k = p.ejercicios.length;

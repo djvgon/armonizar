@@ -142,6 +142,14 @@ los de la función que él ve. Con las funciones pedidas, no se limitan.
 La regla de la octava mira cada nota con su contexto inmediato, así que puede acertar en cada
 acorde y equivocarse en la frase. Estas reglas enderezan la frase.
 
+□ **R‑16b · El primer acorde del fragmento.** Usualmente es la tónica, en estado
+fundamental o en inversión, pero **no siempre**: puede ser ya el acorde pivote de una
+inflexión tonal a otro tono, o —más adelante, cuando Diego lo introduzca— un acorde
+cromático tomado prestado de otra tonalidad. El motor no exige tónica en la primera nota, y
+desde la decisión 183 la columna «Tonalidad» del revisor permite hacer pivote también esa
+primera nota: la tonalidad de partida sigue siendo la del fragmento —la de la armadura— y es
+el «antes» del pivote.
+
 □ **R‑17 · Delante de la tónica solo va la dominante.**
 La subdominante no vuelve a la tónica mientras no se haya dado la fórmula T – S – T (que se
 activa a partir de la lección 8). Si el modelo pone una subdominante antes de una tónica, se

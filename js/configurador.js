@@ -187,7 +187,7 @@
 
   // Modulaciones válidas para un bajo de n notas (sin la nota 1 ni fuera de rango), ordenadas
   function modulacionesValidas(n) {
-    return estado.modulaciones.filter(m => m.nota > 0 && m.nota < n).slice().sort((a, b) => a.nota - b.nota);
+    return estado.modulaciones.filter(m => m.nota >= 0 && m.nota < n).slice().sort((a, b) => a.nota - b.nota);   // la 0 también (183)
   }
   function ajustarCampoModulacion() { /* la fila «Tonalidad» se elige siempre: module o no (decisión 56) */ }
 
@@ -333,7 +333,7 @@
       const prop = estado.propuesta ? estado.propuesta[i] : null;
       if (!adm.length) sinPropuesta.push(i + 1);
       const ton = tons[i];
-      const tonAntes = i > 0 ? tons[i - 1] : ton;
+      const tonAntes = i > 0 ? tons[i - 1] : tonalidad();     // en la nota 0, la tonalidad del fragmento (183)
       const esPivote = pivotes.has(i);
       const elevada = (estado.melodica || []).indexOf(i) >= 0;     // 6.º grado elevado (179)
       const tr = document.createElement('tr');
@@ -397,14 +397,20 @@
         });
         cf.appendChild(sel);
       }
-      // Columna «Tonalidad»: la que rige; en las notas 2… un desplegable para empezar aquí una tonalidad vecina
+      /* Columna «Tonalidad»: la que rige, y un desplegable para empezar aquí una tonalidad
+         vecina. TAMBIÉN EN LA PRIMERA NOTA (decisión 183): el primer acorde suele ser la
+         tónica, en estado fundamental o invertida, pero no tiene por qué —puede ser ya el
+         pivote de una inflexión a otro tono—. La tonalidad de partida no se pierde: es la
+         del fragmento, la de la armadura, y es el «antes» del pivote. */
       const ct = tr.querySelector('.celda-ton');
-      if (i === 0) {
-        ct.textContent = Teoria.nombreCorto(ton);
-      } else {
+      {
         const sel = document.createElement('select');
         sel.className = 'sel-ton' + (esPivote ? ' pivote' : '');
-        sel.title = esPivote ? 'Tonalidad nueva desde esta nota (pivote). Elige «(quitar)» para deshacer la modulación.' : 'Rige ' + Teoria.nombreCorto(tonAntes) + '. Despliega y elige una tonalidad vecina para que la modulación empiece en esta nota (acorde pivote).';
+        sel.title = esPivote
+          ? 'Tonalidad nueva desde esta nota (pivote). Elige «(quitar)» para deshacer la modulación.'
+          : (i === 0
+            ? 'El fragmento está en ' + Teoria.nombreCorto(tonAntes) + '. Si el primer acorde ya es el pivote de una inflexión a otro tono, elígelo aquí.'
+            : 'Rige ' + Teoria.nombreCorto(tonAntes) + '. Despliega y elige una tonalidad vecina para que la modulación empiece en esta nota (acorde pivote).');
         const o0 = document.createElement('option'); o0.value = ''; o0.textContent = esPivote ? '(quitar)' : Teoria.nombreCorto(tonAntes); sel.appendChild(o0);
         Teoria.tonalidadesVecinas(tonAntes).forEach(t => {
           const o = document.createElement('option'); o.value = t.tonica + '/' + t.modo; o.textContent = '→ ' + Teoria.nombreCorto(t);
@@ -462,7 +468,10 @@
            escondía acordes que Diego quiere admitir —el I6 con la melodía en su tercera—, y
            esas reglas hablan de cómo se reparten las cuatro voces, no de qué acorde cabe. */
         const avisosDe = {};
-        if (!prop) {
+        /* También cuando el análisis no da NINGUNA opción para esa nota: así ninguna fila se
+           queda sin una casilla que pulsar (pasa, por ejemplo, al hacer pivote el primer
+           acorde en una lección de repertorio corto). */
+        if (!prop || !ids.length) {
           try {
             Reglas.candidatosSoprano(n, ton, rep, i === notas.length - 1, acordesElegidos(), false, true)
               .forEach(c => { if (!ids.includes(c.id)) ids.push(c.id); if (c.avisos && c.avisos.length) avisosDe[c.id] = c.avisos; });
@@ -2206,8 +2215,22 @@
 
   function generarFicha() {
     const filtro = filtroFicha();
-    const lista = Banco.filtrar(banco, filtro);
-    if (!lista.length) { aviso('Ningún fragmento cumple el filtro.'); return; }
+    /* AL ALUMNO SOLO SE LE SIRVEN FRAGMENTOS CERRADOS (decisión 182). La lista con la que se
+       cuenta aquí —los tonos que saldrán, cuántos sitios tiene la ficha— ha de ser esa
+       misma, o el configurador prometería lo que el enlace no da. */
+    const todos = Banco.filtrar(banco, filtro);
+    const lista = Banco.filtrar(banco, Object.assign({}, filtro, { cerrado: 'si' }));
+    if (!todos.length) { aviso('Ningún fragmento cumple el filtro.'); return; }
+    if (!lista.length) {
+      aviso('Cumplen el filtro ' + todos.length + ' fragmentos, pero NINGUNO está cerrado, y al alumno '
+        + 'solo se le sirven los cerrados. Ciérralos en el banco y vuelve a generar el enlace.', 12000);
+      return;
+    }
+    if (lista.length < todos.length) {
+      aviso('Cumplen el filtro ' + todos.length + ' fragmentos y están cerrados ' + lista.length
+        + ': el alumno solo verá esos ' + lista.length + '. Los demás salen en cuanto los cierres, '
+        + 'sin tocar el enlace.', 11000);
+    }
     const url = baseAlumno(filtro.modo) + '#f=' + Banco.codificar(filtro);
     $('#ficha-direccion').value = url;
     $('#btn-ficha-copiar').disabled = false;

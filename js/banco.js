@@ -417,7 +417,16 @@ const Banco = (() => {
      fragmentos hasta llegar al mínimo sin pasarse del máximo —el que no quepa se salta y se
      prueba con el siguiente—, y `n` queda como tope de ejercicios. Sin `compases`, se hace
      lo de siempre: los N primeros. */
+  /* AL ALUMNO, SOLO FRAGMENTOS CERRADOS (decisión 182, Diego 29/9/2026: «los fragmentos que
+     se muestren a los alumnos para la práctica han de ser solo de los que están cerrados,
+     para tener la tranquilidad de que los alumnos no se encontrarán con fragmentos
+     problemáticos o, directamente, con problemas»). El sello (166) ya decía que un fragmento
+     cerrado es criterio del profesor; ahora además es la CONDICIÓN para servirlo. Se fuerza
+     aquí, en el sorteo, y no en el filtro de la ficha: así vale para todos los enlaces ya
+     repartidos, sin que haya que volver a generarlos, y ningún enlace puede saltárselo.
+     El configurador sigue viéndolo todo: allí se filtra con `filtrar`, no con `elegir`. */
   function elegir(entradas, filtro) {
+    filtro = Object.assign({}, filtro || {}, { cerrado: 'si' });
     const lista = filtrar(entradas, filtro).slice();
     for (let i = lista.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

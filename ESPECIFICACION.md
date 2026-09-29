@@ -3880,6 +3880,44 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+183. **El primer acorde también puede ser pivote** (29/9/2026, Diego: «el primer acorde del
+    fragmento ya ha de servir para modular; se ha de poder emplear como acorde pivote para
+    modular ese mismo primer acorde»). La columna «Tonalidad» del revisor solo daba
+    desplegable de la nota 2 en adelante, y `modulaciones()` descartaba cualquiera puesta en
+    la nota 0. Ahora la primera nota tiene su desplegable como todas.
+    - **La tonalidad de partida no se pierde**: es la del fragmento —la de la armadura—, y
+      es el «antes» del pivote. `Ejercicios.tonalidadAntes(ej, 0)` devuelve ya `ej.tonalidad`
+      en vez de la tonalidad que rige en la nota 0, de modo que la casilla partida enseña las
+      dos lecturas (`3 = 6`, `I = IV`) igual que en cualquier otro pivote.
+    - **Y con ello queda dicha la doctrina del primer acorde** (Diego, misma conversación,
+      corrigiendo lo que me había dicho antes): «el primer acorde **usualmente** es la tónica
+      —en estado fundamental o en inversión— aunque no siempre; puede ser un acorde pivote
+      para una inflexión tonal a otro tono o incluso un acorde cromático tomado prestado de
+      otra tonalidad; esto lo comenzaré a introducir más adelante». El motor no exigía tónica
+      en la primera nota, así que no hubo nada que aflojar; queda escrito en
+      `REGLAS-DEL-MOTOR.md` como **R‑16b**.
+    - De paso: las opciones de la 176 se ofrecen **también cuando el análisis deja una nota
+      sin ninguna**, para que ninguna fila se quede sin una casilla que pulsar.
+
+182. **Al alumno, solo fragmentos cerrados** (29/9/2026, Diego: «los fragmentos que se
+    muestren a los alumnos para la práctica han de ser solo de los que están cerrados, para
+    tener la tranquilidad de que los alumnos no se encontrarán con fragmentos problemáticos
+    o, directamente, con problemas»). El sello (166) decía que un fragmento cerrado es
+    criterio del profesor y que nada del programa lo reescribe; ahora además **estar cerrado
+    es la condición para servirlo**.
+    - Se fuerza en `Banco.elegir`, que es por donde pasa toda ficha, y no en el filtro que
+      se codifica en el enlace: así **vale para los enlaces ya repartidos**, sin volver a
+      generarlos, y ninguno puede saltárselo. El configurador sigue viéndolo todo, porque
+      allí se filtra con `filtrar`.
+    - Una ficha empezada que se reanuda se comprueba otra vez: si alguno de sus fragmentos
+      se ha reabierto entretanto, se empieza de nuevo en vez de servirlo.
+    - Al generar el enlace, el configurador dice cuántos de los que cumplen el filtro están
+      cerrados y, si no hay ninguno, **se niega a generarlo**. Al alumno, si la ficha se
+      queda vacía, se le dice que esos ejercicios aún no están revisados.
+    - Estado al implementarlo: **26 de 139 cerrados**. Una ficha de toda la armonización de
+      bajo sirve 8 de 8; una de la lección A3-6, 0, porque ninguno de sus 14 está cerrado
+      todavía.
+
 181. **La lección, junto al título del revisor** (29/9/2026, Diego: «añade encima del
     fragmento que se revisa el nombre de la lección, para que sepa qué acordes se espera que
     use el estudiante»). En el renglón «Revisión de las respuestas» va ahora, en morado, el

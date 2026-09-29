@@ -853,7 +853,10 @@ const Ejercicios = (() => {
   function modulaciones(ej) {
     const n = numNotas(ej);
     return (ej.modulaciones || [])
-      .filter(m => m && m.tonalidad && m.tonalidad.tonica && Number.isInteger(m.nota) && m.nota > 0 && m.nota < n)
+      /* La nota 0 también vale como pivote (decisión 183, Diego 29/9/2026: «el primer acorde
+         del fragmento ya ha de servir para modular»). La tonalidad de partida no se pierde:
+         es la del fragmento —la de la armadura— y sigue siendo el «antes» del pivote. */
+      .filter(m => m && m.tonalidad && m.tonalidad.tonica && Number.isInteger(m.nota) && m.nota >= 0 && m.nota < n)
       .slice().sort((a, b) => a.nota - b.nota);
   }
   const modula = ej => modulaciones(ej).length > 0;
@@ -885,7 +888,8 @@ const Ejercicios = (() => {
   }
   function tonalidadEn(ej, i) { return Teoria.tonalidadesPorNota(ej)[i] || ej.tonalidad; }
   // Tonalidad que regía ANTES de la nota i (la anterior al pivote, si i es pivote)
-  function tonalidadAntes(ej, i) { return i > 0 ? tonalidadEn(ej, i - 1) : tonalidadEn(ej, 0); }
+  // En la nota 0, el «antes» es la tonalidad del fragmento: si modula ahí, es la de partida (183)
+  function tonalidadAntes(ej, i) { return i > 0 ? tonalidadEn(ej, i - 1) : (ej.tonalidad || tonalidadEn(ej, 0)); }
   const esPivote = (ej, i) => modulaciones(ej).some(m => m.nota === i);
 
   // Primera nota, después del pivote de la modulación m, cuyo acorde modelo tiene
