@@ -11,7 +11,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-0620.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-0730.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la
   melodía de soprano, los acordes que contienen la nota salen siempre, marcados o no— y la
   **177, que deroga la 167** —cada ejercicio enseña su voz y el motor deduce las demás— y la
@@ -575,6 +575,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261001-0730 | El pivote de la primera nota, también en la pantalla del alumno: un fragmento así ni siquiera llegaba —la validación lo descartaba entero— y el acorde común salía con la misma función en los dos renglones porque al releerlo en el otro tono se construía otro acorde (188) |
 | 20261001-0620 | «Armadura distinta de la tonalidad» pasa al grupo «En qué tonalidades», junto a «Curso» (185, afinada) |
 | 20261001-0555 | El acorde común se lee en los dos tonos también en la melodía, y los dos renglones dicen a qué tono pertenece cada uno; el rótulo del pivote de la primera nota da los dos tonos (186). Volver al tono del fragmento siempre es posible, aunque quede a más de una alteración (187) |
 | 20261001-0440 | La armadura puede no ser la del fragmento, como en medio de una obra que ha modulado: opción de la ficha con tope de ±1, ±2 o ±3 alteraciones según el curso, a uno de cada cuatro fragmentos como mucho y de forma determinista (185) |

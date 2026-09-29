@@ -1000,7 +1000,7 @@ const Partitura = (() => {
       // Fila «Tonalidad»: desde qué nota rige cada tonalidad (modulación)
       if (filaTon) {
         const celda = filaTon.celdas[i] || {};
-        const editable = filaTon.editable && i > 0 && !celda.fija;
+        const editable = filaTon.editable && !celda.fija;     // también la nota 0 (decisión 188)
         /* Una casilla vacía que además no se responde no dice nada, y repartida por los
            bloques de cada tonalidad llenaba la página de recuadros huecos. Cuando la
            tonalidad viene DADA solo se dibujan las notas donde se declara una.

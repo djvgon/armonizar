@@ -3880,6 +3880,32 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+188. **El pivote de la primera nota, también en la pantalla del alumno** (29/9/2026,
+    Diego: «si el primer acorde es pivote y pertenece a dos tonalidades, ha de mostrarse al
+    comienzo; las tonalidades mostradas no tienen sentido: no se puede modular de la menor a
+    la menor»). Tenía razón: la pantalla decía `la m → la m`. Cuatro cosas, y una de ellas
+    grave.
+    - **Grave: un fragmento con el pivote en la primera nota no llegaba al alumno.** La
+      validación de `Ejercicios.decodificar` daba «Modulación fuera del ejercicio (nota 1)»
+      con `m.nota <= 0` y el ejercicio se descartaba entero, así que la ficha caía al corpus
+      de ejemplo. Corregido a `m.nota < 0`.
+    - Los topes `i > 0` que quedaban de cuando no se podía modular ahí: en `esDoble`,
+      `esDobleFun`, `lecturaCon`, `marcarTonalidad` y en la casilla editable de la fila
+      «Tonalidad». Quitados: el primer acorde se parte ya en sus dos lecturas.
+    - La casilla de tonalidad de la nota 0 escribía siempre el tono del fragmento; si esa
+      nota es el pivote, escribe **el que empieza ahí**, y el de partida va como rótulo del
+      renglón que se deja. De ahí salía el `la m → la m`.
+    - **Y el fondo del asunto, en `Ejercicios.parejasEn`**: en la melodía el acorde se guarda
+      como pareja «grado|cifra» ya escrita en el tono que rige, y al pedir la lectura en el
+      otro tono del pivote se construía el acorde con ese mismo grado **sobre la escala del
+      tono pedido** —o sea un acorde distinto: el `VI` de Do M, la–do–mi, salía fa–la–do al
+      leerlo en la menor— y se devolvía el grado sin traducir. Por eso el acorde común salía
+      con la misma función en los dos renglones. Ahora el acorde se construye siempre en SU
+      tono y solo se **relee** en el que se pide.
+    - Comprobado sobre `A4-11-02` con el pivote en la nota 1: rótulo `la m → Do M`, renglones
+      `la m` y `Do M`, y el primer acorde con función **T** en el renglón de la menor y **S**
+      en el de Do mayor —I de la menor y VI de Do mayor, que es exactamente lo que dijo.
+
 187. **Volver al tono del fragmento siempre es posible** (29/9/2026, Diego: «no permite
     modular a Do Mayor; esta tonalidad no es ofrecida en el desplegable»). Dos cosas, las dos
     arregladas.

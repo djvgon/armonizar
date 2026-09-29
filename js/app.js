@@ -446,7 +446,7 @@
     let ton = estado.ejercicio.tonalidad;
     const out = [];
     for (let i = 0; i < n; i++) {
-      if (marcas[i] && i > 0) { out.push({ ton: marcas[i], antes: ton }); ton = marcas[i]; }
+      if (marcas[i]) { out.push({ ton: marcas[i], antes: ton }); ton = marcas[i]; }   // también en la 0 (decisión 188)
       else out.push({ ton });
     }
     return out;
@@ -459,7 +459,7 @@
      no está—, así que `pideGrado` y `estado.pedirRomano` son lo mismo. Se conserva el
      nombre porque por él pasan la navegación, la paleta, el enunciado y la corrección. */
   const pideGrado = () => estado.pedirRomano;
-  const esDoble = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && estado.pedirRomano;
+  const esDoble = i => hayFilaTonalidad() && !!estado.marcas[i] && estado.pedirRomano;        // la nota 0 incluida (188)
   const hayFilaTonalidad = () => estado.modoTon !== null;
   const tonalidadEditable = () => estado.modoTon === 'pedir' && !estado.tonalidadBloqueada && !estado.corregido;
 
@@ -505,7 +505,10 @@
     const resMarcas = estado.corregido && estado.resultadoMod ? estado.resultadoMod : null;
     for (let i = 0; i < n; i++) {
       const c = { texto: '', clase: '', fija: false };
-      if (i === 0) { c.texto = Teoria.nombreCorto(ej.tonalidad); c.clase = 'inicial'; c.fija = true; }
+      /* En la nota 0, la casilla enseña la tonalidad del fragmento… salvo que ESA nota sea
+         ya el pivote de una modulación (decisión 188): entonces enseña la que empieza ahí, y
+         el tono de partida se escribe como rótulo del renglón que se deja. */
+      if (i === 0 && !estado.marcas[0]) { c.texto = Teoria.nombreCorto(ej.tonalidad); c.clase = 'inicial'; c.fija = true; }
       else if (estado.marcas[i]) {
         c.texto = Teoria.nombreCorto(estado.marcas[i]);
         if (estado.modoTon === 'dadas') { c.clase = 'dada'; c.fija = true; }
@@ -574,7 +577,6 @@
   function marcarTonalidad(t) {
     if (!tonalidadEditable()) return;
     const i = estado.activa;
-    if (i === 0) return;
     estado.marcas[i] = t;
     if (estado.tocadas) estado.tocadas[i].tonalidad = true;
     /* Al marcar, el acorde se parte en DOS LECTURAS y aparecen la función y el grado de la
@@ -1080,7 +1082,7 @@
   const conFuncion = () => estado.modoFun === 'pedir';
   /* La casilla de función se parte en el pivote, igual que la del grado: la tonalidad ha
      de estar a la vista para que las dos lecturas signifiquen algo (decisión 95). */
-  const esDobleFun = i => hayFilaTonalidad() && !!estado.marcas[i] && i > 0 && !!estado.modoFun;
+  const esDobleFun = i => hayFilaTonalidad() && !!estado.marcas[i] && !!estado.modoFun;       // la nota 0 incluida (188)
   /* EL ORDEN EN QUE SE RELLENA UNA NOTA (Diego, 28/9/2026): función → fundamental →
      cifrado, y a la nota siguiente. En el acorde PIVOTE de una modulación diatónica, primero
      los datos del acorde en la tonalidad de partida —función, fundamental y cifrado— y luego

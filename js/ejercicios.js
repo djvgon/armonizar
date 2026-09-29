@@ -921,11 +921,28 @@ const Ejercicios = (() => {
     const notas = Teoria.notasDeCompases(ej.compases);
     /* El grado que se devuelve es el ESCRITO: la dominante secundaria se escribe V/V, no II
        (decisión 48). Por dentro, para deducir el bajo, se sigue usando el grado real. */
-    if (esSoprano(ej)) return admisibles(ej, i).map(id => {
-      const p = par(id); const t = Teoria.tonParaAcorde(p.romano, p.cifra, ton, notas[i]);
-      const bajo = Teoria.bajoDe(p.romano, p.cifra, t);
-      return { id, cifra: p.cifra, romano: Teoria.gradoEscrito(p.romano, p.cifra), bajo, gradoBajo: bajo ? Teoria.textoGrado(bajo, ton) : null };
-    });
+    /* EL ACORDE ES EL MISMO; LO QUE CAMBIA ES CÓMO SE LEE (decisión 188). En la melodía, el
+       acorde se guarda como pareja «grado|cifra» YA ESCRITA en el tono que rige en esa nota.
+       Al pedir la lectura en OTRO tono —la segunda del acorde pivote— esto construía el
+       acorde con el grado de siempre pero sobre la escala del tono pedido, o sea un acorde
+       DISTINTO (el `VI` de Do M, la–do–mi, salía fa–la–do al leerlo en la menor), y devolvía
+       además el grado sin traducir. De ahí que en la pantalla del alumno el acorde común
+       saliera con la misma función en los dos renglones. Ahora el acorde se construye
+       siempre en SU tono y solo se RELEE en el que se pide. */
+    if (esSoprano(ej)) {
+      const suya = tonalidadEn(ej, i);
+      const otra = !Teoria.mismaTonalidad(ton, suya);
+      return admisibles(ej, i).map(id => {
+        const p = par(id);
+        const bajo = Teoria.bajoDe(p.romano, p.cifra, Teoria.tonParaAcorde(p.romano, p.cifra, suya, notas[i]));
+        let romano = Teoria.gradoEscrito(p.romano, p.cifra);
+        if (otra && bajo) {
+          try { romano = Teoria.romanoEscrito(p.cifra, { letra: bajo.letra, alt: bajo.alt, octava: 3 }, ton); }
+          catch (e) { /* si no se puede leer en el otro tono, se deja el suyo */ }
+        }
+        return { id, cifra: p.cifra, romano, bajo, gradoBajo: bajo ? Teoria.textoGrado(bajo, ton) : null };
+      });
+    }
     /* `gradoBajo` es el grado de la escala de la nota del bajo (decisión 90). No depende
        de la cifra —la nota es la que es—, así que sale igual en todas las parejas; se
        guarda en cada una para que el alumno se corrija con el mismo camino que el romano. */
@@ -975,7 +992,8 @@ const Ejercicios = (() => {
       if (!Array.isArray(ej.modulaciones)) errores.push('Las modulaciones no son una lista.');
       else ej.modulaciones.forEach(m => {
         if (!m || !m.tonalidad || !m.tonalidad.tonica || !m.tonalidad.modo || !Number.isInteger(m.nota)) errores.push('Modulación mal formada.');
-        else if (ej.compases && (m.nota <= 0 || m.nota >= numNotas(ej))) errores.push('Modulación fuera del ejercicio (nota ' + (m.nota + 1) + ').');
+        // La nota 0 vale: el primer acorde puede ser el pivote (decisiones 183 y 188)
+        else if (ej.compases && (m.nota < 0 || m.nota >= numNotas(ej))) errores.push('Modulación fuera del ejercicio (nota ' + (m.nota + 1) + ').');
       });
     }
     return errores;
