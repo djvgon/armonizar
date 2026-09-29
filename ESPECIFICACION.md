@@ -3880,6 +3880,26 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+191. **La ficha se llena hasta el máximo de compases** (29/9/2026, Diego: «se muestran muy
+    pocos fragmentos por ficha, solo 1 ó 2… los dos controles que filtran por número de
+    compases total están pensados para los fragmentos que se imprimen en papel; me interesa
+    que se practique una determinada cantidad de compases, me da igual si están organizados
+    de dos en dos o en uno solo»). El fallo era **una línea** en `Banco.elegir`: en cuanto la
+    suma llegaba al MÍNIMO se cortaba (`if (total >= min) break`). Con «de 20 a 26 compases»
+    y fragmentos de diez, dos llenaban la ficha y ahí se quedaba. El mínimo no es donde se
+    para: es el suelo.
+    - Ahora se van tomando fragmentos mientras quepan sin pasarse del máximo. El primero
+      entra siempre, aunque él solo pase del máximo: más vale una ficha larga que una vacía.
+    - **Fuera el tope «Como mucho, ejercicios»** (`#ficha-n`), como él pidió: la ficha se mide
+      en compases, no en número de fragmentos, y el tope solo servía para recortarla. Los
+      enlaces antiguos que lo llevan siguen funcionando —`elegir` lo respeta cuando no hay
+      presupuesto de compases—, pero los nuevos ya no lo escriben.
+    - Medido sobre las lecciones largas, dándolas todas por cerradas y con 20–26 compases:
+      `A4-10` pasa de 5 ejercicios (21–23 compases) a 6–7 (25–26); `A4-11`, de 4–5 (20–24) a
+      6 (23–25); `A3-7`, de 6–7 (20–22) a 8 (24–26).
+    - El cartel del configurador dice ahora en qué se mide la ficha: «tomará al azar los que
+      quepan en 20 a 26 compases (unos 8 ejercicios)».
+
 190. **La armadura ajena es un cupo de la ficha, no una moneda por fragmento**
     (29/9/2026, Diego: «la opción Armadura distinta de la tonalidad afecta a entre un 25 % y
     un 75 % de los fragmentos presentados al estudiante. Como mínimo un 25 %, como máximo un

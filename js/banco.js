@@ -433,17 +433,25 @@ const Banco = (() => {
       [lista[i], lista[j]] = [lista[j], lista[i]];
     }
     const f = filtro || {};
-    const tope = Math.max(1, Math.min(lista.length, f.n || 8));
     const meta = Array.isArray(f.compases) && f.compases.length === 2 ? f.compases : null;
-    if (!meta) return lista.slice(0, tope);
+    // Sin presupuesto de compases (enlaces viejos), manda el tope de ejercicios de siempre
+    if (!meta) return lista.slice(0, Math.max(1, Math.min(lista.length, f.n || 8)));
+    /* LA FICHA SE LLENA HASTA EL MÁXIMO DE COMPASES (decisión 191, Diego 29/9/2026: «se
+       muestran muy pocos fragmentos por ficha, solo 1 ó 2»). El fallo era una línea: en
+       cuanto la suma llegaba al MÍNIMO se cortaba (`if (total >= min) break`), de modo que
+       con «de 20 a 26 compases» bastaba un fragmento de 20 para cerrar la ficha. El mínimo
+       no es donde se para, es el suelo: lo que se quiere es practicar esa cantidad de
+       compases, repartida como sea. Ahora se van tomando fragmentos mientras quepan sin
+       pasarse del máximo, y el tope de ejercicios deja de recortar —la ficha se mide en
+       compases, no en número de fragmentos—. El primero entra siempre, aunque él solo pase
+       del máximo: más vale una ficha larga que una vacía. */
     const min = Math.max(1, meta[0]), max = Math.max(min, meta[1]);
     const out = [];
     let total = 0;
-    for (let i = 0; i < lista.length && out.length < tope; i++) {
+    for (let i = 0; i < lista.length && total < max; i++) {
       const c = compasesDe(lista[i]);
       if (out.length && total + c > max) continue;   // no cabe: que pruebe el siguiente
       out.push(lista[i]); total += c;
-      if (total >= min) break;
     }
     return out.length ? out : lista.slice(0, 1);
   }

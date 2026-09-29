@@ -1161,7 +1161,7 @@
         fichaTonalidades: $('#ficha-tonalidades').value,
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
-          '#ficha-modula', '#ficha-n', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
+          '#ficha-modula', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
           '#ficha-armadura'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
         funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
@@ -1560,8 +1560,8 @@
     const alt = parseInt($('#ficha-alteraciones').value, 10);
     const niv = $('#ficha-nivel').value.split('-').map(Number);
     const mod = $('#ficha-modula').value;
+    /* Ya no hay tope de ejercicios (decisión 191): la ficha se mide en compases. */
     const f = {
-      n: Math.max(1, parseInt($('#ficha-n').value, 10) || 8),
       modo: $('#ficha-modo').value,
       nivel: niv,
       alteraciones: [0, alt]
@@ -1650,7 +1650,7 @@
        saber por cuál se va con indexOf. */
     estado.recorrido = { lista: conAvisos.slice(), modo: filtro.modo };
     $('#ficha-cuenta').textContent = lista.length
-      ? lista.length + ' fragmentos cumplen el filtro; cada ficha tomará ' + Math.min(lista.length, filtro.n) + ' al azar.'
+      ? lista.length + ' fragmentos cumplen el filtro; cada ficha tomará al azar los que quepan en ' + sitiosDeFicha(filtro, lista) + '.'
       : 'Ningún fragmento cumple el filtro. Prueba con otro tipo de ejercicio o menos restricciones (recuerda que la armonización de soprano necesita fragmentos con la melodía escrita).';
     if (conAvisos.length > lista.length) $('#ficha-cuenta').textContent += ' ' + (conAvisos.length - lista.length) + ' quedan fuera por tener alguna nota sin cifra posible (marcados con ⚠ abajo): revísalos o quítalos.';
     $('#btn-ficha').disabled = !lista.length;
@@ -2316,6 +2316,25 @@
     };
   }
 
+  /* Cuántos ejercicios tendrá la ficha, y cuántos compases (decisión 191). Con presupuesto
+     de compases no se sabe de antemano —depende de cuáles toquen—, así que se estima con la
+     media de compases de los que cumplen el filtro. */
+  function numSitios(filtro, lista) {
+    const n = (lista || []).length;
+    if (!n) return 0;
+    if (!filtro.compases) return Math.max(1, Math.min(n, filtro.n || 8));
+    const med = lista.reduce((t, e) => t + Banco.compasesDe(e), 0) / n;
+    return Math.max(1, Math.min(n, Math.round(filtro.compases[1] / Math.max(1, med))));
+  }
+  function sitiosDeFicha(filtro, lista) {
+    const k = numSitios(filtro, lista);
+    if (!k) return '0 ejercicios';
+    const cuantos = k + (k === 1 ? ' ejercicio' : ' ejercicios');
+    return filtro.compases
+      ? filtro.compases[0] + ' a ' + filtro.compases[1] + ' compases (unos ' + cuantos + ')'
+      : cuantos;
+  }
+
   function generarFicha() {
     const filtro = filtroFicha();
     /* AL ALUMNO SOLO SE LE SIRVEN FRAGMENTOS CERRADOS (decisión 182). La lista con la que se
@@ -2350,15 +2369,8 @@
        toque decide con cuál de las dos listas se cuenta. */
     const p = $('#ficha-tonos-reparto');
     if (filtro.tonos || typeof filtro.maxAlt === 'number') {
-      /* Cuántos sitios tiene la ficha: con presupuesto de compases no se sabe de
-         antemano, así que se estima con la media de compases de los que cumplen el
-         filtro y se acota con el tope de ejercicios (decisión 127). */
-      let sitios = filtro.n || 8;
-      if (filtro.compases) {
-        const med = lista.reduce((t, e) => t + Banco.compasesDe(e), 0) / lista.length;
-        sitios = Math.min(sitios, Math.max(1, Math.round(filtro.compases[1] / Math.max(1, med))));
-      }
-      const n = Math.max(1, Math.min(sitios, lista.length));
+      // Cuántos sitios tiene la ficha (decisiones 127 y 191)
+      const n = Math.max(1, numSitios(filtro, lista));
       const paso = [];
       for (let k = 0; k < n; k++) {
         const may = Banco.tonicaEn(filtro, 'mayor', k), men = Banco.tonicaEn(filtro, 'menor', k);
@@ -2376,15 +2388,8 @@
        y es el nombre que vas a tener que reconocer dentro de tres meses. Se avisa aquí,
        con el nombre que le va a tocar, en vez de dejarlo a que uno se acuerde. */
     if (!filtro.titulo) {
-      /* Cuántos sitios tiene la ficha: con presupuesto de compases no se sabe de
-         antemano, así que se estima con la media de compases de los que cumplen el
-         filtro y se acota con el tope de ejercicios (decisión 127). */
-      let sitios = filtro.n || 8;
-      if (filtro.compases) {
-        const med = lista.reduce((t, e) => t + Banco.compasesDe(e), 0) / lista.length;
-        sitios = Math.min(sitios, Math.max(1, Math.round(filtro.compases[1] / Math.max(1, med))));
-      }
-      const n = Math.max(1, Math.min(sitios, lista.length));
+      // Cuántos sitios tiene la ficha (decisiones 127 y 191)
+      const n = Math.max(1, numSitios(filtro, lista));
       const auto = [filtro.leccion || 'Varias lecciones', Ejercicios.MODOS[filtro.modo] || 'Ejercicios',
         n + (n === 1 ? ' ejercicio' : ' ejercicios')].join(' · ');
       aviso('Esta ficha va sin título: en tu hoja de calificaciones saldrá como «' + auto
@@ -2577,7 +2582,7 @@
     $('#btn-ficha').addEventListener('click', generarFicha);
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
-    ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula', '#ficha-n',
+    ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula',
      '#ficha-compases-min', '#ficha-compases-max',
      '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades',
      '#ficha-armadura'].forEach(id => {
