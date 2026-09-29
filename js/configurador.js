@@ -1842,6 +1842,25 @@
     const chip = $('#sello-chip'), b = estado.banco;
     if (!chip) return;
     chip.hidden = !b;
+    /* LA LECCIÓN, JUNTO AL TÍTULO (decisión 181, Diego 29/9/2026: «añade el nombre de la
+       lección, para que sepa qué acordes se espera que use el estudiante»). Va delante de
+       la chapa del candado, y su globo lleva la lista de acordes de esa lección, que es la
+       respuesta a la pregunta de verdad. */
+    const lec = $('#sello-leccion');
+    if (lec) {
+      const e0 = b && b.entrada;
+      const txt = e0 ? Banco.etiquetaLeccion(e0) : '';
+      lec.hidden = !txt;
+      if (txt) {
+        lec.textContent = txt;
+        const ac = (e0.leccionAcordes || []).map(id => {
+          try { const p = Ejercicios.par(id); return Teoria.gradoEscrito(p.romano, p.cifra)
+            + (p.cifra === '53' || !Teoria.CIFRADOS[p.cifra] ? '' : ' ' + Teoria.CIFRADOS[p.cifra].etiqueta); }
+          catch (err) { return id; }
+        });
+        lec.title = ac.length ? 'Acordes de esta lección: ' + ac.join(', ') : 'Esta lección no lleva lista de acordes.';
+      }
+    }
     if (!b) return;
     const e = b.entrada, cerrada = Banco.estaCerrada(e), rota = Banco.huellaRota(e);
     chip.dataset.estado = cerrada ? (rota ? 'rota' : 'cerrado') : 'abierto';

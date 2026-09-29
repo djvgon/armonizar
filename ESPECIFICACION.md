@@ -3880,6 +3880,14 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+181. **La lección, junto al título del revisor** (29/9/2026, Diego: «añade encima del
+    fragmento que se revisa el nombre de la lección, para que sepa qué acordes se espera que
+    use el estudiante»). En el renglón «Revisión de las respuestas» va ahora, en morado, el
+    código y el nombre de la lección —`A3-7 · II7 y IV7`— y detrás, como hasta ahora, la
+    chapa del candado con el identificador del fragmento y su estado. El globo de la
+    etiqueta lleva **la lista de acordes de esa lección** escrita en cifrado, que es la
+    respuesta a la pregunta de fondo: qué se espera que use el alumno.
+
 180. **Las reglas de duplicación avisan, no esconden** (29/9/2026, Diego, sobre
     `A3-7-11`: «no puedo poner I6 en el tercer acorde de este fragmento»). La nota 3 de esa
     melodía es un mi, y `candidatosSoprano` descartaba el `I 6` —cuyo bajo es mi— porque

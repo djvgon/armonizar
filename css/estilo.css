@@ -1452,3 +1452,11 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
 }
 .sexta-elevada input { margin: 0; }
 .sexta-elevada.puesta { border-color: var(--voz-dada, #9412DC); color: var(--voz-dada, #9412DC); font-weight: 600; }
+
+/* El nombre de la lección, junto al título del revisor (decisión 181) */
+.sello-leccion {
+  display: inline-block; margin-left: .4rem; padding: .12rem .45rem;
+  font-size: .82rem; font-weight: 600; letter-spacing: .01em;
+  color: var(--voz-dada, #9412DC); background: color-mix(in srgb, var(--voz-dada, #9412DC) 10%, transparent);
+  border-radius: .4rem; vertical-align: middle; cursor: help;
+}

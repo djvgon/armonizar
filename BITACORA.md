@@ -11,13 +11,13 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-0050.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-0140.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la
   melodía de soprano, los acordes que contienen la nota salen siempre, marcados o no— y la
   **177, que deroga la 167** —cada ejercicio enseña su voz y el motor deduce las demás— y la
   **178** —cambiar la función de una nota ya no rehace el fragmento entero— y la **179**:
   el 6.º grado elevado, marcado nota a nota, y la **180**: las reglas de duplicación avisan en
-  vez de esconder acordes. Toca además `js/teoria.js`, `js/reglas.js`, `js/banco.js` y
+  vez de esconder acordes, y la **181**: la lección, junto al título del revisor. Toca además `js/teoria.js`, `js/reglas.js`, `js/banco.js` y
   `css/estilo.css`.
   Archivos tocados en esta entrega: `js/configurador.js`, `js/reglas.js` y las ocho páginas
   HTML (marca de versión). **`banco.json` no cambia.**
@@ -567,6 +567,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261001-0140 | La lección, junto al título del revisor: código y nombre en morado delante de la chapa del candado, con la lista de acordes de la lección en el globo (181) |
 | 20261001-0050 | Las reglas de duplicación avisan en vez de esconder: el I6 con la melodía en su tercera vuelve a poder marcarse, con el aviso en el globo. El motor sigue proponiendo con las reglas duras, así que ningún modelo del banco cambia (180) |
 | 20260930-2350 | El 6.º grado elevado, marcado nota a nota en la columna «Tonalidad»: el IV pasa a mayor y el II a menor, y el bajo deducido de la melodía escribe el si♮ que pide la octava ascendente. La huella solo lo incluye cuando lo hay, así que los 26 fragmentos firmados siguen intactos (179) |
 | 20260930-2230 | Cambiar la función de una nota marca los acordes de esa función que caben en ella y no toca ninguna otra: en la melodía llamaba a un reanálisis completo y borraba todo lo asignado a mano. Lo ya marcado de esa función se conserva, y delante (178) |
