@@ -422,9 +422,30 @@
             + '. La tonalidad de partida se cambia arriba, en «Tónica» y «Modo».';
           ct.appendChild(de);
         }
-        const o0 = document.createElement('option'); o0.value = ''; o0.textContent = esPivote ? '(quitar)' : Teoria.nombreCorto(tonAntes); sel.appendChild(o0);
-        Teoria.tonalidadesVecinas(tonAntes).forEach(t => {
-          const o = document.createElement('option'); o.value = t.tonica + '/' + t.modo; o.textContent = '→ ' + Teoria.nombreCorto(t);
+        /* La primera opción de un pivote decía «(quitar)» a secas y no se entendía a qué
+           tono se volvía (decisión 187, Diego 29/9/2026: «no permite modular a Do Mayor»).
+           Ahora lo dice. */
+        const o0 = document.createElement('option'); o0.value = '';
+        o0.textContent = esPivote ? '(quitar) · sigue en ' + Teoria.nombreCorto(tonAntes) : Teoria.nombreCorto(tonAntes);
+        sel.appendChild(o0);
+        /* VOLVER SIEMPRE ES POSIBLE (decisión 187). La lista eran solo las cinco tonalidades
+           VECINAS del tono que rige, y con eso no siempre se puede volver: desde Re M, el
+           tono del fragmento —Do M— está a dos alteraciones y no aparecía, de modo que una
+           vez ida la música no había manera de traerla de vuelta. A las vecinas se añaden
+           ahora el tono DEL FRAGMENTO y los que el pasaje ya ha visitado: volver a un tono
+           por el que ya se ha pasado es lo más corriente de todo y no puede faltar. */
+        const destinos = Teoria.tonalidadesVecinas(tonAntes).slice();
+        const mete = x => {
+          if (!x || !x.tonica) return;
+          if (Teoria.mismaTonalidad(x, tonAntes)) return;
+          if (destinos.some(y => Teoria.mismaTonalidad(y, x))) return;
+          destinos.push({ tonica: x.tonica, modo: x.modo, vuelta: true });
+        };
+        mete(tonalidad());
+        estado.modulaciones.forEach(m => { if (m && m.nota !== i) mete(m.tonalidad); });
+        destinos.forEach(t => {
+          const o = document.createElement('option'); o.value = t.tonica + '/' + t.modo;
+          o.textContent = '→ ' + Teoria.nombreCorto(t) + (t.vuelta ? ' (vuelta)' : '');
           if (esPivote && Teoria.mismaTonalidad(t, ton)) o.selected = true;
           sel.appendChild(o);
         });
@@ -616,7 +637,11 @@
     const n = Ejercicios.numNotas({ compases: estado.compases });
     const ejTon = { tonalidad: tonalidad(), compases: estado.compases, modulaciones: modulacionesValidas(n), melodica: estado.melodica };
     const tons = Teoria.tonalidadesPorNota(ejTon);
-    estado.modulaciones = estado.modulaciones.filter(m => m.nota <= i || Teoria.tonalidadesVecinas(tons[m.nota - 1]).some(t => Teoria.mismaTonalidad(t, m.tonalidad)));
+    /* La vuelta al tono del fragmento no se descarta nunca (decisión 187), aunque quede a
+       más de una alteración del que rige en ese momento. */
+    estado.modulaciones = estado.modulaciones.filter(m => m.nota <= i
+      || Teoria.mismaTonalidad(m.tonalidad, tonalidad())
+      || Teoria.tonalidadesVecinas(tons[m.nota - 1]).some(t => Teoria.mismaTonalidad(t, m.tonalidad)));
     analizar();
   }
 
@@ -761,9 +786,27 @@
        los cuatro tipos (decisión 113). Con «solo en el primer fragmento» marcado, la
        previa es el fragmento 1, así que los circulitos del bajo van puestos. */
     const ejV = opciones().gradosPrimero ? Object.assign({}, ej, { gradosBajo: 'dado' }) : ej;
+    /* EL PIVOTE, LEÍDO EN LOS DOS TONOS TAMBIÉN EN LA MELODÍA (decisión 186, Diego
+       29/9/2026: «en el primer acorde ha de aparecer ya que el primer acorde es el acorde
+       común entre la menor (I) y Do Mayor (VI)»). En la armonización de bajo esto ya salía,
+       porque allí el grado se DEDUCE de la nota del bajo y de la cifra, y basta leerlo con
+       otra tonalidad. En la melodía no: el acorde se guarda como pareja «grado|cifra», ya
+       escrita en el tono que rige en esa nota, y el dibujo devolvía ese grado tal cual para
+       las dos lecturas —de ahí que en el pivote saliera `IV` encima de `IV`—. Ahora, cuando
+       se pide la lectura en OTRO tono, se deduce el bajo del acorde en su propio tono y se
+       vuelve a leer en el que se pide: el acorde común sale así `I` sobre `VI`. */
     const romanoModelo = (a, i, ton) => {
       if (!a[0]) return null;
-      if (sop) { const p = Ejercicios.par(a[0]); return Teoria.gradoEscrito(p.romano, p.cifra); }
+      if (sop) {
+        const p = Ejercicios.par(a[0]);
+        const suya = Ejercicios.tonalidadEn(ej, i);
+        if (!ton || Teoria.mismaTonalidad(ton, suya)) return Teoria.gradoEscrito(p.romano, p.cifra);
+        try {
+          const b = Teoria.bajoDe(p.romano, p.cifra, Teoria.tonParaAcorde(p.romano, p.cifra, suya, notas[i]));
+          if (b) return Teoria.romanoEscrito(p.cifra, { letra: b.letra, alt: b.alt, octava: 3 }, ton);
+        } catch (e) { /* si no se puede leer en el otro tono, se deja el suyo */ }
+        return Teoria.gradoEscrito(p.romano, p.cifra);
+      }
       return Teoria.romanoEscrito(a[0], notas[i], ton);
     };
     const romanos = ver ? ej.respuestas.map((a, i) => romanoModelo(a, i, pivotes.has(i) ? Ejercicios.tonalidadAntes(ej, i) : Ejercicios.tonalidadEn(ej, i))) : new Array(n).fill(null);
@@ -794,7 +837,12 @@
       romanos,
       romanos2: ver ? ej.respuestas.map((a, i) => (a[0] && pivotes.has(i) ? romanoModelo(a, i, Ejercicios.tonalidadEn(ej, i)) : null)) : new Array(n).fill(null),
       dobles: ej.respuestas.map((_, i) => pivotes.has(i)),
-      etiquetas: mods.map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'dada' })),
+      /* En el pivote de la primera nota se escriben LOS DOS TONOS (decisión 186): el de
+         partida no aparece en ninguna otra parte —no hay etiqueta anterior— y sin él no se
+         sabe a qué tono corresponde cada uno de los dos renglones del acorde común. */
+      etiquetas: mods.map(m => ({ i: m.nota,
+        texto: (m.nota === 0 ? Teoria.nombreCorto(Ejercicios.tonalidadAntes(ej, 0)) + ' ' : '') + '→ ' + Teoria.nombreCorto(m.tonalidad),
+        clase: 'dada' })),
       pedirRomano: opciones().pedirRomano || sop,
       activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
       realizacion: real ? real.acordes : null,   // el profesor siempre puede ver la realización modelo
@@ -815,6 +863,14 @@
         celdas: ej.respuestas.map((_, i) => ({ texto: pivotes.has(i) ? Ejercicios.funcionModeloEn(ej, i, Ejercicios.tonalidadAntes(ej, i)) : Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true })),
         celdas2: ej.respuestas.map((_, i) => (pivotes.has(i) ? { texto: Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true } : null)),
         dobles: ej.respuestas.map((_, i) => pivotes.has(i))
+      } : null,
+      /* La fila «Tonalidad», solo si el fragmento modula (decisión 186): es la que pone el
+         nombre del tono a la izquierda de cada renglón, y sin ella los dos renglones del
+         acorde común no dicen a qué tono pertenece cada uno. En un fragmento que no modula
+         sería un renglón de casillas todas iguales, así que no se dibuja. */
+      filaTonalidad: mods.length ? {
+        visible: true, editable: false,
+        celdas: ej.respuestas.map((_, i) => ({ texto: Teoria.nombreCorto(Ejercicios.tonalidadEn(ej, i)), clase: 'dada', fija: true }))
       } : null,
       gradosBajo: Ejercicios.gradosBajo(ejV),   // el circulito sobre el bajo (decisiones 91 y 113)
       numerar: true,                       // el número de cada acorde es el de su fila en la tabla de revisión
@@ -1258,7 +1314,8 @@
       estado.modulaciones.slice().sort((a, b) => a.nota - b.nota).forEach(m => {
         if (!m || !m.tonalidad) return;
         if (Teoria.mismaTonalidad(ton, m.tonalidad)) return;          // modular al mismo tono no es modular
-        if (!Teoria.tonalidadesVecinas(ton).some(x => Teoria.mismaTonalidad(x, m.tonalidad))) return;
+        if (!Teoria.mismaTonalidad(m.tonalidad, tonalidad())            // la vuelta al tono del fragmento, siempre (187)
+          && !Teoria.tonalidadesVecinas(ton).some(x => Teoria.mismaTonalidad(x, m.tonalidad))) return;
         validas.push(m); ton = m.tonalidad;
       });
       estado.modulaciones = validas;

@@ -1473,3 +1473,6 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
   display: block; margin-top: .25rem; font-size: .78rem; line-height: 1.35;
   color: var(--tinta-suave, #5a5566); font-weight: 400; max-width: 46ch;
 }
+
+/* Fila de campos en la que alguno lleva pie explicativo: los rótulos, arriba (decisión 185) */
+.fila-campos.fila-arriba { align-items: flex-start; }

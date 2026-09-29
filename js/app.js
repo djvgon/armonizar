@@ -493,8 +493,9 @@
       estado.filaTonalidad = null;
       estado.dobles = [];
       // Sin fila, la modulación solo se descubre al ver la solución
+      const rotulo = m => (m.nota === 0 ? Teoria.nombreCorto(Ejercicios.tonalidadAntes(ej, 0)) + ' ' : '') + '→ ' + Teoria.nombreCorto(m.tonalidad);   // los dos tonos en el pivote de la 1.ª nota (186)
       estado.etiquetas = estado.mostrarSolucion
-        ? Ejercicios.modulaciones(ej).map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'solucion' }))
+        ? Ejercicios.modulaciones(ej).map(m => ({ i: m.nota, texto: rotulo(m), clase: 'solucion' }))
         : [];
       return;
     }
@@ -517,7 +518,8 @@
     // Rótulos encima del sistema: con las tonalidades dadas, siempre; si las pone el alumno, al mostrar la solución
     estado.etiquetas = [];
     if (estado.modoTon === 'dadas' || estado.mostrarSolucion) {
-      Ejercicios.modulaciones(ej).forEach(m => estado.etiquetas.push({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: estado.modoTon === 'dadas' ? 'dada' : 'solucion' }));
+      const rotulo = m => (m.nota === 0 ? Teoria.nombreCorto(Ejercicios.tonalidadAntes(ej, 0)) + ' ' : '') + '→ ' + Teoria.nombreCorto(m.tonalidad);   // los dos tonos en el pivote de la 1.ª nota (186)
+      Ejercicios.modulaciones(ej).forEach(m => estado.etiquetas.push({ i: m.nota, texto: rotulo(m), clase: estado.modoTon === 'dadas' ? 'dada' : 'solucion' }));
     }
   }
 

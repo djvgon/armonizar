@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261001-0440">
-  <link rel="stylesheet" href="css/estilo.css?v=20261001-0440">
+  <link rel="stylesheet" href="css/bravura.css?v=20261001-0620">
+  <link rel="stylesheet" href="css/estilo.css?v=20261001-0620">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -140,7 +140,7 @@
         <div class="bloque-opciones">
         <h3>En qué tonalidades</h3>
         <p class="ayuda">Casi todo el banco está escrito en Do M y la menor. Aquí se elige a qué tonalidades se <b>transporta</b>: cada fragmento sale en una, y el mismo enlace da siempre las mismas, así que la ficha se puede repetir, comparar e imprimir. <b>Las respuestas no cambian</b> —son cifrados interválicos y sonidos fundamentales, que no dependen del tono—: cambia la música, no el ejercicio. No lo confundas con «Alteraciones de la armadura» de arriba, que es un filtro de qué fragmentos entran.</p>
-        <div class="fila-campos">
+        <div class="fila-campos fila-arriba">
           <label class="campo campo-ancho">
             <span>Curso</span>
             <select id="ficha-curso">
@@ -151,6 +151,18 @@
               <option value="7">2.º de Análisis / Fundamentos de composición — hasta 7</option>
               <option value="x">A medida — solo las marcadas aquí abajo</option>
             </select>
+          </label>
+          <!-- Junto a «Curso», porque las dos cosas ajustan lo mismo: en qué tono se ve el
+               fragmento y con qué armadura se escribe (Diego, 29/9/2026, decisión 185). -->
+          <label class="campo campo-ancho">
+            <span>Armadura distinta de la tonalidad</span>
+            <select id="ficha-armadura">
+              <option value="0" selected>No: la armadura es la del fragmento</option>
+              <option value="1">2.º de Armonía — hasta 1 alteración de diferencia</option>
+              <option value="2">1.º de Análisis / Fundamentos de composición — hasta 2</option>
+              <option value="3">2.º de Análisis / Fundamentos de composición — hasta 3</option>
+            </select>
+            <small class="ayuda-campo">Como en medio de una obra que ha modulado: el fragmento sigue en su tono —el que diga «Curso»— pero se presenta con otra armadura y las alteraciones que hagan falta (en Do M con armadura de Sol M, becuadro en cada fa). Le toca a uno de cada cuatro como mucho, y el alumno ha de deducir el tono de verdad.</small>
           </label>
         </div>
         <div id="ficha-tonos-caja" hidden>
@@ -196,16 +208,6 @@
               <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
               <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
             </select>
-          </label>
-          <label class="campo">
-            <span>Armadura distinta de la tonalidad</span>
-            <select id="ficha-armadura">
-              <option value="0" selected>No: la armadura es la del fragmento</option>
-              <option value="1">Hasta 1 alteración de diferencia (2.º de Armonía)</option>
-              <option value="2">Hasta 2 (1.º de Análisis / Fundamentos)</option>
-              <option value="3">Hasta 3 (2.º de Análisis / Fundamentos)</option>
-            </select>
-            <small class="ayuda-campo">Como en medio de una obra que ha modulado: el fragmento sigue en su tono, pero se presenta con otra armadura y las alteraciones que hagan falta (un fragmento en Do M con armadura de Sol M lleva becuadro en cada fa). Le toca a uno de cada cuatro como mucho, y el alumno ha de deducir el tono de verdad.</small>
           </label>
           <label class="campo">
             <span>Grados de la escala del bajo</span>
@@ -550,19 +552,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261001-0440</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261001-0620</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261001-0440"></script>
-  <script src="js/reglas.js?v=20261001-0440"></script>
-  <script src="js/ejercicios.js?v=20261001-0440"></script>
-  <script src="js/partitura.js?v=20261001-0440"></script>
-  <script src="js/musicxml.js?v=20261001-0440"></script>
-  <script src="js/musescore.js?v=20261001-0440"></script>
-  <script src="js/banco.js?v=20261001-0440"></script>
-  <script src="js/realizacion.js?v=20261001-0440"></script>
-  <script src="js/tecnicas.js?v=20261001-0440"></script>
-  <script src="js/configurador.js?v=20261001-0440"></script>
+  <script src="js/teoria.js?v=20261001-0620"></script>
+  <script src="js/reglas.js?v=20261001-0620"></script>
+  <script src="js/ejercicios.js?v=20261001-0620"></script>
+  <script src="js/partitura.js?v=20261001-0620"></script>
+  <script src="js/musicxml.js?v=20261001-0620"></script>
+  <script src="js/musescore.js?v=20261001-0620"></script>
+  <script src="js/banco.js?v=20261001-0620"></script>
+  <script src="js/realizacion.js?v=20261001-0620"></script>
+  <script src="js/tecnicas.js?v=20261001-0620"></script>
+  <script src="js/configurador.js?v=20261001-0620"></script>
 </body>
 </html>

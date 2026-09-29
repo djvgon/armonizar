@@ -341,7 +341,11 @@ const Partitura = (() => {
       const fila = new Map();
       for (let i = 0; i < numNotas; i++) {
         const tAct = (tonsBloque && tonsBloque[i]) || ton;
-        const tAnt = i > 0 ? ((tonsBloque && tonsBloque[i - 1]) || ton) : tAct;
+        /* En la nota 0 no hay nota anterior de la que sacar el tono de partida; si ESA nota
+           es el pivote (decisión 186), el de partida es el del fragmento, y así el acorde
+           común abre los dos renglones —el de la tonalidad que se deja y el de la que
+           empieza— y cada uno lleva escrito su nombre a la izquierda. */
+        const tAnt = i > 0 ? ((tonsBloque && tonsBloque[i - 1]) || ton) : (dobles[0] ? ton : tAct);
         [clave(tAnt), clave(tAct)].forEach(k => { if (!fila.has(k)) fila.set(k, fila.size); });
         renglonAntes.push(fila.get(clave(tAnt)));
         renglon.push(fila.get(clave(tAct)));
@@ -355,8 +359,11 @@ const Partitura = (() => {
     const rotulosAqui = new Map();
     {
       const vistos = new Set();
+      /* También en la nota 0 (decisión 186). Hasta la 183 no se podía modular en la primera
+         nota, así que el pivote se descartaba ahí con un `i > 0`; ahora sí se puede, y el
+         acorde común ha de partirse en dos lecturas también al principio del fragmento. */
       for (let i = 0; i < numNotas; i++) {
-        const esPiv = !!dobles[i] && i > 0;
+        const esPiv = !!dobles[i];
         (esPiv ? [renglonAntes[i], renglon[i]] : [renglon[i]]).forEach(r => {
           if (vistos.has(r)) return;
           vistos.add(r);
@@ -862,10 +869,10 @@ const Partitura = (() => {
          hasta la última casilla de función. */
       const dobleFun = !!(filaFun && filaFun.dobles && filaFun.dobles[i]
                           && filaFun.celdas2 && filaFun.celdas2[i]);
-      const pivoteRomano = pedirRomano && !!dobles[i] && i > 0;
+      const pivoteRomano = pedirRomano && !!dobles[i];
 
       if (pedirRomano) {
-        const esPivote = !!dobles[i] && i > 0;
+        const esPivote = !!dobles[i];
         const partes = esPivote ? ['romano', 'romano2'] : ['romano'];
         const x0 = cx - ANCHO_CASILLA / 2;
         /* En el pivote, los dos grados van en el renglón de SU tonalidad: el de la anterior
@@ -919,7 +926,11 @@ const Partitura = (() => {
          Se escribe una vez por renglón: al volver a una tonalidad ya rotulada, no se repite. */
       if (conRenglones && filaTon && filaTon.celdas) {
         (rotulosAqui.get(i) || []).forEach(r => {
-          const celda = filaTon.celdas[i] || {};
+          /* En la primera nota hecha pivote nacen LOS DOS renglones a la vez (decisión 186),
+             y la fila «Tonalidad» solo trae un texto por nota —el del tono que empieza—. El
+             renglón que se deja lleva el tono de partida del fragmento, que es el suyo. */
+          const departida = i === 0 && !!dobles[0] && r === renglonAntes[0] && r !== renglon[0];
+          const celda = departida ? { texto: Teoria.nombreCorto(ton) } : (filaTon.celdas[i] || {});
           if (rotuladas.has(r) || !celda.texto || celda.texto === '¿?') return;
           rotuladas.add(r);
           /* En su propia casilla, más clarita que las demás: así se ve que pertenece al

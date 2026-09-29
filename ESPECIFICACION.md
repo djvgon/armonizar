@@ -3880,6 +3880,41 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+187. **Volver al tono del fragmento siempre es posible** (29/9/2026, Diego: «no permite
+    modular a Do Mayor; esta tonalidad no es ofrecida en el desplegable»). Dos cosas, las dos
+    arregladas.
+    - El desplegable de tonalidad ofrecía **solo las cinco vecinas** del tono que rige. Con
+      una modulación de por medio eso deja tonos sin retorno: desde Re M, el Do M del
+      fragmento está a dos alteraciones y no aparecía, así que una vez ida la música no había
+      manera de traerla de vuelta. Ahora, además de las vecinas, se ofrecen **el tono del
+      fragmento y los que el pasaje ya ha visitado**, marcados «(vuelta)». Los filtros que
+      limpian modulaciones al cambiar otra cosa respetan esa misma regla.
+    - En la fila de un pivote, la primera opción decía **«(quitar)»** a secas y no decía a qué
+      tono se volvía. Ahora dice «(quitar) · sigue en Do M».
+
+186. **El acorde común, leído en los dos tonos, también en la melodía** (29/9/2026, Diego,
+    sobre `A4-11-02`: «en el primer acorde ha de aparecer ya que el primer acorde es el acorde
+    común entre la menor (I) y Do Mayor (VI); ya han de aparecer los tonos por los que
+    transita el pasaje, a los que se refieren esos dos renglones»). Tres piezas que faltaban:
+    - **La doble lectura del pivote no funcionaba en la melodía.** En la armonización de bajo
+      el grado se deduce de la nota del bajo y de la cifra, y basta leerlo con otra tonalidad;
+      en la melodía el acorde se guarda como pareja «grado|cifra», ya escrita en el tono que
+      rige, y el dibujo devolvía ese mismo grado para las dos lecturas —de ahí que en el
+      pivote saliera `IV` encima de `IV`—. Ahora se deduce el bajo del acorde en su propio
+      tono y se vuelve a leer en el que se pide.
+    - **La partitura descartaba el pivote en la nota 0** (`dobles[i] && i > 0`), resto de
+      cuando no se podía modular ahí. Quitado ese tope, y el tono de partida de esa primera
+      nota pasa a ser el del fragmento, de modo que el acorde común **abre los dos renglones**
+      en vez de quedarse en uno.
+    - **Los renglones ya dicen a qué tono pertenecen.** El nombre del tono a la izquierda de
+      cada renglón necesita la fila «Tonalidad», que la vista previa del configurador no
+      construía; ahora la construye **cuando el fragmento modula**. Y en la nota 0 hecha
+      pivote, el renglón que se deja lleva el tono del fragmento, que es el suyo.
+    - El rótulo de encima del sistema dice los **dos** tonos cuando el pivote es la primera
+      nota: `la m → Do M`, en el configurador y en la pantalla del alumno.
+    - Comprobado sobre `A4-11-02` con el pivote en la nota 1: renglones `la m` y `Do M`, el
+      primer acorde `I` sobre `VI`, y el cuarto `IV` sobre `II`.
+
 185. **La armadura puede no ser la del fragmento** (29/9/2026, Diego: «que la tonalidad del
     fragmento no coincida con la armadura. Esto se da cuando, en medio de una composición, la
     música ha modulado a un tono distinto del que aparece en la armadura de la composición»).
@@ -3888,7 +3923,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     tonalidad y puede modular dentro—; lo que cambia es la armadura con la que se presenta y,
     con ella, las alteraciones que hay que escribir: un fragmento en Do M con armadura de Sol
     M lleva **becuadro en cada fa**.
-    - **Opción de la ficha, no del fragmento** (como él pidió), porque depende del curso.
+    - **Opción de la ficha, no del fragmento** (como él pidió), porque depende del curso, y
+      **en el mismo grupo que «Curso»**, dentro de «En qué tonalidades» (Diego, 29/9): las
+      dos cosas ajustan lo mismo —en qué tono se ve el fragmento y con qué armadura se
+      escribe—, así que se eligen juntas.
       Tope de diferencia, en más o en menos, en el desplegable «Armadura distinta de la
       tonalidad»: **±1** (2.º de Armonía) · **±2** (1.º de Análisis/Fundamentos) · **±3**
       (2.º de Análisis/Fundamentos).
