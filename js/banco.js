@@ -601,10 +601,27 @@ const Banco = (() => {
   function leToca(f, k) {
     const n = parseInt(f.nFicha, 10) || 0;
     const sitio = Math.max(0, parseInt(k, 10) || 0);
-    if (!n || sitio >= n) return revoltijo(String(f.semilla || '') + '|sitio|' + sitio) % 4 === 0;
-    const min = Math.ceil(n / 4);
-    const tope = Math.max(min, Math.floor(3 * n / 4));
-    const cuantos = min + (revoltijo(String(f.semilla || '') + '|cuantos|' + n) % (tope - min + 1));
+    /* EL PORCENTAJE LO PONE EL PROFESOR (decisión 195, Diego 29/9/2026: «quiero poder
+       especificar el porcentaje de fragmentos que cumplirán la condición… entre 0 y 100 %
+       y cualquier porcentaje sin decimales»). Con `armaduraPct` manda ese número; sin él
+       —los enlaces repartidos antes— se conserva la banda del 25 al 75 % de la 190. */
+    const pct = (f.armaduraPct === undefined || f.armaduraPct === null || f.armaduraPct === '')
+      ? null : Math.max(0, Math.min(100, parseInt(f.armaduraPct, 10) || 0));
+    if (pct === 0) return false;
+    if (!n || sitio >= n) {
+      if (pct === null) return revoltijo(String(f.semilla || '') + '|sitio|' + sitio) % 4 === 0;
+      if (pct >= 100) return true;
+      return revoltijo(String(f.semilla || '') + '|sitio|' + sitio) % 100 < pct;
+    }
+    let cuantos;
+    if (pct !== null) cuantos = Math.max(0, Math.min(n, Math.round(n * pct / 100)));
+    else {
+      const min = Math.ceil(n / 4);
+      const tope = Math.max(min, Math.floor(3 * n / 4));
+      cuantos = min + (revoltijo(String(f.semilla || '') + '|cuantos|' + n) % (tope - min + 1));
+    }
+    if (!cuantos) return false;
+    if (cuantos >= n) return true;
     // Los `cuantos` sitios de dado más bajo: determinista y con el cupo exacto
     const dados = [];
     for (let j = 0; j < n; j++) dados.push({ j, d: revoltijo(String(f.semilla || '') + '|sitio|' + j) });

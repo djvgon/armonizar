@@ -3880,6 +3880,40 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+195. **El porcentaje de armadura ajena lo pone el profesor** (29/9/2026, Diego: «quiero
+    poder especificar el porcentaje de fragmentos que cumplirán la condición… entre 0 y 100 %
+    y cualquier porcentaje sin decimales»). La 190 sorteaba el cupo dentro de una banda fija
+    del 25 al 75 %; ahora el número lo dice él.
+    - Desplegable **«… en cuántos de la ficha»**, al lado del de la tolerancia, con los 101
+      valores de 0 a 100 %. Con 0 % no le toca a ninguno; con 100 %, a todos.
+    - El cupo es **exacto**: `redondeo(n · %)` de los `n` ejercicios de la ficha, y **cuáles**
+      sale de la semilla, así que el mismo enlace da siempre los mismos. Comprobado con
+      cuatro semillas y nueve porcentajes: clavado en todos, y también en fichas de 1, 2, 3,
+      5, 7 y 20 ejercicios.
+    - Los **enlaces repartidos antes**, que no llevan el porcentaje, conservan la banda del
+      25 al 75 % de la 190: comprobado.
+    - La tolerancia (±1, ±2, ±3) y el porcentaje son dos interruptores distintos y cualquiera
+      de los dos en «No» / 0 % apaga la opción.
+
+194. **Con las tonalidades por pedir, el tono de partida también lo marca el alumno**
+    (29/9/2026, Diego: «si se selecciona "Pedirlas"… no se debe mostrar, debajo del
+    fragmento, la tonalidad al comienzo de las fundamentales hasta que no la marque el
+    estudiante. Y, al mismo tiempo, no le debe aparecer la tonalidad inicial mostrada por
+    defecto, sino que ha de marcarla él»). La casilla 0 de la fila «Tonalidad» se rellenaba
+    siempre con el tono del fragmento y venía fija, también cuando las tonalidades se piden:
+    con eso se regalaba la mitad del ejercicio y el rótulo del renglón lo cantaba encima.
+    - Con `pedir`, la casilla 0 sale **vacía y editable**, el rótulo del renglón no se
+      escribe hasta que él marca, y el tono de partida del pivote de la primera nota (188)
+      tampoco. Con `dadas` no cambia nada.
+    - La **paleta de la primera nota** ofrece ahora, delante de las vecinas, **el tono del
+      propio fragmento**: es lo que se pregunta ahí. Marcarlo no parte el acorde en dos
+      lecturas —solo lo hace si el tono marcado es otro, que es el pivote de la 188—.
+    - La **corrección** pide esa casilla: acierto si coincide con el tono que rige en la
+      nota 1, y deja de contarse como marca sobrante. El comentario lo dice por separado
+      —«Tonalidad de partida: bien marcada (Fa M)» · «sin marcar» · «has marcado Si♭ M (no
+      es esa)»—, por escrito y en voz alta, y al reintentar se borra si estaba mal.
+    - Comprobado en los tres casos, y con `dadas` intacto.
+
 193. **Las alteraciones llevan memoria de compás** (29/9/2026, Diego: «es necesario
     emplear un bemol mostrado explícitamente sobre el si del penúltimo acorde, pues como
     están dentro del mismo compás, el si becuadro de dos compases antes sigue vigente para

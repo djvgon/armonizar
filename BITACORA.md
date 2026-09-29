@@ -11,7 +11,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 29 de septiembre de 2026
 
-- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-1240.** Pendiente de que
+- **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-1520.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la
   melodía de soprano, los acordes que contienen la nota salen siempre, marcados o no— y la
   **177, que deroga la 167** —cada ejercicio enseña su voz y el motor deduce las demás— y la
@@ -575,6 +575,8 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261001-1520 | El porcentaje de fragmentos con armadura ajena lo elige el profesor, de 0 a 100 %, con cupo exacto y determinista (195) |
+| 20261001-1400 | Con las tonalidades por pedir, el tono de partida también lo marca el alumno: la casilla 0 sale vacía, el rótulo del renglón no se escribe hasta que marca, y la corrección y el comentario lo tratan aparte (194) |
 | 20261001-1240 | Las alteraciones llevan memoria de compás: el si♭ detrás de un si♮ del mismo compás se quedaba sin bemol y se leía becuadro (193). La cadencia disimulada —S D T con el bajo por grados— sale como prolongación de la tónica y no de la subdominante (192) |
 | 20261001-1105 | La ficha se llena hasta el MÁXIMO de compases: se cortaba al llegar al mínimo y por eso salían 1 ó 2 ejercicios. Fuera el tope «Como mucho, ejercicios» (191) |
 | 20261001-0950 | La armadura ajena pasa a ser un cupo de la ficha —entre ⌈n/4⌉ y ⌊3n/4⌋ de sus ejercicios— en vez de una moneda por fragmento, comprobado con ocho semillas y once tamaños (190) |

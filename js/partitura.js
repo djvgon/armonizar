@@ -975,7 +975,10 @@ const Partitura = (() => {
           /* En la primera nota hecha pivote nacen LOS DOS renglones a la vez (decisión 186),
              y la fila «Tonalidad» solo trae un texto por nota —el del tono que empieza—. El
              renglón que se deja lleva el tono de partida del fragmento, que es el suyo. */
-          const departida = i === 0 && !!dobles[0] && r === renglonAntes[0] && r !== renglon[0];
+          /* Con las tonalidades POR PEDIR, el tono de partida tampoco se escribe: lo marca
+             el alumno (decisión 194). Solo se pone cuando la casilla 0 viene dada. */
+          const departida = i === 0 && !!dobles[0] && r === renglonAntes[0] && r !== renglon[0]
+            && !!(filaTon.celdas[0] && filaTon.celdas[0].fija);
           const celda = departida ? { texto: Teoria.nombreCorto(ton) } : (filaTon.celdas[i] || {});
           if (rotuladas.has(r) || !celda.texto || celda.texto === '¿?') return;
           rotuladas.add(r);

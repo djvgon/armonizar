@@ -1162,7 +1162,7 @@
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
           '#ficha-modula', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
-          '#ficha-armadura'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
+          '#ficha-armadura', '#ficha-armadura-pct'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
         funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
@@ -1590,7 +1590,8 @@
        alteraciones de diferencia según el curso. Necesita semilla, como el transporte, para
        que el mismo enlace dé siempre los mismos fragmentos con armadura ajena. */
     const arm = parseInt($('#ficha-armadura').value, 10) || 0;
-    if (arm > 0) f.armaduraAjena = arm;
+    const armPct = Math.max(0, Math.min(100, parseInt($('#ficha-armadura-pct').value, 10) || 0));
+    if (arm > 0 && armPct > 0) { f.armaduraAjena = arm; f.armaduraPct = armPct; }
     /* El transporte (decisión 102). Con un curso elegido viaja el TOPE, que es más corto
        en el enlace y se adapta al modo de cada fragmento; «a medida» manda la lista. La
        semilla va también: es lo que hace que el mismo enlace dé siempre los mismos tonos
@@ -2585,7 +2586,7 @@
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula',
      '#ficha-compases-min', '#ficha-compases-max',
      '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades',
-     '#ficha-armadura'].forEach(id => {
+     '#ficha-armadura', '#ficha-armadura-pct'].forEach(id => {
       $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador(); });
     });
     // El título de la ficha no filtra nada, pero sí conviene no perderlo al recargar
