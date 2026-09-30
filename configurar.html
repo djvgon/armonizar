@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261001-2030">
-  <link rel="stylesheet" href="css/estilo.css?v=20261001-2030">
+  <link rel="stylesheet" href="css/bravura.css?v=20261002-0930">
+  <link rel="stylesheet" href="css/estilo.css?v=20261002-0930">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -472,6 +472,19 @@
                subir a mirarlo. Y desde aquí mismo se cierra y se reabre. -->
           <h3>Revisión de las respuestas <span id="sello-leccion" class="sello-leccion" hidden></span> <button type="button" id="sello-chip" class="sello-chip" hidden></button></h3>
           <div id="vista-previa" class="partitura-caja"></div>
+          <!-- DE QUÉ OBRA VIENE (decisión 198). Sale del texto «@Autor: Obra» de la
+               partitura, y se escribe o se corrige aquí sin volver a importar nada. No
+               entra en la huella del sello, así que un fragmento cerrado puede recibir su
+               procedencia sin reabrirlo. -->
+          <p class="fila-procedencia" id="fila-procedencia" hidden>
+            <label for="procedencia">De qué obra viene</label>
+            <input id="procedencia" type="text" class="campo-procedencia" placeholder="W. A. Mozart: Sonata K. 283, III, cc. 1-8"
+              title="Autor, dos puntos y la obra con su detalle. En la partitura de MuseScore se escribe igual, como texto de pauta y con una @ delante.">
+            <label for="enlace-obra">Enlace</label>
+            <input id="enlace-obra" type="url" class="campo-enlace" placeholder="https://…"
+              title="Dirección de una página donde ver la partitura de verdad. El alumno la abre en otra pestaña.">
+            <span class="ayuda-campo">Autor<b>:</b> obra, detalle. En MuseScore, lo mismo con una <b>@</b> delante; si dentro de la marca pones una dirección <code>https://…</code>, se guarda sola en «Enlace».</span>
+          </p>
           <p class="ayuda aviso-voces" id="aviso-voces" hidden></p>
           <label class="campo campo-linea"><input id="ver-solucion" type="checkbox" checked><span>Mostrar la solución modelo en la vista previa</span></label>
           <p class="ayuda">Marca los cifrados interválicos admisibles de cada nota y elige cuál es el modelo (la que se muestra al corregir). Volver a analizar sustituye lo que hayas cambiado. En una <b>armonización de soprano</b> cada opción es un acorde (sonido fundamental y cifrado interválico; entre paréntesis, el bajo que resulta): el motor propone los que caben en una sucesión válida y deja sin marcar los demás acordes que contienen la nota. Los que duplicarían mal una nota entre el bajo y la melodía —la tercera de una tríada mayor, la séptima, la sensible— salen igualmente, con el aviso en el globo: es cosa de la realización, no de qué acorde cabe ahí, y decides tú. Cambiar la <b>función</b> de una nota marca los acordes de esa función que caben en ella y <b>no toca ninguna otra nota</b>: lo que ya tuvieras marcado de esa función se conserva, y se conserva delante, así que tu modelo sigue siendo el modelo. En modo menor, la columna «Tonalidad» lleva además un interruptor <b>6.º ♮</b> en las notas donde elevar el 6.º grado cambia el acorde: con él, el IV pasa a ser mayor y el II, menor —la octava ascendente—, y el bajo que resulta se ve en el paréntesis de cada acorde. Para una <b>modulación</b>, elige en la columna «Tonalidad» de la nota pivote (el acorde común) la tonalidad nueva: el motor recalcula ese tramo y propone en el pivote solo acordes comunes.</p>
@@ -560,15 +573,15 @@
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261001-2030"></script>
-  <script src="js/reglas.js?v=20261001-2030"></script>
-  <script src="js/ejercicios.js?v=20261001-2030"></script>
-  <script src="js/partitura.js?v=20261001-2030"></script>
-  <script src="js/musicxml.js?v=20261001-2030"></script>
-  <script src="js/musescore.js?v=20261001-2030"></script>
-  <script src="js/banco.js?v=20261001-2030"></script>
-  <script src="js/realizacion.js?v=20261001-2030"></script>
-  <script src="js/tecnicas.js?v=20261001-2030"></script>
-  <script src="js/configurador.js?v=20261001-2030"></script>
+  <script src="js/teoria.js?v=20261002-0930"></script>
+  <script src="js/reglas.js?v=20261002-0930"></script>
+  <script src="js/ejercicios.js?v=20261002-0930"></script>
+  <script src="js/partitura.js?v=20261002-0930"></script>
+  <script src="js/musicxml.js?v=20261002-0930"></script>
+  <script src="js/musescore.js?v=20261002-0930"></script>
+  <script src="js/banco.js?v=20261002-0930"></script>
+  <script src="js/realizacion.js?v=20261002-0930"></script>
+  <script src="js/tecnicas.js?v=20261002-0930"></script>
+  <script src="js/configurador.js?v=20261002-0930"></script>
 </body>
 </html>

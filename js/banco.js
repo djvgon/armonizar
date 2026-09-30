@@ -13,7 +13,7 @@
    filtro, baraja y encadena los ejercicios que salgan.
 
    Uso:
-     Banco.entrada(fragmento, {leccion, fuente, repertorio, acordes, formulaTST})
+     Banco.entrada(fragmento, {leccion, fuente, autor, obra, repertorio, acordes, formulaTST})
          → una entrada con sus etiquetas, o null si el fragmento no sirve
      Banco.nivel(entrada, modo)       → nivel 1-5 ajustado al tipo de ejercicio
      Banco.filtrar(entradas, filtro)  → las que cumplen el filtro
@@ -310,6 +310,17 @@ const Banco = (() => {
       leccionAcordes: (opciones.acordes || []).slice(),
       fuente: opciones.fuente || '',
       titulo: opciones.titulo || '',
+      /* DE QUÉ OBRA VIENE (decisión 198, Diego 29/9/2026: «quiero tomarlos de partituras de
+         música… que luego pudiera identificar de dónde provienen»). `fuente` es el nombre
+         del ARCHIVO del que se importó; esto es la obra. Sale del texto `@…` de la
+         partitura, y el profesor puede escribirlo o corregirlo a mano en el configurador.
+         NO entra en la huella del sello —`contenidoArmonico` solo mira la música y las
+         respuestas—, así que se le puede poner la procedencia a un fragmento ya cerrado sin
+         reabrirlo: comprobado sobre los 26 cerrados, 0 sellos rotos. */
+      autor: opciones.autor || f.autor || '',
+      obra: opciones.obra || f.obra || '',
+      // Dónde ver la partitura de verdad (decisión 199): una dirección de internet
+      enlace: opciones.enlace || f.enlace || '',
       tonalidad: { tonica: ton.tonica, modo: ton.modo },
       tonalidadSegura: f.tonalidadSegura !== false && !cambiada,
       // Si la armadura de la partitura no era la del fragmento, se guarda para poder avisar
@@ -666,6 +677,10 @@ const Banco = (() => {
       // El título no repite el código de la lección: la colección ya dice «Lección A3-8»
       titulo: e.titulo || e.leccionNombre || etiquetaLeccion(e) || ('Ejercicio ' + ((k || 0) + 1)),
       leccion: etiquetaLeccion(e),
+      // La obra de la que sale, para el crédito bajo la partitura (198), y dónde verla (199)
+      autor: e.autor || '',
+      obra: e.obra || '',
+      enlace: e.enlace || '',
       tonalidad: e.tonalidad,
       compas: e.compas,
       compases: parte.compases,

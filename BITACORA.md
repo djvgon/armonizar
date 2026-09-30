@@ -575,6 +575,8 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261002-0930 | Los rótulos de modulación escritos a mano ya no los borra el filtro de tonicizaciones, y la obra puede llevar enlace a la partitura de verdad (199) |
+| 20261001-2215 | De qué obra viene cada fragmento: se escribe `@Autor: Obra` en la partitura, viaja al banco sin romper sellos y el alumno lo ve bajo el pentagrama (198) |
 | 20261001-2030 | El recorrido del cursor con modulación: el tono de partida se pide el primero —y ya se puede marcar— y en el pivote las dos lecturas van seguidas, con el cifrado al final (197) |
 | 20261001-1830 | En el móvil: la partitura un 10 % menor, y «Sonar al elegir» y «Cuadro de cifrados» fuera del teclado flotante, que queda solo para las teclas (196) |
 | 20261001-1605 | El porcentaje de armadura ajena, en casilla de cifra con flechas en vez de un desplegable de 101 opciones (195, afinada) |

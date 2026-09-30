@@ -1501,3 +1501,48 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
 
 /* Fila de campos en la que alguno lleva pie explicativo: los rótulos, arriba (decisión 185) */
 .fila-campos.fila-arriba { align-items: flex-start; }
+
+/* =======================================================================================
+   DECISIÓN 198 · DE QUÉ OBRA VIENE EL FRAGMENTO  (Diego, 29/9/2026)
+
+   El crédito de la música, como el pie de una ilustración: bajo la partitura, en cursiva y
+   con la letra más pequeña, para que se lea sin competir con el pentagrama. En la pantalla
+   del alumno está a la vista desde el principio —«saber que es Schumann sitúa el pasaje»—;
+   en el configurador, la misma información en una casilla que se escribe a mano.
+   ======================================================================================= */
+.procedencia-ej {
+  margin: .2rem 0 .6rem; padding: 0 2px;
+  font-family: var(--fuente-ui); font-size: .8rem; font-style: italic;
+  color: var(--tinta-suave, #5a5566); line-height: 1.35;
+}
+.procedencia-ej::before { content: "De "; font-style: normal; opacity: .75; }
+@media (max-width: 719px), (max-height: 559px) {
+  .procedencia-ej { font-size: .72rem; margin: .1rem 0 .3rem; }
+}
+
+/* La casilla del configurador: el rótulo delante y la ayuda debajo, como los demás campos */
+.fila-procedencia {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem;
+  margin: .5rem 0 .3rem;
+}
+.fila-procedencia label { font-size: .85rem; font-weight: 600; color: var(--tinta, #241630); }
+.campo-procedencia {
+  flex: 1 1 26rem; min-width: 14rem; max-width: 48rem;
+  padding: .3rem .5rem; font-family: var(--fuente-ui); font-size: .85rem;
+  border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel);
+  color: var(--tinta);
+}
+.campo-procedencia:focus { outline: none; border-color: var(--acento); }
+.fila-procedencia .ayuda-campo { flex-basis: 100%; margin-top: 0; }
+/* La nota musical que marca, en la tabla del banco, los fragmentos con obra conocida */
+.marca-obra { margin-left: .3rem; color: var(--voz-dada, #9412DC); cursor: help; }
+
+/* El enlace a la partitura de verdad, junto al crédito (decisión 199) */
+.procedencia-ej .enlace-obra { color: var(--acento); text-decoration: underline; font-style: normal; }
+.procedencia-ej .enlace-obra:hover { color: var(--marca, #9412DC); }
+.campo-enlace {
+  flex: 0 1 18rem; min-width: 10rem;
+  padding: .3rem .5rem; font-family: var(--fuente-ui); font-size: .8rem;
+  border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta);
+}
+.campo-enlace:focus { outline: none; border-color: var(--acento); }

@@ -35,6 +35,11 @@
      · Un **texto de pauta con el nombre de una tonalidad** («Sol M», «mi m», «→ Sol M»)
        sobre una nota marca ahí una modulación: es la forma precisa de indicar el acorde
        pivote. Sobre la primera nota del fragmento, fija su tonalidad.
+     · Un **texto de pauta que empieza por «@»** dice DE QUÉ OBRA viene el fragmento
+       (decisión 198): `@Autor: Obra, detalle`, por ejemplo
+       `@W. A. Mozart: Sonata K. 283, III, cc. 1-8`. Se lee antes que los rótulos de
+       tonalidad, así que un título con un tono dentro no marca modulaciones falsas. Si la
+       marca lleva dentro una dirección `https://…`, se guarda aparte como enlace (199).
      · Un cambio de armadura CIERRA el fragmento: en un archivo de lecciones, cada
        ejercicio va en su tonalidad, y así no hace falta acordarse de la barra doble. Si el
        fragmento ya lleva una etiqueta de tonalidad —es decir, si la modulación está escrita
@@ -49,6 +54,41 @@ const MusicXML = (() => {
   const TIPOS = { whole: 4, half: 2, quarter: 1, eighth: 0.5, breve: 8 };
 
   function texto(el, sel) { const e = el && el.querySelector(sel); return e ? e.textContent.trim() : null; }
+
+  /* ---------- DE DÓNDE SALE EL FRAGMENTO (decisión 198, Diego 29/9/2026) ----------
+     Un texto de pauta que empieza por «@» no es música ni tonalidad: dice de qué obra se ha
+     tomado el fragmento. Se lee ANTES que los rótulos de tonalidad, y por eso un título con
+     un tono dentro —«Fantasía en re menor»— no puede marcar una modulación falsa (sin el @,
+     «Re menor de Mozart» sí se lee como re menor: comprobado).
+
+       @Autor: Obra, detalle          @W. A. Mozart: Sonata K. 283, III, cc. 1-8
+       @Obra, detalle                 (sin autor, si no hace falta)
+
+     Lo que separa el autor de la obra son los PRIMEROS dos puntos; los siguientes se quedan
+     dentro del título. Si la obra va entera entre comillas se le quitan —las dos formas de
+     Diego, con comillas y sin ellas, dan lo mismo—, pero unas comillas de apodo dentro del
+     título («Patética», los corales de Bach) se respetan.
+
+     Y una DIRECCIÓN DE INTERNET dentro de la marca (decisión 199, Diego 30/9/2026: «¿podría
+     poner un enlace a la partitura de la web de MuseScore?») se saca del título y viaja
+     aparte, así que da igual dónde se escriba:
+
+       @John Williams: Theme from Schindler's List (1993) https://musescore.com/…   */
+  function procedenciaDeTexto(txt) {
+    const t = String(txt || '').trim();
+    if (t[0] !== '@') return null;
+    let resto = t.slice(1).trim();
+    if (!resto) return null;
+    let enlace = '';
+    resto = resto.replace(/\bhttps?:\/\/\S+/i, m => { if (!enlace) enlace = m.replace(/[.,;)\]]+$/, ''); return ''; })
+      .replace(/\s{2,}/g, ' ').replace(/\s+([,;.)])/g, '$1').trim();
+    const i = resto.indexOf(':');
+    const autor = i > 0 ? resto.slice(0, i).trim() : '';
+    let obra = (i > 0 ? resto.slice(i + 1) : resto).trim();
+    const c = /^[«"“](.+)[»"”]$/.exec(obra);
+    if (c) obra = c[1].trim();
+    return (obra || enlace) ? { autor, obra, enlace } : null;
+  }
 
   function nombreNota(pitch) {
     const step = texto(pitch, 'step');
@@ -70,7 +110,7 @@ const MusicXML = (() => {
     let armaduraFijada = false;
     const fragmentos = [];
     const VOCES = ['soprano', 'bajo'];
-    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo });
+    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo, procedencia: null });
     let actual = nuevo();
     const hayNotas = frag => VOCES.some(v => frag.voces[v].some(c => c.some(([n]) => n !== null)));
 
@@ -135,6 +175,11 @@ const MusicXML = (() => {
           const st = parseInt(texto(n, 'staff') || '1', 10);
           const palabras = [...n.querySelectorAll('direction-type > words')].map(w => w.textContent.trim()).join(' ');
           if (!palabras) return;
+          /* Primero, la procedencia (decisión 198): si el texto empieza por «@», es de qué
+             obra viene el fragmento y aquí se acaba su viaje. Se queda la PRIMERA que haya:
+             un fragmento viene de una obra, no de dos. */
+          const proc = procedenciaDeTexto(palabras);
+          if (proc) { if (!actual.procedencia) actual.procedencia = proc; return; }
           const t = Teoria.tonalidadDesdeTexto(palabras);
           if (!t) return;
           const voz = VOCES.find(v => pentaDe[v] === st) || vozPedida;
@@ -297,7 +342,17 @@ const MusicXML = (() => {
     let previa = tonInicial;
     for (let i = 0; i < mods.length; i++) {
       const m = mods[i], sig = mods[i + 1];
-      if (sig && Teoria.mismaTonalidad(sig.tonalidad, previa) && sig.nota - m.nota <= 2) { i++; continue; }
+      /* UN RÓTULO ESCRITO A MANO NO SE DESCARTA NUNCA (decisión 199, Diego 30/9/2026).
+         Este filtro existe para las modulaciones DEDUCIDAS de un cambio de armadura: una ida
+         y vuelta en dos notas suele ser una tonicización de paso, no un cambio de tono. Pero
+         se estaba aplicando también a los rótulos que escribe el profesor en la partitura, y
+         entonces hacía justo lo que Diego prohibió el 28/9 —«si yo asigno una modulación en
+         un punto no puedes modificarlo, mi criterio es experto»—: en el tema de La lista de
+         Schindler, sus dos rótulos, «Si♭ M» en la nota 2 y «sol m» en la 4, desaparecían sin
+         decir nada y el fragmento entraba en el banco sin modulación ninguna. Lo escrito a
+         mano manda; lo deducido se sigue filtrando. */
+      const aMano = !!(m.mano || (sig && sig.mano));
+      if (!aMano && sig && Teoria.mismaTonalidad(sig.tonalidad, previa) && sig.nota - m.nota <= 2) { i++; continue; }
       out.push(m);
       previa = m.tonalidad;
     }
@@ -377,15 +432,16 @@ const MusicXML = (() => {
       else { md = cb.fifths === fPrevio ? (modoPrevio === 'menor' ? 'mayor' : 'menor') : modoPrevio; segura = false; }
       const t = (md === 'menor' ? MENORES : MAYORES)[String(cb.fifths)];
       modoPrevio = md; fPrevio = cb.fifths;
-      return t ? { tiempo: cb.tiempo, tonalidad: { tonica: t, modo: md }, segura } : null;
+      // `mano: false`: esta modulación no la ha escrito nadie, se deduce de la armadura (199)
+      return t ? { tiempo: cb.tiempo, tonalidad: { tonica: t, modo: md }, segura, mano: false } : null;
     }).filter(Boolean);
     // Las etiquetas de texto mandan sobre los cambios de armadura (son más precisas)
-    const porTexto = etiquetas.filter(e => e.tiempo > 0.01).map(e => ({ tiempo: e.tiempo, tonalidad: e.tonalidad, segura: true }));
+    const porTexto = etiquetas.filter(e => e.tiempo > 0.01).map(e => ({ tiempo: e.tiempo, tonalidad: e.tonalidad, segura: true, mano: true }));
     const cambios = porTexto.concat(porArmadura.filter(a => !porTexto.some(p => Math.abs(p.tiempo - a.tiempo) < 2))).sort((a, b) => a.tiempo - b.tiempo);
     // …y se traducen a índices de nota en cada voz
     const modulacionesDe = voz => sinTonicizaciones(cambios.map(cb => {
       const i = notaEnTiempo(frag.voces[voz], cb.tiempo);
-      return i > 0 ? { nota: i, tonalidad: cb.tonalidad, segura: cb.segura } : null;
+      return i > 0 ? { nota: i, tonalidad: cb.tonalidad, segura: cb.segura, mano: cb.mano } : null;
     }).filter(Boolean), { tonica, modo });
 
     const compasesBajo = tiene('bajo') ? frag.voces.bajo : [];
@@ -399,6 +455,10 @@ const MusicXML = (() => {
       tieneSoprano: tiene('soprano'),
       tonalidad: { tonica, modo },
       tonalidadSegura: seguro,
+      // De qué obra viene (decisión 198) y dónde verla (199): '' cuando no se dice
+      autor: (frag.procedencia && frag.procedencia.autor) || '',
+      obra: (frag.procedencia && frag.procedencia.obra) || '',
+      enlace: (frag.procedencia && frag.procedencia.enlace) || '',
       compas: compas.slice(),
       numCompases: (elegida.length || compasesBajo.length || compasesSoprano.length),
       modulaciones: modulacionesDe(vozPedida === 'soprano' ? 'soprano' : 'bajo'),

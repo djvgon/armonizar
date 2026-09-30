@@ -1449,6 +1449,11 @@
       if (lec) { viejo.leccion = lec; viejo.leccionNombre = nom; }
       return true;
     }
+    /* La procedencia se hereda (decisión 198): si el archivo del bajo lleva el texto «@…» y
+       el de la melodía no, al fundirse las dos voces la obra no se pierde. Nunca pisa la que
+       ya hubiera: la primera que llega manda, como en la partitura. */
+    if (!viejo.obra && nuevo.obra) { viejo.obra = nuevo.obra; viejo.autor = nuevo.autor || viejo.autor || ''; }
+    if (!viejo.enlace && nuevo.enlace) viejo.enlace = nuevo.enlace;
     let cambio = false;
     ['bajo', 'soprano'].forEach(v => { if (!viejo[v] && nuevo[v]) { viejo[v] = nuevo[v]; cambio = true; } });
     if (cambio) {
@@ -1686,7 +1691,11 @@
       if (cerrada) tr.classList.add(rota ? 'sello-roto' : 'sello-cerrado');
       tr.innerHTML = '<td class="celda-sello" title="' + (cerrada ? (rota ? 'Cerrado el ' + e.cerrado + ', pero su contenido ya no coincide con la huella' : 'Cerrado el ' + e.cerrado) : 'Sin cerrar') + '">'
         + (cerrada ? (rota ? '⚠🔒' : '🔒') : '') + '</td>'
-        + '<td class="celda-id"><code>' + (e.id || '—') + '</code></td>'
+        /* Una nota musical junto al identificador cuando el fragmento viene de una obra
+           (decisión 198), con la obra en el globo: de un vistazo se ve cuáles están ya
+           documentados y cuáles siguen siendo esquemas sin procedencia. */
+        + '<td class="celda-id"><code>' + (e.id || '—') + '</code>'
+        + (e.obra ? '<span class="marca-obra" title="' + ((e.autor ? e.autor + ', ' : '') + e.obra).replace(/"/g, '’') + '">♪</span>' : '') + '</td>'
         + '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '') + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
@@ -1929,9 +1938,55 @@
      Cerrar un fragmento es firmarlo: queda la fecha y una huella de su contenido armónico,
      y a partir de ahí ninguna parte del programa lo reescribe. Reabrirlo es un gesto
      explícito. La huella no es una promesa mía: se comprueba al cargar el banco. */
+  /* DE QUÉ OBRA VIENE (decisión 198). La casilla se rellena con lo que tenga la entrada y
+     se puede escribir a mano, también en un fragmento CERRADO: la procedencia no entra en la
+     huella —`contenidoArmonico` solo mira la música y las respuestas—, así que ponérsela a
+     los 26 ya firmados no rompe ningún sello (comprobado). Se escribe igual que en la
+     partitura pero sin la @, que allí solo sirve para distinguir el texto de los rótulos de
+     tonalidad. */
+  function pintarProcedencia() {
+    const fila = $('#fila-procedencia'), campo = $('#procedencia'), b = estado.banco;
+    if (!fila || !campo) return;
+    fila.hidden = !b;
+    if (!b) return;
+    const e = b.entrada;
+    campo.value = e.autor ? e.autor + ': ' + (e.obra || '') : (e.obra || '');
+    if ($('#enlace-obra')) $('#enlace-obra').value = e.enlace || '';
+  }
+
+  function guardarProcedencia() {
+    const campo = $('#procedencia'), b = estado.banco;
+    if (!campo || !b) return;
+    const t = campo.value.trim();
+    const i = t.indexOf(':');
+    const autor = i > 0 ? t.slice(0, i).trim() : '';
+    const obra = (i > 0 ? t.slice(i + 1) : t).trim();
+    const e = b.entrada;
+    if ((e.autor || '') === autor && (e.obra || '') === obra) return;
+    e.autor = autor; e.obra = obra;
+    guardarBanco();
+    pintarBanco();
+    aviso(obra ? 'Procedencia guardada: ' + (autor ? autor + ', ' : '') + obra + '.' : 'Procedencia borrada.', 4000);
+  }
+
+  /* El enlace a la partitura de verdad (decisión 199). Se exige `http(s)://` para no
+     guardar una dirección a medias que luego no lleve a ninguna parte. */
+  function guardarEnlaceObra() {
+    const campo = $('#enlace-obra'), b = estado.banco;
+    if (!campo || !b) return;
+    const t = campo.value.trim();
+    if (t && !/^https?:\/\/\S+$/i.test(t)) { aviso('El enlace ha de empezar por http:// o https://', 5000); return; }
+    const e = b.entrada;
+    if ((e.enlace || '') === t) return;
+    e.enlace = t;
+    guardarBanco();
+    aviso(t ? 'Enlace guardado.' : 'Enlace borrado.', 3500);
+  }
+
   function pintarSello() {
     const caja = $('#banco-sello'), b = estado.banco;
     pintarSelloChip();
+    pintarProcedencia();
     if (!caja) return;
     const bCerrar = $('#btn-banco-cerrar'), bAbrir = $('#btn-banco-abrir'), bGuardar = $('#btn-banco-guardar');
     if (!b) { caja.hidden = true; return; }
@@ -2537,6 +2592,15 @@
       if (!estado.banco) return;
       if (Banco.estaCerrada(estado.banco.entrada)) abrirActual(); else cerrarActual();
     });
+    // La procedencia se guarda al salir de la casilla o al pulsar Intro (decisión 198)
+    if ($('#procedencia')) {
+      $('#procedencia').addEventListener('change', guardarProcedencia);
+      $('#procedencia').addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); ev.target.blur(); } });
+    }
+    if ($('#enlace-obra')) {
+      $('#enlace-obra').addEventListener('change', guardarEnlaceObra);
+      $('#enlace-obra').addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); ev.target.blur(); } });
+    }
     $('#banco-revision').addEventListener('change', pintarBanco);
     $('#btn-banco-soltar').addEventListener('click', () => { estado.banco = null; pintarOrigenBanco(); guardarBorrador(); });
     $('#btn-banco-descargar').addEventListener('click', descargarBanco);

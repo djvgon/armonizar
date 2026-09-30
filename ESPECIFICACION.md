@@ -3880,6 +3880,81 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+199. **Un rótulo de modulación escrito a mano no se descarta nunca** (30/9/2026, al importar
+    el primer fragmento de repertorio real: el tema de *La lista de Schindler*).
+    - **El fallo.** `sinTonicizaciones` borra una modulación que va y vuelve en dos notas o
+      menos: nació para las modulaciones DEDUCIDAS de un cambio de armadura, donde una ida y
+      vuelta tan corta suele ser una tonicización de paso. Pero se aplicaba también a los
+      **rótulos que Diego escribe en la partitura**, y entonces hacía justo lo que él prohibió
+      el 28/9 —«si yo asigno una modulación en un punto no puedes modificarlo, mi criterio es
+      experto»—. En el fragmento de Schindler sus dos rótulos, «Si♭ M» en la nota 2 y «sol m»
+      en la 4, desaparecían **sin decir nada** y el fragmento entraba en el banco sin
+      modulación: justo lo contrario de lo que ilustra.
+    - **La regla ahora**: lo escrito a mano manda siempre; lo deducido de la armadura se sigue
+      filtrando. Los rótulos viajan marcados con `mano: true` desde `porTexto`.
+    - **Medido** sobre los 16 archivos de lecciones, las dos voces, 270 fragmentos: **11
+      cambian**, y los once ganan modulaciones que Diego había escrito y se estaban tirando
+      (A3-8, A4-10 5 y 6, A4-11 2 y 9). En el banco esas modulaciones ya están —las había
+      vuelto a poner a mano, una por una, en el configurador—, así que el banco no se mueve:
+      lo que se ahorra es tener que repetir ese trabajo con cada fragmento nuevo.
+    - **Enlace a la partitura de verdad** (Diego: «¿podría poner un enlace a la partitura de
+      la web de MuseScore?»). Un campo `enlace` junto a `autor` y `obra`. Se escribe dentro de
+      la misma marca `@…` —una dirección `https://…` en cualquier punto se saca sola del
+      título y se guarda aparte— o en su casilla del configurador, que exige `http(s)://`
+      para no guardar direcciones a medias. Bajo la partitura, tras el crédito, sale **«Ver la
+      partitura»**, que abre otra pestaña con `rel="noopener noreferrer"` y dice en el globo a
+      qué dominio lleva. Tampoco entra en la huella: los 26 sellos siguen intactos.
+    - **Lo que el enlace NO resuelve**: apunta a una página de fuera, que puede cambiar,
+      desaparecer o pedir suscripción, y cuyo arreglo es de un tercero. Es un enlace, no una
+      copia, que es justamente lo que lo hace admisible con una obra de derechos vivos.
+
+198. **De qué obra viene cada fragmento** (29/9/2026, Diego: «quiero tomarlos de partituras
+    de música… ¿cómo podría hacer para introducir estos fragmentos y que luego pudiera
+    identificar de dónde provienen?»). Un fragmento del banco podía venir del tema de *La
+    lista de Schindler* o de la *Kreisleriana* y el banco no guardaba de eso ni rastro:
+    `fuente` es el nombre del ARCHIVO del que se importó, no la música.
+    - **Cómo se escribe, en la partitura de MuseScore.** Un texto de pauta o de sistema que
+      empieza por **`@`**, dentro del fragmento (lo más claro, sobre su primera nota):
+
+          @W. A. Mozart: Sonata K. 283, III, cc. 1-8
+
+      Lo que separa el autor de la obra son los **primeros** dos puntos; los siguientes se
+      quedan dentro del título. Si la obra va entera entre comillas se le quitan —las dos
+      formas que probó Diego, con comillas y sin ellas, dan lo mismo—, pero unas comillas de
+      apodo dentro del título («Patética», los corales de Bach) se respetan. Sin dos puntos,
+      todo es obra y no hay autor.
+    - **Por qué la `@`.** El texto de procedencia se lee ANTES que los rótulos de tonalidad,
+      así que un título con un tono dentro no puede marcar una modulación falsa. Medido: sin
+      la `@`, «Re menor de Mozart» se lee como re menor; con ella, nada de lo que va detrás
+      se lee nunca como tonalidad. Y al revés: «Sol M» sigue marcando su modulación como
+      siempre, en el mismo fragmento que lleva la marca de obra.
+    - **Dónde se guarda.** Dos campos nuevos en la entrada, `autor` y `obra`, junto a
+      `fuente`, que sigue siendo el archivo. Si un archivo trae el bajo y otro la melodía, la
+      obra se hereda al fundirse las dos voces y nunca pisa la que ya hubiera.
+    - **NO entra en la huella del sello.** `contenidoArmonico` solo mira la música y las
+      respuestas, así que se le puede poner la procedencia a un fragmento ya firmado sin
+      reabrirlo. Comprobado sobre los 26 cerrados con su huella guardada: **0 sellos rotos**,
+      antes y después.
+    - **A mano, sin volver a importar.** En el revisor, bajo la partitura, una casilla **«De
+      qué obra viene»** que sale rellena y se escribe o se corrige ahí mismo —también en un
+      fragmento cerrado—. Se escribe igual que en la partitura pero sin la `@`, que allí solo
+      sirve para distinguir el texto de los rótulos de tonalidad. En la tabla del banco, una
+      **♪** junto al identificador marca los fragmentos que ya tienen obra, con ella en el
+      globo: de un vistazo se ve lo que falta por documentar.
+    - **Qué ve el alumno** (Diego, 29/9, eligiendo entre cuatro opciones: «desde el
+      principio»): bajo la partitura, en cursiva y pequeño como el pie de una ilustración,
+      *De W. A. Mozart, Sonata K. 283, III, cc. 1-8*. Saber de quién es sitúa el pasaje. Es
+      distinto de la banda de arriba, que dice de qué LECCIÓN viene el ejercicio.
+    - **Pendiente, para el nivel B** (la textura real, no solo el esquema): dónde vive la
+      partitura completa. Diego lo deja para cuando llegue; el campo `obra` vale igual para
+      las dos salidas que se barajaron —un archivo aparte por obra, o más pentagramas en el
+      de la lección—, así que nada de lo que se escriba ahora se pierde.
+    - **Derechos.** El esquema armónico que extrae Diego es trabajo suyo y la sucesión de
+      acordes no es de nadie; citar la fuente es lo deseable. Publicar en una web abierta la
+      **textura real** de una obra con derechos vivos —*La lista de Schindler* es de 1993— no
+      es lo mismo que usarla en clase. La *Kreisleriana* (1838), Bach, Mozart o Schubert no
+      tienen ese problema. Queda anotado aquí para cuando se decida el nivel B.
+
 197. **El recorrido del cursor en un fragmento que modula** (29/9/2026, Diego: «resulta
     confuso al llegar al punto del acorde pivote… hemos de clarificar los movimientos
     automáticos del cursor en este momento y facilitar la entrada al estudiante»).

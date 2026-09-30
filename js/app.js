@@ -181,6 +181,30 @@
        6/4 cadencial · El 6/4 cadencial». */
     const suyo = ej.titulo && !tema.includes(ej.titulo) ? ej.titulo : '';
     $('#titulo').textContent = tema + (suyo ? (tema ? ' · ' : '') + suyo : '');
+    /* EL CRÉDITO DE LA OBRA, bajo la partitura y desde el principio (decisión 198, Diego
+       29/9/2026). No es lo mismo que la banda de arriba, que dice de qué LECCIÓN viene el
+       ejercicio: esto dice de qué MÚSICA se ha tomado el fragmento. */
+    const cred = $('#procedencia-ej');
+    if (cred) {
+      const obra = ej.obra || '';
+      cred.textContent = obra ? (ej.autor ? ej.autor + ', ' : '') + obra : '';
+      /* Y, si el fragmento trae enlace, dónde ver la partitura de verdad (decisión 199).
+         Se abre en otra pestaña y con `noopener`: es una página de fuera. El texto no
+         promete nada del otro sitio —«Ver la partitura»— y el globo dice a qué dominio
+         lleva, para que el alumno sepa adónde va antes de pulsar. */
+      let dominio = '';
+      if (ej.enlace) { try { dominio = new URL(ej.enlace).hostname.replace(/^www\./, ''); } catch (e) { dominio = ''; } }
+      if (ej.enlace && dominio) {
+        const a = document.createElement('a');
+        a.href = ej.enlace; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.className = 'enlace-obra';
+        a.textContent = 'Ver la partitura';
+        a.title = 'Se abre en otra pestaña, en ' + dominio;
+        cred.appendChild(document.createTextNode(obra ? ' · ' : ''));
+        cred.appendChild(a);
+      }
+      cred.hidden = !obra && !(ej.enlace && dominio);
+    }
     /* Por dónde va la ficha, abajo y junto al botón de comprobar */
     const donde = $('#donde-ficha');
     if (donde) {
