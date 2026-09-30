@@ -70,6 +70,19 @@
     banco: null              // {entrada, voz}: el fragmento del banco que se está revisando
   };
   const esSoprano = () => modoElegido() === 'soprano';
+  /* ¿El fragmento que hay delante trae la armonización escrita a cuatro voces? (decisión
+     205). Da igual que venga del banco o de un archivo recién importado: en los dos casos
+     la partitura ha de salir tal como la escribió el profesor. */
+  function conCuatroVoces() {
+    const e = estado.banco && estado.banco.entrada;
+    if (e && Array.isArray(e.voces) && e.voces.length) return true;
+    if (estado.fragmentos && Number.isInteger(estado.fragmentoActual)) {
+      const f = estado.fragmentos[estado.fragmentoActual];
+      const ac = f && f.acordes;
+      if (Array.isArray(ac) && ac.length && ac.every(x => x && x.length === 3)) return true;
+    }
+    return false;
+  }
 
   /* ---------- Lectura del formulario ---------- */
 
@@ -122,7 +135,12 @@
     $('#etiqueta-voz').textContent = sop ? 'Escribe la melodía (soprano)' : 'Escribe el bajo';
     $('#texto-bajo').placeholder = sop ? 'mi4 fa4n mi4n | re4 si3 | do4r' : 'do3 re3 | mi3 do3 | sol3r | do3r';
     $('#ayuda-octava-soprano').hidden = !sop;
-    $('#btn-analizar').textContent = sop ? 'Analizar la melodía' : 'Analizar el bajo';
+    /* CON LAS CUATRO VOCES ESCRITAS, NO SE ANALIZA NADA: SE REVISA (decisión 205, Diego
+       30/9/2026: «debería llamarse algo así como Revisar el fragmento»). El botón dice lo
+       que de verdad va a pasar: con la armonización escrita, la partitura sale tal como
+       está y solo se repasan los cifrados; sin ella, el motor reconstruye las voces. */
+    $('#btn-analizar').textContent = conCuatroVoces() ? 'Revisar el fragmento'
+      : (sop ? 'Analizar la melodía' : 'Analizar el bajo');
     $('#th-admisibles').textContent = sop ? 'Acordes admisibles (● modelo)' : 'Cifrados admisibles (● modelo)';
     pintarColumnaOtraVoz();
     $('#repertorio-opciones').hidden = sop; $('#ayuda-repertorio').hidden = sop;
@@ -824,12 +842,24 @@
        las demás— y lo que aporta la otra voz se queda donde sí sirve: la columna «El bajo
        admite / La melodía admite» (decisión 174). */
     const dos = vocesDelBanco(ej);
-    /* LAS CUATRO VOCES ESCRITAS (decisión 200). Las trae la entrada del banco que se está
-       revisando, no el ejercicio, y solo sirven cuando hay una por nota. */
+    /* LAS CUATRO VOCES ESCRITAS (decisión 200, ampliada por la 205).
+       Vienen de dos sitios, y hacían falta los dos (Diego, 30/9/2026: «al darle a Analizar
+       el bajo ya no aparecieron en el editor mis voces, sino una reconstrucción del
+       motor»): de la ENTRADA del banco, cuando se revisa un fragmento guardado, y del
+       FRAGMENTO RECIÉN IMPORTADO, cuando todavía no se ha metido en el banco —que es
+       justo lo que le pasó: al traer un archivo, `estado.banco` es null y aquí no había de
+       dónde sacarlas—. Solo sirven si hay un acorde por nota; si él ha tocado el bajo a
+       mano y ya no cuadran, mandan las reglas, como antes. */
     const vocesDelFragmento = () => {
+      if (sop) return null;
       const e = estado.banco && estado.banco.entrada;
-      const v = e && e.voces;
-      if (!Array.isArray(v) || v.length !== n || sop) return null;
+      let v = (e && e.voces) || null;
+      if (!v && estado.fragmentos && Number.isInteger(estado.fragmentoActual)) {
+        const f = estado.fragmentos[estado.fragmentoActual];
+        const ac = f && f.acordes;
+        if (Array.isArray(ac) && ac.length && ac.every(x => x && x.length === 3)) v = ac;
+      }
+      if (!Array.isArray(v) || v.length !== n) return null;
       try { return v.map(ac => (Array.isArray(ac) ? ac.map(x => Teoria.nota(x)) : null)); }
       catch (err) { return null; }
     };
@@ -1178,6 +1208,7 @@
     if (!$('#titulo').value || /^Ejercicio \d+$/.test($('#titulo').value)) $('#titulo').value = 'Ejercicio ' + (k + 1);
     document.querySelectorAll('.fragmento').forEach((b, i) => b.classList.toggle('elegido', i === k));
     pintarVisorFragmento(k);                 // verlo antes de importarlo (decisión 201)
+    ajustarCampoAudicion();                  // el botón dice «Revisar el fragmento» si trae las cuatro voces (205)
     estado.respuestas = null; estado.propuesta = null;
     $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true;
     limpiarDireccion();
@@ -1994,11 +2025,18 @@
     caja.hidden = !b;
     if (!b) return;
     const e = b.entrada;
+    /* CON LAS CUATRO VOCES ESCRITAS NO HAY DOS VOCES QUE ELEGIR (decisión 205, Diego
+       30/9/2026: «se deberían desactivar los controles Revisar el bajo / la melodía»). Un
+       fragmento con la armonización escrita no son dos ejercicios sobre la misma música
+       —que es lo que dice la 177 de los demás—: es UNA armonización, la del compositor. */
+    const cuatro = Array.isArray(e.voces) && e.voces.length > 0;
+    ajustarCampoAudicion();                  // y el botón, otra vez, por si cambió el fragmento (205)
     [['bajo', $('#btn-voz-bajo')], ['soprano', $('#btn-voz-soprano')]].forEach(([voz, bot]) => {
       if (!bot) return;
       const hay = !!e[voz];
-      bot.disabled = !hay;
-      bot.title = hay ? (voz === b.voz ? 'Es la que estás revisando' : 'Abrir la otra voz de este mismo fragmento')
+      bot.disabled = !hay || cuatro;
+      bot.title = cuatro ? 'Este fragmento trae las cuatro voces escritas en la partitura: se revisa entero, no voz por voz'
+        : hay ? (voz === b.voz ? 'Es la que estás revisando' : 'Abrir la otra voz de este mismo fragmento')
         : 'Este fragmento no tiene ' + (voz === 'bajo' ? 'el bajo' : 'la melodía') + ' escrita';
       bot.classList.toggle('activo', voz === b.voz);
       bot.setAttribute('aria-pressed', voz === b.voz ? 'true' : 'false');

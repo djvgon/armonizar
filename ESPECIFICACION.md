@@ -3880,6 +3880,26 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+205. **Con las cuatro voces escritas se revisa, no se analiza** (30/9/2026, Diego: «al darle
+    a Analizar el bajo ya no aparecieron en el editor mis voces, sino una reconstrucción del
+    motor… si el fragmento tiene cuatro voces debería mostrarlas, y desactivarse los controles
+    Revisar el bajo / la melodía»).
+    - **El fallo.** `vocesDelFragmento()` (200) las buscaba SOLO en la entrada del banco. Al
+      traer un archivo, `estado.banco` es null —`cargarMusicXML` lo pone a null—, así que en
+      un fragmento recién importado no había de dónde sacarlas y la vista previa caía en la
+      reconstrucción del motor. Ahora se buscan en los dos sitios: la entrada del banco si se
+      revisa una guardada, y el fragmento importado si todavía no lo está.
+    - **El botón dice lo que pasa**: con la armonización escrita, **«Revisar el fragmento»**;
+      sin ella, «Analizar el bajo» o «Analizar la melodía», como siempre. Porque no es lo
+      mismo: con las voces escritas la partitura sale tal cual y solo se repasan los cifrados.
+    - **Los mandos «Revisando el bajo / la melodía» se apagan** cuando el fragmento trae las
+      cuatro voces, con su explicación en el globo. Un fragmento con la armonización escrita
+      no son dos ejercicios sobre la misma música —que es lo que dice la 177 de los demás—:
+      es UNA armonización, la del compositor.
+    - **Lo guardado nunca estuvo en peligro**: `guardarEnBanco` escribe `tonalidad`, `compas`
+      y las dos voces del ejercicio, y **no toca `voces`** en ningún caso. Analizar tampoco
+      escribe en el banco. Lo que Diego vio era solo el dibujo de la vista previa.
+
 204. **La doble corchea: música real, no esquema** (30/9/2026, Diego: «además del icono del
     candado, sería interesante un icono doble corchea para señalar aquellos fragmentos que se
     corresponden con música real y no son simples esquemas armónicos»). En la tabla del banco,
