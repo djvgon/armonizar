@@ -1199,6 +1199,15 @@
   function cargarFragmento(k) {
     const f = estado.fragmentos[k];
     const v = vozDe(f);
+    /* UN FRAGMENTO DEL ARCHIVO NO ES EL FRAGMENTO DEL BANCO (decisión 212, Diego
+       30/9/2026: «la información adicional sobre este fragmento de Beethoven no es correcta
+       y se ha quedado la del fragmento de música real anterior»). Al pulsar uno de la lista
+       se cargaba su música en el editor pero `estado.banco` seguía apuntando a la entrada
+       que se estuviera revisando: la partitura era de Beethoven y la chapa, el nombre de la
+       lección y «De qué obra viene» seguían diciendo Schindler. Y era peligroso además de
+       confuso: «Guardar los cambios en el banco» habría escrito la música de Beethoven
+       dentro de la entrada de Schindler (solo lo impedía que estuviera cerrada). */
+    estado.banco = null;
     estado.fragmentoActual = k;
     estado.companera = companera(v.compases, v.otra);
     $('#texto-bajo').value = Teoria.textoDesdeBajo(v.compases);
@@ -1209,6 +1218,7 @@
     estado.melodica = (v.melodica || []).slice();
     if (!$('#titulo').value || /^Ejercicio \d+$/.test($('#titulo').value)) $('#titulo').value = 'Ejercicio ' + (k + 1);
     document.querySelectorAll('.fragmento').forEach((b, i) => b.classList.toggle('elegido', i === k));
+    pintarOrigenBanco();                     // se suelta la entrada del banco (decisión 212)
     pintarVisorFragmento(k);                 // verlo antes de importarlo (decisión 201)
     ajustarCampoAudicion();                  // el botón dice «Revisar el fragmento» si trae las cuatro voces (205)
     estado.respuestas = null; estado.propuesta = null;
@@ -2042,7 +2052,10 @@
     if (!caja) return;
     const b = estado.banco;
     caja.hidden = !b;
-    if (!b) return;
+    /* SIN FRAGMENTO DEL BANCO, TAMBIÉN HAY QUE BORRAR LO QUE LO DESCRIBÍA (decisión 212).
+       Se ocultaba el recuadro de abajo, pero la chapa del sello, el nombre de la lección y
+       la casilla «De qué obra viene» se quedaban con los datos del fragmento anterior. */
+    if (!b) { pintarSello(); pintarProcedencia(); return; }
     const e = b.entrada;
     $('#banco-origen-texto').textContent = 'Estás revisando el fragmento ' + (e.id || '(sin identificador)')
       + (e.leccion ? ' de la lección ' + Banco.etiquetaLeccion(e) : '')

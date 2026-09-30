@@ -575,6 +575,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261003-0230 | Cargar un fragmento del archivo suelta la entrada del banco: ya no se queda la chapa, la lección ni la obra del anterior (212) |
 | 20261003-0145 | Filtro de procedencia —música real o fragmentos de práctica— en la ficha y en el banco, y botón de valores por defecto (210 y 211) |
 | 20261003-0055 | El crédito, dentro del recuadro de la partitura, y el enlace en el morado de la casa (208 y 209) |
 | 20261003-0020 | El crédito de la obra, dentro del recuadro de la partitura y abajo a la derecha: pertenece a la partitura, no a la aplicación (208) |

@@ -3880,6 +3880,23 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+212. **Un fragmento del archivo no es el fragmento del banco** (30/9/2026, Diego: «la
+    información adicional sobre este fragmento de música real —Beethoven— no es correcta en
+    el visor y se ha quedado mantenida la del fragmento de música real anterior»).
+    - **El fallo.** Al pulsar un fragmento de la lista del importador se cargaba su música en
+      el editor, pero `estado.banco` seguía apuntando a la entrada que se estuviera
+      revisando. La partitura era de Beethoven y la chapa del sello, el nombre de la lección
+      y la casilla «De qué obra viene» seguían diciendo `A4-11-09` y Schindler.
+    - **Y era peligroso, no solo confuso**: «Guardar los cambios en el banco» habría escrito
+      la música de Beethoven dentro de la entrada de Schindler. Lo único que lo impedía era
+      que Diego la hubiera cerrado (166). Un fragmento sin cerrar se habría perdido.
+    - Ahora `cargarFragmento` **suelta la entrada del banco**, y `pintarOrigenBanco` borra
+      además la chapa, la lección y la procedencia cuando no hay ninguna: antes solo ocultaba
+      el recuadro de abajo y los tres rótulos se quedaban con los datos viejos.
+    - Comprobado reproduciendo su secuencia: con `A4-11-09` abierto, importar el archivo y
+      pulsar el fragmento 14 deja el editor con el bajo de Beethoven y sin chapa, sin lección
+      y sin obra.
+
 211. **Un botón que devuelve el filtro a sus valores por defecto** (30/9/2026, Diego: «un
     botón, arriba a la derecha de los filtros para preparar una ficha, que permita poner
     todos los selectores en su opción por defecto»). Va en el título del bloque «Qué
