@@ -575,6 +575,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261002-2340 | Los acordes escritos se emparejan con el bajo por tiempo, no por orden, y se admiten los incompletos: entra la sonata de Beethoven (206). El pie dice la versión de verdad (207) |
 | 20261002-2245 | Con las cuatro voces escritas, el editor las muestra también antes de guardarlas en el banco, el botón dice «Revisar el fragmento» y se apagan los mandos de voz (205) |
 | 20261002-2120 | Solo las séptimas sin resolver se señalan como licencias; la sensible queda libre en la cadencia perfecta; doble corchea en el banco para la música real (202b, 203, 204) |
 | 20261002-1845 | Las voces escritas por el compositor se auditan otra vez, pero como licencias en verde oliva, no como errores en rojo (202) |

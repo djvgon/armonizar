@@ -73,13 +73,19 @@
   /* ¿El fragmento que hay delante trae la armonización escrita a cuatro voces? (decisión
      205). Da igual que venga del banco o de un archivo recién importado: en los dos casos
      la partitura ha de salir tal como la escribió el profesor. */
+  /* ¿El pentagrama de arriba trae la armonización escrita? Vale con que algún acorde venga
+     a cuatro voces y con que ninguna nota del bajo se quede sin acorde (decisión 206): en
+     una partitura real la textura adelgaza y no por eso deja de ser una armonización. */
+  function traeArmonizacion(f) {
+    const ac = f && f.acordes;
+    if (!Array.isArray(ac) || !ac.length || !f.tieneBajo) return false;
+    return ac.some(x => x && x.length >= 3) && ac.every(x => x && x.length >= 2);
+  }
   function conCuatroVoces() {
     const e = estado.banco && estado.banco.entrada;
     if (e && Array.isArray(e.voces) && e.voces.length) return true;
     if (estado.fragmentos && Number.isInteger(estado.fragmentoActual)) {
-      const f = estado.fragmentos[estado.fragmentoActual];
-      const ac = f && f.acordes;
-      if (Array.isArray(ac) && ac.length && ac.every(x => x && x.length === 3)) return true;
+      return traeArmonizacion(estado.fragmentos[estado.fragmentoActual]);
     }
     return false;
   }
@@ -856,8 +862,7 @@
       let v = (e && e.voces) || null;
       if (!v && estado.fragmentos && Number.isInteger(estado.fragmentoActual)) {
         const f = estado.fragmentos[estado.fragmentoActual];
-        const ac = f && f.acordes;
-        if (Array.isArray(ac) && ac.length && ac.every(x => x && x.length === 3)) v = ac;
+        if (traeArmonizacion(f)) v = f.acordes;
       }
       if (!Array.isArray(v) || v.length !== n) return null;
       try { return v.map(ac => (Array.isArray(ac) ? ac.map(x => Teoria.nota(x)) : null)); }
@@ -1126,10 +1131,8 @@
          son 4 voces, quizá ayudaría a identificarlo en el futuro»). Si el pentagrama de
          arriba viene en acordes de tres notas, una por nota del bajo, el fragmento trae la
          armonización entera y no solo las dos voces extremas. */
-      const tresArriba = (f.acordes || []).filter(a => a && a.length === 3).length;
-      const nBajo = Teoria.numeroDeNotas(f.compasesBajo || []);
-      const cuatro = f.tieneBajo && tresArriba > 0 && tresArriba === (f.acordes || []).length && (f.acordes || []).length === nBajo;
-      const cuantas = cuatro ? ' · cuatro voces escritas'
+      const cuatro = traeArmonizacion(f);
+      const cuantas = cuatro ? ' · armonización escrita'
         : (f.tieneBajo && f.tieneSoprano ? ' · dos voces' : '');
       b.innerHTML = '<b>' + (k + 1) + '</b> ' + Teoria.textoDesdeBajo(v.compases) + '<span class="fragmento-ton">' + Teoria.nombreTonalidad(f.tonalidad)
         + (f.tonalidadSegura ? '' : ' (?)') + cuantas + '</span>';
@@ -1159,8 +1162,7 @@
     const v = vozDe(f);
     const n = Teoria.numeroDeNotas(v.compases);
     if (!n) { caja.innerHTML = ''; if (pie) { pie.textContent = 'Este fragmento no tiene notas en el pentagrama que se importa.'; pie.hidden = false; } return; }
-    const tresArriba = (f.acordes || []).filter(a => a && a.length === 3).length;
-    const cuatro = f.tieneBajo && tresArriba === (f.acordes || []).length && (f.acordes || []).length === Teoria.numeroDeNotas(f.compasesBajo || []) && tresArriba > 0;
+    const cuatro = traeArmonizacion(f);
     try {
       const ej = {
         id: 'visor', titulo: '', tonalidad: f.tonalidad, compas: f.compas,
@@ -1187,7 +1189,7 @@
       const mods = (v.modulaciones || []).map(m => 'nota ' + (m.nota + 1) + ' → ' + Teoria.nombreCorto(m.tonalidad));
       pie.innerHTML = '<b>' + Teoria.nombreTonalidad(f.tonalidad) + '</b>' + (f.tonalidadSegura ? '' : ' (?)')
         + ' · ' + f.compas.join('/') + ' · ' + (f.numCompases || v.compases.length) + ' compases · ' + n + ' notas'
-        + (cuatro ? ' · <b>cuatro voces escritas</b>' : (f.tieneBajo && f.tieneSoprano ? ' · dos voces' : ''))
+        + (cuatro ? ' · <b>armonización escrita</b>' : (f.tieneBajo && f.tieneSoprano ? ' · dos voces' : ''))
         + (mods.length ? '<br>Modula: ' + mods.join(' · ') : '<br>No modula.')
         + (f.obra ? '<br>' + (f.autor ? f.autor + ', ' : '') + f.obra : '');
       pie.hidden = false;
@@ -1818,7 +1820,7 @@
         + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'
         // «4 voces» marca los fragmentos con la armonización escrita por Diego (decisión 200)
         + '<td>' + (et.voces === 'ambas' ? 'bajo y melodía' : et.voces)
-        + (et.cuatro ? ' <b title="El fragmento trae las cuatro voces escritas en la partitura">· 4 voces</b>' : '') + '</td>'
+        + (et.cuatro ? ' <b title="El fragmento trae su armonización escrita en la partitura">· armonización</b>' : '') + '</td>'
         + '<td>' + (et.cifras || []).map(c => (Teoria.CIFRADOS[c] ? Teoria.CIFRADOS[c].nombre.split(' ')[0] : c)).join(' ') + '</td>'
         + '<td class="celda-nivel"></td><td class="celda-acciones"></td>';
       const sel = document.createElement('select');
@@ -2834,4 +2836,28 @@
 
   document.addEventListener('DOMContentLoaded', arranque);
 
+})();
+
+/* =====================================================================
+   LA VERSIÓN DEL PIE, LEÍDA DEL PROPIO SELLO  (decisión 207, 30/9/2026)
+
+   Estaba escrita A MANO en el HTML, en un <span id="version">, y el sello
+   `?v=…` que se cambia en cada despliegue va en los <script> y <link>: dos
+   sitios distintos para el mismo dato. El resultado fue que el pie se quedó
+   anclado en `20261001-1605` mientras el código cambiaba diez veces, Diego
+   lo leyó como «la web no se actualiza» y estuvimos una hora buscando en
+   GitHub Pages un problema que no existía.
+
+   Ahora el pie no puede mentir: sale del `?v=` con el que el navegador ha
+   pedido este mismo archivo. Un solo dato, un solo sitio.
+   ===================================================================== */
+(function () {
+  try {
+    const caja = document.getElementById('version');
+    if (!caja) return;
+    const m = [...document.querySelectorAll('script[src*="v="], link[href*="v="]')]
+      .map(x => String(x.src || x.href).match(/[?&]v=([0-9][0-9-]*)/))
+      .find(Boolean);
+    if (m) caja.textContent = caja.textContent.replace(/\d{8}-\d{4}/, m[1]);
+  } catch (e) { /* si algo falla, se queda lo que ponga el HTML */ }
 })();

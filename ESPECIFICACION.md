@@ -3880,6 +3880,39 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+207. **El pie dice la versión de verdad** (30/9/2026, tras una hora perdida). El número de
+    versión estaba escrito A MANO en un `<span id="version">` del HTML, mientras el sello
+    `?v=…` que se cambia en cada despliegue va en los `<script>` y los `<link>`: dos sitios
+    distintos para el mismo dato. El pie se quedó anclado en `20261001-1605` mientras el
+    código cambiaba diez veces; Diego lo leyó —con toda la razón— como «la web no se
+    actualiza», y estuvimos revisando *commits*, *pushes* y los ajustes de GitHub Pages
+    buscando un problema que no existía: la aplicación se estaba publicando bien todo el
+    rato, y sus propias capturas del configurador —el visor, el pie con la obra de
+    Beethoven— lo demostraban. **El fallo fue mío**: cambiaba el sello con un `sed` sobre
+    `?v=` y ese `sed` nunca tocaba el literal del pie.
+    - Ahora el pie **se lee del propio sello**: sale del `?v=` con el que el navegador ha
+      pedido el archivo. Un solo dato y un solo sitio, así que no puede volver a mentir.
+    - El literal del HTML se queda como respaldo por si el navegador no ejecuta el guion.
+
+206. **Los dos pentagramas no tienen por qué ir al mismo ritmo** (30/9/2026, con el Andante
+    de la sonata Op. 14 n.º 2 de Beethoven que trajo Diego). La 200 emparejaba los acordes
+    de arriba con las notas del bajo **por orden**: el acorde k con la nota k. Eso solo vale
+    con textura homorrítmica. En el compás 44 de Beethoven hay arriba negra, negra y blanca
+    sobre cuatro notas del bajo: el emparejamiento se desfasaba y el fragmento entero se
+    descartaba, con el visor diciendo «dos voces».
+    - Ahora se emparejan **por tiempo**: a cada nota del bajo le toca el acorde que está
+      sonando en ese instante —el último que empezó en su momento o antes—. Una blanca de
+      arriba se reparte entre las dos negras del bajo que pasan por debajo, que es lo que
+      suena.
+    - **Se admiten los acordes incompletos**: basta con que alguno venga a cuatro voces y
+      con que ninguna nota del bajo se quede sin acorde. Los de Beethoven adelgazan a tres
+      voces en dos de los quince, que es lo más normal al escribir. La auditoría (202) salta
+      los enlaces en que algún acorde no trae sus tres voces de arriba: ahí no hay
+      conducción a cuatro voces que juzgar.
+    - La etiqueta pasa de «cuatro voces escritas» a **«armonización escrita»**, que es lo que
+      de verdad se está diciendo; en la tabla del banco, «· armonización».
+    - Comprobado con su archivo: el fragmento 14 entra con sus **15 acordes**.
+
 205. **Con las cuatro voces escritas se revisa, no se analiza** (30/9/2026, Diego: «al darle
     a Analizar el bajo ya no aparecieron en el editor mis voces, sino una reconstrucción del
     motor… si el fragmento tiene cuatro voces debería mostrarlas, y desactivarse los controles

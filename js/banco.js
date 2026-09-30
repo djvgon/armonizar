@@ -344,12 +344,17 @@ const Banco = (() => {
     const arriba = Array.isArray(f.acordes) ? f.acordes : [];
     if (partes.bajo && arriba.length) {
       const nB = Teoria.numeroDeNotas(f.compasesBajo || []);
-      const completos = arriba.filter(a => a && a.length >= 3).length;
-      if (completos && arriba.length === nB && arriba.every(a => a && a.length === 3)) {
+      const aTres = arriba.filter(a => a && a.length >= 3).length;
+      /* SE ADMITEN LOS ACORDES INCOMPLETOS (decisión 206). Antes se exigía que TODOS
+         trajeran sus tres notas de arriba, y con eso se caían las partituras reales: la
+         sonata de Beethoven adelgaza a tres voces en dos acordes de los quince, que es lo
+         más normal del mundo al escribir. Basta con que haya alguno a cuatro voces —si no,
+         es una melodía, no una armonización— y con que todos traigan al menos dos notas
+         arriba. Los que vengan con menos voces se dibujan con las que tienen. */
+      if (aTres && arriba.every(a => a && a.length >= 2)) {
         base.voces = arriba.map(a => a.slice());
-      } else if (completos) {
-        avisos.push('el pentagrama de arriba trae acordes, pero no cuadran con el bajo ('
-          + arriba.length + ' acordes para ' + nB + ' notas, ' + completos + ' de ellos a tres voces): '
+      } else if (aTres) {
+        avisos.push('el pentagrama de arriba trae acordes, pero alguna nota del bajo se queda sin ninguno: '
           + 'las voces de en medio las pondrá el motor');
       }
     }

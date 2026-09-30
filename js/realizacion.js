@@ -605,7 +605,12 @@ const Realizacion = (() => {
     const tons = Teoria.tonalidadesPorNota(ej);
     const cortes = Teoria.cortes(ej.compases);
     const avisos = [];
-    const voces = i => (acordes[i] && bajos[i] ? [Teoria.nota(bajos[i]), ...acordes[i]] : null);
+    /* Un acorde que no trae sus tres voces de arriba no se audita (decisión 206): en una
+       partitura real la textura adelgaza —tres voces en vez de cuatro— y ahí no hay
+       conducción de cuatro voces que juzgar. El enlace entero se salta, como cuando hay un
+       silencio en medio. */
+    const voces = i => (acordes[i] && bajos[i] && acordes[i].length >= 3 && acordes[i].every(n => n)
+      ? [Teoria.nota(bajos[i]), ...acordes[i]] : null);
     const nombre = n => Teoria.nombreEs(n);
     const conjunto = (a, b) => Math.abs(midi(a) - midi(b)) <= 2;
     for (let i = 1; i < acordes.length; i++) {

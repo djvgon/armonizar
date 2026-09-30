@@ -206,10 +206,12 @@ const MusicXML = (() => {
            notas ligadas abren entrada, igual que en `conTiempos`, para que el índice de una
            y otra sea el mismo. Es una lista aparte porque `compases` entra en la huella del
            sello y no se puede cambiar su forma sin romper los 26 fragmentos ya firmados. */
-        if (staff === pentaDe.soprano && pentaDe.soprano !== pentaDe.bajo && !esSilencio) {
+        if (staff === pentaDe.soprano && pentaDe.soprano !== pentaDe.bajo && !esSilencio && nombre) {
           const ult = actual.acordes[actual.acordes.length - 1];
-          if (enAcorde) { if (ult && nombre) ult.push(nombre); }
-          else if (!(tie.includes('stop') && ultima.soprano && ultima.soprano[0])) actual.acordes.push(nombre ? [nombre] : null);
+          if (enAcorde) { if (ult) ult.notas.push(nombre); }
+          else if (!(tie.includes('stop') && ultima.soprano && ultima.soprano[0])) {
+            actual.acordes.push({ tiempo: inicio + tiempoLocal.soprano, notas: [nombre] });
+          }
         }
         voces.forEach(v => {
           if (enAcorde) {                                     // nota de un acorde: la más aguda para la soprano, la más grave para el bajo
@@ -471,15 +473,32 @@ const MusicXML = (() => {
       autor: (frag.procedencia && frag.procedencia.autor) || '',
       obra: (frag.procedencia && frag.procedencia.obra) || '',
       enlace: (frag.procedencia && frag.procedencia.enlace) || '',
-      /* Los acordes del pentagrama de arriba, ordenados del grave al agudo, uno por nota de
-         la soprano (decisión 200). Con un solo pentagrama, o si arriba no hay más que la
-         melodía, todas las entradas traen una nota sola y no hay voces de en medio. */
-      acordes: (frag.acordes || []).map(a => {
-        if (!Array.isArray(a) || !a.length) return null;
-        const ns = a.slice();
-        try { ns.sort((x, y) => Teoria.midi(Teoria.nota(x)) - Teoria.midi(Teoria.nota(y))); } catch (e) { /* se dejan como vengan */ }
-        return ns;
-      }),
+      /* LOS ACORDES DEL PENTAGRAMA DE ARRIBA, UNO POR NOTA DEL BAJO (decisión 200, rehecha
+         por la 206). Antes se emparejaban por ORDEN: el acorde número k con la nota k. Eso
+         vale cuando los dos pentagramas van al mismo ritmo, y solo entonces. En música de
+         verdad no pasa: en el Andante de la sonata Op. 14 n.º 2 de Beethoven que trajo
+         Diego, el compás 44 lleva tres acordes arriba —negra, negra, blanca— sobre cuatro
+         notas del bajo, y el emparejamiento por orden se desfasaba y descartaba el
+         fragmento entero.
+         Ahora se emparejan por TIEMPO: a cada nota del bajo le toca el acorde que está
+         sonando en ese instante, que es el último que empezó en su momento o antes. Una
+         blanca de arriba se reparte así entre las dos negras del bajo que pasan por debajo,
+         que es lo que de verdad suena. */
+      acordes: (() => {
+        const arriba = (frag.acordes || []).filter(a => a && a.notas && a.notas.length)
+          .map(a => {
+            const ns = a.notas.slice();
+            try { ns.sort((x, y) => Teoria.midi(Teoria.nota(x)) - Teoria.midi(Teoria.nota(y))); } catch (e) { /* como vengan */ }
+            return { tiempo: a.tiempo, notas: ns };
+          })
+          .sort((x, y) => x.tiempo - y.tiempo);
+        if (!arriba.length) return [];
+        return conTiempos(compasesBajo).map(nb => {
+          let suyo = null;
+          for (let k = 0; k < arriba.length; k++) { if (arriba[k].tiempo <= nb.tiempo + 0.01) suyo = arriba[k]; else break; }
+          return suyo ? suyo.notas.slice() : null;
+        });
+      })(),
       compas: compas.slice(),
       numCompases: (elegida.length || compasesBajo.length || compasesSoprano.length),
       modulaciones: modulacionesDe(vozPedida === 'soprano' ? 'soprano' : 'bajo'),

@@ -2409,3 +2409,27 @@
   });
 
 })();
+
+/* =====================================================================
+   LA VERSIÓN DEL PIE, LEÍDA DEL PROPIO SELLO  (decisión 207, 30/9/2026)
+
+   Estaba escrita A MANO en el HTML, en un <span id="version">, y el sello
+   `?v=…` que se cambia en cada despliegue va en los <script> y <link>: dos
+   sitios distintos para el mismo dato. El resultado fue que el pie se quedó
+   anclado en `20261001-1605` mientras el código cambiaba diez veces, Diego
+   lo leyó como «la web no se actualiza» y estuvimos una hora buscando en
+   GitHub Pages un problema que no existía.
+
+   Ahora el pie no puede mentir: sale del `?v=` con el que el navegador ha
+   pedido este mismo archivo. Un solo dato, un solo sitio.
+   ===================================================================== */
+(function () {
+  try {
+    const caja = document.getElementById('version');
+    if (!caja) return;
+    const m = [...document.querySelectorAll('script[src*="v="], link[href*="v="]')]
+      .map(x => String(x.src || x.href).match(/[?&]v=([0-9][0-9-]*)/))
+      .find(Boolean);
+    if (m) caja.textContent = caja.textContent.replace(/\d{8}-\d{4}/, m[1]);
+  } catch (e) { /* si algo falla, se queda lo que ponga el HTML */ }
+})();
