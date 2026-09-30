@@ -332,6 +332,27 @@ const Banco = (() => {
       nivelManual: null,
       avisos
     };
+    /* LAS CUATRO VOCES ESCRITAS (decisión 200, Diego 30/9/2026: «me interesa que se
+       conserven las cuatro voces tal como las he escrito»). Se guardan las TRES de arriba
+       —tenor, contralto y soprano, del grave al agudo—, una por nota del bajo; la cuarta es
+       el bajo, que ya está en `bajo.compases`. Es la misma forma que devuelve
+       `Realizacion.realizar`, así que la partitura las dibuja sin enterarse.
+
+       Se exige que cada acorde traiga sus tres notas y que haya tantos acordes como notas
+       tiene el bajo: si los dos pentagramas no van al mismo ritmo, no hay manera de saber
+       qué acorde va con qué nota y es mejor decirlo que inventárselo. */
+    const arriba = Array.isArray(f.acordes) ? f.acordes : [];
+    if (partes.bajo && arriba.length) {
+      const nB = Teoria.numeroDeNotas(f.compasesBajo || []);
+      const completos = arriba.filter(a => a && a.length >= 3).length;
+      if (completos && arriba.length === nB && arriba.every(a => a && a.length === 3)) {
+        base.voces = arriba.map(a => a.slice());
+      } else if (completos) {
+        avisos.push('el pentagrama de arriba trae acordes, pero no cuadran con el bajo ('
+          + arriba.length + ' acordes para ' + nB + ' notas, ' + completos + ' de ellos a tres voces): '
+          + 'las voces de en medio las pondrá el motor');
+      }
+    }
     etiquetar(base);
     return base;
   }
@@ -374,6 +395,8 @@ const Banco = (() => {
       modo: ton.modo,
       alteraciones: Math.abs(Teoria.armadura(ton)),
       modula: (principal.modulaciones || []).length > 0,
+      // ¿Trae la armonización entera, escrita por el profesor? (decisión 200)
+      cuatro: !!(e.voces && e.voces.length),
       cifras,
       grados
     };
@@ -535,6 +558,17 @@ const Banco = (() => {
         nota: m.nota, tonalidad: Teoria.transportarTonalidad(m.tonalidad, iv.pasos, iv.semitonos)
       }));
     });
+    /* Las voces de en medio viajan con las otras dos y CON EL MISMO desplazamiento de
+       octava (decisión 200): si no, se cruzarían con el bajo o con la soprano. */
+    if (Array.isArray(copia.voces) && copia.voces.length) {
+      let falla = false;
+      copia.voces = copia.voces.map(ac => (Array.isArray(ac) ? ac.map(n => {
+        try { const x = mueve(n); if (Math.abs(x.alt) >= 3) falla = true;
+          return Teoria.texto({ letra: x.letra, alt: x.alt, octava: x.octava + octavas }); }
+        catch (err) { falla = true; return n; }
+      }) : ac));
+      if (falla) return null;        // no se puede escribir en ese tono: mejor no dar el fragmento
+    }
     // La armadura escrita en la partitura original ya no describe a esta copia
     delete copia.armaduraEscrita;
     copia.transportadoDe = e.tonalidad.tonica;      // para el pie del ejercicio y la revisión
@@ -681,6 +715,8 @@ const Banco = (() => {
       autor: e.autor || '',
       obra: e.obra || '',
       enlace: e.enlace || '',
+      // Las cuatro voces tal como las escribió el profesor, si las trae (decisión 200)
+      voces: (e.voces && e.voces.length) ? e.voces : null,
       tonalidad: e.tonalidad,
       compas: e.compas,
       compases: parte.compases,
@@ -809,7 +845,10 @@ const Banco = (() => {
       ? [JSON.stringify(e[v].compases || []), JSON.stringify(e[v].modulaciones || []), JSON.stringify(e[v].respuestas || [])]
         .concat((e[v].melodica && e[v].melodica.length) ? [JSON.stringify(e[v].melodica)] : []).join('|')
       : '—');
-    return [JSON.stringify(e.tonalidad || {}), JSON.stringify(e.compas || []), voz('bajo'), voz('soprano')].join('#');
+    /* Las cuatro voces escritas (200) entran en la huella SOLO cuando las hay, igual que el
+       6.º elevado: los fragmentos firmados antes de que existieran conservan la suya. */
+    const cuatro = (e.voces && e.voces.length) ? '#' + JSON.stringify(e.voces) : '';
+    return [JSON.stringify(e.tonalidad || {}), JSON.stringify(e.compas || []), voz('bajo'), voz('soprano')].join('#') + cuatro;
   }
   /* Dos pasadas distintas sobre el mismo texto (FNV-1a y la de Java), en hexadecimal: 16
      dígitos. No es criptografía —no hace falta: aquí nadie falsifica nada—, es detección de

@@ -760,6 +760,22 @@ const Realizacion = (() => {
              ALTURA ESPERADA —el semitono justo por encima de la sensible, no en otra
              octava—, el oído oye la resolución y no hay falta. */
           if (ahora.some((n, k) => k !== q && midi(n) === midi(de) + 1)) continue;
+          /* LA CADENCIA PERFECTA (decisión 203, Diego 30/9/2026, sobre el tema de *La lista
+             de Schindler*: «las sensibles que no resuelven en este fragmento son
+             resoluciones indirectas de la sensible o cadencias perfectas en las que se
+             permite, en algún caso, que la sensible no resuelva»).
+             En una cadencia perfecta —el bajo va del 5.º grado al 1.º y llega a la tónica en
+             estado fundamental— la sensible de una VOZ INTERIOR queda libre: la tónica la
+             hace sonar el bajo, con todo su peso, y la resolución se oye igual. Es la
+             excepción clásica, más amplia que la de la quinta que ya estaba: allí solo se
+             perdonaba si resolver dejaba la tríada coja. En la soprano sigue sin perdonarse:
+             ahí la sensible es la línea que se oye. */
+          if (q === 1 || q === 2) {
+            const tonica = clase(Teoria.nota(tons[i].tonica + '3'));
+            const bajoAhora = bajos[i] ? clase(Teoria.nota(bajos[i])) : null;
+            const bajoAntes = bajos[i - 1] ? clase(Teoria.nota(bajos[i - 1])) : null;
+            if (bajoAhora === tonica && bajoAntes === (tonica + 7) % 12) continue;
+          }
           let calla = false;
           if (q !== 3) {
             const dc = describirDesde(ej, i, bajos, acordes, tons);

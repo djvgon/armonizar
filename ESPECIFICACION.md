@@ -3880,6 +3880,121 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+204. **La doble corchea: música real, no esquema** (30/9/2026, Diego: «además del icono del
+    candado, sería interesante un icono doble corchea para señalar aquellos fragmentos que se
+    corresponden con música real y no son simples esquemas armónicos»). En la tabla del banco,
+    junto al candado, un **♫** en los fragmentos que tienen obra (198), con el autor y la obra
+    en el globo. Sustituye a la ♪ que la 198 había puesto junto al identificador: las dos
+    marcas de estado van juntas en la primera columna, que es donde se mira.
+
+203. **La sensible libre en la cadencia perfecta** (30/9/2026, Diego, sobre el tema de *La
+    lista de Schindler*: «las sensibles que no resuelven en este fragmento son resoluciones
+    indirectas de la sensible o cadencias perfectas en las que se permite, en algún caso, que
+    la sensible no resuelva»). En una cadencia perfecta —el bajo va del 5.º grado al 1.º y
+    llega a la tónica en estado fundamental— la sensible de una **voz interior** queda libre:
+    la tónica la hace sonar el bajo, con todo su peso. Amplía la excepción de la 171, que solo
+    perdonaba cuando resolver dejaba la tríada sin quinta. En la **soprano** sigue sin
+    perdonarse: ahí la sensible es la línea que se oye.
+    - Medido sobre los 139 fragmentos del banco: **cero avisos cambian**, porque las
+      realizaciones del motor ya cumplían la regla estricta. Afecta a lo que escriben los
+      alumnos y a las voces escritas por el profesor, que es donde hacía falta.
+    - En el fragmento de Williams desaparecen los dos avisos de sensible: V→i con la sensible
+      en el tenor (acordes 5-6) y en la contralto (11-12), las dos cadencias perfectas.
+    - **Lo que NO he cambiado**: la segunda aumentada mi♭–fa♯ de la contralto entre los
+      acordes 18 y 19. Las notas están ahí —compás 9: do3 / si♭3 mi♭4 sol4, y compás 9 2.º
+      tiempo: re3 / do4 fa♯4 la4—, y con las voces asignadas por altura sale esa segunda. Lo
+      que pasa es que en una textura de piano la «contralto» es una ficción, y eso es
+      justamente lo que resuelve la 202b.
+
+202. **Las licencias del compositor** (30/9/2026, Diego: «sí que es bueno señalar las voces
+    armónicas que no cumplen las reglas en este fragmento de John Williams. No tanto como
+    "errores" del compositor, sino como ejemplos narrativos de saltarse las reglas: una
+    historia que se salta todo lo esperado»). **Deroga** el «ni auditoría» de la 200, que era
+    mío: yo quité la auditoría por no marcarle errores a Williams, y la respuesta no era
+    callarse, era cambiar lo que se dice.
+    - Las voces escritas (200) **se auditan igual que cualquier realización** —las reglas son
+      las mismas—, pero no se pintan en rojo sino en **verde oliva**, y cada aviso empieza
+      «Aquí la música se aparta de la regla». El juicio lo pone el alumno; la aplicación solo
+      señala dónde mirar. Lo lleva `estado.licenciasVoces`, que solo se enciende con las
+      voces escritas y se apaga en cada repintado.
+    - **Solo las séptimas que no resuelven** (Diego, 30/9: «creo que lo único a señalar en
+      verde son las séptimas que no resuelven»). Tiene razón, y el motivo es de fondo: estas
+      reglas hablan de CUATRO VOCES INDEPENDIENTES, y una partitura de piano no las tiene. El
+      mi♭ que «salta» una segunda aumentada al fa♯ es una nota interior de un bloque de
+      acordes, no una línea que canta; el salto sin compensar y la quinta por movimiento
+      directo entre voces de en medio, lo mismo. Lo que sobrevive al cambio de textura es el
+      comportamiento ARMÓNICO: una séptima que no baja no baja toque quien toque. Se deja el
+      tipo `septima` y se callan las demás familias. En el tema de Williams quedan **cinco**,
+      en los acordes 2-3, 3-4, 11-12, 15-16 y 18-19.
+    - Las quintas y octavas del motor (`paralelas`) siguen fuera: esas se dibujan como marca
+      de error sobre la propia realización, y aquí la realización no es de quien responde.
+    - En el tema de *La lista de Schindler* quedan **cinco licencias**, y las cinco son
+      séptimas que **suben en vez de bajar**: exactamente «la cadencia a la que no se deja
+      resolver en toda la frase» que describe Diego. La regla y la narración coinciden.
+
+201. **Un visor en el importador, donde estaba el tipo de ejercicio** (30/9/2026, Diego: «la
+    elección del tipo de ejercicio que se está importando resulta irrelevante después de los
+    cambios de la última semana… mejor aprovechar el espacio para mostrar un visor del
+    fragmento seleccionado, de manera que permita visualizar los fragmentos antes de
+    importarlos»).
+    - **Se quita** el selector de cuatro tipos de la columna derecha del importador. Desde la
+      177 cada voz es un ejercicio distinto y la voz se cambia en el revisor, con «Revisando
+      el bajo / la melodía» (decisión 177 y su mando propio); aquel selector era un resto del
+      principio. Los botones siguen en el documento, ocultos, porque de ellos cuelga
+      `modoElegido()`, del que depende media docena de sitios: lo que se ha quitado es
+      tenerlos delante, no el mecanismo.
+    - **Qué voz se edita, ahora se deduce del archivo**: si ningún fragmento trae bajo —los
+      archivos de «Melodías» y «Fragmentos soprano»—, se pasa a la melodía; si ninguno trae
+      melodía, al bajo; con las dos escritas manda el bajo, como siempre. Sin esto, quitar el
+      selector habría dejado los archivos de melodías sin manera de abrirse en el editor.
+    - **El visor**: se pulsa un fragmento de la lista y se dibuja ahí mismo, con su armadura,
+      su compás, los rótulos de sus modulaciones y —si las trae— **las cuatro voces escritas**
+      (200). Debajo, en una línea: tonalidad, compás, compases, notas, cuántas voces, dónde
+      modula y de qué obra viene. A **tamaño natural**, con desplazamiento lateral si no cabe:
+      encogerlo para que entrara lo dejaba ilegible, que es lo contrario de lo que pide un
+      visor. La columna del visor es el doble de ancha que la de la lista.
+    - Va envuelto en `try/catch`: un fragmento que no se pueda dibujar deja su aviso en el
+      recuadro y no se lleva por delante la importación.
+    - Comprobado con el archivo de A4-11: los nueve fragmentos salen en la lista, el visor
+      dibuja el 1 (dos voces, la menor, modula en las notas 7 y 13) y el 9 (cuatro voces, sol
+      menor, cuatro modulaciones, con el crédito de Williams), y el selector de tipo ya no se
+      ve.
+
+200. **Las cuatro voces, tal como las escribe el profesor** (30/9/2026, Diego: «verás que en
+    este sí que he escrito las cuatro voces. Me interesa que se conserven tal como las he
+    escrito»). Primer paso del **nivel B**: no solo el esquema, la armonización de verdad.
+    - **Cómo se escriben.** Como Diego las tiene: pentagrama de arriba con las **tres voces
+      superiores en acorde** —tenor, contralto y soprano— y pentagrama de abajo con el bajo.
+      Hasta ahora el importador se quedaba con la más aguda de cada acorde y tiraba las de en
+      medio; por eso el configurador decía «sol menor · dos voces».
+    - **Qué se guarda.** Un campo `voces` en la entrada: una lista de acordes, uno por nota
+      del bajo, con las tres notas de arriba del grave al agudo. Es la misma forma que
+      devuelve `Realizacion.realizar`, así que la partitura las dibuja sin enterarse. Va
+      aparte de `compases` a propósito: `compases` entra en la huella del sello y cambiarle la
+      forma rompería los 26 fragmentos firmados.
+    - **Cuándo se guardan.** Solo si **cada** acorde de arriba trae sus tres notas y hay
+      tantos acordes como notas tiene el bajo. Si los dos pentagramas no van al mismo ritmo no
+      hay manera de saber qué acorde va con qué nota, y entonces se dice en un aviso en vez de
+      inventárselo. Comprobado sobre el archivo de A4-11: de sus nueve fragmentos, los ocho
+      con melodía sola no ganan voces y el noveno guarda sus 20 acordes.
+    - **Dónde se dibujan.** Donde lo que se ve es el MODELO: en Análisis, que da la
+      realización hecha, y al destapar la solución en los demás tipos. Mientras el alumno
+      cifra, lo que se dibuja sigue saliendo de SUS respuestas. En el revisor del
+      configurador se ven siempre, para comprobarlas antes de cerrar el fragmento.
+    - **Sin auditoría.** Con las voces escritas no se marcan paralelas ni avisos de
+      conducción: no es una realización del motor ni del alumno, es la música tal como está.
+      Señalarle «errores» a Williams o a Schumann con las reglas de la lección sería absurdo.
+    - **Transporte** (decisión 102): las tres voces viajan con el bajo y la soprano y **con el
+      mismo desplazamiento de octava**, o se cruzarían. Si alguna pidiera una alteración
+      triple, el fragmento no se da en ese tono. Comprobado de sol menor a si menor.
+    - **Sello**: `voces` entra en la huella **solo cuando las hay**, como el 6.º elevado de la
+      179. Los 26 firmados siguen intactos, comprobado.
+    - **Se dice cuántas voces trae** (Diego, 30/9: «prefería que discriminara que son 4
+      voces, quizá ayudaría a identificarlo en el futuro»). En la lista del importador, «·
+      cuatro voces escritas» en vez de «· dos voces»; en la tabla del banco, «· 4 voces»
+      junto a «bajo y melodía», con su globo. Comprobado sobre el archivo de A4-11: los ocho
+      primeros siguen diciendo «dos voces» y el noveno, «cuatro voces escritas».
+
 199. **Un rótulo de modulación escrito a mano no se descarta nunca** (30/9/2026, al importar
     el primer fragmento de repertorio real: el tema de *La lista de Schindler*).
     - **El fallo.** `sinTonicizaciones` borra una modulación que va y vuelve en dos notas o

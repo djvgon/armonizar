@@ -575,6 +575,10 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261002-2120 | Solo las séptimas sin resolver se señalan como licencias; la sensible queda libre en la cadencia perfecta; doble corchea en el banco para la música real (202b, 203, 204) |
+| 20261002-1845 | Las voces escritas por el compositor se auditan otra vez, pero como licencias en verde oliva, no como errores en rojo (202) |
+| 20261002-1610 | En el importador, un visor del fragmento seleccionado en el sitio que ocupaba el tipo de ejercicio, que ya no decidía nada (201) |
+| 20261002-1320 | Las cuatro voces escritas por el profesor se conservan tal cual, son las que se dibujan como modelo y se distinguen en las listas: primer paso del nivel B (200) |
 | 20261002-0930 | Los rótulos de modulación escritos a mano ya no los borra el filtro de tonicizaciones, y la obra puede llevar enlace a la partitura de verdad (199) |
 | 20261001-2215 | De qué obra viene cada fragmento: se escribe `@Autor: Obra` en la partitura, viaja al banco sin romper sellos y el alumno lo ve bajo el pentagrama (198) |
 | 20261001-2030 | El recorrido del cursor con modulación: el tono de partida se pide el primero —y ya se puede marcar— y en el pivote las dos lecturas van seguidas, con el cifrado al final (197) |

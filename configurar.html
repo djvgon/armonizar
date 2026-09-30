@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261002-0930">
-  <link rel="stylesheet" href="css/estilo.css?v=20261002-0930">
+  <link rel="stylesheet" href="css/bravura.css?v=20261002-2120">
+  <link rel="stylesheet" href="css/estilo.css?v=20261002-2120">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -304,7 +304,7 @@
         <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados interválicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
         <div class="tabla-caja">
           <table id="tabla-banco" class="tabla-revision tabla-banco">
-            <thead><tr><th title="Cerrado: firmado por ti; nada del programa lo reescribe">🔒</th><th>Id</th><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifrados del modelo</th><th>Nivel</th><th></th></tr></thead>
+            <thead><tr><th title="Cerrado: firmado por ti; nada del programa lo reescribe. La doble corchea marca los fragmentos tomados de música real">🔒 ♫</th><th>Id</th><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifrados del modelo</th><th>Nivel</th><th></th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -328,28 +328,21 @@
             </div>
           </div>
           <div class="columna">
-            <p class="ayuda"><b>Qué voz se está importando.</b> Decide cómo se analiza el archivo: si se lee el pentagrama del bajo o el de la melodía. Al cargar un fragmento del banco se pone solo, con el tipo que tengas elegido arriba.</p>
-            <div class="tipos tipos-compactos" role="radiogroup" aria-label="Tipo de ejercicio">
-              <label class="tipo">
-                <input type="radio" name="modo-ej" value="cifrar">
-                <span class="tipo-titulo">Análisis</span>
-                <span class="tipo-texto">Se le dan el bajo y la realización a cuatro voces; ha de señalar el cifrado interválico y el sonido fundamental de cada acorde.</span>
-              </label>
-              <label class="tipo">
-                <input type="radio" name="modo-ej" value="armonizar" checked>
-                <span class="tipo-titulo">Armonización de bajo</span>
-                <span class="tipo-texto">Ve solo el bajo; ha de cifrarlo. Las notas de cada acorde se escriben según las va señalando.</span>
-              </label>
-              <label class="tipo">
-                <input type="radio" name="modo-ej" value="audicion">
-                <span class="tipo-titulo">Audición</span>
-                <span class="tipo-texto">Escucha la armonización y cifra lo que suena. Bajo y realización se ven al terminar.</span>
-              </label>
-              <label class="tipo">
-                <input type="radio" name="modo-ej" value="soprano">
-                <span class="tipo-titulo">Armonización de soprano</span>
-                <span class="tipo-texto">Ve la melodía y la armoniza: en cada nota elige el sonido fundamental y el cifrado interválico, y el bajo aparece escrito.</span>
-              </label>
+            <!-- EL VISOR DEL FRAGMENTO (decisión 201, Diego 30/9/2026: «mostrar un visor del
+                 fragmento seleccionado en la lista, de manera que permita visualizar los
+                 fragmentos antes de importarlos»). Aquí estaba el selector del tipo de
+                 ejercicio, que desde la 177 —cada voz es un ejercicio distinto, y se cambia
+                 con «Revisando el bajo / la melodía»— ya no decidía nada que no se pueda
+                 decidir después. Los botones siguen existiendo, ocultos, porque de ellos
+                 cuelga la voz que se edita; lo que se ha quitado es tenerlos aquí. -->
+            <p class="ayuda" id="visor-titulo">Pulsa un fragmento de la lista para verlo aquí antes de importarlo.</p>
+            <div id="visor-fragmento" class="partitura-caja visor-fragmento"></div>
+            <p class="ayuda visor-pie" id="visor-pie" hidden></p>
+            <div class="tipos tipos-compactos" role="radiogroup" aria-label="Tipo de ejercicio" hidden>
+              <label class="tipo"><input type="radio" name="modo-ej" value="cifrar"><span class="tipo-titulo">Análisis</span></label>
+              <label class="tipo"><input type="radio" name="modo-ej" value="armonizar" checked><span class="tipo-titulo">Armonización de bajo</span></label>
+              <label class="tipo"><input type="radio" name="modo-ej" value="audicion"><span class="tipo-titulo">Audición</span></label>
+              <label class="tipo"><input type="radio" name="modo-ej" value="soprano"><span class="tipo-titulo">Armonización de soprano</span></label>
             </div>
           </div>
         </div>
@@ -573,15 +566,15 @@
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261002-0930"></script>
-  <script src="js/reglas.js?v=20261002-0930"></script>
-  <script src="js/ejercicios.js?v=20261002-0930"></script>
-  <script src="js/partitura.js?v=20261002-0930"></script>
-  <script src="js/musicxml.js?v=20261002-0930"></script>
-  <script src="js/musescore.js?v=20261002-0930"></script>
-  <script src="js/banco.js?v=20261002-0930"></script>
-  <script src="js/realizacion.js?v=20261002-0930"></script>
-  <script src="js/tecnicas.js?v=20261002-0930"></script>
-  <script src="js/configurador.js?v=20261002-0930"></script>
+  <script src="js/teoria.js?v=20261002-2120"></script>
+  <script src="js/reglas.js?v=20261002-2120"></script>
+  <script src="js/ejercicios.js?v=20261002-2120"></script>
+  <script src="js/partitura.js?v=20261002-2120"></script>
+  <script src="js/musicxml.js?v=20261002-2120"></script>
+  <script src="js/musescore.js?v=20261002-2120"></script>
+  <script src="js/banco.js?v=20261002-2120"></script>
+  <script src="js/realizacion.js?v=20261002-2120"></script>
+  <script src="js/tecnicas.js?v=20261002-2120"></script>
+  <script src="js/configurador.js?v=20261002-2120"></script>
 </body>
 </html>

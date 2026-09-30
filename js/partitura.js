@@ -653,7 +653,7 @@ const Partitura = (() => {
     let globoAbierto = null;
     function cerrarGlobo() {
       if (globoAbierto) { globoAbierto.remove(); globoAbierto = null; }
-      svg.querySelectorAll('.voz-mal.activo, .solucion-zona.activo, .tecnica-zona.activo').forEach(e => e.classList.remove('activo'));
+      svg.querySelectorAll('.voz-mal.activo, .voz-licencia.activo, .solucion-zona.activo, .tecnica-zona.activo').forEach(e => e.classList.remove('activo'));
     }
     /* El globo se dibuja en la banda reservada al pie, con una línea fina hasta lo que se
        ha señalado. Sirve para dos cosas: los avisos de conducción de voces (borde rojo, se
@@ -689,14 +689,20 @@ const Partitura = (() => {
       const clave = i + ':' + voz;
       const indices = marcasVoz.get(clave);
       if (!indices) return false;
-      elemento.classList.add('voz-mal');
+      /* EN ROJO SI ES UN ERROR; EN VERDE OLIVA SI ES UNA LICENCIA (decisión 202, Diego
+         30/9/2026: «sí que es bueno señalar las voces que no cumplen las reglas… no tanto
+         como errores del compositor, sino como ejemplos narrativos de saltarse las
+         reglas»). Lo que cambia es de quién es la música: en la realización de un alumno,
+         una quinta seguida es un error; en la de Williams o Schumann, es una decisión. */
+      elemento.classList.add(estado.licenciasVoces ? 'voz-licencia' : 'voz-mal');
       elemento.setAttribute('data-voz', clave);
       marcasPendientes.push({ clave, indices, cx, cy });
       return true;
     }
     function dibujarMarcasVoz() {
       if (!marcasPendientes.length) return;
-      const capa = el('g', { class: 'marcas-voz' });
+      // La capa entera sabe si son errores o licencias, para que el aro de foco no grite (202)
+      const capa = el('g', { class: 'marcas-voz' + (estado.licenciasVoces ? ' licencias' : '') });
       marcasPendientes.forEach(m => {
         const z = el('circle', { cx: m.cx, cy: m.cy, r: 0.62 * SP, class: 'voz-zona', 'data-voz': m.clave, tabindex: 0, role: 'button',
           'aria-label': avisosVoces[m.indices[0]].texto });
@@ -710,7 +716,7 @@ const Partitura = (() => {
           }));
           const lineas = [];
           m.indices.forEach((k, j) => { if (j) lineas.push(''); lineasDe(avisosVoces[k]).forEach(l => lineas.push(l)); });
-          abrirGlobo(m.cx, m.cy, lineas, hermanas);
+          abrirGlobo(m.cx, m.cy, lineas, hermanas, estado.licenciasVoces ? 'globo-licencia' : '');
         };
         z.addEventListener('click', abrir);
         z.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(ev); } });

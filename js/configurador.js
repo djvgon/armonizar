@@ -824,6 +824,15 @@
        las demás— y lo que aporta la otra voz se queda donde sí sirve: la columna «El bajo
        admite / La melodía admite» (decisión 174). */
     const dos = vocesDelBanco(ej);
+    /* LAS CUATRO VOCES ESCRITAS (decisión 200). Las trae la entrada del banco que se está
+       revisando, no el ejercicio, y solo sirven cuando hay una por nota. */
+    const vocesDelFragmento = () => {
+      const e = estado.banco && estado.banco.entrada;
+      const v = e && e.voces;
+      if (!Array.isArray(v) || v.length !== n || sop) return null;
+      try { return v.map(ac => (Array.isArray(ac) ? ac.map(x => Teoria.nota(x)) : null)); }
+      catch (err) { return null; }
+    };
     const opReal = { modo: 'auto', rotacion: 0 };
     if (sop) {
       opReal.bajos = Ejercicios.bajosDe(ej, romanos, ver ? modelos : new Array(n).fill(null));
@@ -845,7 +854,10 @@
         clase: 'dada' })),
       pedirRomano: opciones().pedirRomano || sop,
       activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
-      realizacion: real ? real.acordes : null,   // el profesor siempre puede ver la realización modelo
+      /* El profesor siempre puede ver la realización modelo… y, si el fragmento trae LAS
+         CUATRO VOCES escritas por él (decisión 200), son esas las que se dibujan: así
+         comprueba en el revisor que se han importado tal cual antes de cerrarlo. */
+      realizacion: vocesDelFragmento() || (real ? real.acordes : null),
       realizacionMal: null,
       extremasDadas: false,
       /* Qué voz es del profesor y cuáles escribe el motor (decisión 169, ajustada por la
@@ -1062,6 +1074,15 @@
   function cargarMusicXML(r, nombre) {
     estado.banco = null; pintarOrigenBanco();
     estado.fragmentos = r.fragmentos;
+    /* QUÉ VOZ SE EDITA, DEDUCIDA DEL ARCHIVO (decisión 201). Al quitar de aquí el selector
+       del tipo de ejercicio hacía falta que esto se resolviera solo: si NINGÚN fragmento del
+       archivo trae bajo —los archivos de «Melodías» y «Fragmentos soprano»—, se pasa a la
+       melodía; si ninguno trae melodía, al bajo. Con los dos escritos manda el bajo, que es
+       lo de siempre. Después se cambia de voz en el revisor, con «Revisando el bajo / la
+       melodía», que es donde vive esa decisión desde la 177. */
+    const hayB = r.fragmentos.some(f => f.tieneBajo), hayS = r.fragmentos.some(f => f.tieneSoprano);
+    if (!hayB && hayS) elegirModo('soprano');
+    else if (hayB && esSoprano()) elegirModo('armonizar');
     abrirAnadir(); abrirFragmento();
     estado.nombreArchivo = nombre;
     const cont = $('#lista-fragmentos');
@@ -1071,8 +1092,17 @@
       const v = vozDe(f);
       const b = document.createElement('button');
       b.type = 'button'; b.className = 'fragmento';
+      /* CUÁNTAS VOCES TRAE (decisión 200, Diego 30/9/2026: «prefería que discriminara que
+         son 4 voces, quizá ayudaría a identificarlo en el futuro»). Si el pentagrama de
+         arriba viene en acordes de tres notas, una por nota del bajo, el fragmento trae la
+         armonización entera y no solo las dos voces extremas. */
+      const tresArriba = (f.acordes || []).filter(a => a && a.length === 3).length;
+      const nBajo = Teoria.numeroDeNotas(f.compasesBajo || []);
+      const cuatro = f.tieneBajo && tresArriba > 0 && tresArriba === (f.acordes || []).length && (f.acordes || []).length === nBajo;
+      const cuantas = cuatro ? ' · cuatro voces escritas'
+        : (f.tieneBajo && f.tieneSoprano ? ' · dos voces' : '');
       b.innerHTML = '<b>' + (k + 1) + '</b> ' + Teoria.textoDesdeBajo(v.compases) + '<span class="fragmento-ton">' + Teoria.nombreTonalidad(f.tonalidad)
-        + (f.tonalidadSegura ? '' : ' (?)') + (f.tieneBajo && f.tieneSoprano ? ' · dos voces' : '') + '</span>';
+        + (f.tonalidadSegura ? '' : ' (?)') + cuantas + '</span>';
       b.addEventListener('click', () => cargarFragmento(k));
       cont.appendChild(b);
     });
@@ -1083,6 +1113,55 @@
     prepararAnadirAlBanco();
     cargarFragmento(0);
     $('#todos-fragmentos').hidden = !(r.fragmentos.length > 1) || $('#paso-direccion').hidden;
+  }
+
+  /* ---------- EL VISOR DEL FRAGMENTO IMPORTADO (decisión 201) ----------
+     Antes de meter nada en el banco conviene VER lo que se va a meter. Se dibuja la voz que
+     se importa, con su armadura, su compás y los rótulos de las modulaciones, y —si el
+     archivo las trae— las cuatro voces escritas (200). Sin casillas ni cifrados: no es el
+     revisor, es una mirada. Va envuelto en try/catch: un fragmento raro puede no dibujarse,
+     y eso no debe llevarse por delante la importación. */
+  function pintarVisorFragmento(k) {
+    const caja = $('#visor-fragmento'), pie = $('#visor-pie'), tit = $('#visor-titulo');
+    if (!caja) return;
+    const f = estado.fragmentos && estado.fragmentos[k];
+    if (!f) { caja.innerHTML = ''; if (pie) pie.hidden = true; return; }
+    const v = vozDe(f);
+    const n = Teoria.numeroDeNotas(v.compases);
+    if (!n) { caja.innerHTML = ''; if (pie) { pie.textContent = 'Este fragmento no tiene notas en el pentagrama que se importa.'; pie.hidden = false; } return; }
+    const tresArriba = (f.acordes || []).filter(a => a && a.length === 3).length;
+    const cuatro = f.tieneBajo && tresArriba === (f.acordes || []).length && (f.acordes || []).length === Teoria.numeroDeNotas(f.compasesBajo || []) && tresArriba > 0;
+    try {
+      const ej = {
+        id: 'visor', titulo: '', tonalidad: f.tonalidad, compas: f.compas,
+        compases: v.compases, respuestas: new Array(n).fill([]),
+        repertorio: Ejercicios.REPERTORIO_RO
+      };
+      const est = {
+        respuestas: new Array(n).fill(null), romanos: new Array(n).fill(null), romanos2: new Array(n).fill(null),
+        activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
+        realizacion: cuatro && !esSoprano() ? (f.acordes || []).map(ac => ac.map(x => Teoria.nota(x))) : null,
+        realizacionMal: null, extremasDadas: false,
+        bajoDado: !esSoprano(), sopranoDada: esSoprano(), realizacionDada: cuatro,
+        vozDada: esSoprano() ? 'soprano' : null, bajos: null,
+        filaFunciones: null,
+        // Los rótulos de las modulaciones, encima del sistema: es lo que hay que comprobar
+        etiquetas: (v.modulaciones || []).map(m => ({ i: m.nota, texto: '→ ' + Teoria.nombreCorto(m.tonalidad), clase: 'dada' })),
+        filaTonalidad: null, gradosBajo: 'oculto', numerar: false
+      };
+      caja.innerHTML = '';
+      Partitura.dibujar(caja, ej, est, () => {});
+    } catch (err) { caja.innerHTML = '<p class="ayuda">No se ha podido dibujar este fragmento: ' + err.message + '</p>'; }
+    if (tit) tit.textContent = 'Fragmento ' + (k + 1) + ' de ' + estado.fragmentos.length;
+    if (pie) {
+      const mods = (v.modulaciones || []).map(m => 'nota ' + (m.nota + 1) + ' → ' + Teoria.nombreCorto(m.tonalidad));
+      pie.innerHTML = '<b>' + Teoria.nombreTonalidad(f.tonalidad) + '</b>' + (f.tonalidadSegura ? '' : ' (?)')
+        + ' · ' + f.compas.join('/') + ' · ' + (f.numCompases || v.compases.length) + ' compases · ' + n + ' notas'
+        + (cuatro ? ' · <b>cuatro voces escritas</b>' : (f.tieneBajo && f.tieneSoprano ? ' · dos voces' : ''))
+        + (mods.length ? '<br>Modula: ' + mods.join(' · ') : '<br>No modula.')
+        + (f.obra ? '<br>' + (f.autor ? f.autor + ', ' : '') + f.obra : '');
+      pie.hidden = false;
+    }
   }
 
   function cargarFragmento(k) {
@@ -1098,6 +1177,7 @@
     estado.melodica = (v.melodica || []).slice();
     if (!$('#titulo').value || /^Ejercicio \d+$/.test($('#titulo').value)) $('#titulo').value = 'Ejercicio ' + (k + 1);
     document.querySelectorAll('.fragmento').forEach((b, i) => b.classList.toggle('elegido', i === k));
+    pintarVisorFragmento(k);                 // verlo antes de importarlo (decisión 201)
     estado.respuestas = null; estado.propuesta = null;
     $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true;
     limpiarDireccion();
@@ -1690,17 +1770,24 @@
       const cerrada = Banco.estaCerrada(e), rota = Banco.huellaRota(e);
       if (cerrada) tr.classList.add(rota ? 'sello-roto' : 'sello-cerrado');
       tr.innerHTML = '<td class="celda-sello" title="' + (cerrada ? (rota ? 'Cerrado el ' + e.cerrado + ', pero su contenido ya no coincide con la huella' : 'Cerrado el ' + e.cerrado) : 'Sin cerrar') + '">'
-        + (cerrada ? (rota ? '⚠🔒' : '🔒') : '') + '</td>'
+        + (cerrada ? (rota ? '⚠🔒' : '🔒') : '')
+        /* LA DOBLE CORCHEA: música de verdad, no un esquema armónico (decisión 204, Diego
+           30/9/2026: «además del icono del candado, sería interesante un icono doble corchea
+           para señalar aquellos fragmentos que se corresponden con música real»). La marca
+           es tener obra: un fragmento con procedencia viene de una partitura. */
+        + (e.obra ? '<span class="marca-obra" title="Música real: ' + ((e.autor ? e.autor + ', ' : '') + e.obra).replace(/"/g, '\u2019') + '">\u266B</span>' : '')
+        + '</td>'
         /* Una nota musical junto al identificador cuando el fragmento viene de una obra
            (decisión 198), con la obra en el globo: de un vistazo se ve cuáles están ya
            documentados y cuáles siguen siendo esquemas sin procedencia. */
-        + '<td class="celda-id"><code>' + (e.id || '—') + '</code>'
-        + (e.obra ? '<span class="marca-obra" title="' + ((e.autor ? e.autor + ', ' : '') + e.obra).replace(/"/g, '’') + '">♪</span>' : '') + '</td>'
+        + '<td class="celda-id"><code>' + (e.id || '—') + '</code></td>'
         + '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '') + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
         + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'
-        + '<td>' + (et.voces === 'ambas' ? 'bajo y melodía' : et.voces) + '</td>'
+        // «4 voces» marca los fragmentos con la armonización escrita por Diego (decisión 200)
+        + '<td>' + (et.voces === 'ambas' ? 'bajo y melodía' : et.voces)
+        + (et.cuatro ? ' <b title="El fragmento trae las cuatro voces escritas en la partitura">· 4 voces</b>' : '') + '</td>'
         + '<td>' + (et.cifras || []).map(c => (Teoria.CIFRADOS[c] ? Teoria.CIFRADOS[c].nombre.split(' ')[0] : c)).join(' ') + '</td>'
         + '<td class="celda-nivel"></td><td class="celda-acciones"></td>';
       const sel = document.createElement('select');

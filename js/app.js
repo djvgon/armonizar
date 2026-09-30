@@ -921,9 +921,56 @@
     estado.realizacionDada = false;                       // las voces de en medio nunca las da el ejercicio
   }
 
+  /* LAS CUATRO VOCES ESCRITAS POR EL PROFESOR (decisión 200, Diego 30/9/2026). Cuando el
+     fragmento las trae, son ellas las que se dibujan —no las que deduce el motor—, porque
+     son la armonización de verdad de la obra y su criterio es el experto.
+     Solo donde lo que se dibuja es el MODELO: en Análisis, que da la realización hecha, y
+     al destapar la solución en los demás tipos. Mientras el alumno cifra, lo que se dibuja
+     sale de SUS respuestas y ahí no pintan nada. */
+  function vocesEscritas() {
+    const v = estado.ejercicio && estado.ejercicio.voces;
+    if (!Array.isArray(v) || v.length !== estado.respuestas.length) return null;
+    if (estado.modoEj !== 'cifrar' && !estado.mostrarSolucion) return null;
+    try { return v.map(ac => (Array.isArray(ac) ? ac.map(n => Teoria.nota(n)) : null)); }
+    catch (e) { return null; }
+  }
+
   function calcularRealizacion() {
     marcarVocesDadas();
+    estado.licenciasVoces = false;      // se enciende solo con las voces escritas (decisión 202)
     if (!realizacionVisible()) { estado.realizacion = null; estado.realizacionMal = null; estado.realizacionCambio = null; estado.paralelas = []; estado.avisosVoces = []; return; }
+    const escritas = vocesEscritas();
+    if (escritas) {
+      estado.realizacion = escritas;
+      estado.realizacionCambio = estado.mostrarSolucion ? diferenciasConLaSuya(escritas) : null;
+      estado.realizacionMal = null;
+      estado.paralelas = [];
+      /* LAS LICENCIAS DEL COMPOSITOR (decisión 202, Diego 30/9/2026: «sí que es bueno
+         señalar las voces armónicas que no cumplen las reglas en este fragmento de John
+         Williams. No tanto como "errores" del compositor, sino como ejemplos narrativos de
+         saltarse las reglas: una historia que se salta todo lo esperado»). Deroga el «ni
+         auditoría» que puse en la 200.
+         Se audita igual que cualquier realización —las reglas son las mismas—, pero lo que
+         se dice y cómo se pinta es otra cosa: no van en rojo sino en verde oliva, y cada
+         aviso empieza diciendo que ahí la música se aparta de la regla. El juicio lo pone
+         el alumno; la aplicación solo señala dónde mirar. Las quintas y octavas del motor
+         (`paralelas`) sí se quedan fuera: esas se dibujan como marca de error sobre la
+         propia realización, y aquí la realización no es de quien responde. */
+      estado.licenciasVoces = true;
+      calcularAvisosVoces();
+      /* QUÉ SE SEÑALA Y QUÉ NO (Diego, 30/9/2026: «lo único a señalar en verde son las
+         séptimas que no resuelven»). Tiene razón, y el motivo es de fondo: estas reglas
+         hablan de CUATRO VOCES INDEPENDIENTES, y una partitura de piano no las tiene. El
+         mi♭ que «salta» una segunda aumentada al fa♯ es una nota interior de un bloque de
+         acordes, no una línea que canta; el salto sin compensar y la quinta por movimiento
+         directo entre voces de en medio, lo mismo. Lo que sí sobrevive al cambio de textura
+         es el comportamiento ARMÓNICO: una séptima que no baja no baja toque quien toque.
+         Se deja `septima` —la resolución— y se callan las demás familias. */
+      estado.avisosVoces = (estado.avisosVoces || [])
+        .filter(av => av.tipo === 'septima')
+        .map(av => Object.assign({}, av, { texto: 'Aquí la música se aparta de la regla. ' + av.texto }));
+      return;
+    }
     const r = Realizacion.realizar(estado.ejercicio, cifrasParaRealizar(), opcionesRealizacion());
     estado.realizacion = r.acordes;
     estado.realizacionCambio = estado.mostrarSolucion ? diferenciasConLaSuya(r.acordes) : null;

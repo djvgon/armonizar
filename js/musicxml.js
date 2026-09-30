@@ -110,7 +110,7 @@ const MusicXML = (() => {
     let armaduraFijada = false;
     const fragmentos = [];
     const VOCES = ['soprano', 'bajo'];
-    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo, procedencia: null });
+    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo, procedencia: null, acordes: [] });
     let actual = nuevo();
     const hayNotas = frag => VOCES.some(v => frag.voces[v].some(c => c.some(([n]) => n !== null)));
 
@@ -199,6 +199,18 @@ const MusicXML = (() => {
         const nombre = esSilencio ? null : nombreNota(pitch);
         const enAcorde = !!n.querySelector('chord');
         const tie = [...n.querySelectorAll('tie')].map(t => t.getAttribute('type'));
+        /* LAS VOCES DE EN MEDIO, TAL COMO ESTÁN ESCRITAS (decisión 200, Diego 30/9/2026:
+           «me interesa que se conserven las cuatro voces tal como las he escrito»). Del
+           pentagrama de ARRIBA se guardan TODAS las notas de cada acorde, no solo la más
+           aguda, en una lista paralela a las notas de la soprano: ni los silencios ni las
+           notas ligadas abren entrada, igual que en `conTiempos`, para que el índice de una
+           y otra sea el mismo. Es una lista aparte porque `compases` entra en la huella del
+           sello y no se puede cambiar su forma sin romper los 26 fragmentos ya firmados. */
+        if (staff === pentaDe.soprano && pentaDe.soprano !== pentaDe.bajo && !esSilencio) {
+          const ult = actual.acordes[actual.acordes.length - 1];
+          if (enAcorde) { if (ult && nombre) ult.push(nombre); }
+          else if (!(tie.includes('stop') && ultima.soprano && ultima.soprano[0])) actual.acordes.push(nombre ? [nombre] : null);
+        }
         voces.forEach(v => {
           if (enAcorde) {                                     // nota de un acorde: la más aguda para la soprano, la más grave para el bajo
             const u = ultima[v];
@@ -459,6 +471,15 @@ const MusicXML = (() => {
       autor: (frag.procedencia && frag.procedencia.autor) || '',
       obra: (frag.procedencia && frag.procedencia.obra) || '',
       enlace: (frag.procedencia && frag.procedencia.enlace) || '',
+      /* Los acordes del pentagrama de arriba, ordenados del grave al agudo, uno por nota de
+         la soprano (decisión 200). Con un solo pentagrama, o si arriba no hay más que la
+         melodía, todas las entradas traen una nota sola y no hay voces de en medio. */
+      acordes: (frag.acordes || []).map(a => {
+        if (!Array.isArray(a) || !a.length) return null;
+        const ns = a.slice();
+        try { ns.sort((x, y) => Teoria.midi(Teoria.nota(x)) - Teoria.midi(Teoria.nota(y))); } catch (e) { /* se dejan como vengan */ }
+        return ns;
+      }),
       compas: compas.slice(),
       numCompases: (elegida.length || compasesBajo.length || compasesSoprano.length),
       modulaciones: modulacionesDe(vozPedida === 'soprano' ? 'soprano' : 'bajo'),

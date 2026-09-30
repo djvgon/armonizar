@@ -1546,3 +1546,35 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
   border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta);
 }
 .campo-enlace:focus { outline: none; border-color: var(--acento); }
+
+/* =======================================================================================
+   DECISIÓN 201 · VISOR DEL FRAGMENTO EN EL IMPORTADOR  (Diego, 30/9/2026)
+   El sitio que ocupaba el selector del tipo de ejercicio —que desde la 177 ya no decidía
+   nada— lo ocupa ahora la música: se pulsa un fragmento de la lista y se ve antes de
+   meterlo en el banco.
+   ======================================================================================= */
+/* La columna del visor, más ancha que la de la lista: los nombres de las notas ocupan
+   poco y la música, mucha. */
+#det-anadir .columnas > .columna:last-child { flex: 2 1 460px; }
+.visor-fragmento { min-height: 120px; overflow-x: auto; }
+/* A su tamaño natural, con desplazamiento lateral si no cabe: la columna es estrecha y
+   encogerlo lo dejaba ilegible, que es justo lo contrario de lo que pide un visor. */
+.visor-fragmento svg.partitura { max-width: none; }
+.visor-fragmento:empty { display: flex; align-items: center; justify-content: center; }
+.visor-fragmento:empty::after { content: "—"; color: var(--tinta-suave); opacity: .5; }
+.visor-pie { line-height: 1.45; margin-top: .4rem; }
+#visor-titulo { font-weight: 600; color: var(--tinta); margin-bottom: .3rem; }
+
+/* =======================================================================================
+   DECISIÓN 202 · LAS LICENCIAS DEL COMPOSITOR  (Diego, 30/9/2026)
+   «No tanto como errores del compositor, sino como ejemplos narrativos de saltarse las
+   reglas». La misma auditoría, otra tinta: en la realización de un alumno una quinta
+   seguida es un error y va en rojo; en la de Williams o Schumann es una decisión, y va en
+   verde oliva, que ni acusa ni se confunde con lo acertado.
+   ======================================================================================= */
+svg.partitura .voz-licencia { fill: var(--licencia, #6B7A2F); }
+svg.partitura .marcas-voz.licencias .voz-zona.activo,
+svg.partitura .marcas-voz.licencias .voz-zona:hover,
+svg.partitura .marcas-voz.licencias .voz-zona:focus { stroke: var(--licencia, #6B7A2F); }
+svg.partitura .globo-licencia .globo-fondo { stroke: var(--licencia, #6B7A2F); }
+svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
