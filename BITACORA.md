@@ -11,6 +11,12 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 30 de septiembre de 2026
 
+- **Por qué el fragmento de Beethoven no le salía al alumno** (30/9): no era la aplicación.
+  Al alumno solo se le sirven fragmentos **cerrados** (decisión 182), y en el `banco.json`
+  que estaba publicado `A3-4-15` seguía abierto. En cuanto Diego lo cerró y volvió a
+  descargar el banco —que es la copia que ya está en el clon, con los 143 cerrados— la ficha
+  de «solo música real» del tema 8 lo da, con su crédito y su enlace. Comprobado sobre esa
+  copia. **Queda por hacer el *push*: hasta entonces los alumnos siguen con el banco viejo.**
 - **El libro de Armonía está al día** (30/9). Se han rehecho los diez cuadros de
   estructuras (temas 5 a 14) con lo que devuelve el motor hoy, y las nueve hojas de
   ejercicios con el banco de 143 fragmentos. El cuadro de estructuras va ahora **delante**
@@ -587,6 +593,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261003-0430 | Una armonización sigue siéndolo aunque en algún acorde queden dos voces: vuelve a entrar el tema de John Williams (213). La procedencia y las voces escritas viajan también en la dirección `#e=` del ejercicio, no solo en la ficha (214). El banco tiene su propio botón de valores por defecto (215) |
 | 20261003-0230 (b) | Solo datos: `prototipos.json` vuelto a publicar con lo que el motor devuelve hoy, para que la página «Estructuras» diga lo mismo que el cuadro del libro. Siete prototipos habían quedado atrás —los dos del II6/5 del tema 11, la cadencia rota en menor del 12, los tres del 13 y el del 14, que ya llevan la prolongación del II6/5 con el I6 de bordadura—. No toca ni HTML ni JS, y `estructuras.js` lo pide con `cache: no-cache`, así que no hace falta sello nuevo |
 | 20261003-0230 | Cargar un fragmento del archivo suelta la entrada del banco: ya no se queda la chapa, la lección ni la obra del anterior (212) |
 | 20261003-0145 | Filtro de procedencia —música real o fragmentos de práctica— en la ficha y en el banco, y botón de valores por defecto (210 y 211) |

@@ -3880,6 +3880,61 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+215. **El banco tiene su propio botón de valores por defecto** (30/9/2026, Diego: «poner
+    también un botón para reiniciar los filtros a su posición por defecto en la zona del
+    banco de fragmentos: es el *companion* del de selector de fragmentos para la ficha del
+    alumno»). Va al final de la fila de «Repaso» y «Procedencia» y devuelve a su sitio esos
+    dos selectores y la búsqueda por id.
+    - **Son dos filtros distintos y cada uno tiene su botón.** El de arriba (211) dice qué
+      fragmentos entran en la **ficha del alumno**; este dice qué se ve en la **tabla**
+      mientras se revisa. Ninguno toca al otro, que es justo lo que se quiere al terminar un
+      repaso: dejar la tabla entera sin tocar la ficha que se estaba preparando.
+    - Los valores salen del propio documento (`defaultSelected`), como en la 211.
+
+214. **La procedencia y las voces escritas viajan también en la dirección del ejercicio**
+    (30/9/2026, Diego: «en la pantalla de práctica del alumno no aparece su información
+    adicional, ni el enlace web… ¡y no se respetan las cuatro voces que yo introduje y que el
+    visor del fragmento en el configurador muestra!»).
+    - **El fallo.** Al alumno se puede llegar por dos puertas: la **ficha** (`#f=…`), que
+      arma cada ejercicio con `Banco.ejercicio` a partir del banco, y la **dirección de un
+      ejercicio suelto** (`#e=…`), que es lo que generan «Generar dirección» y «Abrir como
+      alumno» en el configurador. La primera llevaba el autor, la obra, el enlace (198, 199)
+      y las cuatro voces (200); la segunda, no: `construirEjercicio` no los copiaba. Por esa
+      puerta el alumno veía la reconstrucción del motor y ningún crédito, aunque el visor
+      del configurador —que lee el fragmento directamente— enseñara lo correcto.
+    - Ahora `construirEjercicio` añade `autor`, `obra`, `enlace` y `voces`, sacándolos del
+      fragmento que haya delante: la entrada del banco que se esté revisando o, si no hay
+      ninguna enganchada (212), el fragmento del archivo recién importado. Tres funciones
+      nuevas y compartidas —`fuenteActual`, `procedenciaDe`, `armonizacionEscritaDe`—, de
+      modo que el visor y la dirección leen lo mismo y no pueden volver a discrepar.
+    - **En la armonización de soprano las voces no viajan**: son un acorde por nota del
+      bajo, y allí el bajo lo deduce el motor. La procedencia sí, porque la obra es la misma.
+    - Comprobado en el navegador: importado el archivo de A4-11, elegido el fragmento de
+      John Williams y generada la dirección, el ejercicio lleva autor, obra, enlace y sus 20
+      acordes, y al abrirlo como alumno sale el crédito con «Ver la partitura» y la
+      partitura dibuja sus voces.
+
+213. **Una armonización sigue siéndolo aunque en algún sitio queden dos voces** (30/9/2026,
+    Diego: «al ir a incorporarlo, el configurador no se comporta como en las últimas
+    versiones: aparece un botón “Analizar la melodía / el bajo”, y no parece respetar las
+    armonizaciones que yo he incluido»). **Corrige la 206.**
+    - **El fallo.** Para dar por escrita la armonización del pentagrama de arriba se exigía
+      que **todos** los acordes trajeran al menos **dos** notas. El tema de John Williams,
+      corregido por Diego, escribe en dos de sus veinte acordes una sola voz sobre el bajo
+      —a dos voces reales, que es lo que hay en la partitura—, así que dejaba de contar como
+      armonización: el botón volvía a decir «Analizar el bajo» y el motor reconstruía las
+      voces.
+    - El listón estaba puesto en el sitio equivocado. Lo que descalifica a un fragmento no es
+      que la textura **adelgace** —eso lo hace toda la música escrita—, sino que haya notas
+      del bajo **sin nada encima**: esas habría que rellenarlas, y entonces la armonización
+      ya no sería la del compositor. Ahora se pide que **algún** acorde venga a cuatro voces
+      y que **ninguna** nota del bajo se quede sin ninguna: `every(a => a.length >= 1)`.
+    - Se arregla en los dos sitios que tenían la misma cuenta: `traeArmonizacion`
+      (`js/configurador.js`) y el bloque que guarda `voces` en `Banco.entrada` (`js/banco.js`).
+    - Comprobado sobre el archivo de verdad: el fragmento 9 de A4-11 pasa a listarse como
+      «armonización escrita», el botón dice «Revisar el fragmento» y la entrada que sale
+      guarda sus 20 acordes sin avisos. Los 143 sellos del banco siguen intactos.
+
 212. **Un fragmento del archivo no es el fragmento del banco** (30/9/2026, Diego: «la
     información adicional sobre este fragmento de música real —Beethoven— no es correcta en
     el visor y se ha quedado mantenida la del fragmento de música real anterior»).

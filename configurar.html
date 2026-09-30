@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261003-0230">
-  <link rel="stylesheet" href="css/estilo.css?v=20261003-0230">
+  <link rel="stylesheet" href="css/bravura.css?v=20261003-0430">
+  <link rel="stylesheet" href="css/estilo.css?v=20261003-0430">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -322,6 +322,12 @@
             <option value="practica">Solo fragmentos de práctica</option>
           </select>
           <span class="ayuda" id="banco-cerrados"></span>
+          <!-- DEVOLVER LOS FILTROS DEL BANCO A SU SITIO (Diego, 30/9/2026: «es el
+               companion del de selector de fragmentos para la ficha»). Toca SOLO esta
+               fila —repaso, procedencia y la búsqueda por id—; el filtro de la ficha, que
+               también recorta la tabla, tiene el suyo arriba. -->
+          <button type="button" id="btn-banco-defecto" class="boton-pequeno"
+            title="Devuelve el repaso, la procedencia y la búsqueda por id a su estado inicial">Valores por defecto</button>
         </p>
         <p class="ayuda"><b>El candado</b> dice si el fragmento está <b>cerrado</b>, es decir, firmado por ti: un fragmento cerrado no lo reescribe ninguna parte del programa, y su huella se comprueba cada vez que se carga el banco. Para repasar de corrido, pon «Repaso» en «Solo los que están sin cerrar»: la tabla y las flechas de recorrido se convierten en una cola que se vacía a medida que firmas. Esto no cambia qué fragmentos entran en la ficha.</p>
         <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados interválicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
@@ -585,19 +591,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261003-0230</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261003-0430</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261003-0230"></script>
-  <script src="js/reglas.js?v=20261003-0230"></script>
-  <script src="js/ejercicios.js?v=20261003-0230"></script>
-  <script src="js/partitura.js?v=20261003-0230"></script>
-  <script src="js/musicxml.js?v=20261003-0230"></script>
-  <script src="js/musescore.js?v=20261003-0230"></script>
-  <script src="js/banco.js?v=20261003-0230"></script>
-  <script src="js/realizacion.js?v=20261003-0230"></script>
-  <script src="js/tecnicas.js?v=20261003-0230"></script>
-  <script src="js/configurador.js?v=20261003-0230"></script>
+  <script src="js/teoria.js?v=20261003-0430"></script>
+  <script src="js/reglas.js?v=20261003-0430"></script>
+  <script src="js/ejercicios.js?v=20261003-0430"></script>
+  <script src="js/partitura.js?v=20261003-0430"></script>
+  <script src="js/musicxml.js?v=20261003-0430"></script>
+  <script src="js/musescore.js?v=20261003-0430"></script>
+  <script src="js/banco.js?v=20261003-0430"></script>
+  <script src="js/realizacion.js?v=20261003-0430"></script>
+  <script src="js/tecnicas.js?v=20261003-0430"></script>
+  <script src="js/configurador.js?v=20261003-0430"></script>
 </body>
 </html>

@@ -74,20 +74,52 @@
      205). Da igual que venga del banco o de un archivo recién importado: en los dos casos
      la partitura ha de salir tal como la escribió el profesor. */
   /* ¿El pentagrama de arriba trae la armonización escrita? Vale con que algún acorde venga
-     a cuatro voces y con que ninguna nota del bajo se quede sin acorde (decisión 206): en
-     una partitura real la textura adelgaza y no por eso deja de ser una armonización. */
+     a cuatro voces y con que ninguna nota del bajo se quede sin NADA encima (decisión 206,
+     corregida el 30/9/2026): en una partitura real la textura adelgaza y no por eso deja de
+     ser una armonización.
+     El listón estaba en dos notas por acorde y dejaba fuera el tema de John Williams, que
+     en dos de sus veinte acordes se queda en bajo y una sola voz —a dos voces reales, que
+     es lo que está escrito—. Lo que descalifica a un fragmento no es que adelgace, sino
+     que haya notas del bajo SIN ARMONIZAR: esas son las que el motor tendría que rellenar,
+     y entonces ya no es la armonización del compositor. */
   function traeArmonizacion(f) {
     const ac = f && f.acordes;
     if (!Array.isArray(ac) || !ac.length || !f.tieneBajo) return false;
-    return ac.some(x => x && x.length >= 3) && ac.every(x => x && x.length >= 2);
+    return ac.some(x => x && x.length >= 3) && ac.every(x => x && x.length >= 1);
   }
-  function conCuatroVoces() {
+  /* EL FRAGMENTO QUE HAY DELANTE, venga de donde venga: la entrada del banco que se está
+     revisando o, si no hay ninguna enganchada, el fragmento del archivo recién importado.
+     De aquí salen las dos cosas que viajan con la música y no con el ejercicio: de qué obra
+     es y cómo la armonizó su autor. */
+  function fuenteActual() {
     const e = estado.banco && estado.banco.entrada;
-    if (e && Array.isArray(e.voces) && e.voces.length) return true;
+    if (e) return e;
     if (estado.fragmentos && Number.isInteger(estado.fragmentoActual)) {
-      return traeArmonizacion(estado.fragmentos[estado.fragmentoActual]);
+      return estado.fragmentos[estado.fragmentoActual] || null;
     }
-    return false;
+    return null;
+  }
+  /* Autor, obra y enlace del fragmento (decisiones 198 y 199). */
+  function procedenciaDe(f) {
+    const o = f || fuenteActual();
+    if (!o) return null;
+    const p = { autor: (o.autor || '').trim(), obra: (o.obra || '').trim(),
+                enlace: (o.enlace || '').trim() };
+    return (p.autor || p.obra || p.enlace) ? p : null;
+  }
+  /* Las tres voces de arriba tal como las escribió el profesor (decisión 200). En la
+     entrada del banco están ya guardadas en `voces`; en un fragmento recién importado son
+     los acordes del pentagrama de arriba, si valen como armonización. */
+  function armonizacionEscritaDe(f) {
+    const o = f || fuenteActual();
+    if (!o) return null;
+    if (Array.isArray(o.voces) && o.voces.length) return o.voces;
+    return traeArmonizacion(o) ? o.acordes : null;
+  }
+  /* En la armonización de soprano no hay «cuatro voces escritas» que respetar: lo que se
+     revisa es la melodía y el bajo lo deduce el motor. */
+  function conCuatroVoces() {
+    return !esSoprano() && !!armonizacionEscritaDe();
   }
 
   /* ---------- Lectura del formulario ---------- */
@@ -273,6 +305,27 @@
     const mods = extra.modulaciones !== undefined ? extra.modulaciones : modulacionesValidas(Ejercicios.numNotas({ compases }));
     if (mods.length) ej.modulaciones = mods.map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }));
     if (estado.melodica && estado.melodica.length) ej.melodica = estado.melodica.slice();   // 6.º elevado (179)
+    /* LO QUE ES DE LA MÚSICA Y NO DEL EJERCICIO (Diego, 30/9/2026: «en la pantalla de
+       práctica del alumno no aparece su información adicional, ni el enlace web… ¡y no se
+       respetan las cuatro voces que yo introduje!»). El ejercicio que se genera aquí es el
+       que viaja en la dirección `#e=…` y el que se ve al probar el fragmento; se quedaba
+       sin la procedencia (198, 199) y sin la armonización escrita (200), de modo que por
+       esa puerta el alumno veía la reconstrucción del motor y ningún crédito. Por la otra
+       puerta —la ficha del banco— sí llegaban, porque los pone `Banco.ejercicio`. Ahora
+       llegan por las dos. */
+    const proc = procedenciaDe(extra.origen);
+    if (proc) {
+      if (proc.autor) ej.autor = proc.autor;
+      if (proc.obra) ej.obra = proc.obra;
+      if (proc.enlace) ej.enlace = proc.enlace;
+    }
+    /* Las voces escritas acompañan al BAJO: son un acorde por nota suya. En la
+       armonización de soprano el bajo lo deduce el motor y esos acordes no casarían con
+       las notas de la melodía, así que allí no viajan. */
+    const escritas = esSoprano() ? null : armonizacionEscritaDe(extra.origen);
+    if (escritas && escritas.length === Ejercicios.numNotas({ compases })) {
+      ej.voces = escritas.map(a => (Array.isArray(a) ? a.slice() : null));
+    }
     return ej;
   }
 
@@ -858,12 +911,7 @@
        mano y ya no cuadran, mandan las reglas, como antes. */
     const vocesDelFragmento = () => {
       if (sop) return null;
-      const e = estado.banco && estado.banco.entrada;
-      let v = (e && e.voces) || null;
-      if (!v && estado.fragmentos && Number.isInteger(estado.fragmentoActual)) {
-        const f = estado.fragmentos[estado.fragmentoActual];
-        if (traeArmonizacion(f)) v = f.acordes;
-      }
+      const v = armonizacionEscritaDe();
       if (!Array.isArray(v) || v.length !== n) return null;
       try { return v.map(ac => (Array.isArray(ac) ? ac.map(x => Teoria.nota(x)) : null)); }
       catch (err) { return null; }
@@ -1065,7 +1113,7 @@
     const base = $('#coleccion').value.trim() || $('#titulo').value.trim() || 'Ejercicio';
     estado.fragmentos.forEach((f, k) => {
       const v = vozDe(f);
-      const ej = construirEjercicio(v.compases, f.tonalidad, null, { titulo: 'Ejercicio ' + (k + 1), coleccion: base, compas: f.compas, id: 'url-' + Date.now().toString(36) + '-' + (k + 1), modulaciones: v.modulaciones || [], funcionesNotas: null });
+      const ej = construirEjercicio(v.compases, f.tonalidad, null, { titulo: 'Ejercicio ' + (k + 1), coleccion: base, compas: f.compas, id: 'url-' + Date.now().toString(36) + '-' + (k + 1), modulaciones: v.modulaciones || [], funcionesNotas: null, origen: f });
       const prop = proponerPara(ej, null);
       ej.respuestas = prop.map(p => p.admisibles.slice());
       ej.respuestas = ej.respuestas.map((_, i) => Ejercicios.admisibles(ej, i));
@@ -1771,6 +1819,22 @@
     });
     pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador();
     aviso('Los filtros vuelven a sus valores por defecto.', 4000);
+  }
+
+  /* LO MISMO PARA LA TABLA DEL BANCO (Diego, 30/9/2026). Son dos filtros distintos y cada
+     uno tiene su botón: el de arriba dice qué fragmentos entran en la FICHA del alumno;
+     este dice qué se ve en la TABLA mientras se revisa —el repaso, la procedencia y la
+     búsqueda por id—. Ni se tocan entre sí ni se tocan aquí. */
+  function bancoPorDefecto() {
+    ['#banco-revision', '#banco-musica'].forEach(sel => {
+      const el = $(sel);
+      if (!el) return;
+      const def = [...el.options].find(o => o.defaultSelected) || el.options[0];
+      if (def) el.value = def.value;
+    });
+    if ($('#banco-buscar')) $('#banco-buscar').value = '';
+    pintarBanco();
+    aviso('Los filtros del banco vuelven a sus valores por defecto.', 4000);
   }
 
   function pintarBanco() {
@@ -2780,6 +2844,7 @@
     }
     $('#banco-revision').addEventListener('change', pintarBanco);
     if ($('#btn-filtro-defecto')) $('#btn-filtro-defecto').addEventListener('click', filtroPorDefecto);
+    if ($('#btn-banco-defecto')) $('#btn-banco-defecto').addEventListener('click', bancoPorDefecto);
     if ($('#banco-musica')) $('#banco-musica').addEventListener('change', pintarBanco);
     $('#btn-banco-soltar').addEventListener('click', () => { estado.banco = null; pintarOrigenBanco(); guardarBorrador(); });
     $('#btn-banco-descargar').addEventListener('click', descargarBanco);

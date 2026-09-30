@@ -345,13 +345,18 @@ const Banco = (() => {
     if (partes.bajo && arriba.length) {
       const nB = Teoria.numeroDeNotas(f.compasesBajo || []);
       const aTres = arriba.filter(a => a && a.length >= 3).length;
-      /* SE ADMITEN LOS ACORDES INCOMPLETOS (decisión 206). Antes se exigía que TODOS
-         trajeran sus tres notas de arriba, y con eso se caían las partituras reales: la
-         sonata de Beethoven adelgaza a tres voces en dos acordes de los quince, que es lo
-         más normal del mundo al escribir. Basta con que haya alguno a cuatro voces —si no,
-         es una melodía, no una armonización— y con que todos traigan al menos dos notas
-         arriba. Los que vengan con menos voces se dibujan con las que tienen. */
-      if (aTres && arriba.every(a => a && a.length >= 2)) {
+      /* SE ADMITEN LOS ACORDES INCOMPLETOS (decisión 206, corregida el 30/9/2026). Antes se
+         exigía que TODOS trajeran sus tres notas de arriba, y con eso se caían las
+         partituras reales: la sonata de Beethoven adelgaza a tres voces en dos acordes de
+         los quince, que es lo más normal del mundo al escribir. Se bajó el listón a dos
+         notas arriba, y seguía dejando fuera el tema de John Williams, que en dos de sus
+         veinte acordes escribe solo dos voces reales —el bajo y una—.
+         El listón que de verdad importa es otro: basta con que haya algún acorde a cuatro
+         voces —si no, es una melodía, no una armonización— y con que NINGUNA nota del bajo
+         se quede sin nada encima, porque esa sí habría que rellenarla y entonces la
+         armonización ya no sería la del compositor. Los acordes con menos voces se dibujan
+         con las que tienen. */
+      if (aTres && arriba.every(a => a && a.length >= 1)) {
         base.voces = arriba.map(a => a.slice());
       } else if (aTres) {
         avisos.push('el pentagrama de arriba trae acordes, pero alguna nota del bajo se queda sin ninguno: '
