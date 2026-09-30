@@ -9,35 +9,36 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 30 de septiembre de 2026
+## Estado a 30 de septiembre de 2026 (tarde)
 
 - **LO PRIMERO: hay que hacer el *commit* y el *push*.** El clon y Drive van por
-  `20261003-0800`; lo último publicado en GitHub Pages es `20261003-0430`. **Y después de
-  subir hay que volver a importar el fragmento de John Williams**, porque la entrada que se
-  guardó en el banco con el código viejo no lleva las voces escritas.
-- **`js/qr.js` es un archivo NUEVO** (decisión 217): en GitHub Desktop aparecerá como
-  añadido, no como modificado. Sin él, el botón «Código QR» avisa y no hace nada.
-- **Al volver a importar el tema de John Williams con la 218**, el fragmento ya no es el
-  mismo que hay guardado —los acordes 16 y 17 pasan de una voz a tres—, así que entra en el
-  banco como fragmento NUEVO, con otro identificador. Conviene **quitar antes el viejo** de
-  la tabla para no quedarse con los dos.
-- **Por qué el fragmento de Beethoven no le salía al alumno** (30/9): no era la aplicación.
-  Al alumno solo se le sirven fragmentos **cerrados** (decisión 182), y en el `banco.json`
-  que estaba publicado `A3-4-15` seguía abierto. En cuanto Diego lo cerró y volvió a
-  descargar el banco —que es la copia que ya está en el clon, con los 143 cerrados— la ficha
-  de «solo música real» del tema 8 lo da, con su crédito y su enlace. Comprobado sobre esa
-  copia. **Queda por hacer el *push*: hasta entonces los alumnos siguen con el banco viejo.**
-- **El libro de Armonía está al día** (30/9). Se han rehecho los diez cuadros de
-  estructuras (temas 5 a 14) con lo que devuelve el motor hoy, y las nueve hojas de
-  ejercicios con el banco de 143 fragmentos. El cuadro de estructuras va ahora **delante**
-  de la hoja de cada tema dentro del libro, que es como Diego lo tenía pensado y como no
-  estaba: el `0b.` pasa de 309 a 318 páginas. Los fragmentos de música real llevan encima,
-  a la derecha, su autor y su obra, sin el enlace web. Todo ello en Drive, en
-  `3 PROYECTO (documentación y fuentes)/Teoría para Fundamentos de composición/`.
-- **Pendiente de *commit* y *push* desde GitHub Desktop**, además de lo de abajo:
-  `banco.json` (143 fragmentos, con la sonata de Beethoven y el tema de John Williams) y
-  `prototipos.json` (vuelto a publicar hoy). `f.html` del clon lleva el enlace de Spotify
-  de «La Graciosa», que se había perdido en la copia de trabajo y ya está recuperado.
+  `20261003-1200`, con las decisiones **219** —el modelo de cada nota lo pone la
+  armonización escrita— y **220** —el VI7 como objetivo de la cadencia rota—. Archivos
+  tocados: `js/banco.js`, `js/reglas.js`, `js/configurador.js`, `banco.json`,
+  `prototipos.json` y las ocho páginas HTML (marca de versión).
+- **El fragmento de John Williams ya está bien en el banco.** Lo reimportó Diego con la
+  218, con sus veinte acordes a cuatro voces y el medio compás de dos acordes bien leído.
+  Sobre él se ha aplicado la 219: nueve notas cambian de orden —el acorde escrito pasa a ser
+  el modelo— y dos lo tenían ausente, la **15** (el VI7, mi♭–sol–si♭–re) y la **18** (el IV7,
+  do–mi♭–sol–si♭), que se han añadido a sus admisibles. Ningún otro fragmento del banco
+  cambia.
+- **El VI7 está encendido en la lección del tema 14** (A4-11, los nueve fragmentos) y tiene
+  su estructura propia en el cuadro del tema 14: `I – V7 – VI7`.
+- **El libro de Armonía, rehecho** (30/9, tarde) con el banco corregido: `0b. Vigueras -
+  Armonía - Completa con hojas de ejercicios.pdf`, 318 páginas, el mismo número que antes.
+  Cambian la hoja del tema 14 —el fragmento de Williams, ejercicio 1, con su crédito— y su
+  cuadro de estructuras, que estrena el `I – V7 – VI7`. Cambia además un ejercicio del tema
+  8, por un retoque que Diego hizo él mismo en ese fragmento durante el día. Todo lo demás,
+  idéntico página a página.
+- **Esperando el visto bueno de Diego para dos cosas** (30/9, tarde):
+  1. copiar el libro nuevo a la carpeta de Drive de los alumnos
+     `ALUMNOS - Biblioteca de referencia / 00. COMÚN, materiales comunes… / Armonía`,
+     **recuperando antes de la papelera el PDF antiguo** y sobrescribiendo su contenido, para
+     que conserve su identificador de Drive y **no haya que tocar ningún enlace de
+     Classroom**;
+  2. comprobar después, clase por clase, que los adjuntos del libro siguen apuntando a ese
+     archivo.
+  La carpeta de los alumnos **no está conectada** a la sesión: hará falta pedirle acceso.
 
 - **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-1605.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la

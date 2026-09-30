@@ -313,6 +313,29 @@ const Reglas = (() => {
         if (ids.length) { r = x; adm = ids; break; }
       }
       if (!r) { r = primera || R([], 'Sin regla aplicable.', '—'); adm = []; }
+      /* EL VI7 DE LA CADENCIA ROTA (decisión 220, Diego 30/9/2026: «incorpora también el
+         acorde nuevo que emplea este fragmento: VI, en este caso VI7, como objetivo de la
+         cadencia rota; un acorde de séptima mayor, luminoso y con su clara séptima mayor,
+         en medio de la oscuridad del modo menor»).
+         La regla de la octava de Furno no lo trae —el 6.º grado es allí VI o IV6 y nada
+         más—, y por eso el motor no lo proponía nunca. Pero la cadencia rota es un giro, no
+         una nota del bajo suelta: cuando el 6.º grado LLEGA DESDE LA DOMINANTE, el acorde
+         al que se rompe puede llevar séptima, y en modo menor esa séptima es MAYOR.
+         Se añade DETRÁS de lo que diga la regla que haya ganado, nunca delante: la cadencia
+         rota normal va al VI sin séptima, y el modelo de los fragmentos que ya están en el
+         banco no se mueve ni un milímetro. Quien lo pone delante es la armonización escrita
+         (decisión 219), cuando la partitura lo trae.
+         Y se exige que `VI|7` esté EXPRESAMENTE en la lista de acordes de la lección: una
+         lección sin lista lo permite todo, así que fiarlo a `acordePermitido` habría metido
+         el VI7 en lecciones donde no toca (el corpus pasaba de 11 discrepancias a 15). */
+      if (adm.length && c.grado === 6 && c.gradoAnt === 5 && !adm.includes('7')
+          && Array.isArray(ej.acordes) && ej.acordes.indexOf('VI|7') >= 0
+          && filtra(['7']).length && (() => {
+            try { return Teoria.romano('7', c.nota, ton) === 'VI'; } catch (e) { return false; }
+          })()) {
+        adm = [...adm, '7'];
+        r = R(adm, r.explicacion + ' Y, al llegar desde la dominante, también VI7: la cadencia rota con séptima.', r.regla);
+      }
       /* La VOZ COMPAÑERA (la melodía escrita, cuando el archivo trae las dos voces) elige
          entre las admisibles: se pone delante la que contiene la nota que suena a la vez.
          Se hace aquí dentro, y no después, para que las reglas de las notas siguientes

@@ -3880,6 +3880,56 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+220. **El VI7, objetivo de la cadencia rota** (30/9/2026, Diego: «incorpora también el
+    acorde nuevo que emplea este fragmento —aunque este ya no está en la Regla de la octava
+    de Furno—: VI, en este caso VI7, como objetivo de la cadencia rota: ese acorde tan
+    especial en ese punto de la partitura, un acorde de séptima mayor, luminoso y con su
+    clara séptima mayor, en medio de la oscuridad del modo menor»).
+    - **En el motor.** Cuando la nota anterior es la dominante y esta es el 6.º grado, a los
+      acordes admisibles se les añade el `7` si la lista de acordes de la lección lo admite
+      como VI: la cadencia rota, pero con el VI llegando con su séptima. La regla que ya
+      hubiera se conserva y solo se le añade la frase; no sustituye a nada.
+    - **En el catálogo del configurador**, `VI|7` entra como acorde marcable de función T,
+      apagado por defecto: solo aparece en las lecciones donde Diego lo encienda.
+    - **En la lección del tema 14** (A4-11) va encendido, porque es el acorde que usa el
+      fragmento de Williams. Los nueve fragmentos de esa lección llevan ya `VI|7` en su
+      lista de acordes.
+    - **En el cuadro de estructuras del tema 14**, una estructura nueva: `I – V7 – VI7`,
+      «cadencia rota: el VI llega con su séptima mayor». Es, nota por nota, la cadencia rota
+      del tema 12 en la menor —mismo bajo, misma soprano—; lo único que cambia es la cifra
+      del VI, que pasa de 5/3 a 7, de modo que las dos se comparan de un vistazo. La realiza
+      el motor, como todas: el mi de la dominante se queda quieto en el tenor y se convierte
+      en la séptima mayor del fa. Sin un solo reparo de la pauta de corrección.
+    - **Solo donde esté encendido de verdad.** La regla exige que `VI|7` figure
+      EXPRESAMENTE en la lista de acordes de la lección. No basta con que `acordePermitido`
+      lo deje pasar: una lección sin lista lo permite todo, y con esa comprobación sola el
+      corpus de `ejercicios.js` —que no lleva listas— pasaba de **11 discrepancias de 273
+      notas a 15**. Con la lista exigida vuelve a sus **11**, y en el banco el VI7 solo puede
+      aparecer en la lección del tema 14.
+
+219. **El modelo de cada nota lo pone la armonización escrita, no el motor** (30/9/2026,
+    Diego: «¿quién ha asignado esas armonías a cada nota del bajo? No se corresponden con
+    los acordes que aparecen en la armonización que he subido»). Tenía razón: el fragmento
+    traía sus cuatro voces escritas por él y, sin embargo, los acordes admisibles los ponía
+    el motor por su cuenta. Es el mismo principio de la 163 —su criterio manda— llevado al
+    sitio donde faltaba.
+    - **`Banco.cifraDeLoEscrito(bajo, arriba, ton)`** lee las notas que suenan encima de cada
+      nota del bajo y dice qué cifra es. Primero exige todos los miembros del acorde salvo la
+      quinta; si así no sale nada, admite que falten quinta y tercera, pero **solo si queda un
+      único candidato**: más vale no decir nada que adivinar. A igualdad, las dominantes
+      delante.
+    - **`Banco.modeloDeLoEscrito(e)`** recorre el fragmento y, en cada nota, pone delante el
+      acorde escrito —que pasa a ser el modelo—; si no estaba entre los admisibles, lo
+      añade, y devuelve los números de esas notas.
+    - **Se aplica al entrar en el banco** y **al pulsar «Revisar el fragmento»**, y el aviso
+      dice con su número las notas donde hubo que añadir el acorde escrito, porque si no el
+      ejercicio daría por mala la respuesta de la partitura.
+    - **Medido en el banco entero**: de los 143 fragmentos, **el único que cambia es el de
+      John Williams**. En todos los demás, el acorde escrito ya era el modelo. En el de
+      Williams pasa de **9 de 20** modelos coincidentes con la partitura a **20 de 20**: nueve
+      notas cambian de orden —el acorde escrito pasa a delante— y dos lo tenían ausente, la
+      15 (el VI7, mi♭–sol–si♭–re) y la 18 (el IV7, do–mi♭–sol–si♭).
+
 218. **Se importa lo que SUENA, no lo que ataca** (30/9/2026, Diego: «en la partitura de
     Williams hay medio compás con soprano blanca, contralto y tenor dos negras, bajo dos
     negras, y en esos dos tiempos hay dos acordes, cada uno en una negra, que tienen en

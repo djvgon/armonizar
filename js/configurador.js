@@ -27,6 +27,9 @@
     { fun: 'T', id: 'I|53', rom: 'I', defecto: true },
     { fun: 'T', id: 'I|6', rom: 'I', defecto: true },
     { fun: 'T', id: 'VI|53', rom: 'VI', nota: 'también S ante la dominante', defecto: false },
+    /* El VI7 de la cadencia rota (decisión 220). No está en la regla de la octava de Furno:
+       es un giro, no un grado del bajo. En modo menor su séptima es MAYOR. */
+    { fun: 'T', id: 'VI|7', rom: 'VI', nota: 'VI7: la cadencia rota con séptima (mayor, en modo menor)', defecto: false },
     { fun: 'S', id: 'IV|53', rom: 'IV', defecto: true },
     { fun: 'S', id: 'IV|6', rom: 'IV', defecto: true },
     { fun: 'S', id: 'IV|7', rom: 'IV', nota: 'IV7 en estado fundamental', defecto: false },
@@ -390,6 +393,28 @@
       aplicar(proponerPara(ej, estado.funciones));
       preferirCompanera(ej);
       aviso('Con las funciones anteriores algún acorde se quedaba sin opciones: se han recalculado.');
+    }
+    /* Y AHORA MANDA LA PARTITURA (decisión 219). Si el fragmento trae la armonización del
+       compositor, el modelo de cada nota es el acorde que está escrito, no el que el motor
+       deduciría del bajo a secas. Se hace al final, sobre lo que el motor acaba de
+       proponer, para que las demás cifras sigan estando como admisibles. */
+    const escritasAhora = esSoprano() ? null : armonizacionEscritaDe();
+    if (escritasAhora && escritasAhora.length === estado.respuestas.length) {
+      const falsa = {
+        tonalidad: tonalidad(), compas: compas(),
+        bajo: { compases: estado.compases, respuestas: estado.respuestas,
+                modulaciones: modulacionesValidas(estado.respuestas.length), melodica: estado.melodica || [] },
+        voces: escritasAhora
+      };
+      const fuera = Banco.modeloDeLoEscrito(falsa);
+      estado.respuestas = falsa.bajo.respuestas;
+      estado.acordesFuera = fuera;
+      if (fuera.length) {
+        aviso('El modelo de cada nota lo pone tu armonización, no el motor. En ' + fuera.length
+          + (fuera.length > 1 ? ' notas —la ' : ' nota —la ') + fuera.join(', la ')
+          + '— el acorde escrito no estaba entre los admisibles de la lección: se ha añadido, '
+          + 'porque si no el ejercicio daría por mala la respuesta de la partitura.', 13000);
+      }
     }
     pintarRevision();
     $('#paso-revision').hidden = false;

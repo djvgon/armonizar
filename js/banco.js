@@ -358,8 +358,100 @@ const Banco = (() => {
         base.voces = arriba.map(a => (Array.isArray(a) && a.length ? a.slice() : null));
       }
     }
+    /* Y, con la armonización del compositor delante, el modelo de cada nota sale de ella
+       (decisión 219) y no de lo que el motor deduciría del bajo a secas. */
+    const fuera = modeloDeLoEscrito(base);
+    if (fuera.length) base.acordesFuera = fuera;
     etiquetar(base);
     return base;
+  }
+
+  /* ---------- EL CIFRADO QUE DE VERDAD ESTÁ ESCRITO (decisión 219) ----------
+
+     Diego, 30/9/2026: «¿quién ha asignado esas armonías a cada nota del bajo? No se
+     corresponden con los acordes que aparecen en la armonización que he subido».
+
+     Tenía razón, y el fallo era de raíz. Los cifrados admisibles de cada nota salían del
+     motor mirando SOLO EL BAJO —la regla de la octava, la sintaxis funcional, el repertorio
+     de la lección— sin mirar ni una vez las voces que él había escrito encima. En el tema de
+     John Williams eso daba diez modelos de veinte que no eran los de la partitura, casi
+     todos por lo mismo: el motor lee tríadas donde el compositor escribe séptimas.
+
+     Cuando el fragmento trae la armonización del compositor, la pregunta «¿qué acorde es
+     este?» no es una conjetura: está ahí escrita. Así que se deduce de las notas y ese
+     cifrado pasa a ser el MODELO. Los demás siguen siendo admisibles —son alternativas
+     legítimas para un ejercicio de armonización de bajo—, pero el ● lo pone la partitura. */
+
+  /* De las notas que suenan a la cifra que las describe. Devuelve null si no hay ninguna
+     que cuadre: más vale decirlo que inventarse un acorde. */
+  function cifraDeLoEscrito(bajo, arriba, ton) {
+    if (!bajo || !Array.isArray(arriba) || !arriba.length) return null;
+    let bajoN;
+    try { bajoN = Teoria.nota(bajo); } catch (e) { return null; }
+    const suena = new Set();
+    try { [bajo, ...arriba].forEach(x => { if (x) suena.add(Teoria.clase(Teoria.nota(x))); }); }
+    catch (e) { return null; }
+    if (suena.size < 3) return null;          // con dos sonidos no se distingue un acorde
+    /* `puedenFaltar`: qué miembros del acorde se admite no oír. Siempre la QUINTA, que a
+       cuatro voces se suprime a cada paso. Se prueba primero así; y solo si nada cuadra, se
+       admite además que falte la TERCERA —pasa cuando la textura adelgaza justo ahí— y
+       únicamente si entonces queda UNA sola cifra posible: si quedaran dos, adivinar sería
+       peor que callarse. */
+    const busca = puedenFaltar => {
+      const casan = [];
+      Object.keys(Teoria.CIFRADOS).forEach(id => {
+        let pide, fund;
+        try {
+          pide = [bajoN, ...Teoria.vocesSuperiores(id, bajoN, ton)];
+          fund = Teoria.fundamental(id, bajoN, ton);
+        } catch (e) { return; }
+        if (!fund) return;
+        const papel = x => (((Teoria.indice(x) - Teoria.indice(fund)) % 7) + 7) % 7;
+        const clases = pide.map(x => Teoria.clase(x));
+        // No puede sonar nada ajeno al acorde…
+        if ([...suena].some(c => !clases.includes(c))) return;
+        // …ni faltar ninguna de sus notas, salvo las que se admita
+        if (pide.some(x => !suena.has(Teoria.clase(x)) && !puedenFaltar.includes(papel(x)))) return;
+        casan.push({ id, miembros: pide.filter(x => suena.has(Teoria.clase(x))).length });
+      });
+      return casan;
+    };
+    let casan = busca([4]);                   // 4 = la quinta
+    if (!casan.length) {
+      const flojo = busca([4, 2]);            // 2 = la tercera
+      if (flojo.length === 1) casan = flojo;
+    }
+    if (!casan.length) return null;
+    /* Varias cifras pueden describir las mismas notas: fa–la–do–mi♭ en Si♭ M es «7» (la
+       séptima diatónica del V) y «7+» (el V7 con su sensible). Se antepone el cifrado de
+       DOMINANTE, que es el más preciso —el mismo criterio que usa el arpegio en las reglas—
+       y, después, el que más notas del acorde tiene escritas. */
+    casan.sort((a, b) => (Teoria.DOMINANTES.includes(b.id) ? 1 : 0) - (Teoria.DOMINANTES.includes(a.id) ? 1 : 0)
+      || b.miembros - a.miembros);
+    return casan[0].id;
+  }
+
+  /* Pone delante, en cada nota del bajo, el cifrado que está escrito. Devuelve la lista de
+     números de nota cuyo acorde escrito NO estaba entre los admisibles: son los que se
+     salen del repertorio de la lección y hay que mirar con calma —si no se añadieran, el
+     ejercicio daría por mala la respuesta que trae la partitura—. */
+  function modeloDeLoEscrito(e) {
+    if (!e || !e.bajo || !Array.isArray(e.voces) || !e.voces.length) return [];
+    const notas = Teoria.notasDeCompases(e.bajo.compases || []);
+    const resp = e.bajo.respuestas || [];
+    if (notas.length !== e.voces.length || notas.length !== resp.length) return [];
+    const tons = Teoria.tonalidadesPorNota({
+      compases: e.bajo.compases, tonalidad: e.tonalidad,
+      modulaciones: e.bajo.modulaciones || [], melodica: e.bajo.melodica || []
+    });
+    const fuera = [];
+    notas.forEach((n, i) => {
+      const id = cifraDeLoEscrito(n, e.voces[i] || [], tons[i] || e.tonalidad);
+      if (!id) return;
+      if (!resp[i].includes(id)) { resp[i] = [id, ...resp[i]]; fuera.push(i + 1); }
+      else if (resp[i][0] !== id) resp[i] = [id, ...resp[i].filter(x => x !== id)];
+    });
+    return fuera;
   }
 
   /* Recalcula las ETIQUETAS y los avisos de una entrada a partir de lo que tiene dentro
@@ -907,6 +999,7 @@ const Banco = (() => {
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, comparaLecciones, etiquetar,
     transportarEntrada, transportada, tonicasDeFicha, tonicaEn,
     analizarVoz: analizar, companeraDe: companera,
+    cifraDeLoEscrito, modeloDeLoEscrito,
     huellaDe, estaCerrada, cerrar, abrir, huellaRota, rotas, cuentaCerradas,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
 })();
