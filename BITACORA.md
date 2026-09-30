@@ -17,6 +17,10 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   guardó en el banco con el código viejo no lleva las voces escritas.
 - **`js/qr.js` es un archivo NUEVO** (decisión 217): en GitHub Desktop aparecerá como
   añadido, no como modificado. Sin él, el botón «Código QR» avisa y no hace nada.
+- **Al volver a importar el tema de John Williams con la 218**, el fragmento ya no es el
+  mismo que hay guardado —los acordes 16 y 17 pasan de una voz a tres—, así que entra en el
+  banco como fragmento NUEVO, con otro identificador. Conviene **quitar antes el viejo** de
+  la tabla para no quedarse con los dos.
 - **Por qué el fragmento de Beethoven no le salía al alumno** (30/9): no era la aplicación.
   Al alumno solo se le sirven fragmentos **cerrados** (decisión 182), y en el `banco.json`
   que estaba publicado `A3-4-15` seguía abierto. En cuanto Diego lo cerró y volvió a
@@ -599,6 +603,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261003-1000 | Se leen todas las voces de un pentagrama, no solo la primera, y los acordes se toman de lo que SUENA en cada momento y no de lo que ataca: el medio compás del tema de John Williams con la soprano sostenida sobre dos acordes entra entero (218) |
 | 20261003-0800 | Botón «Código QR» junto a «Abrir como alumno», en la ficha y en el fragmento suelto: el código se calcula en la propia aplicación (`js/qr.js`, nuevo) y se enseña a tamaño de proyección, con descarga en PNG (217) |
 | 20261003-0600 | Basta un acorde a cuatro voces para que la armonización sea del compositor y no se toque; donde escribió menos voces, se dibujan menos (216). Cartel en el editor, botón «Revisar el fragmento» y mandos de voz apagados también con un fragmento recién importado; corregido el botón, que al cargar del banco se quedaba con el nombre del fragmento anterior |
 | 20261003-0430 | Una armonización sigue siéndolo aunque en algún acorde queden dos voces: vuelve a entrar el tema de John Williams (213). La procedencia y las voces escritas viajan también en la dirección `#e=` del ejercicio, no solo en la ficha (214). El banco tiene su propio botón de valores por defecto (215) |

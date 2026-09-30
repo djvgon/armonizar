@@ -168,9 +168,23 @@ const MuseScore = (() => {
         const c = cs[m];
         if (!c) return;
         const numStaff = iStaff + 1;
-        const voz = c.querySelector(':scope > voice') || c;
+        /* TODAS LAS VOCES DEL PENTAGRAMA, no solo la primera (decisión 218, Diego
+           30/9/2026: «hay medio compás con soprano blanca, contralto y tenor dos negras…
+           y en esos dos tiempos hay dos acordes»). Ese medio compás se escribe en MuseScore
+           con DOS voces en el mismo pentagrama: la blanca de la soprano en una y las negras
+           de contralto y tenor en otra. Leyendo solo la primera, las negras desaparecían y
+           los dos acordes se quedaban en uno.
+           Cada voz se emite detrás de la anterior con un <backup> que devuelve el cursor al
+           principio del compás, que es como lo hace MusicXML. */
+        const vocesCompas = [...c.querySelectorAll(':scope > voice')];
+        const listaVoces = vocesCompas.length ? vocesCompas : [c];
         let duracionStaff = 0;
         let ligar = false;
+        listaVoces.forEach((voz, iVoz) => {
+        const numVoz = (numStaff - 1) * 4 + iVoz + 1;
+        if (iVoz > 0 && duracionStaff > 0) cuerpo += '<backup><duration>' + duracionStaff + '</duration></backup>';
+        duracionStaff = 0;
+        ligar = false;
 
         /* Primero, LOS TEXTOS con su sitio exacto dentro del compás. MuseScore los coloca
            con <location><fractions>, que mueve el cursor hacia atrás o hacia adelante (en
@@ -180,7 +194,7 @@ const MuseScore = (() => {
            silencio de compás entero es una sola nota—, los textos se emiten al principio
            del pentagrama con su <offset>, que es lo que el importador lee. */
         let cursor = 0;                       // negras desde el comienzo del compás
-        [...voz.children].forEach(e => {
+        if (iVoz === 0) [...voz.children].forEach(e => {
           if (e.tagName === 'location') {
             const fr = texto(e, ':scope > fractions');
             if (fr && fr.indexOf('/') > 0) {
@@ -205,11 +219,29 @@ const MuseScore = (() => {
           if (negras !== null) cursor += negras;
         });
 
+        /* Una voz que no empieza en el primer tiempo lleva delante un <location> con la
+           fracción de compás en que entra: se traduce en un <forward>, que es como MusicXML
+           adelanta el cursor sin escribir nada. */
+        let adelanto = 0;
+        const sueltaAdelanto = () => {
+          if (adelanto <= 0) return;
+          cuerpo += '<forward><duration>' + adelanto + '</duration></forward>';
+          duracionStaff += adelanto;
+          adelanto = 0;
+        };
         [...voz.children].forEach(e => {
           if (e.tagName === 'BarLine') {
             const sub = texto(e, 'subtype') || '';
             if (sub.indexOf('double') === 0) barra = '<barline location="right"><bar-style>light-light</bar-style></barline>';
             else if (sub.indexOf('end') === 0) barra = '<barline location="right"><bar-style>light-heavy</bar-style></barline>';
+            return;
+          }
+          if (e.tagName === 'location') {
+            const fr = texto(e, ':scope > fractions');
+            if (fr && fr.indexOf('/') > 0) {
+              const [n, d] = fr.split('/').map(Number);
+              if (d && n > 0) adelanto += Math.round((n / d) * 4 * DIVISIONES);
+            }
             return;
           }
           if (e.tagName !== 'Chord' && e.tagName !== 'Rest') return;
@@ -221,8 +253,9 @@ const MuseScore = (() => {
           const dur = Math.round(negras * DIVISIONES);
           const fig = figuraXML(negras);
           const puntos = '<dot/>'.repeat(fig.puntillos);
+          sueltaAdelanto();
           if (e.tagName === 'Rest') {
-            cuerpo += '<note><rest/><duration>' + dur + '</duration><type>' + fig.tipo + '</type>' + puntos + '<staff>' + numStaff + '</staff></note>';
+            cuerpo += '<note><rest/><duration>' + dur + '</duration><voice>' + numVoz + '</voice><type>' + fig.tipo + '</type>' + puntos + '<staff>' + numStaff + '</staff></note>';
             duracionStaff += dur;
             ligar = false;
             return;
@@ -238,12 +271,13 @@ const MuseScore = (() => {
             const liga = (ligadaAntes || ligar) && k === 0 ? '<tie type="stop"/>' : '';
             cuerpo += '<note>' + (k ? '<chord/>' : '') + liga
               + '<pitch><step>' + a.step + '</step>' + (a.alter ? '<alter>' + a.alter + '</alter>' : '') + '<octave>' + a.octave + '</octave></pitch>'
-              + '<duration>' + dur + '</duration><type>' + fig.tipo + '</type>' + puntos
+              + '<duration>' + dur + '</duration><voice>' + numVoz + '</voice><type>' + fig.tipo + '</type>' + puntos
               + (liga ? '<notations><tied type="stop"/></notations>' : '')
               + '<staff>' + numStaff + '</staff></note>';
           });
           duracionStaff += dur;
           ligar = false;
+        });
         });
         if (iStaff < compasesPorStaff.length - 1 && duracionStaff > 0) cuerpo += '<backup><duration>' + duracionStaff + '</duration></backup>';
       });

@@ -3880,6 +3880,39 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+218. **Se importa lo que SUENA, no lo que ataca** (30/9/2026, Diego: «en la partitura de
+    Williams hay medio compás con soprano blanca, contralto y tenor dos negras, bajo dos
+    negras, y en esos dos tiempos hay dos acordes, cada uno en una negra, que tienen en
+    común la nota blanca de la soprano. ¿Es posible que aprendas a importar esa polifonía
+    bien?»). Sí, y arreglarlo ha destapado dos fallos encadenados. **Rehace la 206.**
+    - **Uno: solo se leía la primera voz de cada pentagrama.** Un medio compás así se
+      escribe en MuseScore con **dos voces** en la misma pauta —la blanca de la soprano en
+      una, las negras de contralto y tenor en otra—, y `musescore.js` hacía
+      `querySelector(':scope > voice')`, que devuelve la primera y nada más. Las negras
+      desaparecían antes de llegar al importador. En el archivo del tema 14 esto pasa en un
+      solo compás de cincuenta, y por eso no había saltado hasta ahora.
+      Ahora se recorren todas las voces del compás y cada una se emite detrás de la anterior
+      con el `<backup>` que devuelve el cursor al principio, como manda MusicXML; una voz
+      que entra a mitad de compás —su `<location><fractions>1/2</fractions></location>`— sale
+      con un `<forward>` delante. El importador aprende a leer `<backup>` y `<forward>`.
+    - **Dos: los acordes se guardaban por ATAQUE.** Aunque llegaran las dos voces, sobre la
+      segunda negra solo atacan contralto y tenor: la soprano viene sonando desde antes. El
+      segundo acorde se habría quedado sin ella. Ahora cada nota del pentagrama de arriba se
+      guarda con **el trozo de tiempo que dura**, y sobre cada nota del bajo entran todas las
+      que lo cubren. Una blanca se reparte entre las dos negras que pasan por debajo, que es
+      lo que de verdad se oye: en el papel la soprano sigue siendo una blanca y en la
+      realización a cuatro voces se dibuja dos veces, que es lo que Diego aceptó de antemano
+      («aunque dividas la blanca de la soprano en dos negras, si no queda más remedio»).
+    - **La melodía y el bajo siguen saliendo de la voz principal** —la de número más bajo de
+      cada pentagrama—: las voces añadidas son relleno armónico, no la línea del ejercicio.
+      Sin esta salvedad, la melodía de ese compás habría pasado de dos notas a cuatro.
+    - **Comprobado midiendo el antes y el después** sobre los dos archivos de verdad, con el
+      código anterior y con el nuevo: de los 23 fragmentos de los dos archivos, **lo único
+      que cambia son los acordes 16 y 17 del tema de John Williams**, que pasan de una nota a
+      tres —`mi♭4 sol4 la4` y `re4 fa♯4 la4`, con el la4 de la soprano en los dos—. Bajos,
+      melodías y modulaciones, idénticos en todo lo demás. El fragmento entra en el banco con
+      sus veinte acordes a tres voces, sin un solo aviso y sin ninguna nota sin cifrar.
+
 217. **El código QR de la ficha, para proyectarlo en clase** (30/9/2026, Diego: «¿es
     posible obtener un enlace QR que pueda proyectar para que mis alumnos practiquen con un
     ejercicio que acabo de configurar y crear a través del configurador?»). Sí: un código QR

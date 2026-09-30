@@ -110,7 +110,7 @@ const MusicXML = (() => {
     let armaduraFijada = false;
     const fragmentos = [];
     const VOCES = ['soprano', 'bajo'];
-    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo, procedencia: null, acordes: [] });
+    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo, procedencia: null, sonando: [] });
     let actual = nuevo();
     const hayNotas = frag => VOCES.some(v => frag.voces[v].some(c => c.some(([n]) => n !== null)));
 
@@ -169,7 +169,31 @@ const MusicXML = (() => {
         const d = parseInt(texto(n, 'duration') || '0', 10);
         return Math.max(0.5, Math.round(2 * d / divisions) / 2);
       }
-      [...m.querySelectorAll(':scope > note, :scope > direction')].forEach(n => {
+      /* VARIAS VOCES EN UN MISMO PENTAGRAMA (decisión 218). MuseScore escribe con dos voces
+         el medio compás en que la soprano sostiene una blanca mientras contralto y tenor se
+         mueven en negras. En MusicXML eso son dos secuencias separadas por un <backup> que
+         devuelve el cursor al principio del compás.
+         · Para la MELODÍA y el BAJO manda la voz PRINCIPAL —la de número más bajo de ese
+           pentagrama—, que es la que lleva el ritmo del ejercicio. Así los fragmentos ya
+           importados siguen leyéndose exactamente igual.
+         · Para la ARMONIZACIÓN ESCRITA cuentan todas: lo que importa es qué suena en cada
+           momento, venga de la voz que venga. */
+      const principal = {};
+      [...m.querySelectorAll(':scope > note')].forEach(x => {
+        const st = parseInt(texto(x, 'staff') || '1', 10);
+        const vz = parseInt(texto(x, 'voice') || '0', 10);
+        if (!vz) return;
+        if (principal[st] === undefined || vz < principal[st]) principal[st] = vz;
+      });
+      // Posición dentro del compás, en negras, llevando la cuenta de <backup> y <forward>
+      let posXML = 0, inicioUltima = 0;
+      [...m.querySelectorAll(':scope > note, :scope > direction, :scope > backup, :scope > forward')].forEach(n => {
+        if (n.tagName === 'backup' || n.tagName === 'forward') {
+          const d = parseInt(texto(n, 'duration') || '0', 10) / divisions;
+          posXML += (n.tagName === 'backup' ? -d : d);
+          if (posXML < 0) posXML = 0;
+          return;
+        }
         // Texto de pauta: se anota con su posición en el tiempo (después se asigna a la nota de cada voz)
         if (n.tagName === 'direction') {
           const st = parseInt(texto(n, 'staff') || '1', 10);
@@ -201,18 +225,29 @@ const MusicXML = (() => {
         const tie = [...n.querySelectorAll('tie')].map(t => t.getAttribute('type'));
         /* LAS VOCES DE EN MEDIO, TAL COMO ESTÁN ESCRITAS (decisión 200, Diego 30/9/2026:
            «me interesa que se conserven las cuatro voces tal como las he escrito»). Del
-           pentagrama de ARRIBA se guardan TODAS las notas de cada acorde, no solo la más
-           aguda, en una lista paralela a las notas de la soprano: ni los silencios ni las
-           notas ligadas abren entrada, igual que en `conTiempos`, para que el índice de una
-           y otra sea el mismo. Es una lista aparte porque `compases` entra en la huella del
-           sello y no se puede cambiar su forma sin romper los 26 fragmentos ya firmados. */
+           pentagrama de ARRIBA se guarda TODA nota, no solo la más aguda, en una lista
+           aparte: `compases` entra en la huella del sello y no se puede cambiar su forma sin
+           romper los fragmentos ya firmados. */
+        /* Cada nota del pentagrama de arriba, con el trozo de tiempo que dura: de aquí sale
+           después qué suena sobre cada nota del bajo (decisión 218, que rehace la 206). Antes
+           se guardaban los ATAQUES, y una nota que se sostenía mientras las de abajo cambiaban
+           desaparecía del segundo acorde: justo el caso que trajo Diego. */
+        const durNota = duracion(n);
+        const inicioNota = enAcorde ? inicioUltima : posXML;
+        if (!enAcorde) { inicioUltima = posXML; posXML += durNota; }
         if (staff === pentaDe.soprano && pentaDe.soprano !== pentaDe.bajo && !esSilencio && nombre) {
-          const ult = actual.acordes[actual.acordes.length - 1];
-          if (enAcorde) { if (ult) ult.notas.push(nombre); }
-          else if (!(tie.includes('stop') && ultima.soprano && ultima.soprano[0])) {
-            actual.acordes.push({ tiempo: inicio + tiempoLocal.soprano, notas: [nombre] });
-          }
+          const t0 = inicio + inicioNota;
+          // Ligadura de unión: alarga la nota anterior en vez de abrir otra
+          const previa = tie.includes('stop')
+            ? actual.sonando.filter(s => s.nombre === nombre && Math.abs(s.t1 - t0) < 0.01).pop()
+            : null;
+          if (previa) previa.t1 += durNota;
+          else actual.sonando.push({ nombre, t0, t1: t0 + durNota });
         }
+        /* La melodía y el bajo salen SOLO de la voz principal del pentagrama: las voces
+           añadidas son relleno armónico, no la línea del ejercicio (218). */
+        const numVoz = parseInt(texto(n, 'voice') || '0', 10);
+        if (numVoz && principal[staff] !== undefined && numVoz !== principal[staff]) return;
         voces.forEach(v => {
           if (enAcorde) {                                     // nota de un acorde: la más aguda para la soprano, la más grave para el bajo
             const u = ultima[v];
@@ -473,30 +508,31 @@ const MusicXML = (() => {
       autor: (frag.procedencia && frag.procedencia.autor) || '',
       obra: (frag.procedencia && frag.procedencia.obra) || '',
       enlace: (frag.procedencia && frag.procedencia.enlace) || '',
-      /* LOS ACORDES DEL PENTAGRAMA DE ARRIBA, UNO POR NOTA DEL BAJO (decisión 200, rehecha
-         por la 206). Antes se emparejaban por ORDEN: el acorde número k con la nota k. Eso
-         vale cuando los dos pentagramas van al mismo ritmo, y solo entonces. En música de
-         verdad no pasa: en el Andante de la sonata Op. 14 n.º 2 de Beethoven que trajo
-         Diego, el compás 44 lleva tres acordes arriba —negra, negra, blanca— sobre cuatro
-         notas del bajo, y el emparejamiento por orden se desfasaba y descartaba el
-         fragmento entero.
-         Ahora se emparejan por TIEMPO: a cada nota del bajo le toca el acorde que está
-         sonando en ese instante, que es el último que empezó en su momento o antes. Una
-         blanca de arriba se reparte así entre las dos negras del bajo que pasan por debajo,
-         que es lo que de verdad suena. */
+      /* LO QUE SUENA ARRIBA SOBRE CADA NOTA DEL BAJO (decisión 200, rehecha por la 206 y
+         otra vez por la 218). Dos maneras se han probado y se han caído:
+         · por ORDEN —el acorde k con la nota k—, que solo vale si los dos pentagramas van al
+           mismo ritmo. En el Andante de la sonata Op. 14 n.º 2 de Beethoven, el compás 44
+           lleva tres acordes arriba sobre cuatro notas del bajo y el emparejamiento se
+           desfasaba;
+         · por ATAQUE —el último acorde que empezó—, que se rompe en cuanto una voz se
+           sostiene mientras otra se mueve: la blanca de la soprano del tema de John Williams
+           desaparecía del segundo acorde, porque allí solo atacan contralto y tenor.
+         Ahora se toma lo que ESTÁ SONANDO: cada nota de arriba se guarda con su trozo de
+         tiempo y, sobre cada nota del bajo, entran todas las que lo cubren. Una blanca se
+         reparte entre las dos negras que pasan por debajo —que es exactamente lo que se oye—
+         y los dos acordes salen completos. */
       acordes: (() => {
-        const arriba = (frag.acordes || []).filter(a => a && a.notas && a.notas.length)
-          .map(a => {
-            const ns = a.notas.slice();
-            try { ns.sort((x, y) => Teoria.midi(Teoria.nota(x)) - Teoria.midi(Teoria.nota(y))); } catch (e) { /* como vengan */ }
-            return { tiempo: a.tiempo, notas: ns };
-          })
-          .sort((x, y) => x.tiempo - y.tiempo);
-        if (!arriba.length) return [];
+        const sonando = (frag.sonando || []).filter(s => s && s.nombre && s.t1 > s.t0);
+        if (!sonando.length) return [];
         return conTiempos(compasesBajo).map(nb => {
-          let suyo = null;
-          for (let k = 0; k < arriba.length; k++) { if (arriba[k].tiempo <= nb.tiempo + 0.01) suyo = arriba[k]; else break; }
-          return suyo ? suyo.notas.slice() : null;
+          const t = nb.tiempo + 0.01;
+          const notas = [];
+          sonando.forEach(s => {
+            if (s.t0 <= t && s.t1 > t && !notas.includes(s.nombre)) notas.push(s.nombre);
+          });
+          try { notas.sort((x, y) => Teoria.midi(Teoria.nota(x)) - Teoria.midi(Teoria.nota(y))); }
+          catch (e) { /* si algo no se puede medir, que salgan como vengan */ }
+          return notas.length ? notas : null;
         });
       })(),
       compas: compas.slice(),
