@@ -414,7 +414,7 @@ const Banco = (() => {
 
   /* filtro: { n, modo, leccion, lecciones:[], modoTonal:'mayor'|'menor', alteraciones:[min,max],
                nivel:[min,max], notas:[min,max], modula:true|false|null, cifras:[ids],
-               titulo } — todo opcional salvo modo y n. */
+               musica:'real'|'practica', titulo } — todo opcional salvo modo y n. */
   function cumple(e, filtro) {
     const f = filtro || {};
     const voz = vozDeModo(f.modo || 'armonizar');
@@ -427,6 +427,11 @@ const Banco = (() => {
     if (f.modoTonal && et.modo !== f.modoTonal) return false;
     if (f.alteraciones && (et.alteraciones < f.alteraciones[0] || et.alteraciones > f.alteraciones[1])) return false;
     if (f.notas && (et.notas < f.notas[0] || et.notas > f.notas[1])) return false;
+    /* MÚSICA REAL O FRAGMENTO DE PRÁCTICA (decisión 210, Diego 30/9/2026). La marca es
+       tener OBRA: un fragmento con procedencia viene de una partitura (198); el resto son
+       los esquemas armónicos escritos para practicar. */
+    if (f.musica === 'real' && !e.obra) return false;
+    if (f.musica === 'practica' && e.obra) return false;
     if (f.modula === true && !et.modula) return false;
     if (f.modula === false && et.modula) return false;
     if (f.cifras && f.cifras.length && !f.cifras.every(c => (et.cifras || []).includes(c))) return false;

@@ -1520,6 +1520,21 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
   .procedencia-ej { font-size: .72rem; margin: .1rem 0 .3rem; }
 }
 
+/* DECISIÓN 208 · EL CRÉDITO, DENTRO DEL RECUADRO DE LA PARTITURA (Diego, 30/9/2026)
+   «Que se sienta parte de la partitura»: abajo a la derecha, sobre el mismo blanco, como
+   el crédito al pie de una lámina. El recuadro pasa a ser un MARCO —el que lleva el borde
+   y el fondo— y dentro va el lienzo, que es el que se desplaza cuando el fragmento no
+   cabe: así el crédito no se va de la vista al desplazar la música. */
+.partitura-marco { overflow-x: visible; display: flex; flex-direction: column; }
+.partitura-marco > .partitura-lienzo { overflow-x: auto; }
+.partitura-marco > .procedencia-ej {
+  align-self: flex-end; text-align: right; max-width: 100%;
+  margin: 0; padding: .15rem .1rem 0;
+}
+@media (max-width: 719px), (max-height: 559px) {
+  .partitura-marco > .procedencia-ej { padding-top: .1rem; }
+}
+
 /* La casilla del configurador: el rótulo delante y la ayuda debajo, como los demás campos */
 .fila-procedencia {
   display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .6rem;
@@ -1537,9 +1552,17 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
 /* La nota musical que marca, en la tabla del banco, los fragmentos con obra conocida */
 .marca-obra { margin-left: .3rem; color: var(--voz-dada, #9412DC); cursor: help; }
 
-/* El enlace a la partitura de verdad, junto al crédito (decisión 199) */
-.procedencia-ej .enlace-obra { color: var(--acento); text-decoration: underline; font-style: normal; }
-.procedencia-ej .enlace-obra:hover { color: var(--marca, #9412DC); }
+/* El enlace a la partitura de verdad, junto al crédito (decisión 199; en color por la
+   209, Diego 30/9/2026: «al aparecer sobre el blanco de la partitura que aparezca en
+   color… por mantenerse dentro de los colores de la interfaz»). Se usa el morado hondo de
+   la marca y no el vivo de la banda: el vivo, en letra pequeña y sobre blanco, se queda
+   corto de contraste. Al pasar por encima sí se enciende en el de la banda. */
+.procedencia-ej .enlace-obra {
+  color: var(--marca-honda, #9412DC); text-decoration: underline;
+  text-underline-offset: 2px; font-style: normal; font-weight: 600;
+}
+.procedencia-ej .enlace-obra:hover,
+.procedencia-ej .enlace-obra:focus-visible { color: var(--marca, #B026FF); }
 .campo-enlace {
   flex: 0 1 18rem; min-width: 10rem;
   padding: .3rem .5rem; font-family: var(--fuente-ui); font-size: .8rem;
@@ -1578,3 +1601,7 @@ svg.partitura .marcas-voz.licencias .voz-zona:hover,
 svg.partitura .marcas-voz.licencias .voz-zona:focus { stroke: var(--licencia, #6B7A2F); }
 svg.partitura .globo-licencia .globo-fondo { stroke: var(--licencia, #6B7A2F); }
 svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
+
+/* El botón de «Valores por defecto», arriba a la derecha del bloque del filtro (211) */
+.configurador h3.titulo-con-boton { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.configurador h3.titulo-con-boton .boton-pequeno { font-weight: 500; }

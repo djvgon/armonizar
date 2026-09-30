@@ -1274,8 +1274,8 @@
         fichaTonalidades: $('#ficha-tonalidades').value,
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
-          '#ficha-modula', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
-          '#ficha-armadura', '#ficha-armadura-pct'].reduce((o, id) => { o[id] = $(id).value; return o; }, {}),
+          '#ficha-modula', '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
+          '#ficha-armadura', '#ficha-armadura-pct'].reduce((o, id) => { o[id] = $(id) ? $(id).value : ''; return o; }, {}),
         funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
@@ -1692,6 +1692,9 @@
     if ($('#ficha-leccion').value) f.leccion = $('#ficha-leccion').value;
     if ($('#ficha-modotonal').value) f.modoTonal = $('#ficha-modotonal').value;
     if (mod === 'si') f.modula = true; else if (mod === 'no') f.modula = false;
+    // Música real o fragmento de práctica (decisión 210)
+    const mus = $('#ficha-musica') ? $('#ficha-musica').value : '';
+    if (mus === 'real' || mus === 'practica') f.musica = mus;
     if ($('#ficha-titulo').value.trim()) f.titulo = $('#ficha-titulo').value.trim();
     /* Opciones PROPIAS de la ficha (Diego, 22/9/2026): la ayuda con los grados, la
        respuesta modelo sobre el 6.º descendente y la fila de funciones se eligen aquí, no
@@ -1732,6 +1735,34 @@
     return f;
   }
 
+  /* ---------- DEVOLVER EL FILTRO A SU SITIO (decisión 211, Diego 30/9/2026) ----------
+     «Un botón que permita poner todos los selectores en su opción por defecto». Los valores
+     no se escriben aquí: se leen del PROPIO documento —`defaultSelected` de cada opción y
+     `defaultValue` de cada casilla—, que es lo que el navegador guarda del HTML original.
+     Así no hay una segunda lista de valores por defecto que se quede desfasada en cuanto se
+     toque el HTML, que es exactamente el error del pie de versión (207).
+     Toca SOLO el bloque «Qué fragmentos entran»: lo que ve el alumno y el banco no se
+     mueven, porque son otra decisión. */
+  function filtroPorDefecto() {
+    const caja = $('#bloque-filtro');
+    if (!caja) return;
+    caja.querySelectorAll('select, input, textarea').forEach(el => {
+      if (el.tagName === 'SELECT') {
+        const def = [...el.options].find(o => o.defaultSelected) || el.options[0];
+        if (def) el.value = def.value;
+      } else if (el.type === 'checkbox' || el.type === 'radio') el.checked = el.defaultChecked;
+      else el.value = el.defaultValue;
+    });
+    /* Las tonalidades marcadas a mano («Curso: a medida») viven fuera de las casillas del
+       bloque, en su propia lista: se vacían igual. */
+    caja.querySelectorAll('.tono-marcado, [data-tono]').forEach(x => {
+      const cb = x.matches('input') ? x : x.querySelector('input[type="checkbox"]');
+      if (cb) cb.checked = cb.defaultChecked;
+    });
+    pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador();
+    aviso('Los filtros vuelven a sus valores por defecto.', 4000);
+  }
+
   function pintarBanco() {
     const hay = banco.length > 0;
     $('#banco-cuerpo').hidden = !hay;
@@ -1758,7 +1789,13 @@
     /* La cola de repaso (decisión 166) afecta a LA TABLA y a las flechas, no a la ficha:
        una ficha se reparte por lección y nivel, no por si el profesor ya lo ha firmado. */
     const repaso = ($('#banco-revision') || {}).value || '';
-    const conAvisos = Banco.filtrar(banco, Object.assign({}, filtro, { conAvisos: true, cerrado: repaso }));
+    /* Y el corte por procedencia (decisión 210): música real, fragmentos de práctica o
+       todo. Como el repaso, es de LA TABLA y de las flechas, no del filtro de la ficha:
+       sirve para revisar de corrido un grupo u otro. Si la ficha ya trae su propio corte,
+       manda el de la tabla, que es el que el profesor tiene delante. */
+    const musicaTabla = ($('#banco-musica') || {}).value || '';
+    const conAvisos = Banco.filtrar(banco, Object.assign({}, filtro, { conAvisos: true, cerrado: repaso },
+      musicaTabla ? { musica: musicaTabla } : {}));
     const nCerrados = Banco.cuentaCerradas(banco);
     const elCont = $('#banco-cerrados');
     if (elCont) elCont.textContent = nCerrados + ' de ' + banco.length + ' fragmentos cerrados'
@@ -2729,6 +2766,8 @@
       $('#enlace-obra').addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); ev.target.blur(); } });
     }
     $('#banco-revision').addEventListener('change', pintarBanco);
+    if ($('#btn-filtro-defecto')) $('#btn-filtro-defecto').addEventListener('click', filtroPorDefecto);
+    if ($('#banco-musica')) $('#banco-musica').addEventListener('change', pintarBanco);
     $('#btn-banco-soltar').addEventListener('click', () => { estado.banco = null; pintarOrigenBanco(); guardarBorrador(); });
     $('#btn-banco-descargar').addEventListener('click', descargarBanco);
     $('#btn-banco-cargar').addEventListener('click', () => $('#banco-archivo').click());
@@ -2775,7 +2814,7 @@
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula',
-     '#ficha-compases-min', '#ficha-compases-max',
+     '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max',
      '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades',
      '#ficha-armadura', '#ficha-armadura-pct'].forEach(id => {
       $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador(); });

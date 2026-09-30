@@ -3880,6 +3880,51 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+211. **Un botón que devuelve el filtro a sus valores por defecto** (30/9/2026, Diego: «un
+    botón, arriba a la derecha de los filtros para preparar una ficha, que permita poner
+    todos los selectores en su opción por defecto»). Va en el título del bloque «Qué
+    fragmentos entran», que es donde se mira antes de empezar una ficha nueva. Toca **solo
+    ese bloque**: lo que ve el alumno y el banco no se mueven.
+    - Los valores no están escritos en el código: se leen del **propio documento**
+      —`defaultSelected` de cada opción, `defaultValue` de cada casilla—, que es lo que el
+      navegador guarda del HTML original. Así no hay una segunda lista que se quede
+      desfasada en cuanto se toque el HTML, que es justamente el error del pie de versión
+      (207).
+
+210. **Música real o fragmento de práctica** (30/9/2026, Diego: «un selector que permita
+    elegir entre solo música real, solo fragmentos de práctica, ambos —este último la opción
+    por defecto—», y «en el banco de fragmentos, también un filtro»). La marca es tener
+    **obra**: un fragmento con procedencia viene de una partitura (198); los demás son los
+    esquemas escritos para practicar.
+    - En el filtro de la ficha, **«Procedencia»**, junto a «Modulación»: viaja en el enlace
+      como `musica: 'real' | 'practica'` y lo aplica `Banco.cumple`. Sin elegir nada entran
+      los dos, que es lo de siempre.
+    - En la tabla del banco, el mismo corte junto a «Repaso». Como aquel, es de **la tabla y
+      las flechas de recorrido**, no del filtro de la ficha: sirve para revisar de corrido un
+      grupo u otro. Si los dos están puestos, manda el de la tabla.
+    - Comprobado sobre el banco de Diego: 127 fragmentos cumplen el filtro; con «solo música
+      real», 1; con «solo fragmentos de práctica», 126.
+
+209. **El enlace, en el morado de la casa** (30/9/2026, Diego: «el enlace web, al aparecer
+    sobre el blanco de la partitura, que aparezca en color… por mantenerse dentro de los
+    colores de la interfaz de usuario»). Iba en el ciruela de la tinta y no se leía como un
+    enlace. Ahora en **`--marca-honda`** (#9412DC), subrayado y algo más grueso; al pasar por
+    encima se enciende en el morado vivo de la banda. Se escoge el hondo y no el vivo de la
+    banda porque el vivo, en letra pequeña y sobre blanco, se queda corto de contraste.
+
+208. **El crédito, dentro del recuadro de la partitura** (30/9/2026, Diego: «quiero que la
+    información adicional sobre la partitura se vea dentro del cuadro blanco donde se
+    encuentra la partitura, en la esquina inferior derecha, para que se sienta parte de la
+    partitura… no son controles, no son información sobre el funcionamiento de la app:
+    pertenece a la partitura»). Estaba debajo del recuadro, en el mismo plano que las
+    paletas y los botones, y ahí se leía como un dato de la aplicación; dentro y sobre el
+    mismo blanco se lee como el crédito al pie de una lámina, que es lo que es.
+    - El recuadro pasa a ser un **marco** —el que lleva el borde y el fondo— y dentro va el
+      **lienzo**, que es el que se desplaza cuando el fragmento no cabe a lo ancho. Así el
+      crédito no se va de la vista al desplazar la música.
+    - De paso se arregla una adyacencia: el párrafo del crédito se colaba entre el recuadro
+      y las paletas y rompía el selector `.partitura-caja + .paletas`.
+
 207. **El pie dice la versión de verdad** (30/9/2026, tras una hora perdida). El número de
     versión estaba escrito A MANO en un `<span id="version">` del HTML, mientras el sello
     `?v=…` que se cambia en cada despliegue va en los `<script>` y los `<link>`: dos sitios

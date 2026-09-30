@@ -575,6 +575,9 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261003-0145 | Filtro de procedencia —música real o fragmentos de práctica— en la ficha y en el banco, y botón de valores por defecto (210 y 211) |
+| 20261003-0055 | El crédito, dentro del recuadro de la partitura, y el enlace en el morado de la casa (208 y 209) |
+| 20261003-0020 | El crédito de la obra, dentro del recuadro de la partitura y abajo a la derecha: pertenece a la partitura, no a la aplicación (208) |
 | 20261002-2340 | Los acordes escritos se emparejan con el bajo por tiempo, no por orden, y se admiten los incompletos: entra la sonata de Beethoven (206). El pie dice la versión de verdad (207) |
 | 20261002-2245 | Con las cuatro voces escritas, el editor las muestra también antes de guardarlas en el banco, el botón dice «Revisar el fragmento» y se apagan los mandos de voz (205) |
 | 20261002-2120 | Solo las séptimas sin resolver se señalan como licencias; la sensible queda libre en la cadencia perfecta; doble corchea en el banco para la música real (202b, 203, 204) |

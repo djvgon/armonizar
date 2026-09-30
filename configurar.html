@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261002-2340">
-  <link rel="stylesheet" href="css/estilo.css?v=20261002-2340">
+  <link rel="stylesheet" href="css/bravura.css?v=20261003-0145">
+  <link rel="stylesheet" href="css/estilo.css?v=20261003-0145">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -67,8 +67,13 @@
       <div id="banco-cuerpo" hidden>
         <!-- Las dos mitades de la ficha, sombreadas para que se distingan de un vistazo:
              qué entra (el filtro) y cómo se le presenta (lo que ve el alumno). -->
-        <div class="bloque-opciones">
-        <h3>Qué fragmentos entran</h3>
+        <div class="bloque-opciones" id="bloque-filtro">
+        <!-- DEVOLVER LOS FILTROS A SU SITIO (decisión 211, Diego 30/9/2026). Arriba a la
+             derecha del bloque, porque es lo que se hace ANTES de empezar una ficha nueva.
+             Solo toca este bloque: lo que ve el alumno y el banco se quedan como están. -->
+        <h3 class="titulo-con-boton">Qué fragmentos entran
+          <button type="button" id="btn-filtro-defecto" class="boton-pequeno"
+            title="Devuelve todos los selectores de este bloque a su opción por defecto">Valores por defecto</button></h3>
         <div class="fila-campos">
           <label class="campo">
             <span>Tipo de ejercicio</span>
@@ -103,6 +108,16 @@
               <option value="1-2">Fácil (1 y 2)</option>
               <option value="2-3">Medio (2 y 3)</option>
               <option value="3-5">Difícil (3 a 5)</option>
+            </select>
+          </label>
+          <!-- MÚSICA REAL O ESQUEMA (decisión 210, Diego 30/9/2026). Un fragmento es
+               «música real» cuando tiene obra: viene de una partitura y lo dice (198). -->
+          <label class="campo">
+            <span>Procedencia</span>
+            <select id="ficha-musica">
+              <option value="">Música real y fragmentos de práctica</option>
+              <option value="real">Solo música real</option>
+              <option value="practica">Solo fragmentos de práctica</option>
             </select>
           </label>
           <label class="campo">
@@ -297,6 +312,14 @@
             <option value="">Ver todos</option>
             <option value="no">Solo los que están sin cerrar</option>
             <option value="si">Solo los cerrados</option>
+          </select>
+          <!-- El mismo corte que en la ficha, pero SOLO para lo que se ve en la tabla
+               (decisión 210). -->
+          <label for="banco-musica">Procedencia</label>
+          <select id="banco-musica">
+            <option value="">Ver todos</option>
+            <option value="real">Solo música real</option>
+            <option value="practica">Solo fragmentos de práctica</option>
           </select>
           <span class="ayuda" id="banco-cerrados"></span>
         </p>
@@ -562,19 +585,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261002-2340</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261003-0145</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261002-2340"></script>
-  <script src="js/reglas.js?v=20261002-2340"></script>
-  <script src="js/ejercicios.js?v=20261002-2340"></script>
-  <script src="js/partitura.js?v=20261002-2340"></script>
-  <script src="js/musicxml.js?v=20261002-2340"></script>
-  <script src="js/musescore.js?v=20261002-2340"></script>
-  <script src="js/banco.js?v=20261002-2340"></script>
-  <script src="js/realizacion.js?v=20261002-2340"></script>
-  <script src="js/tecnicas.js?v=20261002-2340"></script>
-  <script src="js/configurador.js?v=20261002-2340"></script>
+  <script src="js/teoria.js?v=20261003-0145"></script>
+  <script src="js/reglas.js?v=20261003-0145"></script>
+  <script src="js/ejercicios.js?v=20261003-0145"></script>
+  <script src="js/partitura.js?v=20261003-0145"></script>
+  <script src="js/musicxml.js?v=20261003-0145"></script>
+  <script src="js/musescore.js?v=20261003-0145"></script>
+  <script src="js/banco.js?v=20261003-0145"></script>
+  <script src="js/realizacion.js?v=20261003-0145"></script>
+  <script src="js/tecnicas.js?v=20261003-0145"></script>
+  <script src="js/configurador.js?v=20261003-0145"></script>
 </body>
 </html>

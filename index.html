@@ -7,8 +7,8 @@
   <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
   <meta property="og:title" content="Práctica armónica">
   <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
-  <link rel="stylesheet" href="css/bravura.css?v=20261002-2340">
-  <link rel="stylesheet" href="css/estilo.css?v=20261002-2340">
+  <link rel="stylesheet" href="css/bravura.css?v=20261003-0145">
+  <link rel="stylesheet" href="css/estilo.css?v=20261003-0145">
 </head>
 <body>
   <nav class="barra-app" aria-label="Secciones">
@@ -96,11 +96,16 @@
         </span>
       </span>
     </div>
-    <div id="partitura" class="partitura-caja"></div>
-    <!-- DE QUÉ OBRA SALE EL FRAGMENTO (decisión 198, Diego 29/9/2026). Va bajo la partitura
-         y a la vista desde el principio, como el crédito al pie de una ilustración: el
-         alumno sabe que lo que está cifrando es música de verdad y de quién es. -->
-    <p id="procedencia-ej" class="procedencia-ej" hidden></p>
+    <!-- DE QUÉ OBRA SALE EL FRAGMENTO (decisión 198, Diego 29/9/2026; colocado por la 208).
+         Va DENTRO del recuadro blanco de la partitura, abajo a la derecha, como el crédito
+         al pie de una ilustración: «no son controles, no son información sobre el
+         funcionamiento de la app: pertenece a la partitura». El desplazamiento lateral de
+         los fragmentos largos se queda en el lienzo de dentro, para que el crédito no se
+         vaya de la vista al desplazar. -->
+    <div class="partitura-caja partitura-marco">
+      <div id="partitura" class="partitura-lienzo"></div>
+      <p id="procedencia-ej" class="procedencia-ej" hidden></p>
+    </div>
 
     <div id="paletas" class="paletas">
       <!-- «Sonar al elegir» encabeza las paletas, en el primer renglón —el de la función
@@ -156,21 +161,21 @@
        vistazo qué versión está publicada. -->
   <footer class="pie">
     <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
-    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20261002-2340</span></p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20261003-0145</span></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261002-2340"></script>
-  <script src="js/reglas.js?v=20261002-2340"></script>
-  <script src="js/ejercicios.js?v=20261002-2340"></script>
-  <script src="js/partitura.js?v=20261002-2340"></script>
-  <script src="js/realizacion.js?v=20261002-2340"></script>
-  <script src="js/tecnicas.js?v=20261002-2340"></script>
-  <script src="js/banco.js?v=20261002-2340"></script>
-  <script src="js/registro.js?v=20261002-2340"></script>
-  <script src="js/envio.js?v=20261002-2340"></script>
-  <script src="js/sonido.js?v=20261002-2340"></script>
-  <script src="js/voz.js?v=20261002-2340"></script>
-  <script src="js/app.js?v=20261002-2340"></script>
+  <script src="js/teoria.js?v=20261003-0145"></script>
+  <script src="js/reglas.js?v=20261003-0145"></script>
+  <script src="js/ejercicios.js?v=20261003-0145"></script>
+  <script src="js/partitura.js?v=20261003-0145"></script>
+  <script src="js/realizacion.js?v=20261003-0145"></script>
+  <script src="js/tecnicas.js?v=20261003-0145"></script>
+  <script src="js/banco.js?v=20261003-0145"></script>
+  <script src="js/registro.js?v=20261003-0145"></script>
+  <script src="js/envio.js?v=20261003-0145"></script>
+  <script src="js/sonido.js?v=20261003-0145"></script>
+  <script src="js/voz.js?v=20261003-0145"></script>
+  <script src="js/app.js?v=20261003-0145"></script>
 </body>
 </html>
