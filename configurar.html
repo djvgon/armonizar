@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261003-0430">
-  <link rel="stylesheet" href="css/estilo.css?v=20261003-0430">
+  <link rel="stylesheet" href="css/bravura.css?v=20261003-0600">
+  <link rel="stylesheet" href="css/estilo.css?v=20261003-0600">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -470,9 +470,16 @@
           </label>
         </div>
 
+        <!-- CUANDO EL FRAGMENTO TRAE LA ARMONIZACIÓN ESCRITA (decisión 216). Se dice aquí,
+             pegado al botón, porque es justo aquí donde hay que saberlo: lo que se pulsa no
+             reconstruye nada. -->
+        <p class="nota-cuatro" id="aviso-cuatro" hidden>Este fragmento <b>trae la armonización
+          escrita en la partitura</b>: se muestra tal como está y el motor no toca ni una nota.
+          Al revisarlo solo se repasan los cifrados de cada nota del bajo.</p>
+
         <div class="botonera">
           <button id="btn-analizar" type="button" class="primario">Analizar</button>
-          <span class="ayuda">El motor propone los cifrados interválicos de cada nota; después puedes corregirlos a mano.</span>
+          <span class="ayuda" id="ayuda-analizar">El motor propone los cifrados interválicos de cada nota; después puedes corregirlos a mano.</span>
         </div>
 
         <!-- Recorrido por los fragmentos que cumplen el filtro (decisión 67): permite
@@ -591,19 +598,19 @@
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261003-0430</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261003-0600</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261003-0430"></script>
-  <script src="js/reglas.js?v=20261003-0430"></script>
-  <script src="js/ejercicios.js?v=20261003-0430"></script>
-  <script src="js/partitura.js?v=20261003-0430"></script>
-  <script src="js/musicxml.js?v=20261003-0430"></script>
-  <script src="js/musescore.js?v=20261003-0430"></script>
-  <script src="js/banco.js?v=20261003-0430"></script>
-  <script src="js/realizacion.js?v=20261003-0430"></script>
-  <script src="js/tecnicas.js?v=20261003-0430"></script>
-  <script src="js/configurador.js?v=20261003-0430"></script>
+  <script src="js/teoria.js?v=20261003-0600"></script>
+  <script src="js/reglas.js?v=20261003-0600"></script>
+  <script src="js/ejercicios.js?v=20261003-0600"></script>
+  <script src="js/partitura.js?v=20261003-0600"></script>
+  <script src="js/musicxml.js?v=20261003-0600"></script>
+  <script src="js/musescore.js?v=20261003-0600"></script>
+  <script src="js/banco.js?v=20261003-0600"></script>
+  <script src="js/realizacion.js?v=20261003-0600"></script>
+  <script src="js/tecnicas.js?v=20261003-0600"></script>
+  <script src="js/configurador.js?v=20261003-0600"></script>
 </body>
 </html>

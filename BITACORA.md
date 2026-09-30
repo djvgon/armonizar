@@ -11,6 +11,12 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 30 de septiembre de 2026
 
+- **LO PRIMERO: hay que hacer el *commit* y el *push*.** El clon y Drive van por
+  `20261003-0600`; lo publicado en GitHub Pages sigue en `20261003-0230`. Diego probó la
+  corrección de la 213 sin haber subido nada y, claro, no estaba: lo que corría en su
+  navegador era el código de antes. **Y después de subir hay que volver a importar el
+  fragmento**, porque la entrada que se guardó en el banco con el código viejo no lleva las
+  voces escritas.
 - **Por qué el fragmento de Beethoven no le salía al alumno** (30/9): no era la aplicación.
   Al alumno solo se le sirven fragmentos **cerrados** (decisión 182), y en el `banco.json`
   que estaba publicado `A3-4-15` seguía abierto. En cuanto Diego lo cerró y volvió a
@@ -593,6 +599,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261003-0600 | Basta un acorde a cuatro voces para que la armonización sea del compositor y no se toque; donde escribió menos voces, se dibujan menos (216). Cartel en el editor, botón «Revisar el fragmento» y mandos de voz apagados también con un fragmento recién importado; corregido el botón, que al cargar del banco se quedaba con el nombre del fragmento anterior |
 | 20261003-0430 | Una armonización sigue siéndolo aunque en algún acorde queden dos voces: vuelve a entrar el tema de John Williams (213). La procedencia y las voces escritas viajan también en la dirección `#e=` del ejercicio, no solo en la ficha (214). El banco tiene su propio botón de valores por defecto (215) |
 | 20261003-0230 (b) | Solo datos: `prototipos.json` vuelto a publicar con lo que el motor devuelve hoy, para que la página «Estructuras» diga lo mismo que el cuadro del libro. Siete prototipos habían quedado atrás —los dos del II6/5 del tema 11, la cadencia rota en menor del 12, los tres del 13 y el del 14, que ya llevan la prolongación del II6/5 con el I6 de bordadura—. No toca ni HTML ni JS, y `estructuras.js` lo pide con `cache: no-cache`, así que no hace falta sello nuevo |
 | 20261003-0230 | Cargar un fragmento del archivo suelta la entrada del banco: ya no se queda la chapa, la lección ni la obra del anterior (212) |

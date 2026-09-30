@@ -73,19 +73,23 @@
   /* ¿El fragmento que hay delante trae la armonización escrita a cuatro voces? (decisión
      205). Da igual que venga del banco o de un archivo recién importado: en los dos casos
      la partitura ha de salir tal como la escribió el profesor. */
-  /* ¿El pentagrama de arriba trae la armonización escrita? Vale con que algún acorde venga
-     a cuatro voces y con que ninguna nota del bajo se quede sin NADA encima (decisión 206,
-     corregida el 30/9/2026): en una partitura real la textura adelgaza y no por eso deja de
-     ser una armonización.
-     El listón estaba en dos notas por acorde y dejaba fuera el tema de John Williams, que
-     en dos de sus veinte acordes se queda en bajo y una sola voz —a dos voces reales, que
-     es lo que está escrito—. Lo que descalifica a un fragmento no es que adelgace, sino
-     que haya notas del bajo SIN ARMONIZAR: esas son las que el motor tendría que rellenar,
-     y entonces ya no es la armonización del compositor. */
+  /* ¿El pentagrama de arriba trae la armonización escrita? (decisión 206, rehecha el
+     30/9/2026 por la 216.)
+
+     UNA SOLA CONDICIÓN: que en algún sitio haya un acorde a cuatro voces. Con eso ya se
+     sabe que el pentagrama de arriba no es una melodía, sino una armonización, y entonces
+     manda ENTERA: la escribió el profesor y el motor no tiene nada que decir.
+
+     Las dos versiones anteriores ponían además un mínimo de notas por acorde —tres primero,
+     dos después— y las dos dejaron fuera música de verdad: la sonata de Beethoven adelgaza
+     a tres voces, y el tema de John Williams se queda en dos en un par de sitios. Cada vez
+     que se afina el listón aparece una partitura que cae justo por debajo. No hay listón
+     que valga: donde el compositor escribió menos voces, se dibujan menos voces, y donde no
+     escribió nada encima del bajo, no se dibuja nada. Inventarlas sería peor. */
   function traeArmonizacion(f) {
     const ac = f && f.acordes;
     if (!Array.isArray(ac) || !ac.length || !f.tieneBajo) return false;
-    return ac.some(x => x && x.length >= 3) && ac.every(x => x && x.length >= 1);
+    return ac.some(x => x && x.length >= 3);
   }
   /* EL FRAGMENTO QUE HAY DELANTE, venga de donde venga: la entrada del banco que se está
      revisando o, si no hay ninguna enganchada, el fragmento del archivo recién importado.
@@ -177,8 +181,16 @@
        30/9/2026: «debería llamarse algo así como Revisar el fragmento»). El botón dice lo
        que de verdad va a pasar: con la armonización escrita, la partitura sale tal como
        está y solo se repasan los cifrados; sin ella, el motor reconstruye las voces. */
-    $('#btn-analizar').textContent = conCuatroVoces() ? 'Revisar el fragmento'
+    const cuatro = conCuatroVoces();
+    $('#btn-analizar').textContent = cuatro ? 'Revisar el fragmento'
       : (sop ? 'Analizar la melodía' : 'Analizar el bajo');
+    if ($('#aviso-cuatro')) $('#aviso-cuatro').hidden = !cuatro;
+    if ($('#ayuda-analizar')) {
+      $('#ayuda-analizar').textContent = cuatro
+        ? 'Las voces son las tuyas; el motor solo propone el cifrado de cada nota, que puedes corregir a mano.'
+        : 'El motor propone los cifrados interválicos de cada nota; después puedes corregirlos a mano.';
+    }
+    pintarVozRevision();
     $('#th-admisibles').textContent = sop ? 'Acordes admisibles (● modelo)' : 'Cifrados admisibles (● modelo)';
     pintarColumnaOtraVoz();
     $('#repertorio-opciones').hidden = sop; $('#ayuda-repertorio').hidden = sop;
@@ -2124,7 +2136,11 @@
     $('#banco-origen-texto').textContent = 'Estás revisando el fragmento ' + (e.id || '(sin identificador)')
       + (e.leccion ? ' de la lección ' + Banco.etiquetaLeccion(e) : '')
       + ' · voz: ' + (b.voz === 'bajo' ? 'el bajo' : 'la melodía') + '.';
-    pintarVozRevision();
+    /* Y con el fragmento del banco ya enganchado, el botón y el cartel otra vez: si no,
+       se quedaban diciendo lo del fragmento anterior. `ajustarCampoAudicion` es quien lo
+       decide todo —el nombre del botón, el cartel y los mandos de voz— y llama él a
+       `pintarVozRevision`, de modo que hay un solo camino y no dos que se pisen. */
+    ajustarCampoAudicion();
     pintarSello();
   }
 
@@ -2138,24 +2154,27 @@
   function pintarVozRevision() {
     const caja = $('#voz-revision'), b = estado.banco;
     if (!caja) return;
-    caja.hidden = !b;
-    if (!b) return;
-    const e = b.entrada;
     /* CON LAS CUATRO VOCES ESCRITAS NO HAY DOS VOCES QUE ELEGIR (decisión 205, Diego
        30/9/2026: «se deberían desactivar los controles Revisar el bajo / la melodía»). Un
        fragmento con la armonización escrita no son dos ejercicios sobre la misma música
-       —que es lo que dice la 177 de los demás—: es UNA armonización, la del compositor. */
-    const cuatro = Array.isArray(e.voces) && e.voces.length > 0;
-    ajustarCampoAudicion();                  // y el botón, otra vez, por si cambió el fragmento (205)
+       —que es lo que dice la 177 de los demás—: es UNA armonización, la del compositor.
+       Vale igual venga del banco o de un archivo recién importado (216): la fila se enseña
+       con los dos mandos apagados, para que se vea POR QUÉ no se puede cambiar de voz, en
+       vez de esconderla y dejarlo a la adivinación. */
+    const cuatro = conCuatroVoces();
+    caja.hidden = !b && !cuatro;
+    if (caja.hidden) return;
+    const e = (b && b.entrada) || {};
     [['bajo', $('#btn-voz-bajo')], ['soprano', $('#btn-voz-soprano')]].forEach(([voz, bot]) => {
       if (!bot) return;
-      const hay = !!e[voz];
+      const hay = b ? !!e[voz] : (voz === 'bajo');
       bot.disabled = !hay || cuatro;
       bot.title = cuatro ? 'Este fragmento trae las cuatro voces escritas en la partitura: se revisa entero, no voz por voz'
-        : hay ? (voz === b.voz ? 'Es la que estás revisando' : 'Abrir la otra voz de este mismo fragmento')
+        : hay ? (voz === (b && b.voz) ? 'Es la que estás revisando' : 'Abrir la otra voz de este mismo fragmento')
         : 'Este fragmento no tiene ' + (voz === 'bajo' ? 'el bajo' : 'la melodía') + ' escrita';
-      bot.classList.toggle('activo', voz === b.voz);
-      bot.setAttribute('aria-pressed', voz === b.voz ? 'true' : 'false');
+      const activo = cuatro ? voz === 'bajo' : voz === (b && b.voz);
+      bot.classList.toggle('activo', !!activo);
+      bot.setAttribute('aria-pressed', activo ? 'true' : 'false');
     });
   }
 
@@ -2377,11 +2396,25 @@
       });
       if (r) { e[otra] = { compases: e[otra].compases, modulaciones: mods.slice(), respuestas: r.respuestas }; rehecha = true; }
     }
+    /* LAS VOCES ESCRITAS VAN CON EL BAJO (decisión 216). Son un acorde por nota suya; si al
+       revisar se ha tocado el bajo a mano y ya no hay tantos acordes como notas, esas voces
+       dejan de describir esta música y no pueden quedarse guardadas diciendo que sí. Se
+       sueltan y se dice, en vez de dejar un dato que nadie volvería a mirar. */
+    let sueltas = false;
+    if (Array.isArray(e.voces) && e.voces.length
+        && e.bajo && e.voces.length !== Teoria.numeroDeNotas(e.bajo.compases || [])) {
+      delete e.voces;
+      sueltas = true;
+    }
     Banco.etiquetar(e);
     guardarBanco();
     pintarBanco();
+    pintarOrigenBanco();
     aviso('Guardado en el fragmento ' + (e.id || '') + ' del banco'
       + (rehecha ? ' (y se ha rehecho ' + (otra === 'bajo' ? 'el bajo' : 'la melodía') + ' en la tonalidad nueva)' : '')
+      + (sueltas ? '. OJO: el bajo ya no tiene tantas notas como acordes traía la armonización escrita, '
+        + 'así que se ha soltado: a partir de ahora las voces de en medio las pone el motor. '
+        + 'Si quieres conservar la del compositor, vuelve a importar el fragmento del archivo' : '')
       + '. Acuérdate de descargar banco.json y subirlo a GitHub.', 9000);
   }
 

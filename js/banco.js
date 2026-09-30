@@ -345,22 +345,17 @@ const Banco = (() => {
     if (partes.bajo && arriba.length) {
       const nB = Teoria.numeroDeNotas(f.compasesBajo || []);
       const aTres = arriba.filter(a => a && a.length >= 3).length;
-      /* SE ADMITEN LOS ACORDES INCOMPLETOS (decisión 206, corregida el 30/9/2026). Antes se
-         exigía que TODOS trajeran sus tres notas de arriba, y con eso se caían las
-         partituras reales: la sonata de Beethoven adelgaza a tres voces en dos acordes de
-         los quince, que es lo más normal del mundo al escribir. Se bajó el listón a dos
-         notas arriba, y seguía dejando fuera el tema de John Williams, que en dos de sus
-         veinte acordes escribe solo dos voces reales —el bajo y una—.
-         El listón que de verdad importa es otro: basta con que haya algún acorde a cuatro
-         voces —si no, es una melodía, no una armonización— y con que NINGUNA nota del bajo
-         se quede sin nada encima, porque esa sí habría que rellenarla y entonces la
-         armonización ya no sería la del compositor. Los acordes con menos voces se dibujan
-         con las que tienen. */
-      if (aTres && arriba.every(a => a && a.length >= 1)) {
-        base.voces = arriba.map(a => a.slice());
-      } else if (aTres) {
-        avisos.push('el pentagrama de arriba trae acordes, pero alguna nota del bajo se queda sin ninguno: '
-          + 'las voces de en medio las pondrá el motor');
+      /* UNA SOLA CONDICIÓN: QUE HAYA ALGÚN ACORDE A CUATRO VOCES (decisión 216, 30/9/2026;
+         rehace la 206). Con eso se sabe que el pentagrama de arriba es una armonización y
+         no una melodía, y entonces se guarda ENTERA, tal como está escrita.
+         Las dos versiones anteriores exigían además un mínimo de notas en CADA acorde
+         —tres primero, dos después— y las dos dejaron fuera música de verdad: la sonata de
+         Beethoven adelgaza a tres voces, y el tema de John Williams se queda en dos voces
+         en un par de sitios. Donde el compositor escribió menos, se guardan menos; donde no
+         escribió nada, va un hueco (`null`) y la partitura no dibuja ahí nada de arriba.
+         Rellenarlo con el motor sería cambiarle la música. */
+      if (aTres) {
+        base.voces = arriba.map(a => (Array.isArray(a) && a.length ? a.slice() : null));
       }
     }
     etiquetar(base);

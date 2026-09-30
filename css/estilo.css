@@ -696,6 +696,15 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .voz-revision .segmentos button.activo { background: var(--acento); color: #fff; }
 .voz-revision .segmentos button:disabled { opacity: .4; cursor: default; }
 
+/* El fragmento trae la armonización del compositor (decisión 216). En verde oliva, el
+   mismo color con el que la partitura marca las licencias de las voces escritas, para que
+   se lea como lo que es: música de otro, que la aplicación respeta. */
+.nota-cuatro {
+  margin: .6rem 0 .2rem; padding: .5rem .7rem; font-size: .92rem; line-height: 1.4;
+  border-left: 4px solid var(--licencia, #6B7A2F); border-radius: var(--radio-control);
+  background: rgba(107, 122, 47, .08);
+}
+
 /* Lo que admite la OTRA voz del fragmento (decisión 174): al lado de los admisibles de la
    voz que se revisa, en gris y solo de lectura. Cada voz lleva su propia lista, y por eso un
    acorde puede valer armonizando el bajo y no armonizando la melodía. */

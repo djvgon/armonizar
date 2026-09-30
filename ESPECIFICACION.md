@@ -3880,6 +3880,45 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+216. **Si hay un acorde a cuatro voces, la armonización es del compositor y no se toca**
+    (30/9/2026, Diego: «no lo reconoce como armonización a cuatro voces dada por mí, sino que
+    señala dos voces… y lo que aparece en el editor no es la versión que yo tengo en el
+    archivo. Por favor, mejóralo o es inservible»). **Rehace la 206 y la 213.**
+    - **El error de fondo era el método.** Para decidir si el pentagrama de arriba trae una
+      armonización se ponía un mínimo de notas en CADA acorde: tres en la 206, dos en la 213.
+      Cada vez que se bajaba el listón aparecía una partitura que caía justo por debajo —la
+      sonata de Beethoven adelgaza a tres voces; el tema de John Williams se queda en dos en
+      un par de sitios—, y el fragmento volvía a colarse por el camino del motor. Afinar el
+      número era perseguir el problema, no resolverlo.
+    - **Ahora la condición es una sola: que en algún sitio haya un acorde a cuatro voces.**
+      Con eso ya se sabe que arriba hay una armonización y no una melodía, y entonces manda
+      **entera**. Donde el compositor escribió menos voces se dibujan menos; donde no escribió
+      nada sobre una nota del bajo va un hueco (`null`) y la partitura no dibuja nada ahí.
+      Rellenarlo sería cambiarle la música, que es justo lo que no puede pasar.
+    - Se aplica en los dos sitios que hacían la misma cuenta: `traeArmonizacion`
+      (`js/configurador.js`) y el bloque que guarda `voces` en `Banco.entrada` (`js/banco.js`).
+      Desaparece también el aviso «alguna nota del bajo se queda sin ninguno», que sacaba al
+      fragmento de las fichas por algo que ya no es un defecto.
+    - **Y se dice a la cara.** Con la armonización escrita, el editor enseña un cartel en
+      verde oliva —el color de las licencias— pegado al botón: «Este fragmento trae la
+      armonización escrita en la partitura: se muestra tal como está y el motor no toca ni
+      una nota». El botón dice «Revisar el fragmento» y los mandos «Revisando el bajo / la
+      melodía» salen apagados, **venga el fragmento del banco o de un archivo recién
+      importado**; antes esa fila solo existía para los del banco.
+    - **Un fallo que iba con esto**: al cargar un fragmento del banco, el nombre del botón y
+      el cartel se quedaban con lo del fragmento anterior, porque `pintarOrigenBanco` pintaba
+      los mandos de voz por su cuenta y nadie volvía a llamar a `ajustarCampoAudicion`. Ahora
+      hay un solo camino: `ajustarCampoAudicion` decide el botón, el cartel y los mandos, y
+      es ella quien llama a `pintarVozRevision`.
+    - **Al guardar**, si el bajo ha cambiado de número de notas y las voces escritas ya no le
+      corresponden, se sueltan y se avisa con todas las letras, en vez de dejar guardado un
+      dato que ya no describe esa música.
+    - Comprobado con los dos archivos de verdad, haciendo la secuencia entera de Diego:
+      arrastrar el archivo, ver el fragmento listado como «armonización escrita», añadirlo al
+      banco (entra con sus 20 acordes y sin avisos), abrirlo desde el banco y pulsar «Revisar
+      el fragmento»: se dibujan sus veinte acordes —dieciocho a cuatro voces y dos a dos—,
+      los mismos antes y después. Los 143 sellos siguen intactos.
+
 215. **El banco tiene su propio botón de valores por defecto** (30/9/2026, Diego: «poner
     también un botón para reiniciar los filtros a su posición por defecto en la zona del
     banco de fragmentos: es el *companion* del de selector de fragmentos para la ficha del
