@@ -1549,6 +1549,7 @@
     TONICAS.forEach(([v, n]) => { const o = document.createElement('option'); o.value = v; o.textContent = n; $('#tonica').appendChild(o); });
     pintarRepertorio();
     pintarAcordes();
+    marcarSaltos();
 
     // Ejemplo por defecto si no hay borrador
     if (!cargarBorrador()) {
@@ -3081,6 +3082,42 @@
     estado.semillaFicha = null;
     const p = $('#ficha-tonos-reparto');
     if (p) p.hidden = true;
+  }
+
+  /* =====================================================================
+     LOS TRES SALTOS, Y CUÁL ESTÁ EN PANTALLA  (Diego, 30/9/2026)
+
+     Los enlaces de la barra funcionan solos —son anclas—; esto es solo el
+     adorno útil: marcar el que corresponde a la sección que se está mirando,
+     para saber dónde se está sin tener que leer el contenido.
+
+     La regla es la que uno espera al leer: manda la ÚLTIMA sección cuyo título
+     ya ha pasado por debajo de la barra. Y al llegar al final del documento
+     manda la última, porque la sección C es corta y de otro modo nunca podría
+     marcarse. Con un observador de visibilidad salía la B marcada estando en
+     la C: la B sigue asomando por arriba y es la primera de la lista.
+     ===================================================================== */
+  function marcarSaltos() {
+    const barra = document.querySelector('.saltos');
+    if (!barra) return;
+    const secciones = [...barra.querySelectorAll('a[href^="#"]')]
+      .map(a => ({ a, sec: document.getElementById(a.getAttribute('href').slice(1)) }))
+      .filter(x => x.sec);
+    if (!secciones.length) return;
+    let pedido = false;
+    const pinta = () => {
+      pedido = false;
+      const raya = barra.getBoundingClientRect().bottom + 12;
+      let elegida = secciones[0];
+      secciones.forEach(x => { if (x.sec.getBoundingClientRect().top <= raya) elegida = x; });
+      const alFinal = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
+      if (alFinal) elegida = secciones[secciones.length - 1];
+      secciones.forEach(x => x.a.classList.toggle('aqui', x === elegida));
+    };
+    const luego = () => { if (!pedido) { pedido = true; requestAnimationFrame(pinta); } };
+    window.addEventListener('scroll', luego, { passive: true });
+    window.addEventListener('resize', luego);
+    pinta();
   }
 
   document.addEventListener('DOMContentLoaded', arranque);

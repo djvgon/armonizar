@@ -12,33 +12,37 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 ## Estado a 30 de septiembre de 2026 (tarde)
 
 - **LO PRIMERO: hay que hacer el *commit* y el *push*.** El clon y Drive van por
-  `20261003-1200`, con las decisiones **219** —el modelo de cada nota lo pone la
-  armonización escrita— y **220** —el VI7 como objetivo de la cadencia rota—. Archivos
-  tocados: `js/banco.js`, `js/reglas.js`, `js/configurador.js`, `banco.json`,
-  `prototipos.json` y las ocho páginas HTML (marca de versión).
-- **El fragmento de John Williams ya está bien en el banco.** Lo reimportó Diego con la
-  218, con sus veinte acordes a cuatro voces y el medio compás de dos acordes bien leído.
-  Sobre él se ha aplicado la 219: nueve notas cambian de orden —el acorde escrito pasa a ser
-  el modelo— y dos lo tenían ausente, la **15** (el VI7, mi♭–sol–si♭–re) y la **18** (el IV7,
-  do–mi♭–sol–si♭), que se han añadido a sus admisibles. Ningún otro fragmento del banco
-  cambia.
-- **El VI7 está encendido en la lección del tema 14** (A4-11, los nueve fragmentos) y tiene
-  su estructura propia en el cuadro del tema 14: `I – V7 – VI7`.
-- **El libro de Armonía, rehecho** (30/9, tarde) con el banco corregido: `0b. Vigueras -
-  Armonía - Completa con hojas de ejercicios.pdf`, 318 páginas, el mismo número que antes.
-  Cambian la hoja del tema 14 —el fragmento de Williams, ejercicio 1, con su crédito— y su
-  cuadro de estructuras, que estrena el `I – V7 – VI7`. Cambia además un ejercicio del tema
-  8, por un retoque que Diego hizo él mismo en ese fragmento durante el día. Todo lo demás,
-  idéntico página a página.
-- **Esperando el visto bueno de Diego para dos cosas** (30/9, tarde):
-  1. copiar el libro nuevo a la carpeta de Drive de los alumnos
-     `ALUMNOS - Biblioteca de referencia / 00. COMÚN, materiales comunes… / Armonía`,
-     **recuperando antes de la papelera el PDF antiguo** y sobrescribiendo su contenido, para
-     que conserve su identificador de Drive y **no haya que tocar ningún enlace de
-     Classroom**;
-  2. comprobar después, clase por clase, que los adjuntos del libro siguen apuntando a ese
-     archivo.
-  La carpeta de los alumnos **no está conectada** a la sesión: hará falta pedirle acceso.
+  `20261003-1400`, con las decisiones **219** —el modelo de cada nota lo pone la
+  armonización escrita—, **220** —el VI7 como objetivo de la cadencia rota—, **221** —los
+  tres saltos del configurador y las dos subsecciones de trabajo delante de la tabla— y
+  **222** —el orden de la hoja, de lo corto a lo largo—. Archivos tocados: `js/banco.js`,
+  `js/reglas.js`, `js/configurador.js`, `css/estilo.css`, `banco.json`, `prototipos.json`
+  y las ocho páginas HTML.
+- **EL FRAGMENTO DE JOHN WILLIAMS ESTÁ SIN CERRAR, a propósito.** El que había en el banco
+  **no era el de la partitura**: cotejado contra
+  `ejemplos/Fragmentos por lecciones/A4-11…mscz`, se diferenciaba en la soprano de los
+  compases 4 y 8 y en la armonización de las notas 9, 16, 17 y 18. Era otra versión, no un
+  fallo del importador. Se ha vuelto a construir desde ese archivo conservando su
+  identificador `A4-11-09`, y ha entrado **sin firmar**: el banco va en **142 de 143
+  cerrados**. Diego lo revisa y lo cierra.
+  Con la 219, sus veinte modelos salen de la armonización escrita; solo hizo falta añadir
+  un acorde a los admisibles, el de la nota **18** (el IV7). La nota **15** es el **VI7**.
+- **El VI7** está encendido en la lección del tema 14 (sus nueve fragmentos) y tiene
+  estructura propia en el cuadro: `I – V7 – VI7`.
+- **El libro, rehecho y SIN PUBLICAR** (30/9, tarde). `0b.` pasa a **317 páginas** —una
+  menos, por la 222—. Está solo en la carpeta de trabajo
+  `3 PROYECTO (documentación y fuentes)/Teoría para Fundamentos de composición/`.
+  **A la carpeta de los alumnos no ha ido nada y Classroom no se ha tocado.**
+- **Lo que queda de aquella entrega, esperando a Diego:**
+  1. cerrar el fragmento de Williams y dar el visto bueno al libro;
+  2. ejecutar `InventarioLibro.gs` y pegar la salida, para saber a qué archivo de Drive
+     apuntan de verdad los adjuntos del libro en cada clase. El libro de los alumnos
+     (`0b…pdf`, id `1GaCsMj2RrGztNMn48XaQImO3Zrx8Mg-1`) **no está en la papelera**: vive en
+     `00. COMÚN… / Armonía / A partir de 3º de EEPP`. Lo que esté en la papelera será el
+     PDF anterior, sin hojas de ejercicios, que es al que apuntaba Classroom en septiembre.
+- **Visto de paso, sin tocar**: `A4-11-03`, `A4-11-04` y `A4-11-05` tienen **el mismo bajo**
+  con tres armonizaciones distintas. En la aplicación se distinguen; en el papel salen tres
+  ejercicios seguidos con el mismo pentagrama y parece un error. Pendiente de decidir.
 
 - **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-1605.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la

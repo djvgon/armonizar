@@ -3880,6 +3880,38 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+222. **El orden de la hoja de ejercicios: de lo corto a lo largo** (30/9/2026, Diego:
+    «preferiría primero fragmentos cortos y, si es posible, combinar en el mismo renglón
+    varios fragmentos cortos o semicortos, de manera que se aproveche el papel. Luego los
+    fragmentos más largos y difíciles»). **Sustituye el criterio anterior**, que ordenaba por
+    la técnica del tema y dejaba el resto a la maqueta.
+    - **El criterio era doble y se contradecía.** `hoja_tema.py` ordenaba cada bloque por la
+      clave `(técnica más avanzada del tema que usa, cuántas usa, número de acordes)`, y
+      después `pdfhoja.js`, al componer, **barajaba** los ejercicios de igual primera cifra
+      —ancho, estrecho, ancho, estrecho— para llenar los renglones, y los renumeraba. En el
+      tema 14 las tres técnicas dan la misma cifra a los tres ejercicios del bloque A, de
+      modo que el orden didáctico desaparecía entero y salía primero el más largo de todos:
+      el de Williams, de diez compases.
+    - **Ahora manda la longitud**: compases, y a igualdad el número de acordes. El orden por
+      técnica se queda de desempate. La maqueta ya no baraja: respeta el orden y va llenando
+      renglones, que es lo que los cortos hacen solos por venir seguidos.
+    - **Y sale más barato en papel**: el tema 14 pasa de **3 páginas a 2**, y las otras ocho
+      hojas se quedan igual. El libro `0b.`, de 318 páginas a **317**.
+
+221. **Tres saltos fijos y las dos subsecciones de trabajo, delante** (30/9/2026, Diego:
+    «pon tres botones al comienzo de la página del configurador que se mantengan visibles y
+    que permitan saltar a cada una de las tres secciones»; «la lista de fragmentos va
+    aumentando y cada vez me lleva más tiempo llegar a esas subsecciones si he de hacer
+    scroll hasta pasar todos los fragmentos almacenados»).
+    - **La barra de saltos** va debajo de la instrucción y se queda pegada arriba al bajar:
+      A · Preparar una ficha, B · El banco de fragmentos, C · Recogida de resultados. Son
+      anclas de toda la vida —funcionan sin JavaScript—; lo único que pone el programa es
+      marcar la sección que se está mirando, que es la última cuyo título ya ha pasado por
+      debajo de la barra (y la última de todas al llegar al final del documento).
+    - **Dentro del banco**, «Añadir fragmentos de un archivo» y «El fragmento en curso»
+      pasan **delante** de la tabla, es decir, delante de «Ir a un fragmento por su id».
+      Son lo que se usa a diario; la tabla es para consultar y crece cada semana.
+
 220. **El VI7, objetivo de la cadencia rota** (30/9/2026, Diego: «incorpora también el
     acorde nuevo que emplea este fragmento —aunque este ya no está en la Regla de la octava
     de Furno—: VI, en este caso VI7, como objetivo de la cadencia rota: ese acorde tan

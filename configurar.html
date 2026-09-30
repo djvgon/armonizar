@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261003-1200">
-  <link rel="stylesheet" href="css/estilo.css?v=20261003-1200">
+  <link rel="stylesheet" href="css/bravura.css?v=20261003-1400">
+  <link rel="stylesheet" href="css/estilo.css?v=20261003-1400">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -31,6 +31,16 @@
 
   <div class="envoltorio">
     <p class="instruccion">Arriba, lo de cada semana: preparar una ficha y copiar su enlace. Abajo, el banco: añadir fragmentos de un archivo de MuseScore y revisar los que ya están.</p>
+
+    <!-- SALTO A CADA SECCIÓN (Diego, 30/9/2026: «tres botones al comienzo de la página
+         que se mantengan visibles y que permitan saltar a cada una de las tres
+         secciones»). Se quedan pegados arriba al bajar, y el que está en pantalla se
+         marca solo. Son enlaces de toda la vida: funcionan aunque no haya JavaScript. -->
+    <nav class="saltos" aria-label="Secciones del configurador">
+      <a href="#paso-ficha"><span class="num">A</span> Preparar una ficha</a>
+      <a href="#paso-banco"><span class="num">B</span> El banco de fragmentos</a>
+      <a href="#paso-envio"><span class="num">C</span> Recogida de resultados</a>
+    </nav>
 
 
   <main>
@@ -300,48 +310,11 @@
         </p>
       </div>
 
-      <div id="banco-tabla" hidden>
-        <p class="buscar-id">
-          <label for="banco-buscar">Ir a un fragmento por su id</label>
-          <input type="search" id="banco-buscar" placeholder="A3-7-09" autocomplete="off" spellcheck="false">
-          <button type="button" id="btn-banco-buscar">Abrir</button>
-          <span class="ayuda" id="banco-buscar-ayuda">Lo abre en «El fragmento en curso», esté o no dentro del filtro. También funciona desde fuera: <code>configurar.html#id=A3-7-09</code>.</span>
-        </p>
-        <!-- El sello (decisión 166). La cola de repaso: esta fila NO toca el filtro de la
-             ficha, solo lo que se ve en la tabla y por dónde pasan las flechas. -->
-        <p class="cola-revision">
-          <label for="banco-revision">Repaso</label>
-          <select id="banco-revision">
-            <option value="">Ver todos</option>
-            <option value="no">Solo los que están sin cerrar</option>
-            <option value="si">Solo los cerrados</option>
-          </select>
-          <!-- El mismo corte que en la ficha, pero SOLO para lo que se ve en la tabla
-               (decisión 210). -->
-          <label for="banco-musica">Procedencia</label>
-          <select id="banco-musica">
-            <option value="">Ver todos</option>
-            <option value="real">Solo música real</option>
-            <option value="practica">Solo fragmentos de práctica</option>
-          </select>
-          <span class="ayuda" id="banco-cerrados"></span>
-          <!-- DEVOLVER LOS FILTROS DEL BANCO A SU SITIO (Diego, 30/9/2026: «es el
-               companion del de selector de fragmentos para la ficha»). Toca SOLO esta
-               fila —repaso, procedencia y la búsqueda por id—; el filtro de la ficha, que
-               también recorta la tabla, tiene el suyo arriba. -->
-          <button type="button" id="btn-banco-defecto" class="boton-pequeno"
-            title="Devuelve el repaso, la procedencia y la búsqueda por id a su estado inicial">Valores por defecto</button>
-        </p>
-        <p class="ayuda"><b>El candado</b> dice si el fragmento está <b>cerrado</b>, es decir, firmado por ti: un fragmento cerrado no lo reescribe ninguna parte del programa, y su huella se comprueba cada vez que se carga el banco. Para repasar de corrido, pon «Repaso» en «Solo los que están sin cerrar»: la tabla y las flechas de recorrido se convierten en una cola que se vacía a medida que firmas. Esto no cambia qué fragmentos entran en la ficha.</p>
-        <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados interválicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
-        <div class="tabla-caja">
-          <table id="tabla-banco" class="tabla-revision tabla-banco">
-            <thead><tr><th title="Cerrado: firmado por ti; nada del programa lo reescribe. La doble corchea marca los fragmentos tomados de música real">🔒 ♫</th><th>Id</th><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifrados del modelo</th><th>Nivel</th><th></th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-
+      <!-- LOS DOS BLOQUES DE TRABAJO, DELANTE DE LA TABLA (Diego, 30/9/2026: «la
+           lista de fragmentos va aumentando y cada vez me lleva más tiempo llegar a esas
+           subsecciones si he de hacer scroll hasta pasar todos los fragmentos almacenados»).
+           Añadir un archivo y revisar el fragmento en curso son lo que se hace a diario; la
+           tabla del banco es para consultar, y además crece sin parar. -->
       <!-- B1 · Añadir fragmentos -->
       <details class="plegable" id="det-anadir">
         <summary>Añadir fragmentos de un archivo</summary>
@@ -566,13 +539,56 @@
           </div>
         </div>
       </details>
+
+      <div id="banco-tabla" hidden>
+        <p class="buscar-id">
+          <label for="banco-buscar">Ir a un fragmento por su id</label>
+          <input type="search" id="banco-buscar" placeholder="A3-7-09" autocomplete="off" spellcheck="false">
+          <button type="button" id="btn-banco-buscar">Abrir</button>
+          <span class="ayuda" id="banco-buscar-ayuda">Lo abre en «El fragmento en curso», esté o no dentro del filtro. También funciona desde fuera: <code>configurar.html#id=A3-7-09</code>.</span>
+        </p>
+        <!-- El sello (decisión 166). La cola de repaso: esta fila NO toca el filtro de la
+             ficha, solo lo que se ve en la tabla y por dónde pasan las flechas. -->
+        <p class="cola-revision">
+          <label for="banco-revision">Repaso</label>
+          <select id="banco-revision">
+            <option value="">Ver todos</option>
+            <option value="no">Solo los que están sin cerrar</option>
+            <option value="si">Solo los cerrados</option>
+          </select>
+          <!-- El mismo corte que en la ficha, pero SOLO para lo que se ve en la tabla
+               (decisión 210). -->
+          <label for="banco-musica">Procedencia</label>
+          <select id="banco-musica">
+            <option value="">Ver todos</option>
+            <option value="real">Solo música real</option>
+            <option value="practica">Solo fragmentos de práctica</option>
+          </select>
+          <span class="ayuda" id="banco-cerrados"></span>
+          <!-- DEVOLVER LOS FILTROS DEL BANCO A SU SITIO (Diego, 30/9/2026: «es el
+               companion del de selector de fragmentos para la ficha»). Toca SOLO esta
+               fila —repaso, procedencia y la búsqueda por id—; el filtro de la ficha, que
+               también recorta la tabla, tiene el suyo arriba. -->
+          <button type="button" id="btn-banco-defecto" class="boton-pequeno"
+            title="Devuelve el repaso, la procedencia y la búsqueda por id a su estado inicial">Valores por defecto</button>
+        </p>
+        <p class="ayuda"><b>El candado</b> dice si el fragmento está <b>cerrado</b>, es decir, firmado por ti: un fragmento cerrado no lo reescribe ninguna parte del programa, y su huella se comprueba cada vez que se carga el banco. Para repasar de corrido, pon «Repaso» en «Solo los que están sin cerrar»: la tabla y las flechas de recorrido se convierten en una cola que se vacía a medida que firmas. Esto no cambia qué fragmentos entran en la ficha.</p>
+        <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados interválicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
+        <div class="tabla-caja">
+          <table id="tabla-banco" class="tabla-revision tabla-banco">
+            <thead><tr><th title="Cerrado: firmado por ti; nada del programa lo reescribe. La doble corchea marca los fragmentos tomados de música real">🔒 ♫</th><th>Id</th><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifrados del modelo</th><th>Nivel</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
     </section>
 
     <!-- Recogida de resultados (etapa 8b). La aplicación no envía nada por su cuenta:
          abre un formulario de Google ya relleno y el alumno pulsa Enviar. Aquí se pega
          la dirección plantilla que imprime CrearFormularioPractica.gs y se descarga el
          envio.json que hay que subir a GitHub junto a banco.json. -->
-    <section class="paso">
+    <section class="paso" id="paso-envio">
       <h2><span class="num">C</span> Recogida de resultados</h2>
       <p class="ayuda">Al terminar una práctica, el alumno ve su informe y puede enviártelo. El envío abre un <b>formulario de Google ya relleno</b>: él solo comprueba su nombre y pulsa Enviar, y Google añade su correo del centro, verificado. Cada envío es una fila de la hoja de respuestas.</p>
       <p class="ayuda">La dirección plantilla la produce el script <code>CrearFormularioPractica.gs</code>, que crea el formulario y su hoja. Se ejecuta en <a href="https://script.google.com" target="_blank" rel="noopener">script.google.com</a> y se puede volver a ejecutar sin miedo: no duplica nada.</p>
@@ -626,16 +642,16 @@
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261003-1200"></script>
-  <script src="js/teoria.js?v=20261003-1200"></script>
-  <script src="js/reglas.js?v=20261003-1200"></script>
-  <script src="js/ejercicios.js?v=20261003-1200"></script>
-  <script src="js/partitura.js?v=20261003-1200"></script>
-  <script src="js/musicxml.js?v=20261003-1200"></script>
-  <script src="js/musescore.js?v=20261003-1200"></script>
-  <script src="js/banco.js?v=20261003-1200"></script>
-  <script src="js/realizacion.js?v=20261003-1200"></script>
-  <script src="js/tecnicas.js?v=20261003-1200"></script>
-  <script src="js/configurador.js?v=20261003-1200"></script>
+  <script src="js/qr.js?v=20261003-1400"></script>
+  <script src="js/teoria.js?v=20261003-1400"></script>
+  <script src="js/reglas.js?v=20261003-1400"></script>
+  <script src="js/ejercicios.js?v=20261003-1400"></script>
+  <script src="js/partitura.js?v=20261003-1400"></script>
+  <script src="js/musicxml.js?v=20261003-1400"></script>
+  <script src="js/musescore.js?v=20261003-1400"></script>
+  <script src="js/banco.js?v=20261003-1400"></script>
+  <script src="js/realizacion.js?v=20261003-1400"></script>
+  <script src="js/tecnicas.js?v=20261003-1400"></script>
+  <script src="js/configurador.js?v=20261003-1400"></script>
 </body>
 </html>

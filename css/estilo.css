@@ -1092,6 +1092,47 @@ h1, h2, h3, .instruccion, .esquema,
 
 /* El contenido, centrado dentro de las franjas */
 .envoltorio { max-width: 1100px; margin: 0 auto; padding: 0 16px 40px; }
+
+/* ---------------------------------------------------------------------------------------
+   LOS TRES SALTOS DEL CONFIGURADOR  (Diego, 30/9/2026: «tres botones al comienzo de la
+   página, que se mantengan visibles y que permitan saltar a cada una de las tres
+   secciones»). La página es larga —el banco crece cada semana— y bajar a la recogida de
+   resultados era un viaje. La barra se queda pegada arriba al bajar, y el enlace de la
+   sección que estás mirando se marca, para saber dónde estás sin mirar el contenido.
+   --------------------------------------------------------------------------------------- */
+.saltos {
+  position: sticky; top: 0; z-index: 40;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin: 0 -16px 16px; padding: 8px 16px;
+  background: var(--fondo);
+  border-bottom: 1px solid var(--linea);
+  font-family: var(--fuente-ui);
+}
+.saltos a {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px 6px 7px;
+  border: 1px solid var(--linea); border-radius: 999px;
+  background: var(--papel); color: var(--tinta);
+  font-size: .86rem; text-decoration: none; white-space: nowrap;
+  box-shadow: 0 1px 1px rgba(20,10,30,.04);
+}
+.saltos a:hover { border-color: var(--acento); }
+.saltos a .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--acento); color: #fff; font-size: .8rem;
+}
+/* La sección que se está mirando */
+.saltos a.aqui { border-color: var(--marca); background: var(--acento-suave); font-weight: 600; }
+.saltos a.aqui .num { background: var(--marca); }
+/* Que el título de la sección no se meta debajo de la barra al saltar */
+.configurador .paso { scroll-margin-top: 58px; }
+
+@media (max-width: 719px) {
+  .saltos { margin: 0 -8px 12px; padding: 6px 8px; gap: 6px; }
+  .saltos a { font-size: .78rem; padding: 5px 9px 5px 5px; }
+  .saltos a .num { width: 19px; height: 19px; font-size: .72rem; }
+}
 body { padding: 0; max-width: none; }
 
 /* El botón principal es lo único más del morado: es la llamada a la acción */
