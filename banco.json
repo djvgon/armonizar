@@ -23193,8 +23193,8 @@
    "obra": "",
    "enlace": "",
    "tonalidad": {
-    "tonica": "F",
-    "modo": "mayor"
+    "tonica": "D",
+    "modo": "menor"
    },
    "tonalidadSegura": true,
    "armaduraEscrita": null,
@@ -23235,24 +23235,20 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "53",
-      "6"
-     ],
-     [
       "53"
      ],
      [
-      "53",
-      "+6",
       "6"
      ],
      [
-      "+6",
-      "53",
-      "6"
-     ],
-     [
+      "6",
       "53"
+     ],
+     [
+      "+4"
+     ],
+     [
+      "6"
      ]
     ]
    },
@@ -23263,17 +23259,20 @@
     "voces": "bajo",
     "notas": 5,
     "compases": 3,
-    "modo": "mayor",
+    "modo": "menor",
     "alteraciones": 1,
     "modula": false,
     "cuatro": false,
     "cifras": [
      "53",
-     "+6"
+     "6",
+     "+4"
     ],
     "grados": [],
-    "nivel": 1
-   }
+    "nivel": 2
+   },
+   "cerrado": "2026-09-30",
+   "huella": "ac645c4635582965"
   },
   {
    "id": "A3-4-15",
@@ -23545,7 +23544,9 @@
     ],
     "grados": [],
     "nivel": 2
-   }
+   },
+   "cerrado": "2026-09-30",
+   "huella": "8b9942de904c6e1b"
   }
  ]
 }
