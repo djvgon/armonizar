@@ -1086,6 +1086,7 @@
     $('#direccion').value = url;
     $('#btn-copiar').disabled = false;
     $('#btn-json').disabled = false;
+    if ($('#btn-qr')) $('#btn-qr').disabled = false;
     const a = $('#btn-abrir'); a.href = url; a.setAttribute('aria-disabled', 'false');
     aviso('Dirección generada (' + url.length + ' caracteres).');
   }
@@ -1093,9 +1094,68 @@
   function limpiarDireccion() {
     $('#direccion').value = '';
     $('#btn-copiar').disabled = true; $('#btn-json').disabled = true;
+    if ($('#btn-qr')) $('#btn-qr').disabled = true;
     const a = $('#btn-abrir'); a.href = '#'; a.setAttribute('aria-disabled', 'true');
     $('#direcciones-todos').hidden = true; $('#btn-copiar-todos').disabled = true;
     estado.ejercicio = null;
+  }
+
+  /* ---------- EL CÓDIGO QR PARA PROYECTAR (decisión 217) ----------
+     Diego, 30/9/2026: «¿es posible obtener un enlace QR que pueda proyectar para que mis
+     alumnos practiquen con un ejercicio que acabo de configurar?». El código se calcula
+     aquí mismo, en `js/qr.js`, sin pedirle el dibujo a ningún servicio de fuera: la
+     dirección de las fichas de sus alumnos no sale de su ordenador. */
+
+  /* El nivel de corrección: cuanto más alto, más manchas aguanta, pero más tupido queda el
+     dibujo. Proyectado, lo que más estorba es que los cuadraditos salgan diminutos, así que
+     se usa el nivel medio mientras la dirección sea corta —una ficha— y se baja al mínimo
+     cuando es larga —un ejercicio suelto, que lleva dentro todo el fragmento—. */
+  const nivelQR = url => (url.length > 800 ? 'L' : 'M');
+
+  function mostrarQR(url, titulo) {
+    const dlg = $('#dlg-qr');
+    /* `QR` es una constante del guion, no una propiedad de `window`: se pregunta por el
+       nombre, como con `Teoria` o `Banco`. */
+    if (!dlg || typeof QR === 'undefined') {
+      aviso('No se ha podido cargar el generador de códigos QR.'); return;
+    }
+    if (!url) { aviso('Genera antes la dirección.'); return; }
+    let codigo;
+    try { codigo = QR.hacer(url, { nivel: nivelQR(url) }); }
+    catch (e) { aviso('La dirección es demasiado larga para caber en un código QR. ' + e.message, 10000); return; }
+    $('#qr-titulo').textContent = titulo || 'Código QR';
+    $('#qr-lienzo').innerHTML = QR.svg(codigo);
+    $('#qr-url').textContent = url;
+    $('#qr-pie').textContent = 'Apunta con la cámara del móvil. Versión ' + codigo.version
+      + ' · ' + codigo.n + '×' + codigo.n + ' módulos · corrección ' + codigo.nivel + '.';
+    /* Dos avisos que de verdad importan, y solo cuando tocan:
+       · Un código hecho desde el disco lleva una dirección `file://` que en el móvil del
+         alumno no existe. Es el error que más tiempo puede costar.
+       · Un código muy tupido se lee mal proyectado; la ficha, que es corta, siempre sale
+         holgada, así que se dice adónde ir. */
+    const av = $('#qr-aviso');
+    let texto = '';
+    if (!/^https?:\/\//i.test(url)) {
+      texto = 'Esta dirección no empieza por «http»: la has generado desde el disco y en el móvil '
+        + 'de un alumno no llevaría a ninguna parte. Genérala desde el configurador publicado.';
+    } else if (codigo.version >= 25) {
+      texto = 'El código sale muy tupido porque la dirección es larga. Proyéctalo a pantalla '
+        + 'completa; si aun así cuesta leerlo, usa el enlace de una FICHA, que es mucho más corto.';
+    }
+    av.textContent = texto; av.hidden = !texto;
+    estado.qr = { codigo, url };
+    if (typeof dlg.showModal === 'function' && !dlg.open) dlg.showModal();
+    else dlg.setAttribute('open', '');
+  }
+
+  function descargarQR() {
+    if (!estado.qr) return;
+    const c = QR.canvas(estado.qr.codigo, { escala: 12 });
+    const a = document.createElement('a');
+    a.href = c.toDataURL('image/png');
+    a.download = 'qr-' + ($('#qr-titulo').textContent || 'enlace')
+      .replace(/[^\wáéíóúñÁÉÍÓÚÑ -]+/g, '').trim().replace(/\s+/g, '_').slice(0, 60) + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
   }
 
   function copiar(texto, mensaje) {
@@ -2686,6 +2746,7 @@
     const url = baseAlumno(filtro.modo) + '#f=' + Banco.codificar(filtro);
     $('#ficha-direccion').value = url;
     $('#btn-ficha-copiar').disabled = false;
+    if ($('#btn-ficha-qr')) $('#btn-ficha-qr').disabled = false;
     const abrir = $('#btn-ficha-abrir');
     abrir.href = url; abrir.setAttribute('aria-disabled', 'false');
     /* En qué tonos va a salir (decisión 102). Es determinista, así que se puede enseñar
@@ -2923,6 +2984,18 @@
     });
     $('#btn-ficha').addEventListener('click', generarFicha);
     $('#btn-ficha-copiar').addEventListener('click', () => copiar($('#ficha-direccion').value, 'Dirección de la ficha copiada.'));
+    /* El código QR, en los dos sitios donde hay una dirección que repartir (217) */
+    if ($('#btn-ficha-qr')) $('#btn-ficha-qr').addEventListener('click',
+      () => mostrarQR($('#ficha-direccion').value, $('#ficha-titulo').value.trim() || 'Ficha de práctica'));
+    if ($('#btn-qr')) $('#btn-qr').addEventListener('click',
+      () => mostrarQR($('#direccion').value, $('#titulo').value.trim() || 'Ejercicio'));
+    if ($('#qr-cerrar')) $('#qr-cerrar').addEventListener('click', () => {
+      const d = $('#dlg-qr');
+      if (typeof d.close === 'function') d.close(); else d.removeAttribute('open');
+    });
+    if ($('#qr-png')) $('#qr-png').addEventListener('click', descargarQR);
+    if ($('#qr-copiar')) $('#qr-copiar').addEventListener('click',
+      () => copiar($('#qr-url').textContent, 'Enlace copiado.'));
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula',
      '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max',
@@ -2975,6 +3048,7 @@
   function limpiarFicha() {
     $('#ficha-direccion').value = '';
     $('#btn-ficha-copiar').disabled = true;
+    if ($('#btn-ficha-qr')) $('#btn-ficha-qr').disabled = true;
     $('#btn-ficha-abrir').setAttribute('aria-disabled', 'true');
     /* Al cambiar cualquier opción, la semilla del transporte se renueva: es otra ficha,
        que reparta los tonos de otra manera. Pulsar «Generar» dos veces seguidas sin tocar

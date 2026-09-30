@@ -696,6 +696,41 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .voz-revision .segmentos button.activo { background: var(--acento); color: #fff; }
 .voz-revision .segmentos button:disabled { opacity: .4; cursor: default; }
 
+/* EL CÓDIGO QR PARA PROYECTAR (decisión 217). Ocupa casi toda la pantalla porque eso es lo
+   que se proyecta: el código manda y lo demás son notas al pie. El dibujo va sobre blanco
+   —sin blanco alrededor, muchos lectores no lo ven— y crece hasta lo que dé la pantalla,
+   cuidando de que quepan también el pie y los botones. */
+.dlg-qr {
+  border: 0; border-radius: 12px; padding: 1.2rem 1.4rem 1.4rem;
+  width: min(96vw, 1040px); max-width: 96vw; max-height: 96vh;
+  background: var(--papel); color: var(--tinta);
+  box-shadow: 0 24px 80px rgba(27, 23, 32, .35);
+}
+.dlg-qr::backdrop { background: rgba(27, 23, 32, .82); }
+.qr-cabecera { display: flex; align-items: center; gap: 1rem; margin-bottom: .8rem; }
+.qr-cabecera h2 { margin: 0; font-size: 1.25rem; flex: 1 1 auto; }
+.qr-lienzo { display: flex; justify-content: center; }
+/* El código, lo más grande que quepa: manda la altura de la pantalla, porque es cuadrado y
+   debajo aún tienen que caber el pie, la dirección y los botones. */
+.qr-lienzo svg { width: min(70vh, 100%); height: auto; display: block; }
+.qr-pie { margin: .7rem 0 .2rem; text-align: center; font-size: .92rem; color: var(--tinta-suave); }
+.qr-enlace { margin: .1rem 0 .5rem; text-align: center; }
+.qr-enlace code {
+  font-size: .78rem; color: var(--tinta-suave); word-break: break-all;
+  display: inline-block; max-width: 100%;
+}
+.qr-aviso {
+  margin: .4rem 0; padding: .5rem .7rem; font-size: .92rem; line-height: 1.4;
+  border-left: 4px solid var(--marca-honda); border-radius: var(--radio-control);
+  background: rgba(148, 18, 220, .07);
+}
+.qr-botones { justify-content: center; }
+@media print {
+  /* Imprimir el código: solo él, a página entera */
+  .dlg-qr { position: static; width: auto; max-height: none; box-shadow: none; }
+  .qr-cabecera button, .qr-botones { display: none; }
+}
+
 /* El fragmento trae la armonización del compositor (decisión 216). En verde oliva, el
    mismo color con el que la partitura marca las licencias de las voces escritas, para que
    se lea como lo que es: música de otro, que la aplicación respeta. */

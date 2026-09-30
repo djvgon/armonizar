@@ -3880,6 +3880,48 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+217. **El código QR de la ficha, para proyectarlo en clase** (30/9/2026, Diego: «¿es
+    posible obtener un enlace QR que pueda proyectar para que mis alumnos practiquen con un
+    ejercicio que acabo de configurar y crear a través del configurador?»). Sí: un código QR
+    es un dibujo que se calcula, no un servicio que se consulta.
+    - **Dónde.** Un botón «Código QR» al lado de «Abrir como alumno», en los dos sitios donde
+      hay una dirección que repartir: la ficha (paso A) y el enlace de un fragmento suelto.
+      Se enciende cuando la dirección está generada y se apaga al cambiar cualquier opción,
+      igual que «Copiar».
+    - **Qué enseña.** Una ventana encima de todo con el código lo más grande que quepa en la
+      pantalla, el título de la ficha arriba —para que en la proyección se vea de qué es—, la
+      dirección debajo en letra pequeña, y dos botones: descargarlo como PNG e ir copiando
+      el enlace. Se cierra con «Cerrar» o con Esc.
+    - **El generador es nuestro** (`js/qr.js`, unas 250 líneas). Ni librería por CDN ni
+      servicio de imágenes: la aplicación son archivos sueltos servidos tal cual, sin
+      compilación ni dependencias, y funciona sin conexión una vez cargada. Un generador
+      ajeno metería a un tercero en medio, dejaría de funcionar el día que ese tercero
+      cambie, y mandaría fuera las direcciones de las fichas de sus alumnos. Modo byte
+      (UTF-8), versiones 1 a 40 y los cuatro niveles de corrección, según la norma
+      ISO/IEC 18004.
+    - **Nivel de corrección según la longitud**: medio (M) mientras la dirección sea corta
+      —una ficha ronda los 200–350 caracteres y sale en versión 10–14, holgadísima— y mínimo
+      (L) por encima de 800, que es el caso del ejercicio suelto, cuya dirección lleva dentro
+      el fragmento entero y puede pasar de 1900 caracteres. Cuando el código sale muy tupido
+      (versión 25 o más) la propia ventana lo dice y recomienda usar el enlace de una ficha.
+    - **Y avisa de la trampa que más tiempo cuesta**: si la dirección no empieza por «http»
+      —porque se ha generado abriendo el configurador desde el disco—, el código llevaría a
+      un `file://` que en el móvil de un alumno no existe. Se dice con todas las letras.
+    - **Por qué aquí no se pasa por `f.html`** (decisión 128), que es lo que hacen los QR
+      impresos: un código proyectado dura lo que dura la clase, así que no hay que
+      protegerlo de los cambios futuros. El papel sí, y por eso sigue con sus códigos cortos.
+    - **Comprobado con un lector independiente** (`zxing-cpp`, que no comparte una línea con
+      este código): 488 códigos generados —longitudes de 47 a 2151 bytes, los cuatro niveles,
+      versiones 3 a 34, con acentos y símbolos— y los 488 se leen y devuelven exactamente el
+      texto de partida; y 60 de ellos, además, desenfocados a propósito para imitar una
+      proyección. Se comprueba también lo que sale en pantalla: se fotografía la ventana del
+      configurador y se decodifica la foto, y el PNG que descarga el botón, y los dos dan la
+      dirección correcta.
+    - Dos fallos que costaron el rato y quedan escritos para quien lea el código: la fila y
+      la columna de sincronismo hay que pintarlas ANTES que los ojos, o se los comen; y las
+      quince casillas del formato van en `m[fila][columna]`, que es fácil escribir al revés
+      y deja un código que no lee nadie.
+
 216. **Si hay un acorde a cuatro voces, la armonización es del compositor y no se toca**
     (30/9/2026, Diego: «no lo reconoce como armonización a cuatro voces dada por mí, sino que
     señala dos voces… y lo que aparece en el editor no es la versión que yo tengo en el

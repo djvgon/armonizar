@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261003-0600">
-  <link rel="stylesheet" href="css/estilo.css?v=20261003-0600">
+  <link rel="stylesheet" href="css/bravura.css?v=20261003-0800">
+  <link rel="stylesheet" href="css/estilo.css?v=20261003-0800">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -263,6 +263,9 @@
           <button id="btn-ficha" type="button" class="primario">Generar la dirección de la ficha</button>
           <button id="btn-ficha-copiar" type="button" disabled>Copiar</button>
           <a id="btn-ficha-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
+          <!-- El código QR de esta misma dirección, para proyectarlo en clase (217) -->
+          <button id="btn-ficha-qr" type="button" disabled
+            title="Enseña el código QR de esta ficha a tamaño de proyección">Código QR</button>
         </div>
         <textarea id="ficha-direccion" rows="2" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección de la ficha"></textarea>
         <!-- En qué tonos saldrá cada fragmento con ESTE enlace (decisión 102) -->
@@ -546,6 +549,8 @@
             <button id="btn-generar" type="button">Generar dirección</button>
             <button id="btn-copiar" type="button" disabled>Copiar</button>
             <a id="btn-abrir" class="enlace-boton" href="#" target="_blank" rel="noopener" aria-disabled="true">Abrir como alumno</a>
+            <button id="btn-qr" type="button" disabled
+              title="Enseña el código QR de este ejercicio a tamaño de proyección">Código QR</button>
             <button id="btn-json" type="button" class="secundario" disabled>Descargar .json</button>
           </div>
           <textarea id="direccion" rows="3" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección del ejercicio"></textarea>
@@ -597,20 +602,40 @@
        de la partitura ni lo tape ningún paso. -->
   <div id="globo-acorde" class="globo-acorde" hidden aria-hidden="true"></div>
 
+  <!-- EL CÓDIGO QR PARA PROYECTAR (decisión 217, Diego 30/9/2026: «¿es posible obtener un
+       enlace QR que pueda proyectar para que mis alumnos practiquen con un ejercicio que
+       acabo de configurar?»). Se abre encima de todo y a pantalla casi completa: lo que se
+       proyecta es esto, así que el código manda y lo demás estorba. -->
+  <dialog id="dlg-qr" class="dlg-qr" aria-labelledby="qr-titulo">
+    <div class="qr-cabecera">
+      <h2 id="qr-titulo">Código QR</h2>
+      <button type="button" id="qr-cerrar" class="boton-pequeno" autofocus>Cerrar</button>
+    </div>
+    <div class="qr-lienzo" id="qr-lienzo"></div>
+    <p class="qr-pie" id="qr-pie"></p>
+    <p class="qr-enlace"><code id="qr-url"></code></p>
+    <p class="qr-aviso" id="qr-aviso" hidden></p>
+    <div class="botonera qr-botones">
+      <button type="button" id="qr-png" class="secundario">Descargar como PNG</button>
+      <button type="button" id="qr-copiar" class="secundario">Copiar el enlace</button>
+    </div>
+  </dialog>
+
   <footer class="pie">
-    <p><span id="version">Versión 20261003-0600</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261003-0800</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261003-0600"></script>
-  <script src="js/reglas.js?v=20261003-0600"></script>
-  <script src="js/ejercicios.js?v=20261003-0600"></script>
-  <script src="js/partitura.js?v=20261003-0600"></script>
-  <script src="js/musicxml.js?v=20261003-0600"></script>
-  <script src="js/musescore.js?v=20261003-0600"></script>
-  <script src="js/banco.js?v=20261003-0600"></script>
-  <script src="js/realizacion.js?v=20261003-0600"></script>
-  <script src="js/tecnicas.js?v=20261003-0600"></script>
-  <script src="js/configurador.js?v=20261003-0600"></script>
+  <script src="js/qr.js?v=20261003-0800"></script>
+  <script src="js/teoria.js?v=20261003-0800"></script>
+  <script src="js/reglas.js?v=20261003-0800"></script>
+  <script src="js/ejercicios.js?v=20261003-0800"></script>
+  <script src="js/partitura.js?v=20261003-0800"></script>
+  <script src="js/musicxml.js?v=20261003-0800"></script>
+  <script src="js/musescore.js?v=20261003-0800"></script>
+  <script src="js/banco.js?v=20261003-0800"></script>
+  <script src="js/realizacion.js?v=20261003-0800"></script>
+  <script src="js/tecnicas.js?v=20261003-0800"></script>
+  <script src="js/configurador.js?v=20261003-0800"></script>
 </body>
 </html>
