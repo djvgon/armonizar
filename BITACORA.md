@@ -9,7 +9,19 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 29 de septiembre de 2026
+## Estado a 30 de septiembre de 2026
+
+- **El libro de Armonía está al día** (30/9). Se han rehecho los diez cuadros de
+  estructuras (temas 5 a 14) con lo que devuelve el motor hoy, y las nueve hojas de
+  ejercicios con el banco de 143 fragmentos. El cuadro de estructuras va ahora **delante**
+  de la hoja de cada tema dentro del libro, que es como Diego lo tenía pensado y como no
+  estaba: el `0b.` pasa de 309 a 318 páginas. Los fragmentos de música real llevan encima,
+  a la derecha, su autor y su obra, sin el enlace web. Todo ello en Drive, en
+  `3 PROYECTO (documentación y fuentes)/Teoría para Fundamentos de composición/`.
+- **Pendiente de *commit* y *push* desde GitHub Desktop**, además de lo de abajo:
+  `banco.json` (143 fragmentos, con la sonata de Beethoven y el tema de John Williams) y
+  `prototipos.json` (vuelto a publicar hoy). `f.html` del clon lleva el enlace de Spotify
+  de «La Graciosa», que se había perdido en la copia de trabajo y ya está recuperado.
 
 - **Versión en la carpeta de Drive y en el clon de GitHub: 20261001-1605.** Pendiente de que
   Diego haga el *commit* y el *push* desde GitHub Desktop. Lleva la decisión 176 —en la
@@ -575,6 +587,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261003-0230 (b) | Solo datos: `prototipos.json` vuelto a publicar con lo que el motor devuelve hoy, para que la página «Estructuras» diga lo mismo que el cuadro del libro. Siete prototipos habían quedado atrás —los dos del II6/5 del tema 11, la cadencia rota en menor del 12, los tres del 13 y el del 14, que ya llevan la prolongación del II6/5 con el I6 de bordadura—. No toca ni HTML ni JS, y `estructuras.js` lo pide con `cache: no-cache`, así que no hace falta sello nuevo |
 | 20261003-0230 | Cargar un fragmento del archivo suelta la entrada del banco: ya no se queda la chapa, la lección ni la obra del anterior (212) |
 | 20261003-0145 | Filtro de procedencia —música real o fragmentos de práctica— en la ficha y en el banco, y botón de valores por defecto (210 y 211) |
 | 20261003-0055 | El crédito, dentro del recuadro de la partitura, y el enlace en el morado de la casa (208 y 209) |
