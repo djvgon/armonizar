@@ -60,6 +60,8 @@
   const estado = {
     publicado: null,         // firma del banco.json publicado, para saber qué está sin subir (decisión 78)
     publicadoFallo: false,   // se ha intentado leerlo y no ha podido: el semáforo lo dice (decisión 85)
+    sellos: null,            // id → {firma, tocado}: la foto anterior, para fechar lo que cambia (decisión 227)
+    sinSellar: false,        // este guardado ADOPTA un banco de fuera: sus fechas mandan, no la de hoy
     compases: [],            // bajo actual (compases → notas [nombre, dur])
     respuestas: null,        // respuestas revisadas (lista de ids por nota) o null
     propuesta: null,         // salida del motor para la tabla
@@ -1663,7 +1665,55 @@
   function leerBanco() {
     try { banco = Banco.leerArchivo(localStorage.getItem(CLAVE_BANCO) || '[]'); } catch (e) { banco = []; }
   }
+  /* ---------- La fecha de cada fragmento (decisión 227) ----------
+     Diego, 1/10/2026: «el configurador me avisa cuando los fragmentos en el banco y en la
+     página son distintos, pero lo que de verdad necesito saber es cuáles son más recientes».
+     Para contestar a eso hace falta una fecha por fragmento, y no la había: `cerrado` dice
+     cuándo se FIRMÓ, que no es cuándo se tocó por última vez —un fragmento retocado después
+     de firmarlo conserva la fecha vieja—.
+
+     Así que cada fragmento lleva ahora `tocado`, un sello con la hora. No se pone a mano en
+     cada sitio que cambia algo —son trece y se olvidaría uno—, sino AQUÍ, en el único embudo
+     por el que pasa todo guardado: se compara la firma de cada fragmento con la de la vez
+     anterior y se sella el que haya cambiado.
+
+     Con una excepción que importa: cuando el guardado ADOPTA un banco de fuera —el publicado
+     o un banco.json cargado a mano—, no se sella nada. Esos fragmentos traen su propia fecha,
+     y ponerles la de hoy los haría pasar por recientes justo cuando lo que se quiere saber es
+     si lo son. Si vienen sin fecha —de un banco anterior a esto—, se quedan sin ella y el
+     semáforo lo dice; para esos todavía sirve `cerrado`, que llevan 142 de los 143. */
+  const CLAVE_SELLOS = 'armonizar.banco.sellos';
+  const ahoraISO = () => new Date().toISOString();
+
+  function leerSellos() {
+    try { estado.sellos = JSON.parse(localStorage.getItem(CLAVE_SELLOS) || 'null'); } catch (e) { estado.sellos = null; }
+  }
+
+  function sellarCambios() {
+    const base = estado.sellos || {};
+    const primeraVez = !estado.sellos;        // sin foto anterior no se sella: no se sabe qué ha cambiado
+    const nuevo = {};
+    const ahora = ahoraISO();
+    banco.forEach(e => {
+      if (!e || !e.id) return;
+      const f = firmaFragmento(e);
+      const b = base[e.id];
+      if (b && !e.tocado && b.tocado) e.tocado = b.tocado;        // lo había y se perdió al reconstruir la entrada
+      if (!primeraVez && !estado.sinSellar && (!b || b.firma !== f)) e.tocado = ahora;
+      nuevo[e.id] = { firma: f, tocado: e.tocado || '' };
+    });
+    estado.sellos = nuevo;
+    try { localStorage.setItem(CLAVE_SELLOS, JSON.stringify(nuevo)); } catch (e) { /* sin sitio: se pierde la foto, no el banco */ }
+  }
+
+  /** Guarda el banco adoptando fechas de fuera: lo de dentro no se sella con la de hoy. */
+  function guardarBancoAdoptado() {
+    estado.sinSellar = true;
+    try { guardarBanco(); } finally { estado.sinSellar = false; }
+  }
+
   function guardarBanco() {
+    sellarCambios();
     try { localStorage.setItem(CLAVE_BANCO, JSON.stringify(Banco.archivo(banco))); } catch (e) { aviso('El banco no cabe en este navegador; descárgalo como banco.json.'); }
   }
 
@@ -1740,6 +1790,9 @@
       const et = viejo.etiquetas || (viejo.etiquetas = {});
       et.voces = viejo.bajo && viejo.soprano ? 'ambas' : (viejo.bajo ? 'bajo' : 'soprano');
       if (!viejo.leccion && nuevo.leccion) viejo.leccion = nuevo.leccion;
+      /* La voz que entra trae su fecha: si es posterior, el fragmento pasa a ser de ese día
+         (decisión 227). La de aquí no vale ya, porque su contenido acaba de cambiar. */
+      if (nuevo.tocado && (!viejo.tocado || nuevo.tocado > viejo.tocado)) viejo.tocado = nuevo.tocado;
     }
     return cambio;
   }
@@ -2557,7 +2610,67 @@
       else if (aqui[id] !== pub.firmas[id]) modificados.push(id);
     });
     Object.keys(pub.firmas).forEach(id => { if (!(id in aqui)) faltan.push(id); });
-    return { nuevos, modificados, faltan, sinPublicar: nuevos.length + modificados.length + faltan.length };
+    const d = { nuevos, modificados, faltan, sinPublicar: nuevos.length + modificados.length + faltan.length };
+    d.quien = quienVaDelante(d);
+    return d;
+  }
+
+  /* ---------- ¿Cuál de los dos es más reciente? (decisión 227) ----------
+     La fecha de un fragmento es su sello `tocado` y, si no lo lleva todavía, el día en que se
+     cerró. Dos sellos con hora se comparan con la hora; en cuanto uno de los dos es solo un
+     día, se comparan los días, y el mismo día se declara empate en vez de inventarse un
+     orden: con el grano del día no hay manera de saber cuál se hizo antes. */
+  const fechaDe = e => (e && (e.tocado || e.cerrado)) || '';
+  function comparaFechas(a, b) {
+    if (!a || !b) return null;                                  // falta una: no se sabe
+    const conHora = a.length > 10 && b.length > 10;
+    const x = conHora ? a : a.slice(0, 10), y = conHora ? b : b.slice(0, 10);
+    return x === y ? 0 : (x < y ? -1 : 1);
+  }
+  const soloDia = f => String(f || '').slice(0, 10);
+
+  /* De los que no coinciden, cuáles son más recientes aquí y cuáles allí. Y de los que están
+     en un solo sitio, si se tocaron DESPUÉS de generarse el banco publicado: uno que esté
+     solo aquí y sea posterior es un fragmento nuevo sin subir; uno anterior lo más probable
+     es que esté aquí porque esta copia viene de otra rama, o porque allí se borró. */
+  function quienVaDelante(d) {
+    const pub = estado.publicado;
+    const r = { aqui: [], publicado: [], mismoDia: [], sinFecha: [],
+                nuevosDespues: [], nuevosAntes: [], creadoPub: (pub && pub.creado) || '' };
+    if (!pub) return r;
+    const mio = {};
+    banco.forEach(e => { if (e && e.id) mio[e.id] = e; });
+    d.modificados.forEach(id => {
+      const c = comparaFechas(fechaDe(mio[id]), fechaDe(pub.porId[id]));
+      if (c === null) r.sinFecha.push(id);
+      else if (c > 0) r.aqui.push(id);
+      else if (c < 0) r.publicado.push(id);
+      else r.mismoDia.push(id);
+    });
+    /* Los que solo están aquí se miden contra la FECHA DEL ARCHIVO publicado, que es lo
+       único con lo que se les puede comparar. */
+    d.nuevos.forEach(id => {
+      const f = soloDia(fechaDe(mio[id]));
+      if (!f || !r.creadoPub) return;
+      (f > r.creadoPub ? r.nuevosDespues : r.nuevosAntes).push(id);
+    });
+    r.verdicto = r.aqui.length && r.publicado.length ? 'mezcla'
+      : r.aqui.length ? 'aqui'
+        : r.publicado.length ? 'publicado' : 'sin';
+    return r;
+  }
+
+  /* La fecha, en castellano y corta: «1/10 a las 19:04» o «28/9». */
+  function fechaCorta(f) {
+    const s = String(f || '');
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if (!m) return '';
+    const dia = Number(m[3]) + '/' + Number(m[2]);
+    if (s.length <= 10) return dia;                 // un día pelado: no hay hora que dar
+    const d = new Date(s);                          // con hora, TODO en la hora de aquí
+    if (isNaN(d)) return dia;
+    return d.getDate() + '/' + (d.getMonth() + 1)
+      + ' a las ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   }
 
   const listaCorta = ids => ids.slice(0, 6).join(', ') + (ids.length > 6 ? ' y ' + (ids.length - 6) + ' más' : '');
@@ -2571,7 +2684,24 @@
   function direccionDesfase(d) {
     if (d.faltan.length && !d.nuevos.length) return 'atrasado';   // al publicado le sobran: este navegador va detrás
     if (d.nuevos.length && !d.faltan.length) return 'adelantado'; // aquí hay cosas que no están subidas
+    /* Y si el recuento no lo dice, lo dicen las FECHAS (decisión 227): cuando todos los que
+       no coinciden son más recientes del mismo lado, ya no hay incertidumbre que fingir. */
+    const q = d.quien || {};
+    if (q.verdicto === 'aqui') return 'adelantado';
+    if (q.verdicto === 'publicado') return 'atrasado';
     return 'incierto';
+  }
+
+  /* «2 más recientes aquí (A3-1-02, A4-11-09) · 1 más reciente publicado (A3-5-04)» */
+  function fraseRecientes(d) {
+    const q = d.quien || {};
+    const partes = [];
+    const con = (ids, uno, varios) => { if (ids.length) partes.push(ids.length + ' ' + (ids.length === 1 ? uno : varios) + ' (' + listaCorta(ids) + ')'); };
+    con(q.aqui, 'más reciente aquí', 'más recientes aquí');
+    con(q.publicado, 'más reciente publicado', 'más recientes publicados');
+    con(q.mismoDia, 'del mismo día, sin manera de saber cuál', 'del mismo día, sin manera de saber cuáles');
+    con(q.sinFecha, 'sin fecha con la que comparar', 'sin fecha con la que comparar');
+    return partes.join(' · ');
   }
 
   /* ---------- El semáforo del banco (decisión 85) ----------
@@ -2601,7 +2731,7 @@
       return;
     }
     const pub = 'publicado: ' + estado.publicado.n + (estado.publicado.n === 1 ? ' fragmento' : ' fragmentos')
-      + (estado.publicado.creado ? ' del ' + estado.publicado.creado : '');
+      + (estado.publicado.creado ? ' del ' + (fechaCorta(estado.publicado.creado) || estado.publicado.creado) : '');
     if (!d || !d.sinPublicar) {
       caja.dataset.estado = 'verde';
       txt.textContent = 'Al día: este navegador y lo que ven los alumnos son lo mismo (' + pub + ').';
@@ -2609,29 +2739,42 @@
     }
     const dir = direccionDesfase(d);
     const cuenta = n => n + (n === 1 ? ' fragmento' : ' fragmentos');
+    const uno = n => n === 1;
+    /* Lo primero que se dice ya no es QUÉ pasa, sino QUIÉN VA DELANTE: es la pregunta que se
+       hace uno delante del semáforo, y es la que decide cuál de los dos botones se pulsa
+       (decisión 227). */
+    const recientes = fraseRecientes(d);
+    const coletilla = recientes ? ' Fechas: ' + recientes + '.' : '';
     if (dir === 'atrasado') {
       caja.dataset.estado = 'rojo';
-      txt.textContent = 'Esta copia va por detrás: le faltan ' + cuenta(d.faltan.length)
-        + ' que sí están publicados. No la subas (' + pub + ').';
+      txt.textContent = 'Lo PUBLICADO va por delante: '
+        + (d.faltan.length ? 'aquí faltan ' + cuenta(d.faltan.length) + ' que sí están publicados. Tráelo' : 'tráelo')
+        + '; no subas lo de aquí (' + pub + ').' + coletilla;
       bIg.textContent = 'Traer el banco publicado en GitHub';
       bIg.hidden = false;
       bIg.onclick = () => cargarPublicado();
     } else if (dir === 'adelantado') {
       caja.dataset.estado = 'ambar';
-      txt.textContent = 'Tienes ' + cuenta(d.nuevos.length) + ' sin subir: los alumnos todavía ven el banco anterior ('
-        + pub + ').';
+      txt.textContent = 'Lo de AQUÍ va por delante: '
+        + (d.nuevos.length ? cuenta(d.nuevos.length) + ' sin subir. Descárgalo' : 'descárgalo')
+        + ' y súbelo; hasta entonces los alumnos ven el banco anterior (' + pub + ').' + coletilla;
       bIg.textContent = 'Descargar banco.json para subirlo';
       bIg.hidden = false;
       bIg.onclick = () => descargarBanco();
+    } else if (d.quien && d.quien.verdicto === 'mezcla') {
+      /* Lo más delicado de todo: hay cambios recientes en los DOS sitios. Cualquiera de los
+         dos botones pisa trabajo bueno, así que aquí no se ofrece ninguno. */
+      caja.dataset.estado = 'rojo';
+      txt.textContent = 'CADA UNO VA POR DELANTE EN ALGO: ' + recientes
+        + '. Subir o traer pisaría lo bueno del otro lado; mira el detalle fragmento a fragmento (' + pub + ').';
     } else {
       caja.dataset.estado = 'ambar';
-      const uno = n => n === 1;
-      txt.textContent = 'No coinciden: ' + (d.modificados.length
+      txt.textContent = 'No coinciden y no hay fechas que lo resuelvan: ' + (d.modificados.length
         ? cuenta(d.modificados.length) + (uno(d.modificados.length) ? ' dice' : ' dicen') + ' cosas distintas aquí y en lo publicado'
         : 'el contenido no es el mismo')
         + (d.nuevos.length ? ', ' + cuenta(d.nuevos.length) + (uno(d.nuevos.length) ? ' solo está aquí' : ' solo están aquí') : '')
         + (d.faltan.length ? ', ' + cuenta(d.faltan.length) + (uno(d.faltan.length) ? ' solo está publicado' : ' solo están publicados') : '')
-        + '. Mira el detalle en «El banco de fragmentos» (' + pub + ').';
+        + '. Mira el detalle en «El banco de fragmentos» (' + pub + ').' + coletilla;
     }
   }
 
@@ -2657,7 +2800,7 @@
     const lista = estado.publicado && estado.publicado.lista;
     if (!lista) { aviso('No hay banco publicado que cargar.'); return; }
     banco = lista.map(e => JSON.parse(JSON.stringify(e)));
-    guardarBanco();
+    guardarBancoAdoptado();            // sus fechas son las suyas, no la de hoy (decisión 227)
     pintarBanco();
     aviso('Cargado el banco publicado: ' + banco.length + ' fragmentos.', 6000);
   }
@@ -2674,9 +2817,24 @@
     const linea = txt => { const li = document.createElement('li'); li.textContent = txt; ul.appendChild(li); };
     /* Del contenido distinto NO se dice «lo has cambiado tú»: puede ser que la copia de
        aquí sea la vieja, y afirmarlo llevaba a subir precisamente la mala. */
-    if (d.modificados.length) linea('Dicen cosas distintas aquí y en el publicado: ' + listaCorta(d.modificados)
-      + (d.modificados.length > 1 ? ' (' + d.modificados.length + ' fragmentos)' : ''));
-    if (d.nuevos.length) linea('Solo están aquí, no en el publicado: ' + listaCorta(d.nuevos));
+    /* Y ahora, antes que nada, CUÁL ES MÁS RECIENTE (decisión 227): no por el total, sino
+       fragmento a fragmento y con las dos fechas a la vista, que es lo que permite decidir
+       sin abrir los dos y compararlos a ojo. */
+    const q = d.quien || {};
+    const mio = {};
+    banco.forEach(e => { if (e && e.id) mio[e.id] = e; });
+    const pubDe = id => (estado.publicado.porId || {})[id];
+    const conFechas = ids => ids.slice(0, 8).map(id =>
+      id + ' (aquí ' + (fechaCorta(fechaDe(mio[id])) || 'sin fecha')
+        + ', publicado ' + (fechaCorta(fechaDe(pubDe(id))) || 'sin fecha') + ')').join('; ')
+      + (ids.length > 8 ? ' y ' + (ids.length - 8) + ' más' : '');
+    if (q.aqui && q.aqui.length) linea('MÁS RECIENTES AQUÍ — descárgalos y súbelos: ' + conFechas(q.aqui));
+    if (q.publicado && q.publicado.length) linea('MÁS RECIENTES PUBLICADOS — tráelos: ' + conFechas(q.publicado));
+    if (q.mismoDia && q.mismoDia.length) linea('Cambiados el mismo día en los dos sitios, sin manera de saber cuál es el bueno: ' + conFechas(q.mismoDia));
+    if (q.sinFecha && q.sinFecha.length) linea('Dicen cosas distintas y no hay fecha con la que compararlos: ' + listaCorta(q.sinFecha));
+    if (d.nuevos.length) linea('Solo están aquí, no en el publicado: ' + listaCorta(d.nuevos)
+      + (q.nuevosDespues && q.nuevosDespues.length ? ' — de ellos, ' + q.nuevosDespues.length + ' se tocaron DESPUÉS de generarse el banco publicado: son los que faltan por subir' : '')
+      + (q.nuevosAntes && q.nuevosAntes.length ? ' — y ' + q.nuevosAntes.length + ' son anteriores al banco publicado: o se borraron allí, o esta copia viene de otra rama' : ''));
     if (d.faltan.length) linea('Están en el publicado y aquí no: ' + listaCorta(d.faltan));
     linea('En total: ' + banco.length + ' fragmentos aquí y ' + estado.publicado.n + ' publicados'
       + (estado.publicado.creado ? ', del ' + estado.publicado.creado : '') + '.');
@@ -2685,16 +2843,25 @@
     const bDesc = $('#btn-desfase-descargar'), bCarg = $('#btn-desfase-cargar');
     bDesc.classList.toggle('primario', dir === 'adelantado');
     bCarg.classList.toggle('primario', dir === 'atrasado');
-    caja.classList.toggle('peligro', dir === 'atrasado');
+    caja.classList.toggle('peligro', dir === 'atrasado' || (d.quien && d.quien.verdicto === 'mezcla'));
     if (dir === 'atrasado') {
-      titulo.textContent = 'La copia de este navegador se ha quedado atrás.';
-      pista.textContent = 'El banco publicado tiene fragmentos que aquí no están, así que lo más seguro es que esta copia sea la vieja. Carga el publicado. Ojo: si descargas y subes lo de aquí, esos fragmentos desaparecerán para los alumnos.';
+      titulo.textContent = 'Lo publicado va por delante: tráelo.';
+      pista.textContent = (d.faltan.length
+        ? 'El banco publicado tiene fragmentos que aquí no están, así que lo más seguro es que esta copia sea la vieja. '
+        : 'Los fragmentos que no coinciden se tocaron más tarde en el publicado que aquí. ')
+        + 'Carga el publicado. Ojo: si descargas y subes lo de aquí, pisarás lo bueno.';
     } else if (dir === 'adelantado') {
-      titulo.textContent = 'Tienes cambios sin subir.';
-      pista.textContent = 'Aquí hay fragmentos que no están publicados. Descarga banco.json y súbelo a GitHub: hasta entonces los alumnos siguen viendo el banco anterior.';
+      titulo.textContent = 'Lo de aquí va por delante: descárgalo y súbelo.';
+      pista.textContent = (d.nuevos.length
+        ? 'Aquí hay fragmentos que no están publicados. '
+        : 'Los fragmentos que no coinciden se tocaron más tarde aquí que en el publicado. ')
+        + 'Descarga banco.json y súbelo a GitHub: hasta entonces los alumnos siguen viendo el banco anterior.';
+    } else if (q.verdicto === 'mezcla') {
+      titulo.textContent = 'Cada uno va por delante en algo: no subas ni traigas sin mirar.';
+      pista.textContent = 'Hay fragmentos más recientes aquí y otros más recientes en el publicado, así que cualquiera de los dos botones pisaría trabajo bueno. Lo seguro es traer el publicado, rehacer aquí los que estén más recientes en este navegador —los de la primera línea— y entonces descargar y subir.';
     } else {
-      titulo.textContent = 'El banco de este navegador no coincide con el publicado.';
-      pista.textContent = 'Hay el mismo número de fragmentos pero alguno dice cosas distintas, así que la aplicación no puede saber cuál es el bueno. Si lo que vale es lo de aquí, descárgalo y súbelo; si ya subiste tus cambios desde otro sitio, carga el publicado.';
+      titulo.textContent = 'No coinciden, y las fechas no lo resuelven.';
+      pista.textContent = 'Alguno dice cosas distintas y sus fechas empatan o faltan, así que la aplicación no puede decidir por ti. Si lo que vale es lo de aquí, descárgalo y súbelo; si ya subiste tus cambios desde otro sitio, carga el publicado.';
     }
     caja.hidden = false;
   }
@@ -2718,7 +2885,9 @@
       const datos = await r.json();
       const lista = Banco.leerArchivo(datos);
       if (!lista.length) return false;
-      estado.publicado = { firmas: firmasPorId(lista), n: lista.length, creado: datos.creado || '', lista };
+      const porId = {};
+      lista.forEach(e => { if (e && e.id) porId[e.id] = e; });
+      estado.publicado = { firmas: firmasPorId(lista), n: lista.length, creado: datos.creado || '', lista, porId };
       estado.publicadoFallo = false;
       return true;
     } catch (e) { return false; }   // no hay banco publicado todavía: no es un error
@@ -2927,7 +3096,8 @@
           if (viejo) { if (fundir(viejo, e)) fundidos++; return; }
           banco.push(e); nuevos++;
         });
-        guardarBanco(); pintarBanco();
+        guardarBancoAdoptado();        // lo que viene del archivo trae su fecha (decisión 227)
+        pintarBanco();
         aviso(nuevos + ' fragmentos añadidos al banco' + (fundidos ? ', ' + fundidos + ' completados' : '') + ' (los repetidos se han omitido).');
         revisarHuellas('al cargar el archivo');
       } catch (err) { aviso('No se ha podido leer el banco: ' + err.message); }
@@ -2940,6 +3110,7 @@
     Banco.MODOS.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.nombre; sel.appendChild(o); });
     sel.value = 'armonizar';
     leerBanco();
+    leerSellos();          // la foto anterior, para fechar lo que cambie (decisión 227)
     pintarBanco();
     revisarHuellas('al abrir el configurador');      // decisión 166: comprobar, no fiarse
     /* El filtro guardado se repone DESPUÉS de llenar los desplegables (el de lecciones

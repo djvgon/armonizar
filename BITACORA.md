@@ -11,10 +11,27 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261003-2000`, con las
-  decisiones **221** a **226**. Archivos tocados desde la última entrega: `js/banco.js`,
-  `js/app.js`, `js/configurador.js`, `js/cifrados.js`, `js/estructuras.js`, `index.html`,
-  `configurar.html`, `estructuras.html` y las ocho páginas (la marca).
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261003-2200`, con las
+  decisiones **227** y **228** (las 221–226 están ya subidas: el sitio publicado va por
+  `20261003-2000`, comprobado). Archivos de esta entrega: `js/app.js`, `js/configurador.js`,
+  `js/estructuras.js`, `configurar.html` y las ocho páginas (la marca).
+- **Si el cuadro de cifrados sale en Do mayor cuando no debería**, es una copia guardada de
+  `cifrados.html` en el navegador: la decisión 228 lo arregla metiendo la marca de versión en
+  la dirección. Mientras tanto, cerrar la ventana de ayuda y recargar sin caché
+  (⌘+⇧+R) basta.
+- **Y recuerda que el transporte de las estructuras es una opción de la ficha**: los enlaces
+  generados antes del `20261003-2000` no lo piden, por mucho que la versión sea la nueva. Para
+  verlo hay que generar una ficha con *Cuadro de estructuras armónicas → En la tonalidad del
+  fragmento*. El de cifrados, en cambio, se transporta siempre y sin opción.
+- **El semáforo del banco ya dice quién va delante** (decisión 227), no solo que no coinciden.
+  Cada fragmento lleva un sello `tocado` con la hora de su último cambio, y el semáforo lo usa
+  para decir si hay que **descargar y subir** o **traer el publicado** —y para avisar, en rojo
+  y sin ofrecer botón, cuando cada lado va por delante en algo—.
+  **Cuidado con el primer uso**: los 143 fragmentos de hoy no tienen sello todavía, así que
+  hasta que se vayan tocando la comparación se hace con `cerrado`, que es de grano de día: dos
+  versiones del mismo día salen como empate. **El sello solo se pone al guardar desde el
+  configurador**, de modo que un `banco.json` que yo reconstruya con un script traerá los
+  sellos que ya hubiera, y los fragmentos nuevos entrarán sin fecha hasta que se toquen allí.
 - **Las ventanas de ayuda hablan en el tono del alumno** (decisión 226). El cuadro de
   cifrados, siempre; el de estructuras, si la ficha lo pide —opción nueva en la zona A del
   configurador—. Con la tonalidad por pedir, la ayuda sigue **la que marque el alumno**, y

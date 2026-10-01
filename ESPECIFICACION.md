@@ -3880,6 +3880,70 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+228. **La marca de versión viaja también a las ventanas de ayuda** (1/10/2026, Diego: «los
+    cifrados y las estructuras de ejemplo no se muestran en la tonalidad del fragmento cuando
+    se pulsan los botones correspondientes desde la ventana práctica del estudiante»).
+    - **Qué pasaba.** Las páginas de ayuda piden sus `.js` con `?v=…`, de modo que el guion
+      nuevo llega siempre. Lo que NO llevaba marca era **el HTML**, y ese es justamente el que
+      el navegador se guarda. La ventana de ayuda es además de las que se quedan abiertas o
+      se reabren por su nombre, así que se abría una copia vieja de `cifrados.html`, que pedía
+      el guion viejo —el que no sabe de `?ton=`— y el cuadro salía en Do mayor por mucho que
+      la dirección dijera otra cosa. Comprobado en el sitio publicado: la dirección que genera
+      el botón era la correcta (`cifrados.html?ton=G-m`) y la página respondía bien al
+      pedírsela a mano; el fallo estaba en la copia guardada.
+    - **Qué se hace.** La marca va también en la dirección: `cifrados.html?ton=G-m&v=20261003-2200`.
+      Cada versión es así una dirección distinta y no hay copia vieja que pueda servirse. La
+      marca se lee del pie de la propia página, de modo que no hay un segundo sitio que
+      actualizar en cada entrega.
+    - **Y el cuadro de estructuras dice siempre en qué par de tonalidades está**, lo
+      transporte o no: «en Do mayor y la menor», «en Si♭ mayor y sol menor». Diciéndolo solo
+      al transportar, no había manera de distinguir *esta ficha no pide transportarlas* de
+      *esto no funciona*, y esa distinción hay que poder hacerla de un vistazo. (Recordatorio:
+      el transporte de las estructuras es una opción de la ficha —decisión 226—, así que los
+      enlaces generados antes de existir no lo piden y no lo harán.)
+
+227. **El semáforo del banco dice QUIÉN VA DELANTE, no solo que no coinciden** (1/10/2026,
+    Diego: «el configurador me avisa cuando los fragmentos en el banco y en la página son
+    distintos, pero lo que de verdad necesito saber es cuáles son más recientes, si los de la
+    web —para descargarlos y publicarlos— o los publicados —para importarlos a la web—»).
+    - **Faltaba una fecha, y `cerrado` no servía.** `cerrado` dice cuándo se FIRMÓ el
+      fragmento, no cuándo se tocó por última vez: uno retocado después de firmarlo conserva
+      la fecha vieja (por eso existe el aviso de la huella rota). Así que cada fragmento lleva
+      ahora **`tocado`**, un sello con la hora.
+    - **El sello no se pone a mano.** Hay trece sitios que cambian el banco y olvidarse de uno
+      sería envenenar el dato justo cuando más se mira. Se pone en `guardarBanco()`, el único
+      embudo por el que pasan los trece: se compara la firma de cada fragmento con la de la
+      vez anterior —guardada en `armonizar.banco.sellos`— y se sella el que haya cambiado.
+    - **Con dos excepciones, que son las que hacen que el dato valga algo.** La primera: un
+      guardado que **adopta** un banco de fuera —el publicado, o un `banco.json` cargado a
+      mano— no sella nada (`guardarBancoAdoptado`). Esos fragmentos traen su propia fecha, y
+      ponerles la de hoy los haría pasar por recientes justo cuando lo que se pregunta es si
+      lo son. La segunda: **la primera vez**, sin foto anterior, tampoco se sella: si no, los
+      143 fragmentos del banco aparecerían todos tocados hoy.
+    - **Comparar fechas con el grano que tienen.** Dos sellos con hora se comparan con la
+      hora; en cuanto uno de los dos es solo un día —`cerrado`, o un banco anterior a esto—,
+      se comparan los días, y **el mismo día se declara empate** en vez de inventarse un
+      orden. Los 142 fragmentos que ya están cerrados dan respuesta desde el primer momento,
+      con grano de día; el sello la afina a partir de ahora.
+    - **Lo que dice el semáforo** deja de ser «no coinciden» y pasa a ser quién va delante:
+      *Lo de AQUÍ va por delante* (ámbar, botón de descargar), *Lo PUBLICADO va por delante*
+      (rojo, botón de traer), y, cuando las fechas no empatan en el mismo sentido,
+      **CADA UNO VA POR DELANTE EN ALGO** (rojo, **y ningún botón**: cualquiera de los dos
+      pisaría trabajo bueno). Si las fechas no resuelven nada, lo dice con esas palabras.
+    - **Y las fechas deciden también la dirección**: antes, dos bancos con el mismo número de
+      fragmentos y contenido distinto caían siempre en «incierto». Ahora, si todos los que no
+      coinciden son más recientes del mismo lado, el semáforo se moja y ofrece el botón.
+    - **El detalle, fragmento a fragmento y con las dos fechas**: «MÁS RECIENTES AQUÍ —
+      descárgalos y súbelos: A3-1-02 (aquí 1/10 a las 21:00, publicado 28/9)». De los que
+      están en un solo sitio se dice si se tocaron antes o después de generarse el banco
+      publicado: posterior es un fragmento por subir; anterior, o se borró allí, o esta copia
+      viene de otra rama.
+    - **`tocado` no entra en la firma** (`firmaFragmento` mira notas, cifras, tonalidad y
+      repertorio), de modo que sellar no hace que un fragmento parezca cambiado. Comprobado:
+      adoptar el publicado deja 0 sellados y el semáforo verde; recargar sin tocar nada, lo
+      mismo; cambiar el repertorio de una lección sella sus 13 fragmentos y el semáforo pasa a
+      «Lo de AQUÍ va por delante» nombrándolos.
+
 226. **Las dos ventanas de ayuda hablan en el tono del alumno** (1/10/2026, Diego: «cuando el
     alumno pulsa el botón cifrados, sería muy útil que se le mostraran los acordes de ejemplo
     de los cifrados en la tonalidad de inicio del fragmento que está analizando o armonizando
