@@ -9,6 +9,35 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
+## Estado a 1 de octubre de 2026
+
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261003-1600`, con las
+  decisiones **221** a **224**. Archivos tocados desde la última entrega: `js/banco.js`,
+  `js/app.js`, `js/configurador.js`.
+- **Los archivos de fragmentos se llaman ya por el tema** (`A3-5. I, V y V7 - …`). Los
+  diecinueve renombrados en Drive. El de dominantes secundarias pasó a `A4-22`, que es su
+  tema en el libro; si Diego prefiere otro número, es un renombrado y una línea de tabla.
+- **Las pantallas hablan de temas**, no de códigos: «Tema 14 · Modulación al relativo
+  mayor». El código interno sigue siendo `A4-11` y no se ve en ninguna parte.
+- **Ya no hay dos ejercicios iguales en ninguna hoja.** Los repetidos salen transportados.
+- **LO QUE SIGUE CORTO, y es material que falta en el banco, no reparto:**
+
+  | Tema | A · dos voces | B · bajo | C · soprano | total | presupuesto |
+  |---|---|---|---|---|---|
+  | 5 | 14 cc | 10 cc | **8 cc** | 32 | 34–46 |
+  | 10 | 15 | 11 | **7** | 33 | |
+  | **13** | **0** | 10 | **0** | **10** | |
+  | 12 | — | — | — | **0** | sin fragmentos |
+
+  - **Tema 13**: sus 8 fragmentos del banco son **todos de bajo solo**, de un archivo viejo
+    (`15.mscz`) que ya no existe. En Drive está
+    `A4-13. Modulación al V - Fragmentos bajo y soprano.mscz` con **10 fragmentos, los diez
+    con las dos voces, 39 compases**, que nunca llegó al banco. Cinco de ellos son los
+    mismos bajos que hay guardados, pero con su melodía; tres son nuevos; y tres de los
+    guardados no están en el archivo. **Pendiente de que Diego diga si se importa.**
+  - **Temas 5 y 10**: su bloque C no llega a 10 compases porque esas lecciones no tienen
+    ningún fragmento de soprano sola.
+
 ## Estado a 30 de septiembre de 2026 (tarde)
 
 - **LO PRIMERO: hay que hacer el *commit* y el *push*.** El clon y Drive van por

@@ -175,7 +175,7 @@
        «Comprobar», que es donde el alumno mira cuando termina uno. La palabra «Ficha» no
        aportaba nada, y el renglón «Lección …» que había debajo era lo mismo ocupando sitio. */
     const deDonde = ej.leccion || ej.coleccion || (f && f.filtro.titulo) || '';
-    const tema = ej.leccion ? 'Lección ' + ej.leccion : deDonde;
+    const tema = ej.leccion || deDonde;      // ya viene como «Tema 14 · …» (1/10/2026)
     /* El título del fragmento solo se añade si dice algo NUEVO: cuando el fragmento no
        tiene título propio hereda el nombre de la lección, y la banda repetía «A3-5 · El
        6/4 cadencial · El 6/4 cadencial». */
@@ -277,10 +277,11 @@
     /* El botón de ayuda solo aparece si la lección tiene cuadro de estructuras. */
     const btnEst = $('#btn-estructuras');
     if (btnEst) {
-      /* `ej.leccion` de una ficha no es solo el código: trae detrás el nombre de la
-         lección («A3-7 · II7 y IV7»). El tema se busca por el código de delante. */
+      /* El tema lo trae ya el ejercicio servido (1/10/2026). Antes se sacaba del código
+         de la lección leyendo el principio de `ej.leccion`, y eso dejó de valer el día en
+         que esa etiqueta pasó a decir «Tema 14 · …» en vez de «A4-11 · …». */
       const codigo = String(ej.leccion || '').match(/^A\d+-\d+/);
-      const tema = codigo ? TEMA_DE_LECCION[codigo[0]] : null;
+      const tema = ej.tema || (codigo ? TEMA_DE_LECCION[codigo[0]] : null);
       btnEst.hidden = !tema;
       btnEst.dataset.tema = tema ? String(tema) : '';
     }

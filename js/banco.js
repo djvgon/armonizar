@@ -809,7 +809,10 @@ const Banco = (() => {
     const acordes = (e.leccionAcordes && e.leccionAcordes.length) ? e.leccionAcordes.slice() : (f.acordes || []);
     const ej = {
       id: e.id || ('banco-' + (k || 0)),
-      coleccion: f.titulo || (e.leccion ? 'Lección ' + e.leccion : ''),
+      coleccion: f.titulo || (e.leccion ? rotuloLeccion(e.leccion, '') : ''),
+      /* El tema del libro al que pertenece, para el botón de estructuras y para
+         cualquier pantalla que quiera decirlo sin tener que traducir (1/10/2026). */
+      tema: temaDeLeccion(e.leccion),
       // El título no repite el código de la lección: la colección ya dice «Lección A3-8»
       titulo: e.titulo || e.leccionNombre || etiquetaLeccion(e) || ('Ejercicio ' + ((k || 0) + 1)),
       leccion: etiquetaLeccion(e),
@@ -904,10 +907,50 @@ const Banco = (() => {
     (entradas || []).forEach(e => { if (e.leccion && !out.includes(e.leccion)) out.push(e.leccion); });
     return out.sort(comparaLecciones);
   };
-  // «A3-1. I, V y V7 - Fragmentos Bajo.mscz» → «A3-1»
+  /* ===================================================================
+     EL NÚMERO DEL ARCHIVO ES EL DEL TEMA DEL LIBRO  (Diego, 1/10/2026:
+     «el número del archivo ha de referirse al tema para el que propone
+     fragmentos… si no, es un dolor tener que estar traduciendo»).
+
+     Los archivos de `ejemplos/Fragmentos por lecciones` se llaman desde
+     hoy «A3-5. I, V y V7 - …», donde el 5 es el TEMA DEL LIBRO. El código
+     interno de la lección, en cambio, sigue siendo el de siempre —«A3-1»—
+     porque está escrito en los 143 fragmentos del banco, en los códigos
+     cortos de los QR ya impresos y en las hojas repartidas. Esta tabla es
+     el puente entre los dos, y el único sitio donde vive la traducción.
+
+     El desfase no es constante: de la 1 a la 8 son cuatro temas, pero la
+     lección 9 de Diego —la serie de sextas— no tiene todavía hoja, y a
+     partir de ahí las de 2.º caen en los temas 13 y 14. Por eso es una
+     tabla y no una suma.
+     =================================================================== */
+  const TEMA_DE_LECCION = { 'A3-1': 5, 'A3-2': 6, 'A3-3': 7, 'A3-4': 8, 'A3-5': 9,
+    'A3-6': 10, 'A3-7': 11, 'A3-8': 12, 'A4-10': 13, 'A4-11': 14 };
+  const LECCION_DE_TEMA = {};
+  Object.keys(TEMA_DE_LECCION).forEach(l => { LECCION_DE_TEMA[l.split('-')[0] + '-' + TEMA_DE_LECCION[l]] = l; });
+  /* El título de cada lección, que es lo que de verdad la identifica. Se usa para
+     desempatar: «A3-5» significa el tema 5 si el archivo se llama «I, V y V7», y la
+     lección A3-5 de toda la vida si se llama «El 64 cadencial». Así un archivo con el
+     nombre viejo, si aparece alguno, sigue entrando donde debe. */
+  const TITULO_DE_LECCION = { 'A3-1': 'i, v y v7', 'A3-2': 'i6, v6 y vii6',
+    'A3-3': 'v7 en inversión', 'A3-4': 'iv, ii y ii6', 'A3-5': 'el 64 cadencial',
+    'A3-6': 'vi y iv6', 'A3-7': 'ii7 y iv7', 'A3-8': 'otros usos del iv, iv6 y vi',
+    'A4-10': 'modulación al v', 'A4-11': 'modulación al relativo mayor' };
+
+  const temaDeLeccion = lec => TEMA_DE_LECCION[String(lec || '').toUpperCase()] || null;
+
+  /* «A3-5. I, V y V7 - Fragmentos bajo.mscz» → «A3-1» (tema 5 = lección A3-1).
+     Manda el TÍTULO cuando se reconoce; si no, el número se lee como tema; y si tampoco,
+     se devuelve el código tal cual, que es lo que hacía antes. */
   function leccionDeNombre(nombre) {
     const m = /^\s*([AC]?\d\s*-\s*\d+)/i.exec(String(nombre || '').replace(/^([A-Z])(\d)/i, '$1$2'));
-    return m ? m[1].replace(/\s+/g, '').toUpperCase() : '';
+    const codigo = m ? m[1].replace(/\s+/g, '').toUpperCase() : '';
+    const titulo = nombreDeLeccion(nombre).toLowerCase();
+    if (titulo) {
+      const porTitulo = Object.keys(TITULO_DE_LECCION).find(l => TITULO_DE_LECCION[l] === titulo);
+      if (porTitulo) return porTitulo;
+    }
+    return LECCION_DE_TEMA[codigo] || codigo;
   }
   /* …y su NOMBRE: «I, V y V7». Hace falta para saber qué acordes trae cada lección, que es
      lo que de verdad dice el filtro de una ficha. Se quita el código, la extensión y la
@@ -918,8 +961,16 @@ const Banco = (() => {
     t = t.split(/\s+[-–]\s+/)[0];
     return t.trim();
   }
-  // Etiqueta que se enseña: «A3-1 · I, V y V7»
-  const etiquetaLeccion = e => (e.leccion || '') + (e.leccionNombre ? ' · ' + e.leccionNombre : '');
+  /* Etiqueta que se enseña: «Tema 14 · Modulación al relativo mayor». El código interno
+     —A4-11— no se enseña en ninguna pantalla: Diego piensa en temas, y tenerlo que
+     traducir mentalmente era justo la queja (1/10/2026). Si una lección no tiene tema
+     asignado todavía, se enseña su código, que es mejor que nada. */
+  function rotuloLeccion(lec, nombre) {
+    const t = temaDeLeccion(lec);
+    const cabeza = t ? 'Tema ' + t : (lec || '');
+    return cabeza + (nombre ? ' · ' + nombre : '');
+  }
+  const etiquetaLeccion = e => rotuloLeccion(e.leccion, e.leccionNombre);
   // El repertorio que tiene guardado una lección (el de su primer fragmento)
   function repertorioDeLeccion(entradas, leccion) {
     const e = (entradas || []).find(x => x.leccion === leccion);
@@ -1001,5 +1052,6 @@ const Banco = (() => {
     analizarVoz: analizar, companeraDe: companera,
     cifraDeLoEscrito, modeloDeLoEscrito,
     huellaDe, estaCerrada, cerrar, abrir, huellaRota, rotas, cuentaCerradas,
-    leccionDeNombre, nombreDeLeccion, etiquetaLeccion, nombresDeLecciones, repertorioDeLeccion };
+    leccionDeNombre, nombreDeLeccion, etiquetaLeccion, rotuloLeccion, temaDeLeccion,
+    nombresDeLecciones, repertorioDeLeccion };
 })();

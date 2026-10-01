@@ -1669,8 +1669,13 @@
     const nom = Banco.nombreDeLeccion(estado.nombreArchivo || '');
     if (lec) $('#banco-leccion').value = lec;
     if (nom) $('#banco-leccion-nombre').value = nom;
+    /* El archivo se llama por el TEMA —«A3-5. I, V y V7»— y la casilla guarda el código
+       interno de la lección —«A3-1»—, que es el que llevan los 143 fragmentos del banco.
+       Para que no haya que traducir nada, el aviso dice los dos (1/10/2026). */
+    const tema = Banco.temaDeLeccion(lec);
     $('#banco-anadir-ayuda').textContent = 'Se analizan los ' + estado.fragmentos.length
-      + ' fragmentos del archivo con las opciones actuales (repertorio, acordes y fórmula T S T).';
+      + ' fragmentos del archivo con las opciones actuales (repertorio, acordes y fórmula T S T).'
+      + (tema ? ' Van al tema ' + tema + ' del libro' + (nom ? ' — ' + nom : '') + '.' : '');
   }
 
   /* Dos entradas son el mismo ejercicio cuando, en la misma tonalidad, coincide TODA voz
@@ -1944,7 +1949,8 @@
     if (!hay) { $('#banco-resumen').textContent = 'El banco está vacío.'; pintarSemaforo(); return; }
     const lecs = Banco.lecciones(banco);
     const nombres = Banco.nombresDeLecciones(banco);
-    const etiqueta = l => l + (nombres[l] ? ' · ' + nombres[l] : '');
+    // «Tema 14 · Modulación al relativo mayor»: en pantalla se habla de temas (1/10/2026)
+    const etiqueta = l => Banco.rotuloLeccion(l, nombres[l] || '');
     $('#banco-resumen').textContent = banco.length + ' fragmentos en el banco'
       + (lecs.length ? ' · ' + lecs.length + (lecs.length > 1 ? ' lecciones' : ' lección') : '') + '.';
     pintarSemaforo();        // ¿coincide con lo publicado? (decisión 85)
@@ -1995,7 +2001,8 @@
         + (acs.length ? '. Acordes para la armonización de soprano: ' + acs.join(', ') : '')
         + '. Es lo que se le muestra al alumno en cada fragmento de esta lección.';
       bRep.disabled = false;
-      bRep.textContent = 'Dar a ' + filtro.leccion + ' el repertorio del paso 3';
+      const tRep = Banco.temaDeLeccion(filtro.leccion);
+      bRep.textContent = 'Dar al ' + (tRep ? 'tema ' + tRep : filtro.leccion) + ' el repertorio del paso 3';
     } else {
       pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —los cifrados interválicos y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección arriba para verlo o rehacerlo.';
       bRep.disabled = true;
@@ -2220,7 +2227,7 @@
     if (!b) { pintarSello(); pintarProcedencia(); return; }
     const e = b.entrada;
     $('#banco-origen-texto').textContent = 'Estás revisando el fragmento ' + (e.id || '(sin identificador)')
-      + (e.leccion ? ' de la lección ' + Banco.etiquetaLeccion(e) : '')
+      + (e.leccion ? ' del ' + Banco.etiquetaLeccion(e) : '')      // «del Tema 14 · …»
       + ' · voz: ' + (b.voz === 'bajo' ? 'el bajo' : 'la melodía') + '.';
     /* Y con el fragmento del banco ya enganchado, el botón y el cartel otra vez: si no,
        se quedaban diciendo lo del fragmento anterior. `ajustarCampoAudicion` es quien lo

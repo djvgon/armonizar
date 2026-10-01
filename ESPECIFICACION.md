@@ -3880,6 +3880,52 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+224. **En la hoja no hay dos ejercicios iguales** (1/10/2026, Diego: «en la lección B del
+    tema 14 tiene tres fragmentos exactamente iguales. ¡Esto es un desastre! Dijimos que, si
+    eran iguales, que al menos se presentaran transportados a otra tonalidad»).
+    - **Por qué pasaba.** `A4-11-03`, `-04` y `-05` son **tres armonizaciones distintas del
+      mismo bajo**. En la aplicación son tres ejercicios diferentes; en el papel, donde el
+      alumno ve solo el bajo y la armonización es justo lo que tiene que escribir, eran tres
+      pentagramas idénticos seguidos.
+    - **Qué se hace.** No quitarlos —el mismo bajo armonizado de tres maneras es un buen
+      ejercicio—, sino **separarlos por la tonalidad**: el primero se queda como está y los
+      repetidos salen transportados, cada uno a una armadura distinta. En el tema 14, el 4
+      en la menor, el 5 en mi menor y el 6 en re menor.
+    - **Cómo.** `separa_repetidos` compara **lo que de verdad se imprime** —la voz o las dos
+      voces que se ven, con su tonalidad—, no el fragmento entero. Transporta con la
+      ortografía correcta (letra y alteración), dentro de las tonalidades del curso (Do, Sol,
+      Fa, Re y Si♭; la, mi, re, si y sol), y descarta un tono si alguna nota no se puede
+      escribir con una sola alteración.
+    - **La música real no se transporta nunca.** El fragmento de Williams está en sol menor
+      porque Williams lo escribió en sol menor, y debajo lleva su crédito.
+    - **Medido**: de los nueve temas con hoja, **cero ejercicios repetidos**. Solo el tema 14
+      necesita el recurso, y usa dos transportes.
+
+223. **El número del archivo es el del TEMA, y las pantallas hablan de temas** (1/10/2026,
+    Diego: «el número del archivo ha de referirse al tema para el que propone fragmentos…
+    si no, es un dolor tener que estar traduciendo»).
+    - **Los archivos** de `ejemplos/Fragmentos por lecciones` pasan a llamarse por el tema
+      del libro: `A3-1. I, V y V7 - Tema 5 - …` → **`A3-5. I, V y V7 - …`**. Se renombraron
+      los diecinueve, y desaparece el «- Tema N -» de en medio, que ya sobra.
+    - **El código interno de la lección NO cambia.** Sigue siendo `A3-1`, `A4-11`…, porque
+      está escrito en los 143 fragmentos del banco, en los códigos cortos de los QR ya
+      impresos y en las hojas repartidas. La traducción vive en un solo sitio:
+      `TEMA_DE_LECCION` en `banco.js`.
+    - **El desfase no es constante** —de la lección 1 a la 8 son cuatro temas, pero la 9 de
+      Diego no tiene hoja todavía y las de 2.º caen en los temas 13 y 14—, así que es una
+      tabla y no una suma.
+    - **La ambigüedad se resuelve por el título.** `A3-5` significa el tema 5 si el archivo
+      se llama «I, V y V7», y la lección A3-5 de siempre si se llama «El 64 cadencial». Por
+      eso `leccionDeNombre` mira primero el título y solo después el número: un archivo con
+      el nombre viejo, si aparece alguno, sigue entrando donde debe. Comprobado con los
+      cinco casos que se solapan.
+    - **En pantalla ya no aparece el código.** La etiqueta de una lección es ahora
+      «Tema 14 · Modulación al relativo mayor», en el desplegable de la ficha, en la tabla
+      del banco, en la chapa del sello, en la línea de revisión y en la banda del alumno. El
+      ejercicio servido lleva además su `tema`, que es de donde sale el botón de estructuras
+      —antes lo deducía leyendo el código del principio de la etiqueta, y eso habría dejado
+      de funcionar—.
+
 222. **El orden de la hoja de ejercicios: de lo corto a lo largo** (30/9/2026, Diego:
     «preferiría primero fragmentos cortos y, si es posible, combinar en el mismo renglón
     varios fragmentos cortos o semicortos, de manera que se aproveche el papel. Luego los
