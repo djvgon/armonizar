@@ -901,6 +901,25 @@
       : '';
   }
 
+  /* ---------- Y la marca de versión, también en la dirección (decisión 228) ----------
+     Las páginas de ayuda piden sus `.js` con `?v=…`, de modo que el guion nuevo llega
+     siempre; lo que NO llevaba marca era el HTML, y ese es el que el navegador se guarda.
+     Resultado: se abría una ventana de ayuda GUARDADA DE ANTES, que pedía el guion viejo
+     —el que no sabe de `?ton=`— y el cuadro salía en Do mayor por mucho que la dirección
+     dijera otra cosa. Diego, 1/10/2026: «los cifrados y las estructuras de ejemplo no se
+     muestran en la tonalidad del fragmento». Con la marca en la dirección, cada versión es
+     una dirección distinta y no hay copia vieja que valga. */
+  const marcaVersion = () => {
+    const v = $('#version');
+    const m = /\d{8}-\d{4}/.exec((v && v.textContent) || '');
+    return m ? m[0] : '';
+  };
+  function paramsAyuda(extra) {
+    const p = [paramTon(tonalidadDeAyuda()), marcaVersion() ? 'v=' + marcaVersion() : '']
+      .concat(extra || []).filter(Boolean);
+    return p.length ? '&' + p.join('&') : '';
+  }
+
   function abrirEstructuras() {
     const t = $('#btn-estructuras').dataset.tema;
     if (!t) return;
@@ -914,9 +933,8 @@
     /* Las estructuras se transportan solo si la ficha lo pide (decisión 226): aquí la
        opción es del profesor, no automática, porque un cuadro siempre en Do mayor / la
        menor también tiene su razón —es el mismo que hay impreso en el libro—. */
-    const tr = estado.ejercicio && estado.ejercicio.estructurasTon === 'fragmento' ? '&tr=1' : '';
-    const p = paramTon(tonalidadDeAyuda());
-    const v = window.open('estructuras.html?tema=' + t + tr + (p ? '&' + p : ''),
+    const tr = estado.ejercicio && estado.ejercicio.estructurasTon === 'fragmento' ? ['tr=1'] : [];
+    const v = window.open('estructuras.html?tema=' + t + paramsAyuda(tr),
                           'estructuras-armonicas',
                           'width=' + an + ',height=' + al);
     if (v) v.focus();
@@ -930,8 +948,8 @@
     /* Aquí el transporte NO se elige: el cuadro sale siempre en la tonalidad del fragmento
        (decisión 226). Lo que enseña no es un cuadro de referencia, sino qué acorde manda
        escribir cada cifra AQUÍ, y en otra tonalidad que la suya no le sirve de nada. */
-    const p = paramTon(tonalidadDeAyuda());
-    const v = window.open('cifrados.html' + (p ? '?' + p : ''),
+    const q = paramsAyuda();
+    const v = window.open('cifrados.html' + (q ? '?' + q.slice(1) : ''),
                           'cuadro-cifrados', 'width=' + an + ',height=' + al);
     if (v) v.focus();
   }

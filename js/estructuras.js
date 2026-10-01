@@ -372,11 +372,12 @@
     const titulo = datos.temas && datos.temas[tema];
     const h = $('#titulo');
     h.textContent = 'Tema ' + tema + (titulo ? ' \u00b7 ' + titulo : '') + ' ';
-    /* Si el cuadro se ha transportado, el r\u00f3tulo lo dice: el alumno ha de saber que lo que
-       ve son las estructuras en SU tono y no las que tiene impresas en el libro. */
-    const donde = tonos
-      ? ', en ' + Teoria.nombreTonalidad(tonos.mayor) + ' y ' + Teoria.nombreTonalidad(tonos.menor)
-      : '';
+    /* El r\u00f3tulo dice SIEMPRE en qu\u00e9 par de tonalidades est\u00e1 el cuadro, transportado o no
+       (decisi\u00f3n 228). Dici\u00e9ndolo solo al transportar, no hab\u00eda manera de distinguir \u00abesta
+       ficha no pide transportarlas\u00bb de \u00abesto no funciona\u00bb, y es una distinci\u00f3n que hay que
+       poder hacer de un vistazo. */
+    const par = tonos || { mayor: { tonica: 'C', modo: 'mayor' }, menor: { tonica: 'A', modo: 'menor' } };
+    const donde = ', en ' + Teoria.nombreTonalidad(par.mayor) + ' y ' + Teoria.nombreTonalidad(par.menor);
     h.appendChild(el('span', 'quees', '\u2014 las estructuras arm\u00f3nicas de este tema' + donde));
     const cont = $('#cuadro');
     cont.textContent = '';
