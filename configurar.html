@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261003-1600">
-  <link rel="stylesheet" href="css/estilo.css?v=20261003-1600">
+  <link rel="stylesheet" href="css/bravura.css?v=20261003-2000">
+  <link rel="stylesheet" href="css/estilo.css?v=20261003-2000">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -237,6 +237,14 @@
               <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
               <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
             </select>
+          </label>
+          <label class="campo">
+            <span>Cuadro de estructuras armónicas (el botón del alumno)</span>
+            <select id="ficha-estructuras-ton">
+              <option value="" selected>En Do mayor y la menor, como en el libro</option>
+              <option value="fragmento">En la tonalidad del fragmento: con su armadura</option>
+            </select>
+            <span class="ayuda">El cuadro de cifrados sale siempre en la tonalidad del fragmento —lo que enseña es qué acorde manda escribir cada cifra, y en otro tono no sirve—. El de estructuras se elige aquí: transportado, cada estructura conserva su modo y se va a la tonalidad de ese modo que tiene la armadura del fragmento (con un fragmento en re menor, las menores en re menor y las mayores en Fa mayor).</span>
           </label>
           <label class="campo">
             <span>Grados de la escala del bajo</span>
@@ -638,20 +646,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261003-1000</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261003-2000</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261003-1600"></script>
-  <script src="js/teoria.js?v=20261003-1600"></script>
-  <script src="js/reglas.js?v=20261003-1600"></script>
-  <script src="js/ejercicios.js?v=20261003-1600"></script>
-  <script src="js/partitura.js?v=20261003-1600"></script>
-  <script src="js/musicxml.js?v=20261003-1600"></script>
-  <script src="js/musescore.js?v=20261003-1600"></script>
-  <script src="js/banco.js?v=20261003-1600"></script>
-  <script src="js/realizacion.js?v=20261003-1600"></script>
-  <script src="js/tecnicas.js?v=20261003-1600"></script>
-  <script src="js/configurador.js?v=20261003-1600"></script>
+  <script src="js/qr.js?v=20261003-2000"></script>
+  <script src="js/teoria.js?v=20261003-2000"></script>
+  <script src="js/reglas.js?v=20261003-2000"></script>
+  <script src="js/ejercicios.js?v=20261003-2000"></script>
+  <script src="js/partitura.js?v=20261003-2000"></script>
+  <script src="js/musicxml.js?v=20261003-2000"></script>
+  <script src="js/musescore.js?v=20261003-2000"></script>
+  <script src="js/banco.js?v=20261003-2000"></script>
+  <script src="js/realizacion.js?v=20261003-2000"></script>
+  <script src="js/tecnicas.js?v=20261003-2000"></script>
+  <script src="js/configurador.js?v=20261003-2000"></script>
 </body>
 </html>

@@ -11,9 +11,39 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261003-1600`, con las
-  decisiones **221** a **224**. Archivos tocados desde la última entrega: `js/banco.js`,
-  `js/app.js`, `js/configurador.js`.
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261003-2000`, con las
+  decisiones **221** a **226**. Archivos tocados desde la última entrega: `js/banco.js`,
+  `js/app.js`, `js/configurador.js`, `js/cifrados.js`, `js/estructuras.js`, `index.html`,
+  `configurar.html`, `estructuras.html` y las ocho páginas (la marca).
+- **Las ventanas de ayuda hablan en el tono del alumno** (decisión 226). El cuadro de
+  cifrados, siempre; el de estructuras, si la ficha lo pide —opción nueva en la zona A del
+  configurador—. Con la tonalidad por pedir, la ayuda sigue **la que marque el alumno**, y
+  mientras no marque nada sale en Do mayor, que es lo único que no le chiva la respuesta.
+  **Queda por decidir**: al transportar, las estructuras se mueven por ARMADURA (fragmento
+  en re menor → menores en re menor, mayores en Fa mayor). La alternativa sería por tónica
+  (re menor y Re mayor), que parte el cuadro en dos armaduras; se eligió la primera.
+- **Los dos nombres de los temas 13 y 14: SE QUEDAN COMO ESTÁN, y no por descuido.**
+  La pantalla del alumno dice «Tema 14 · Modulación al relativo mayor» y la ventana de
+  estructuras, «Tema 14 · El III y el VII». Diego, 1/10/2026: **el que vale es el nombre de
+  la lección** —«Modulación al V», «Modulación al relativo mayor»—; el del tema viene del
+  texto de armonía que escribió en el pasado y reutilizó «por ahorrar tiempo», y lo revisará
+  más adelante, quizá retocando entonces los títulos de los temas.
+  **Por qué no se unifica hoy.** Los títulos de los temas no viven en la aplicación: viven en
+  `TEMAS`, en `hoja_tema.py`, que es de donde salen a la vez el encabezado de la **hoja de
+  ejercicios impresa** y el de `prototipos.json`. Y están escritos para que casen con los
+  capítulos del texto (de ahí el `paginas='133–149'`). Cambiarlos ahí arreglaría la pantalla
+  y, a cambio, pondría en el libro una hoja titulada «Modulación al relativo mayor» detrás de
+  un capítulo titulado «El III y el VII»: un desajuste peor, y dentro del papel. Mientras el
+  texto sea el viejo, cada nombre está bien en su sitio —la pantalla dice de qué va el
+  ejercicio, la ventana repite lo que el alumno tiene impreso— y **el número, que es lo que
+  le permite encontrarlo, es el mismo en los dos**.
+  **Cuándo se unifica**: el día que Diego revise el texto. Entonces son dos líneas de
+  `TEMAS` y volver a publicar los prototipos.
+- **La pantalla del alumno ya no deja salirse sin querer** (decisión 225): en cuanto la
+  dirección trae ficha o ejercicio, los tres enlaces de la banda oscura se ocultan —queda
+  el logotipo—, y el botón **«Reiniciar» se ha ido para siempre**. En la práctica libre los
+  enlaces siguen ahí. Las estructuras y los cifrados se abren con sus botones, que no sacan
+  al alumno de la página.
 - **Los archivos de fragmentos se llaman ya por el tema** (`A3-5. I, V y V7 - …`). Los
   diecinueve renombrados en Drive. El de dominantes secundarias pasó a `A4-22`, que es su
   tema en el libro; si Diego prefiere otro número, es un renombrado y una línea de tabla.

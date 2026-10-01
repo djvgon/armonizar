@@ -19,6 +19,7 @@
 
   let datos = null;
   let sonando = null;          // el fragmento que suena ahora, para poder pararlo
+  let tonos = null;            // el par de tonalidades en que ha quedado el cuadro
 
   /* ---------- Datos ---------- */
 
@@ -27,6 +28,149 @@
     const r = await fetch(base + 'prototipos.json', { cache: 'no-cache' });
     if (!r.ok) throw new Error('el archivo prototipos.json no está en el servidor');
     datos = await r.json();
+  }
+
+  /* ---------- Las estructuras en el tono del fragmento (decisión 226) ----------
+     Diego, 1/10/2026, pidiéndolo con su reverso: «lo mismo para la información sobre las
+     estructuras armónicas de uso en esa lección. Aunque en este caso, que haya una opción
+     en el configurador para decidir sobre ello: si se muestran las estructuras en do mayor /
+     la menor o si se transportan a la tonalidad de inicio del fragmento».
+
+     Así que aquí no se decide nada: se obedece lo que venga en la dirección. Con `tr=1` y
+     una tonalidad, el cuadro entero se transporta; sin eso, sale en Do mayor y la menor,
+     que es como está impreso en el libro.
+
+     LA REGLA DEL TRANSPORTE ES LA ARMADURA, NO LA TÓNICA. Los prototipos vienen en Do mayor
+     y en la menor, que son el mismo papel —cero alteraciones— visto en los dos modos. Al
+     llevarlos al tono del fragmento se conserva eso: cada prototipo mantiene SU modo y se va
+     a la tonalidad de ESE modo que tiene la armadura del fragmento. Con un fragmento en re
+     menor, las estructuras menores salen en re menor y las mayores en Fa mayor, y el cuadro
+     entero se lee con un bemol. Llevar las mayores a Re mayor habría puesto dos armaduras
+     distintas en el mismo cuadro y, de paso, habría cambiado el tono de las que ya se sabía
+     de memoria. */
+
+  function tonDeLaDireccion() {
+    const t = new URLSearchParams(location.search).get('ton');
+    const m = /^([A-Ga-g](?:#|b){0,2})-([Mm])$/.exec(String(t || '').trim());
+    if (!m) return null;
+    const cand = { tonica: m[1][0].toUpperCase() + m[1].slice(1), modo: m[2] === 'm' ? 'menor' : 'mayor' };
+    try { Teoria.armadura(cand); } catch (e) { return null; }
+    return cand;
+  }
+  const seTransporta = () => new URLSearchParams(location.search).get('tr') === '1';
+
+  /** La tonalidad de `modo` que tiene la armadura de `ton`. */
+  function conLaArmaduraDe(ton, modo) {
+    try { return Teoria.tonalidadPorArmadura(Teoria.armadura(ton), modo); } catch (e) { return null; }
+  }
+
+  /* ---------- Los rótulos también se transportan ----------
+     La música no viaja sola: el rótulo de la estructura dice «la menor → Do mayor → la
+     menor» y la leyenda, alguna vez, nombra notas sueltas —«al subir, el ⑥ se altera también
+     (fa♯)», «re–fa–la–do sobre el ④»—. Transportar la música y dejar el texto hablando de
+     otro tono es peor que no transportar nada.
+
+     Las TONALIDADES se cambian por sustitución literal y solo las que el prototipo usa de
+     verdad: así «la menor» se traduce cuando el prototipo está en la menor, y una frase que
+     dijera «la mayor parte» no se toca. Las NOTAS, con dos reglas estrechas que en prosa no
+     se dan por casualidad: una cadena unida por guiones y una nota con alteración entre
+     paréntesis. Una nota suelta sin alteración y sin guiones no se traduce: no hay manera de
+     distinguirla de los artículos «la» y «mi». */
+  const NOTAS_ES = 'do|re|mi|fa|sol|la|si';
+  const ALT_ES = '(?:♯|#|♭|b)?';
+
+  function notaMovida(txt, iv) {
+    try {
+      const n = Teoria.nota(Teoria.notaEs(txt, 4));
+      return Teoria.nombreEs(Teoria.transportar(n, iv.pasos, iv.semitonos));
+    } catch (e) { return txt; }
+  }
+
+  function traductorDeRotulos(p, iv) {
+    const suyas = [{ tonica: p.ton.tonica, modo: p.ton.modo }]
+      .concat((p.modulaciones || []).map(m => ({ tonica: m.tonica, modo: m.modo })));
+    const pares = [];
+    /* El orden importa: primero el nombre largo, luego el corto y solo al final la tónica a
+       secas, para que «Do mayor» no se quede a medio traducir al pasar por «Do». */
+    const soloTonica = t => {
+      const n = Teoria.nombreEs(Teoria.nota(String(t.tonica) + '4'));
+      return n.charAt(0).toUpperCase() + n.slice(1);
+    };
+    suyas.forEach(t => {
+      const d = Teoria.transportarTonalidad(t, iv.pasos, iv.semitonos);
+      pares.push([Teoria.nombreTonalidad(t), Teoria.nombreTonalidad(d)]);
+      pares.push([Teoria.nombreCorto(t), Teoria.nombreCorto(d)]);
+      /* La tónica sola —«el VI de Do, que en Sol es el II»— únicamente en las MAYORES, que
+         se escriben con inicial mayúscula y no se confunden con nada. En las menores el
+         nombre va en minúscula y «la» y «mi» son artículo y pronombre: ahí haría estragos. */
+      if (t.modo !== 'menor') pares.push([soloTonica(t), soloTonica(d)]);
+    });
+    return txt => {
+      if (!txt) return txt;
+      let t = String(txt);
+      /* Primero un hueco y después el nombre nuevo: si no, traducir «la menor» a «re menor»
+         y luego «Do mayor» a «Fa mayor» podría volver a tropezar con lo ya traducido. */
+      pares.forEach(([de], k) => { t = t.split(de).join('\u0000' + k + '\u0000'); });
+      pares.forEach(([, a], k) => { t = t.split('\u0000' + k + '\u0000').join(a); });
+      t = t.replace(new RegExp('\\b(?:' + NOTAS_ES + ')' + ALT_ES + '(?:\\s*–\\s*(?:' + NOTAS_ES + ')' + ALT_ES + ')+', 'gi'),
+        m => m.split(/\s*–\s*/).map(x => notaMovida(x, iv)).join('–'));
+      t = t.replace(new RegExp('\\((' + NOTAS_ES + ')(♯|#|♭|b)\\)', 'gi'),
+        (m, n, a) => '(' + notaMovida(n + a, iv) + ')');
+      return t;
+    };
+  }
+
+  /* Un prototipo en otro tono. Lo mismo que hace el banco con los fragmentos (decisión 102):
+     mover las notas, mirar que ninguna pida una alteración triple —que no hay con qué
+     escribirla— y correr la octava entera si el intervalo deja la música fuera del
+     pentagrama. Las cifras, los grados y las funciones no se tocan: no dependen del tono. */
+  function transportarPrototipo(p, destino) {
+    if (!destino || destino.tonica === p.ton.tonica) return p;
+    const iv = Teoria.intervaloEntreTonicas(p.ton.tonica, destino.tonica);
+    const mueve = n => Teoria.transportar(Teoria.nota(n), iv.pasos, iv.semitonos);
+    const todas = [].concat(p.bajos || [], ...(p.voces || []));
+    let falla = false;
+    todas.forEach(n => { try { if (Math.abs(mueve(n).alt) >= 3) falla = true; } catch (e) { falla = true; } });
+    if (falla || !todas.length) return null;
+
+    /* La octava, para las cuatro voces A LA VEZ: si no, se cruzarían. Gana la que menos
+       saca la música del registro que tenía. */
+    const viejas = todas.map(n => Teoria.midi(Teoria.nota(n)));
+    const nuevas = todas.map(n => Teoria.midi(mueve(n)));
+    const vLo = Math.min(...viejas), vHi = Math.max(...viejas);
+    let mejor = null;
+    [0, -1, 1].forEach(o => {
+      const exceso = Math.max(0, Math.max(...nuevas) + 12 * o - vHi) + Math.max(0, vLo - (Math.min(...nuevas) + 12 * o));
+      if (!mejor || exceso < mejor.exceso) mejor = { o, exceso };
+    });
+    const oct = mejor.o;
+    const paso = n => { const x = mueve(n); return Teoria.texto({ letra: x.letra, alt: x.alt, octava: x.octava + oct }); };
+
+    const q = JSON.parse(JSON.stringify(p));
+    q.ton = destino;
+    q.bajos = p.bajos.map(paso);
+    q.compases = p.compases.map(c => c.map(([n, d]) => [n ? paso(n) : n, d]));
+    q.voces = p.voces.map(v => v.map(paso));
+    const traduce = traductorDeRotulos(p, iv);
+    ['esquema', 'grupo', 'variante'].forEach(campo => { if (q[campo]) q[campo] = traduce(q[campo]); });
+    if (p.modulaciones) {
+      q.modulaciones = p.modulaciones.map(m => {
+        const t = Teoria.transportarTonalidad({ tonica: m.tonica, modo: m.modo }, iv.pasos, iv.semitonos);
+        return Object.assign({}, m, { tonica: t.tonica, modo: t.modo });
+      });
+    }
+    return q;
+  }
+
+  /* Todo el cuadro al tono que pida la dirección. Un prototipo que no se pueda escribir allí
+     se queda en el suyo: mejor un renglón en Do mayor que un renglón en blanco. */
+  function transportarTodo() {
+    const ton = tonDeLaDireccion();
+    if (!ton || !seTransporta()) return;
+    const destinos = { mayor: conLaArmaduraDe(ton, 'mayor'), menor: conLaArmaduraDe(ton, 'menor') };
+    if (!destinos.mayor || !destinos.menor) return;
+    datos.prototipos = datos.prototipos.map(p => transportarPrototipo(p, destinos[p.ton.modo]) || p);
+    tonos = destinos;
   }
 
   const temas = () => [...new Set(datos.prototipos.map(p => p.tema))].sort((a, b) => a - b);
@@ -228,7 +372,12 @@
     const titulo = datos.temas && datos.temas[tema];
     const h = $('#titulo');
     h.textContent = 'Tema ' + tema + (titulo ? ' \u00b7 ' + titulo : '') + ' ';
-    h.appendChild(el('span', 'quees', '\u2014 las estructuras arm\u00f3nicas de este tema'));
+    /* Si el cuadro se ha transportado, el r\u00f3tulo lo dice: el alumno ha de saber que lo que
+       ve son las estructuras en SU tono y no las que tiene impresas en el libro. */
+    const donde = tonos
+      ? ', en ' + Teoria.nombreTonalidad(tonos.mayor) + ' y ' + Teoria.nombreTonalidad(tonos.menor)
+      : '';
+    h.appendChild(el('span', 'quees', '\u2014 las estructuras arm\u00f3nicas de este tema' + donde));
     const cont = $('#cuadro');
     cont.textContent = '';
     renglones(tema).forEach(([esquema, grupos]) => {
@@ -356,6 +505,7 @@
       aviso('No se han podido leer las estructuras (prototipos.json): ' + e.message);
       return;
     }
+    transportarTodo();           // antes de medir y de dibujar nada (decisión 226)
     const lista = temas();
     const sel = $('#tema');
     lista.forEach(t => {

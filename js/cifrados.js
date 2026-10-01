@@ -18,22 +18,76 @@
   const DO = { tonica: 'C', modo: 'mayor' };
   const SEG = 1.8;                       // lo que dura el acorde al pulsar
 
-  /* Qué bajo lleva cada cifra para que el acorde salga diatónico de Do mayor. Dentro de
-     cada familia es siempre el mismo acorde: la tónica, la dominante con séptima y el II7. */
+  /* ---------- En qué tonalidad sale el cuadro (decisión 226) ----------
+     Diego, 1/10/2026: «cuando el alumno pulsa el botón cifrados, sería muy útil que se le
+     mostraran los acordes de ejemplo de los cifrados en la tonalidad de inicio del fragmento
+     que está analizando o armonizando». Lo que el cuadro enseña no es el dibujo de la cifra
+     —eso se aprende una vez— sino QUÉ ACORDE manda escribir, y eso depende del tono: el 6/5
+     de Do mayor no tiene las mismas notas que el de si menor, y traducir mentalmente de un
+     tono al suyo es justo el trabajo que el cuadro venía a ahorrarle.
+
+     La tonalidad llega en la dirección, «?ton=Bb-M» o «?ton=E-m», puesta por el ejercicio.
+     Si no llega —la ventana abierta a pelo, o un ejercicio cuyo tono el alumno todavía no ha
+     marcado—, el cuadro sale en Do mayor, como siempre. */
+  let ton = DO;
+
+  function tonDeLaDireccion() {
+    const t = new URLSearchParams(location.search).get('ton');
+    const m = /^([A-Ga-g](?:#|b){0,2})-([Mm])$/.exec(String(t || '').trim());
+    if (!m) return null;
+    const cand = { tonica: m[1][0].toUpperCase() + m[1].slice(1), modo: m[2] === 'm' ? 'menor' : 'mayor' };
+    try { Teoria.escalaVoces(cand); } catch (e) { return null; }
+    return cand;
+  }
+
+  /* El cuadro, por GRADOS de la escala y no por notas: así vale para cualquier tonalidad y
+     para los dos modos sin una segunda tabla. Dentro de cada familia es siempre el mismo
+     acorde —la tónica, la dominante con séptima y el II7—, visto desde cada uno de sus
+     bajos. El «modelo» es la nota que llevaba el cuadro en Do mayor, y solo sirve para
+     elegir la OCTAVA: el bajo transportado se pone en la octava que lo deja más cerca de
+     donde estaba, de modo que el cuadro conserva su hechura en todos los tonos.
+
+     La escala es la de las VOCES —la menor armónica en el modo menor—, que es la que sube
+     la sensible: el bajo del 6/5̸ es precisamente ella. */
   const CUADRO = [
-    { titulo: 'Tríadas',
-      acorde: 'el acorde de tónica, do – mi – sol, desde sus tres bajos',
-      cifras: [['53', 'C3'], ['6', 'E3'], ['64', 'G3']] },
-    { titulo: 'Séptimas con función de dominante',
-      acorde: 'la dominante con séptima, sol – si – re – fa, desde sus cuatro bajos',
-      cifras: [['7+', 'G3'], ['65d', 'B2'], ['+6', 'D3'], ['+4', 'F3']] },
-    { titulo: 'Séptimas diatónicas (sin función de dominante)',
-      acorde: 'la séptima del II, re – fa – la – do, desde sus cuatro bajos',
-      cifras: [['7', 'D3'], ['65', 'F3'], ['43', 'A2'], ['42', 'C3']] },
-    { titulo: 'Novenas',
-      acorde: 'la de dominante sobre el ⑤ y una sin función de dominante, la del II',
-      cifras: [['9', 'G3'], ['9', 'D3']] }
+    { titulo: 'Tríadas', nombre: 'el acorde de tónica', voces: 'tres',
+      cifras: [['53', 1, 'C3'], ['6', 3, 'E3'], ['64', 5, 'G3']] },
+    { titulo: 'Séptimas con función de dominante', nombre: 'la dominante con séptima', voces: 'cuatro',
+      cifras: [['7+', 5, 'G3'], ['65d', 7, 'B2'], ['+6', 2, 'D3'], ['+4', 4, 'F3']] },
+    { titulo: 'Séptimas diatónicas (sin función de dominante)', nombre: 'la séptima del II', voces: 'cuatro',
+      cifras: [['7', 2, 'D3'], ['65', 4, 'F3'], ['43', 6, 'A2'], ['42', 1, 'C3']] },
+    { titulo: 'Novenas', fijo: 'la de dominante sobre el ⑤ y una sin función de dominante, la del II',
+      cifras: [['9', 5, 'G3'], ['9', 2, 'D3']] }
   ];
+
+  /* El bajo de una cifra: el grado que le toca, en la octava que lo deja más cerca de la
+     nota que llevaba el cuadro en Do mayor. */
+  function bajoDe(grado, modelo) {
+    const g = Teoria.escalaVoces(ton)[grado - 1];
+    const ref = Teoria.midi(Teoria.nota(modelo));
+    let mejor = null;
+    for (let o = 1; o <= 5; o++) {
+      const n = { letra: g.letra, alt: g.alt, octava: o };
+      const d = Math.abs(Teoria.midi(n) - ref);
+      if (!mejor || d < mejor.d) mejor = { n, d };
+    }
+    return mejor.n;
+  }
+
+  /* Las notas del acorde de una familia, en palabras: «sol – si – re – fa». Se le preguntan
+     al motor sobre la cifra de estado fundamental —la primera de cada familia—, de modo que
+     la frase dice siempre la verdad, sea cual sea el tono. */
+  function notasDe(g, bajos) {
+    try {
+      const nb = Teoria.nota(bajos[0]);
+      return [nb, ...Teoria.vocesSuperiores(g.cifras[0][0], nb, ton)].map(n => Teoria.nombreEs(n)).join(' – ');
+    } catch (e) { return ''; }
+  }
+  function descripcion(g, bajos) {
+    if (g.fijo) return g.fijo;
+    const notas = notasDe(g, bajos);
+    return g.nombre + (notas ? ', ' + notas : '') + ', desde sus ' + g.voces + ' bajos';
+  }
 
   let rotacion = 0;                      // 1.ª, 2.ª o 3.ª posición
   let sonando = null;
@@ -44,7 +98,7 @@
      fina entre ellos: se lee de una tirada, la clave y el compás se escriben una sola vez y
      en una pantalla pequeña cabe (Diego, 27/9/2026). */
   function ejercicioDe(bajos) {
-    return { tonalidad: DO, compas: [4, 4],
+    return { tonalidad: ton, compas: [4, 4],
              compases: bajos.map(b => [[b, 4]]),
              respuestas: bajos.map(() => [null]) };
   }
@@ -55,9 +109,9 @@
      de la novena —que es justo lo que no puede ser— (Diego, 27/9/2026). */
   function vocesDe(id, bajo) {
     try {
-      const d = Realizacion.describir(id, Teoria.nota(bajo), DO);
+      const d = Realizacion.describir(id, Teoria.nota(bajo), ton);
       const cands = Realizacion.candidatas(d)
-        .map(c => ({ c, coste: Realizacion.costeLocal(c, d, false, DO) }))
+        .map(c => ({ c, coste: Realizacion.costeLocal(c, d, false, ton) }))
         .sort((a, b) => a.coste - b.coste);
       if (!cands.length) return null;
       const limpias = cands.filter(x => x.coste < 60);
@@ -69,7 +123,7 @@
 
   function estadoDe(cifras, bajos, voces) {
     const rom = cifras.map((id, k) => {
-      try { return Teoria.romano(id, Teoria.nota(bajos[k]), DO); } catch (e) { return null; }
+      try { return Teoria.romano(id, Teoria.nota(bajos[k]), ton); } catch (e) { return null; }
     });
     const vacio = v => cifras.map(() => v);
     return {
@@ -118,8 +172,11 @@
 
   function familia(g) {
     const caja = el('div', 'pieza');
-    const cifras = g.cifras.map(x => x[0]), bajos = g.cifras.map(x => x[1]);
+    const cifras = g.cifras.map(x => x[0]);
+    const bajos = g.cifras.map(x => Teoria.texto(bajoDe(x[1], x[2])));
     const voces = cifras.map((id, k) => vocesDe(id, bajos[k]));
+    // Qué acorde es esta familia, con sus notas EN ESTE TONO (decisión 226)
+    caja.dataset.acorde = descripcion(g, bajos);
 
     /* Un botón por acorde, ENCIMA de su acorde y a su izquierda: se pulsa mirando el
        acorde, no una lista aparte (Diego, 27/9/2026). Se coloca por la posición que la
@@ -159,7 +216,7 @@
       const banda = el('div', 'esquema');
       banda.innerHTML = '<b></b> <span class="acorde-familia"></span>';
       banda.querySelector('b').textContent = g.titulo;
-      banda.querySelector('.acorde-familia').textContent = '· ' + g.acorde;
+      banda.querySelector('.acorde-familia').textContent = '· ' + grupo.dataset.acorde;
       grupo.insertBefore(banda, grupo.firstChild);
       piezas.appendChild(grupo);
     });
@@ -242,5 +299,19 @@
     document.addEventListener('visibilitychange', () => { if (document.hidden) parar(); });
   }
 
-  document.addEventListener('DOMContentLoaded', () => { mandos(); pintar(); });
+  /* El rótulo dice en qué tono está el cuadro: el alumno tiene que saber que lo que ve son
+     SUS acordes y no los de Do mayor, y es lo primero que mira al abrir la ventana. */
+  function rotular() {
+    const nombre = Teoria.nombreTonalidad(ton);
+    const q = $('#titulo .quees');
+    if (q) q.textContent = '— cada cifrado interválico y el acorde que manda escribir, en ' + nombre;
+    document.title = 'Práctica armónica · Cuadro de cifrados en ' + nombre;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ton = tonDeLaDireccion() || DO;
+    rotular();
+    mandos();
+    pintar();
+  });
 })();

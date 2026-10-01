@@ -848,6 +848,8 @@ const Banco = (() => {
     if (Array.isArray(f.preferir) && f.preferir.length) ej.preferir = f.preferir.slice();
     // La fila «Tonalidad»: rige module o no el fragmento (decisión 56)
     if (['dadas', 'pedir', 'no'].includes(f.tonalidades)) ej.tonalidades = f.tonalidades;
+    // En qué tono abre el alumno el cuadro de estructuras (decisión 226)
+    if (f.estructurasTon === 'fragmento') ej.estructurasTon = 'fragmento';
     if (parte.modulaciones && parte.modulaciones.length) ej.modulaciones = parte.modulaciones;
     if (parte.melodica && parte.melodica.length) ej.melodica = parte.melodica.slice();   // 6.º grado elevado (179)
     // La armadura con que se presenta puede no ser la del fragmento (decisión 185)

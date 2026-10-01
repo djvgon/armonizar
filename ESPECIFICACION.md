@@ -3880,6 +3880,85 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+226. **Las dos ventanas de ayuda hablan en el tono del alumno** (1/10/2026, Diego: «cuando el
+    alumno pulsa el botón cifrados, sería muy útil que se le mostraran los acordes de ejemplo
+    de los cifrados en la tonalidad de inicio del fragmento que está analizando o armonizando
+    el estudiante —si la tonalidad le viene dada por el ejercicio— o en la tonalidad que haya
+    señalado el estudiante —si la tonalidad se le pide al estudiante que la indique—. Y lo
+    mismo para la información sobre las estructuras armónicas… aunque en este caso, que haya
+    una opción en el configurador para decidir sobre ello»).
+    - **Qué tonalidad viaja.** El ejercicio se la pasa a la ventana en la dirección,
+      `?ton=Bb-M` o `?ton=E-m`, y son tres casos: con la tonalidad **dada** (o sin fila de
+      tonalidades), la del fragmento; con la tonalidad **por pedir**, la que el alumno haya
+      marcado en la primera nota, **aunque se haya equivocado** —la ayuda está para que
+      compruebe su hipótesis, no para desmentírsela por la espalda—; y por pedir **sin marcar
+      todavía**, ninguna: la ventana sale en Do mayor, como siempre, porque decir en qué tono
+      empieza el fragmento es la primera parte del ejercicio y abrir la ayuda no puede ser la
+      manera de saltársela.
+    - **El cuadro de cifrados se transporta siempre**, sin opción. Lo que enseña no es el
+      dibujo de la cifra —eso se aprende una vez— sino **qué acorde manda escribir**, y en un
+      tono que no es el suyo no le sirve de nada.
+    - **Cómo.** El cuadro deja de estar escrito en notas y pasa a estarlo en **grados**: la
+      tríada de tónica desde los grados 1, 3 y 5; la dominante con séptima desde 5, 7, 2 y 4;
+      la séptima del II desde 2, 4, 6 y 1. La escala es la de las **voces** —la menor
+      armónica en el modo menor—, que es la que sube la sensible: el bajo del 6/5̸ es
+      precisamente ella. Así una sola tabla vale para los dos modos y para cualquier tónica,
+      sin una segunda tabla para el menor. La **octava** de cada bajo se elige por la nota que
+      llevaba el cuadro en Do mayor: el bajo transportado va a la octava que lo deja más
+      cerca, de modo que el cuadro conserva su hechura en todos los tonos.
+    - **Y la frase de cada familia dice la verdad**: «el acorde de tónica, si♭ – re – fa,
+      desde sus tres bajos» se construye preguntándole al motor las notas del acorde en
+      estado fundamental, no está escrita a mano.
+    - **El cuadro de estructuras se transporta solo si la ficha lo pide**: opción nueva en la
+      zona A del configurador, *Cuadro de estructuras armónicas*, con dos valores —en Do mayor
+      y la menor, como en el libro (lo de siempre), o en la tonalidad del fragmento—. Viaja en
+      el enlace de la ficha (`estructurasTon`) y también en el de un fragmento suelto.
+    - **LA REGLA DEL TRANSPORTE ES LA ARMADURA, NO LA TÓNICA.** Los prototipos vienen en Do
+      mayor y en la menor, que son el mismo papel —cero alteraciones— visto en los dos modos.
+      Al llevarlos al tono del fragmento se conserva eso: cada prototipo **mantiene su modo**
+      y se va a la tonalidad de ese modo que tiene la **armadura del fragmento**. Con un
+      fragmento en re menor, las menores salen en re menor y las mayores en Fa mayor, y el
+      cuadro entero se lee con un bemol. Llevar las mayores a Re mayor habría puesto dos
+      armaduras en el mismo cuadro y habría cambiado de tono las estructuras que el alumno ya
+      se sabe de memoria.
+    - **Los rótulos se transportan con la música.** «la menor → Do mayor → la menor» pasa a
+      «sol menor → Si♭ mayor → sol menor»; «el VI de Do, que en Sol es el II», a «el VI de
+      Si♭, que en Fa es el II»; y las notas que alguna leyenda nombra —«(fa♯)», «re–fa–la–do
+      sobre el ④»— también. Las tonalidades se cambian por sustitución **literal y solo las
+      que ese prototipo usa**, de modo que una frase como «la mayor parte» no corre peligro;
+      la tónica a secas solo en las **mayores**, que llevan inicial mayúscula. Las notas, con
+      dos reglas estrechas que en prosa no se dan por casualidad: una cadena unida por guiones
+      y una nota con alteración entre paréntesis. **Una nota suelta sin alteración y sin
+      guiones no se traduce**: no hay manera de distinguirla de los artículos «la» y «mi». Si
+      algún rótulo nuevo la llevara, habría que escribirlo de otra manera.
+    - **Medido**: los 60 prototipos dibujados en los diez tonos del curso (Do, Sol, Fa, Re,
+      Si♭ / la, mi, re, si, sol), 600 fragmentos, **ninguno sin dibujar y ningún error**; y el
+      cuadro de cifrados comprobado en los dos modos y en siete tónicas, con la sensible, los
+      acordes y la armadura correctos en todos.
+
+225. **En la pantalla del alumno no hay salidas accidentales** (1/10/2026, Diego: «cuando se
+    trate de ficha del estudiante para práctica, es necesario ocultar los enlaces de la banda
+    oscura superior, porque si la pulsan no les lleva a donde ellos piensan. El botón Reinicio
+    también sería buena cosa eliminarlo, porque lo pulsan sin querer y les borra todo el
+    trabajo realizado»).
+    - **Los tres enlaces de la banda oscura se ocultan cuando la dirección trae trabajo**, es
+      decir, siempre que el enlace lleve `#f=` (una ficha), `#e=` o `#ej=` (un ejercicio
+      concreto). En la práctica libre se quedan: allí son la única manera de moverse por la
+      aplicación y no hay nada que perder. Es la condición `estado.libre`, que ya existía.
+    - **Por qué engañan.** «Ejercicio» apunta a `index.html` a secas, sin la almohadilla: el
+      alumno cree que vuelve a SU ejercicio y aterriza en la práctica libre, con la ficha
+      perdida. «Estructuras» y «Cifrados» abandonan la página y se llevan por delante lo
+      escrito —y para eso están los dos botones de la pantalla, que abren una ventana aparte
+      sin salir de la práctica—.
+    - **Se oculta el enlace, no la banda.** Queda el logotipo: la banda oscura sigue
+      identificando el sitio, que es lo único que hacía allí para el alumno.
+    - **Fuera el botón «Reiniciar».** Recargaba el ejercicio en blanco, estaba al lado de
+      «Comprobar» y no se podía deshacer. Para rectificar está Retroceso, que borra una
+      casilla. Desaparecen el botón, su `reiniciar()` y su escucha; nada más lo usaba.
+    - **De paso**, lo que quedaba de la decisión 223 en la pantalla del alumno: «Estructuras
+      armónicas que incluye este tema», «Cifrados de este tema», «el II7 no entra en este
+      tema» y, en la ventana de estructuras, «Los ejercicios del tema se resuelven con ellas».
+
 224. **En la hoja no hay dos ejercicios iguales** (1/10/2026, Diego: «en la lección B del
     tema 14 tiene tres fragmentos exactamente iguales. ¡Esto es un desastre! Dijimos que, si
     eran iguales, que al menos se presentaran transportados a otra tonalidad»).

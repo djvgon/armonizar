@@ -285,7 +285,7 @@
       btnEst.hidden = !tema;
       btnEst.dataset.tema = tema ? String(tema) : '';
     }
-    const deLaLeccion = ej.leccion ? 'de esta lección' : 'en este ejercicio';
+    const deLaLeccion = ej.leccion ? 'de este tema' : 'en este ejercicio';
     const rep = $('#repertorio');
     rep.innerHTML = '';
     const acordes = Array.isArray(ej.acordes) && ej.acordes.length ? ej.acordes : null;
@@ -873,6 +873,34 @@
   const TEMA_DE_LECCION = { 'A3-1': 5, 'A3-2': 6, 'A3-3': 7, 'A3-4': 8, 'A3-5': 9,
                             'A3-6': 10, 'A3-7': 11, 'A3-8': 12, 'A4-10': 13, 'A4-11': 14 };
 
+  /* ---------- La tonalidad con la que se abren las ventanas de ayuda (decisión 226) ----------
+     Diego, 1/10/2026: los acordes de ejemplo del cuadro de cifrados han de salir «en la
+     tonalidad de inicio del fragmento que está analizando o armonizando el estudiante —si
+     la tonalidad le viene dada por el ejercicio— o en la tonalidad que haya señalado el
+     estudiante —si la tonalidad se le pide—».
+
+     De modo que hay tres casos, y el tercero importa tanto como los otros dos:
+     · tonalidad dada (o sin fila): la del fragmento, `ej.tonalidad`;
+     · tonalidad por pedir y el alumno ya ha marcado la de la primera nota: LA SUYA, aunque
+       se haya equivocado — la ayuda tiene que servirle para comprobar su hipótesis, no para
+       desmentirla por la espalda;
+     · tonalidad por pedir y todavía no ha marcado nada: NINGUNA. La ventana sale entonces
+       en Do mayor, como siempre, porque decir en qué tono empieza el fragmento es la primera
+       parte del ejercicio y abrir la ayuda no puede ser la manera de saltárselo. */
+  function tonalidadDeAyuda() {
+    const ej = estado.ejercicio;
+    if (!ej) return null;
+    if (estado.modoTon === 'pedir' && !estado.mostrarSolucion) return estado.marcas[0] || null;
+    return ej.tonalidad || null;
+  }
+  /* En la dirección, «C-M» o «A-m». Se codifica porque la tónica puede llevar sostenido,
+     y una almohadilla sin codificar partiría la dirección en dos. */
+  function paramTon(t) {
+    return t && t.tonica
+      ? 'ton=' + encodeURIComponent(t.tonica + '-' + (t.modo === 'menor' ? 'm' : 'M'))
+      : '';
+  }
+
   function abrirEstructuras() {
     const t = $('#btn-estructuras').dataset.tema;
     if (!t) return;
@@ -883,7 +911,13 @@
        más grande se ve la música en TODOS los temas. */
     const an = Math.min(1240, (window.screen && screen.availWidth) || 1240);
     const al = Math.min(900, (window.screen && screen.availHeight) || 900);
-    const v = window.open('estructuras.html?tema=' + t, 'estructuras-armonicas',
+    /* Las estructuras se transportan solo si la ficha lo pide (decisión 226): aquí la
+       opción es del profesor, no automática, porque un cuadro siempre en Do mayor / la
+       menor también tiene su razón —es el mismo que hay impreso en el libro—. */
+    const tr = estado.ejercicio && estado.ejercicio.estructurasTon === 'fragmento' ? '&tr=1' : '';
+    const p = paramTon(tonalidadDeAyuda());
+    const v = window.open('estructuras.html?tema=' + t + tr + (p ? '&' + p : ''),
+                          'estructuras-armonicas',
                           'width=' + an + ',height=' + al);
     if (v) v.focus();
   }
@@ -893,7 +927,12 @@
   function abrirCifrados() {
     const an = Math.min(1240, (window.screen && screen.availWidth) || 1240);
     const al = Math.min(900, (window.screen && screen.availHeight) || 900);
-    const v = window.open('cifrados.html', 'cuadro-cifrados', 'width=' + an + ',height=' + al);
+    /* Aquí el transporte NO se elige: el cuadro sale siempre en la tonalidad del fragmento
+       (decisión 226). Lo que enseña no es un cuadro de referencia, sino qué acorde manda
+       escribir cada cifra AQUÍ, y en otra tonalidad que la suya no le sirve de nada. */
+    const p = paramTon(tonalidadDeAyuda());
+    const v = window.open('cifrados.html' + (p ? '?' + p : ''),
+                          'cuadro-cifrados', 'width=' + an + ',height=' + al);
     if (v) v.focus();
   }
 
@@ -1510,7 +1549,7 @@
     if (!rom) return 'el cifrado interválico ' + et(cifra) + ' sobre esta nota no da ningún acorde de ' + Teoria.nombreCorto(ton);
     const acorde = rom + ' ' + et(cifra);
     const lista = ej.acordes;
-    if (lista && lista.length && !lista.includes(rom + '|' + cifra)) return 'el ' + acorde + ' no entra en esta lección';
+    if (lista && lista.length && !lista.includes(rom + '|' + cifra)) return 'el ' + acorde + ' no entra en este tema';
     const ultima = i === notas.length - 1;
     if (ultima && (cifra !== '53' || (rom !== 'I' && rom !== 'V')))
       return 'el fragmento acaba en cadencia o en semicadencia: el último acorde ha de ser la tónica o la dominante, en estado fundamental';
@@ -2283,7 +2322,8 @@
     return { filtro, lista, k, marcador: (g.marcador || []).slice(0, k), hash: texto };
   }
 
-  function reiniciar() { cargar(estado.ejercicio); }
+  /* Aquí estuvo `reiniciar()`, que recargaba el ejercicio en blanco. Fuera con su botón
+     (decisión 225): los alumnos lo pulsaban sin querer y perdían el ejercicio entero. */
 
   function siguiente() {
     const lista = Ejercicios.CORPUS;
@@ -2352,7 +2392,6 @@
     if ($('#btn-estructuras')) $('#btn-estructuras').addEventListener('click', abrirEstructuras);
     if ($('#btn-cifrados')) $('#btn-cifrados').addEventListener('click', abrirCifrados);
     $('#btn-corregir').addEventListener('click', corregir);
-    $('#btn-reiniciar').addEventListener('click', reiniciar);
     $('#btn-siguiente').addEventListener('click', siguiente);
     $('#ver-grados').addEventListener('change', ev => { estado.verGrados = ev.target.checked; pintar(); });
     $('#sonar').addEventListener('change', ev => { estado.sonar = ev.target.checked; });
@@ -2391,6 +2430,14 @@
     $('#btn-parar').addEventListener('click', parar);
     const inicial = new URLSearchParams(location.hash.replace(/^#/, ''));
     estado.libre = !inicial.has('e') && !inicial.has('ej') && !inicial.has('f');
+    /* ---- Los enlaces de la banda oscura, fuera cuando el enlace trae trabajo (decisión 225)
+       En una ficha —o en un ejercicio que viene en la dirección— los tres enlaces no llevan
+       al alumno donde él cree: «Ejercicio» no devuelve a SU ejercicio, sino a la práctica
+       libre, y los otros dos abandonan la página y se llevan por delante lo escrito. Las
+       estructuras y el cuadro de cifrados ya tienen sus botones, que abren una ventana
+       aparte sin perder nada. En la práctica libre los enlaces se quedan: allí son la única
+       manera de moverse y no hay ficha que perder (Diego, 3/10/2026). */
+    if (!estado.libre) document.querySelectorAll('.barra-app a').forEach(a => { a.hidden = true; });
     ajustarCompacto();
     window.addEventListener('resize', ajustarCompacto);
     // En pantalla estrecha el enunciado va recortado; pulsarlo lo despliega

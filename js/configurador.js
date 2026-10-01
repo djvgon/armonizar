@@ -168,6 +168,7 @@
       bajoAudicion: $('#bajo-audicion').value === 'bajo',
       gradosBajo: $('#grados-bajo').value,          // 'dado' | 'oculto' (decisiones 91 y 113)
       gradosPrimero: $('#grados-primero').checked,
+      estructurasTon: $('#ficha-estructuras-ton').value,     // decisión 226
       funciones: fun === 'dadas' || fun === 'pedir' ? fun : null };
   }
   // Campos y rótulos que dependen del tipo de ejercicio: la opción «qué ve el alumno en
@@ -317,6 +318,8 @@
     }
     // La fila «Tonalidad» se elige module o no el fragmento (decisión 56)
     if (op.tonalidades) ej.tonalidades = op.tonalidades;
+    // En qué tono abre el alumno el cuadro de estructuras (decisión 226)
+    if (op.estructurasTon === 'fragmento') ej.estructurasTon = 'fragmento';
     const mods = extra.modulaciones !== undefined ? extra.modulaciones : modulacionesValidas(Ejercicios.numNotas({ compases }));
     if (mods.length) ej.modulaciones = mods.map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } }));
     if (estado.melodica && estado.melodica.length) ej.melodica = estado.melodica.slice();   // 6.º elevado (179)
@@ -1396,6 +1399,7 @@
     estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
     estado.melodica = Array.isArray(ej.melodica) ? ej.melodica.slice() : [];
     $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ej.tonalidades) ? ej.tonalidades : '';
+    $('#ficha-estructuras-ton').value = ej.estructurasTon === 'fragmento' ? 'fragmento' : '';
     estado.compases = ej.compases;
     abrirFragmento();
     estado.respuestas = ej.respuestas.map(a => a.slice());
@@ -1427,6 +1431,7 @@
         gradosBajo: $('#grados-bajo').value, gradosPrimero: $('#grados-primero').checked,
         fichaAyudaGrados: $('#ficha-ayuda-grados').value, fichaPreferir: $('#ficha-preferir').value, fichaFunciones: $('#ficha-funciones').value,
         fichaTonalidades: $('#ficha-tonalidades').value,
+        fichaEstructurasTon: $('#ficha-estructuras-ton').value,
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
           '#ficha-modula', '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
@@ -1457,6 +1462,7 @@
       $('#ficha-funciones').value = b.fichaFunciones || (b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '');
       const ton = b.fichaTonalidades || b.tonalidades;
       $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ton) ? ton : '';
+      $('#ficha-estructuras-ton').value = b.fichaEstructurasTon === 'fragmento' ? 'fragmento' : '';
       estado.fichaGuardada = b.ficha && typeof b.ficha === 'object' ? b.ficha : null;
       elegirModo(tipo);
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
@@ -1559,7 +1565,7 @@
     }
 
     $('#texto-bajo').addEventListener('input', () => { estado.banco = null; pintarOrigenBanco(); estado.companera = null; leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
-    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-tonalidades', '#bajo-audicion', '#grados-bajo', '#grados-primero'].forEach(sel => {
+    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-tonalidades', '#ficha-estructuras-ton', '#bajo-audicion', '#grados-bajo', '#grados-primero'].forEach(sel => {
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
@@ -1868,6 +1874,8 @@
     if (fun === 'dadas' || fun === 'pedir') f.funciones = fun;
     const tons = $('#ficha-tonalidades').value;
     if (['dadas', 'pedir', 'no'].includes(tons)) f.tonalidades = tons;
+    // El cuadro de estructuras, en el tono del fragmento (decisión 226)
+    if ($('#ficha-estructuras-ton').value === 'fragmento') f.estructurasTon = 'fragmento';
     /* Armadura distinta de la tonalidad del fragmento (decisión 185): hasta 1, 2 o 3
        alteraciones de diferencia según el curso. Necesita semilla, como el transporte, para
        que el mismo enlace dé siempre los mismos fragmentos con armadura ajena. */
@@ -3032,7 +3040,7 @@
     $('#btn-ficha-abrir').addEventListener('click', ev => { if ($('#btn-ficha-abrir').getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula',
      '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max',
-     '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades',
+     '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades', '#ficha-estructuras-ton',
      '#ficha-armadura', '#ficha-armadura-pct'].forEach(id => {
       $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador(); });
     });
