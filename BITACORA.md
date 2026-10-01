@@ -29,17 +29,34 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   un acorde a los admisibles, el de la nota **18** (el IV7). La nota **15** es el **VI7**.
 - **El VI7** está encendido en la lección del tema 14 (sus nueve fragmentos) y tiene
   estructura propia en el cuadro: `I – V7 – VI7`.
-- **El libro, rehecho y SIN PUBLICAR** (30/9, tarde). `0b.` pasa a **317 páginas** —una
-  menos, por la 222—. Está solo en la carpeta de trabajo
-  `3 PROYECTO (documentación y fuentes)/Teoría para Fundamentos de composición/`.
-  **A la carpeta de los alumnos no ha ido nada y Classroom no se ha tocado.**
-- **Lo que queda de aquella entrega, esperando a Diego:**
-  1. cerrar el fragmento de Williams y dar el visto bueno al libro;
-  2. ejecutar `InventarioLibro.gs` y pegar la salida, para saber a qué archivo de Drive
-     apuntan de verdad los adjuntos del libro en cada clase. El libro de los alumnos
-     (`0b…pdf`, id `1GaCsMj2RrGztNMn48XaQImO3Zrx8Mg-1`) **no está en la papelera**: vive en
-     `00. COMÚN… / Armonía / A partir de 3º de EEPP`. Lo que esté en la papelera será el
-     PDF anterior, sin hojas de ejercicios, que es al que apuntaba Classroom en septiembre.
+- **EL LIBRO YA ESTÁ PUBLICADO** (1/10, de madrugada), con el visto bueno de Diego. `0b.`,
+  **317 páginas**. El procedimiento, para la próxima vez:
+  - El inventario (`InventarioLibro.gs`) descubrió que **dos clases** llevaban el libro y
+    las dos apuntaban a archivos **en la papelera**: `A3 Martes y Viernes` → `1RvbLv1w…` y
+    `MAESTRA A3` → `1-gPXN518…`. El `0b.` que Diego había subido por la mañana era un
+    archivo **nuevo**, con otro identificador, y por eso ninguna clase lo veía. **La lección:
+    el libro no se sustituye subiendo otro al lado; se sustituye el CONTENIDO del archivo,
+    que conserva su identificador y con él todos los adjuntos de Classroom.**
+  - Diego restauró los dos de la papelera. La carpeta de los alumnos no se puede conectar
+    a la sesión —su ruta lleva acentos que el diálogo de permiso no sabe mostrar—, así que
+    se hizo por el otro camino: **mover** los dos archivos con el conector de Drive a la
+    carpeta de trabajo (que sí está conectada), copiarles dentro el libro con `cp`,
+    renombrarlos y devolverlos. Mover y renombrar no rompe ningún adjunto.
+  - `1RvbLv1w…` vuelve a `00. COMÚN… / Armonía / A partir de 3º de EEPP` con su nombre de
+    siempre. `1-gPXN518…` se queda en la carpeta de trabajo como
+    `Libro de Armonía - copia a la que apunta MAESTRA A3 (no borrar).pdf`, para que en la
+    carpeta de los alumnos no haya dos libros iguales. Los dos con md5 `137a4fa6…`.
+  - A la papelera, el duplicado de la mañana (`1GaCsMj…`).
+  - **Ninguna clase se ha tocado.** Las dos de A3 ven el libro nuevo por su propio adjunto.
+- **A4 ya tiene el libro** (1/10): `LibroEnA4.gs` ha creado el Material «Contenidos del
+  curso» en `A4 Miércoles y viernes` y en `MAESTRA A4`, **en borrador**, dentro del tema
+  «00. Documentos generales del curso» —que en A4 se llama así y no «00. Contenidos del
+  curso», como en A3: por poco se crea un tema duplicado—. **Diego los publica cuando los
+  vea bien.** Todo lo del libro y sus identificadores está en el documento de proyecto
+  `Libro-de-Armonia-distribucion.md`.
+- El tercer PDF suelto de la carpeta de los alumnos
+  (`…con hojas de ejercicios 2.pdf`, `1eQlEBxD…`) está en la papelera, con el visto bueno
+  de Diego.
 - **Visto de paso, sin tocar**: `A4-11-03`, `A4-11-04` y `A4-11-05` tienen **el mismo bajo**
   con tres armonizaciones distintas. En la aplicación se distinguen; en el papel salen tres
   ejercicios seguidos con el mismo pentagrama y parece un error. Pendiente de decidir.
