@@ -5441,10 +5441,12 @@
       "V|+6",
       "V|53",
       "V|7+",
-      "VII|6"
+      "VII|6",
+      "V|+4"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -5457,6 +5459,7 @@
     "modo": "mayor",
     "alteraciones": 0,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "6",
      "+6",
@@ -5466,9 +5469,9 @@
     "nivel": 1
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "db9c428cb53b89a7",
-   "tocado": "2026-10-02T07:03:09.985Z"
+   "tocado": "2026-10-02T07:31:59.499Z",
+   "cerrado": "2026-10-02",
+   "huella": "9a14c51c9d6d69e7"
   },
   {
    "id": "A3-3-03",
@@ -5706,10 +5709,12 @@
       "V|53",
       "V|+6",
       "V|7+",
-      "VII|6"
+      "VII|6",
+      "V|+4"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -5722,6 +5727,7 @@
     "modo": "mayor",
     "alteraciones": 0,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "53",
      "+4",
@@ -5731,9 +5737,7 @@
     "nivel": 2
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "ded41176144bd517",
-   "tocado": "2026-10-02T07:03:49.002Z"
+   "tocado": "2026-10-02T07:35:39.280Z"
   },
   {
    "id": "A3-3-05",
@@ -6001,10 +6005,12 @@
       "V|+6",
       "V|6",
       "V|7+",
-      "VII|6"
+      "VII|6",
+      "V|+4"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -6017,6 +6023,7 @@
     "modo": "menor",
     "alteraciones": 0,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "53",
      "65d"
@@ -6025,9 +6032,9 @@
     "nivel": 1
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "447cfb0b766fd454",
-   "tocado": "2026-10-02T07:04:13.655Z"
+   "tocado": "2026-10-02T07:36:08.016Z",
+   "cerrado": "2026-10-02",
+   "huella": "36298d412fe2a05a"
   },
   {
    "id": "A3-3-08",
@@ -6122,10 +6129,12 @@
       "V|+6",
       "V|6",
       "V|7+",
-      "VII|6"
+      "VII|6",
+      "V|+4"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -6138,6 +6147,7 @@
     "modo": "menor",
     "alteraciones": 0,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "6",
      "+4"
@@ -6146,9 +6156,9 @@
     "nivel": 1
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "98e4f51aa925cdd9",
-   "tocado": "2026-10-02T07:04:34.041Z"
+   "tocado": "2026-10-02T07:36:29.649Z",
+   "cerrado": "2026-10-02",
+   "huella": "2763e04adca306f5"
   },
   {
    "id": "A3-3-09",
@@ -6242,10 +6252,12 @@
       "V|+6",
       "V|53",
       "V|7+",
-      "VII|6"
+      "VII|6",
+      "V|+4"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -6258,6 +6270,7 @@
     "modo": "menor",
     "alteraciones": 0,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "53",
      "+6",
@@ -6267,9 +6280,9 @@
     "nivel": 2
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "b924ce500a98d7a7",
-   "tocado": "2026-10-02T07:04:52.039Z"
+   "tocado": "2026-10-02T07:36:48.367Z",
+   "cerrado": "2026-10-02",
+   "huella": "3c7f2f703a9edbe7"
   },
   {
    "id": "A3-3-10",
@@ -6360,12 +6373,14 @@
       "I|6"
      ],
      [
+      "V|+4",
       "V|53",
       "V|+6",
       "V|7+",
       "VII|6"
      ],
      [
+      "I|6",
       "I|53"
      ]
     ]
@@ -6379,6 +6394,7 @@
     "modo": "menor",
     "alteraciones": 0,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "6",
      "+6",
@@ -6388,9 +6404,9 @@
     "nivel": 2
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "eea7b4a805d4e523",
-   "tocado": "2026-10-02T07:05:17.271Z"
+   "tocado": "2026-10-02T07:37:25.274Z",
+   "cerrado": "2026-10-02",
+   "huella": "d667759e2d1942cd"
   },
   {
    "id": "A3-3-11",
@@ -6480,15 +6496,15 @@
       "I|53"
      ],
      [
-      "V|53",
       "V|+6",
+      "V|+4",
+      "V|53",
       "V|7+",
-      "VII|6",
-      "V|+4"
+      "VII|6"
      ],
      [
-      "I|53",
-      "I|6"
+      "I|6",
+      "I|53"
      ]
     ]
    },
@@ -6510,9 +6526,9 @@
     "nivel": 1
    },
    "formulaTST": false,
-   "tocado": "2026-10-02T07:19:37.490Z",
+   "tocado": "2026-10-02T07:38:01.582Z",
    "cerrado": "2026-10-02",
-   "huella": "8100215149715a94"
+   "huella": "dbe3c6c56e56922c"
   },
   {
    "id": "A3-3-12",
@@ -6841,10 +6857,12 @@
       "V|53",
       "V|65d",
       "V|6",
-      "V|7+"
+      "V|7+",
+      "V|+4"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -6857,6 +6875,7 @@
     "modo": "mayor",
     "alteraciones": 1,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "53",
      "+4",
@@ -6866,9 +6885,9 @@
     "nivel": 1
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "3204e91373fb2500",
-   "tocado": "2026-10-02T07:08:17.936Z"
+   "tocado": "2026-10-02T07:38:52.566Z",
+   "cerrado": "2026-10-02",
+   "huella": "2033fa19dc3cc72e"
   },
   {
    "id": "A3-3-15",

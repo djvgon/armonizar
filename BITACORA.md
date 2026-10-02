@@ -11,10 +11,12 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1400`, con la decisión
-  **232**. Archivos de esta entrega: `js/ejercicios.js`, `js/banco.js`, `js/configurador.js`,
-  `f.html`, `configurar.html` y las ocho páginas (la marca). **`f.html` es el que lleva las
-  cuarenta tareas del libro**: si algo va a romperse, se rompe ahí y a la vez en todas.
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1600`, con la decisión
+  **233** (la **232** está ya subida: el clon va por `20261004-1400`). Archivos de esta
+  entrega: `js/configurador.js`, `configurar.html` y las ocho páginas (la marca).
+- **El revisor del banco cabe ya en una pantalla** (decisión 233): escribir el fragmento y sus
+  datos se han plegado, la voz que se revisa se conserva al pasar de un fragmento a otro, y los
+  mandos del banco han bajado a la sección B, que es donde se buscan.
 
 - **PENDIENTE, PEDIDO POR DIEGO (2/10/2026): el nivel avanzado de audición.**
   «Quizá un nivel avanzado de audición puede ser que incluya modulación pero que no se diga

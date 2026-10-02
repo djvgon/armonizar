@@ -289,8 +289,13 @@
       const malos = compasesIrregulares(r.compases);
       if (malos.length) mensajes.push('Aviso: en ' + $('#compas').value + ' no cuadran las duraciones de ' + (malos.length === 1 ? 'el compás ' : 'los compases ') + malos.join(', ') + ' (se admite igualmente).');
     }
-    if (mensajes.length) { err.textContent = mensajes.join(' · '); err.hidden = false; }
-    else err.hidden = true;
+    /* El aviso vive dentro del plegable de escritura (decisión 233), así que, si hay algo
+       que decir, se abre: un error escondido detrás de un triángulo no es un error, es una
+       trampa. */
+    if (mensajes.length) {
+      err.textContent = mensajes.join(' · '); err.hidden = false;
+      const d = $('#det-escribir'); if (d) d.open = true;
+    } else err.hidden = true;
     estado.compases = r.compases;
     return r;
   }
@@ -2125,7 +2130,7 @@
       const acc = tr.querySelector('.celda-acciones');
       const bCargar = document.createElement('button');
       bCargar.type = 'button'; bCargar.className = 'enlace-texto'; bCargar.textContent = 'Cargar';
-      bCargar.addEventListener('click', () => cargarDelBanco(e, filtro.modo));
+      bCargar.addEventListener('click', () => cargarDelBanco(e, modoAlCambiarDe(e, filtro.modo)));
       const bSello = document.createElement('button');
       bSello.type = 'button'; bSello.className = 'enlace-texto';
       bSello.textContent = cerrada ? 'Reabrir' : 'Cerrar';
@@ -2184,6 +2189,32 @@
     return !(mismas && mismaTon && planas(parte.modulaciones) === planas(estado.modulaciones));
   }
 
+  /* ---------- La voz se conserva al cambiar de fragmento (decisión 233) ----------
+     Diego, 2/10/2026: «si estoy revisando melodías, al pasar de un fragmento al siguiente
+     lo primero que se me muestre sea la melodía, y viceversa». Antes el recorrido cargaba
+     siempre con el modo del FILTRO, de modo que una sesión entera repasando melodías
+     obligaba a pulsar «la melodía» en cada fragmento. */
+
+  /* El tipo de ejercicio que corresponde a una voz, conservando el elegido si ya es de esa
+     voz: análisis, audición y armonización de bajo van todos con el bajo. */
+  function modoParaVoz(voz) {
+    const actual = modoElegido();
+    if (voz === 'soprano') return 'soprano';
+    return Banco.vozDeModo(actual) === 'bajo' ? actual : 'armonizar';
+  }
+
+  /* Con qué modo abrir el fragmento `e` viniendo del que se está revisando. Si no tiene
+     escrita la voz que se venía revisando, se abre con la otra y se dice por qué: callarlo
+     dejaría al profesor creyendo que sigue en melodías. */
+  function modoAlCambiarDe(e, porDefecto) {
+    const voz = estado.banco && estado.banco.voz;
+    if (!voz || !e) return porDefecto;
+    if (e[voz]) return modoParaVoz(voz);
+    aviso('El fragmento ' + (e.id || '') + ' no tiene ' + (voz === 'soprano' ? 'la melodía' : 'el bajo')
+      + ' escrita: se abre con ' + (voz === 'soprano' ? 'el bajo' : 'la melodía') + '.', 7000);
+    return e.bajo ? 'armonizar' : 'soprano';
+  }
+
   function recorrer(salto) {
     const r = estado.recorrido, i = indiceRecorrido();
     if (i < 0) return;
@@ -2191,7 +2222,7 @@
     if (j < 0 || j >= r.lista.length) return;
     if (hayCambiosSinGuardar()
       && !confirm('Has cambiado este fragmento y no lo has guardado en el banco. Si pasas al siguiente se perderá lo que hayas tocado. ¿Seguir?')) return;
-    cargarDelBanco(r.lista[j], r.modo);
+    cargarDelBanco(r.lista[j], modoAlCambiarDe(r.lista[j], r.modo));
   }
 
   /* ---------- Borrador ---------- */
@@ -2352,9 +2383,7 @@
     if (!e[voz]) { aviso('Este fragmento no tiene ' + (voz === 'bajo' ? 'el bajo escrito' : 'la melodía escrita') + '.'); return; }
     if (hayCambiosSinGuardar()
       && !confirm('Has cambiado este fragmento y no lo has guardado en el banco. Si cambias de voz se perderá lo que hayas tocado. ¿Seguir?')) return;
-    const actual = modoElegido();
-    const modo = voz === 'soprano' ? 'soprano' : (Banco.vozDeModo(actual) === 'bajo' ? actual : 'armonizar');
-    cargarDelBanco(e, modo);
+    cargarDelBanco(e, modoParaVoz(voz));
     aviso('Ahora revisas ' + (voz === 'bajo' ? 'el bajo' : 'la melodía') + ' de ' + (e.id || '') + '.');
   }
 
@@ -2483,7 +2512,7 @@
     pintarBanco();
     pintarSello();
     if (indiceRecorrido() < 0 && siguiente && estado.recorrido.lista.includes(siguiente)) {
-      cargarDelBanco(siguiente, estado.recorrido.modo);
+      cargarDelBanco(siguiente, modoAlCambiarDe(siguiente, estado.recorrido.modo));
       aviso('Cerrado ' + (b.entrada.id || '') + '. Siguiente: ' + (siguiente.id || '') + '.');
     } else if (indiceRecorrido() < 0) {
       aviso('Cerrado ' + (b.entrada.id || '') + '. No quedan más fragmentos en la cola de repaso.', 8000);

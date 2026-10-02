@@ -3880,6 +3880,32 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+233. **El revisor del banco cabe en una pantalla, y la voz no se pierde al pasar de fragmento**
+    (2/10/2026, Diego, tres peticiones de la misma sesión de revisión).
+    - **Escribir el fragmento se pliega.** El cuadro de texto con las notas y los datos del
+      ejercicio —tónica, modo, compás, título y colección— pasan a un desplegable interior
+      (`#det-escribir`), con lo que **«Revisando el bajo / la melodía», el botón de analizar,
+      el recorrido y la partitura revisada caben juntos**. Al revisar el banco nada de eso se
+      toca: el texto de las notas y los datos vienen puestos del fragmento. Sale plegado y,
+      una vez abierto, **sigue abierto** mientras se pasa de un fragmento a otro, porque el
+      elemento no se vuelve a crear.
+      · El aviso de error de lectura del fragmento vive dentro de ese plegable, así que
+      cuando hay algo que decir **se abre solo**: un error escondido detrás de un triángulo no
+      es un error, es una trampa.
+    - **La voz se conserva al cambiar de fragmento** (Diego: «si estoy revisando melodías, al
+      pasar de un fragmento al siguiente lo primero que se me muestre sea la melodía, y
+      viceversa»). El recorrido cargaba siempre con el modo del FILTRO, de modo que una sesión
+      entera repasando melodías obligaba a pulsar «la melodía» en cada fragmento. Ahora la voz
+      que se está revisando manda, en los tres caminos: las flechas, el salto automático al
+      cerrar un fragmento y el botón «Cargar» de la tabla. Si el fragmento al que se va **no
+      tiene esa voz escrita**, se abre con la otra **y se dice por qué**: callarlo dejaría al
+      profesor creyendo que sigue en melodías. (`modoParaVoz` y `modoAlCambiarDe`; el enlace
+      `#id=…` conserva su regla propia, porque es una intención nueva, no un recorrido.)
+    - **Los mandos del banco, en la sección del banco.** Descargar, cargar y vaciar el banco, y
+      el semáforo que dice si coincide con lo publicado, estaban debajo de «A · Preparar una
+      ficha» —que es lo que se hace cada semana— y son del banco. Pasan a «B · El banco de
+      fragmentos», que es donde uno los busca.
+
 232. **Todo fragmento lleva su tonalidad indicada, y los QR del libro piden las funciones**
     (2/10/2026, Diego: «creo que es buena cosa que los alumnos sepan la tonalidad del
     fragmento, bien porque se les pregunte o porque se les muestre, porque eso les ayudará a

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261004-1400">
-  <link rel="stylesheet" href="css/estilo.css?v=20261004-1400">
+  <link rel="stylesheet" href="css/bravura.css?v=20261004-1600">
+  <link rel="stylesheet" href="css/estilo.css?v=20261004-1600">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -55,24 +55,6 @@
     <section class="paso" id="paso-ficha">
       <h2><span class="num">A</span> Preparar una ficha</h2>
       <p class="ayuda">Una ficha es <b>un enlace que da al alumno varios ejercicios al azar</b> de entre los del banco que cumplan un filtro. No lleva dentro los ejercicios: lleva el filtro, así que ampliar o corregir el banco no invalida los enlaces ya repartidos.</p>
-
-      <div class="botonera botonera-banco">
-        <button id="btn-banco-descargar" type="button" class="secundario">Descargar banco.json</button>
-        <button id="btn-banco-cargar" type="button" class="secundario">Cargar banco.json</button>
-        <button id="btn-banco-vaciar" type="button" class="secundario">Vaciar el banco</button>
-        <input type="file" id="banco-archivo" accept=".json,application/json" hidden>
-        <span class="ayuda" id="banco-resumen">El banco está vacío.</span>
-      </div>
-
-      <!-- Semáforo del banco (decisión 85). Dice de un vistazo si lo que hay en este
-           navegador es lo mismo que están viendo los alumnos, y ofrece el botón que
-           iguala las dos copias en el sentido que toque. -->
-      <p class="semaforo" id="banco-semaforo" data-estado="sin">
-        <span class="luz" aria-hidden="true"></span>
-        <span id="banco-semaforo-texto">Comprobando el banco publicado…</span>
-        <button type="button" id="btn-semaforo-igualar" class="primario" hidden>Igualar</button>
-        <button type="button" id="btn-semaforo-recomprobar" class="secundario">Volver a comprobar</button>
-      </p>
 
       <div id="banco-cuerpo" hidden>
         <!-- Las dos mitades de la ficha, sombreadas para que se distingan de un vistazo:
@@ -342,6 +324,28 @@
       <h2><span class="num">B</span> El banco de fragmentos</h2>
       <p class="ayuda">El banco guarda los fragmentos ya analizados con sus <b>etiquetas</b> —lección, tonalidad, modo, alteraciones, número de notas, cifrados interválicos que usa el modelo, si modula y un nivel del 1 al 5—, que salen solas del análisis. Vive <b>en este navegador</b>: para que las fichas funcionen hay que descargarlo como <code>banco.json</code> y subirlo a GitHub junto a la aplicación.</p>
 
+      <!-- LOS MANDOS DEL BANCO, EN LA SECCIÓN DEL BANCO (decisión 233, Diego 2/10/2026).
+           Estaban debajo de «A · Preparar una ficha», que es de lo que se hace cada semana;
+           descargar, cargar o vaciar el banco —y el semáforo que dice si coincide con lo
+           publicado— son del banco, y es aquí donde uno los busca. -->
+      <div class="botonera botonera-banco">
+        <button id="btn-banco-descargar" type="button" class="secundario">Descargar banco.json</button>
+        <button id="btn-banco-cargar" type="button" class="secundario">Cargar banco.json</button>
+        <button id="btn-banco-vaciar" type="button" class="secundario">Vaciar el banco</button>
+        <input type="file" id="banco-archivo" accept=".json,application/json" hidden>
+        <span class="ayuda" id="banco-resumen">El banco está vacío.</span>
+      </div>
+
+      <!-- Semáforo del banco (decisión 85). Dice de un vistazo si lo que hay en este
+           navegador es lo mismo que están viendo los alumnos, y ofrece el botón que
+           iguala las dos copias en el sentido que toque. -->
+      <p class="semaforo" id="banco-semaforo" data-estado="sin">
+        <span class="luz" aria-hidden="true"></span>
+        <span id="banco-semaforo-texto">Comprobando el banco publicado…</span>
+        <button type="button" id="btn-semaforo-igualar" class="primario" hidden>Igualar</button>
+        <button type="button" id="btn-semaforo-recomprobar" class="secundario">Volver a comprobar</button>
+      </p>
+
       <!-- El banco de este navegador y el publicado no coinciden (decisiones 77 y 78).
            Un solo cartel, porque la diferencia es una sola: lo que cambia es en qué dirección.
            La aplicación no puede saber cuál de los dos es el bueno —puede que hayas corregido
@@ -455,44 +459,55 @@
           <span class="ayuda">Cada voz guarda su propia lista de acordes admisibles. Cambiar aquí abre la otra voz del mismo fragmento; no toca el filtro de la ficha.</span>
         </p>
 
-        <label class="campo">
-          <span id="etiqueta-voz">Escribe el bajo</span>
-          <textarea id="texto-bajo" rows="3" spellcheck="false" placeholder="do3 re3 | mi3 do3 | sol3r | do3r"></textarea>
-        </label>
-        <p class="ayuda">Aquí aparece el fragmento que estés revisando. Se puede escribir a mano: notas separadas por espacios, compases por <code>|</code>; un guion bajo <code>_</code> es un silencio (<code>_</code>, <code>_n</code>, <code>_c</code>, <code>_r</code>). Sin sufijo = blanca; <code>r</code> = redonda; <code>n</code> = negra; <code>c</code> = corchea; un punto añade el puntillo (<code>do3.</code> = blanca con puntillo, para 3/4). Alteraciones: <code>fa#3</code>, <code>sib2</code>. Si no pones octava se toma la 3 (<code>do3</code> es el do del segundo espacio en clave de fa)<span id="ayuda-octava-soprano" hidden>; en una armonización de soprano, la 4 (<code>do4</code> es el do central)</span>.</p>
-        <p id="errores-bajo" class="error" hidden></p>
+        <!-- ESCRIBIR EL FRAGMENTO, PLEGADO (decisión 233, Diego 2/10/2026: «haz que lo
+             correspondiente a “Escribe la melodía de la soprano” vaya dentro de un
+             desplegable… de manera que queden más cerca —y puedan verse en la misma
+             pantalla— los botones “Revisando el bajo / la melodía” y el fragmento
+             revisado»). Al revisar el banco esto no se toca: el texto de las notas y los
+             datos del ejercicio vienen puestos. Lo que se mira es la partitura y la tabla,
+             y estaban a media pantalla de distancia. Se queda plegado; abierto, sigue
+             abierto mientras se pasa de un fragmento a otro. -->
+        <details class="plegable plegable-interior" id="det-escribir">
+          <summary><span id="etiqueta-voz">Escribe el bajo</span> · tonalidad, compás y título</summary>
 
-        <div class="fila-campos">
-          <label class="campo">
-            <span>Tónica</span>
-            <select id="tonica"></select>
-          </label>
-          <label class="campo">
-            <span>Modo</span>
-            <select id="modo">
-              <option value="mayor">mayor</option>
-              <option value="menor">menor</option>
-            </select>
-          </label>
-          <label class="campo">
-            <span>Compás</span>
-            <select id="compas">
-              <option value="4/4">4/4</option>
-              <option value="3/4">3/4</option>
-              <option value="2/2">2/2</option>
-              <option value="2/4">2/4</option>
-              <option value="3/2">3/2</option>
-            </select>
-          </label>
-          <label class="campo campo-ancho">
-            <span>Título del ejercicio</span>
-            <input id="titulo" type="text" placeholder="Ejercicio 1">
-          </label>
-          <label class="campo campo-ancho">
-            <span>Colección (opcional)</span>
-            <input id="coleccion" type="text" placeholder="RO ascendente en Do mayor">
-          </label>
-        </div>
+          <div class="campo">
+            <textarea id="texto-bajo" rows="3" spellcheck="false" aria-label="El fragmento, nota a nota" placeholder="do3 re3 | mi3 do3 | sol3r | do3r"></textarea>
+          </div>
+          <p class="ayuda">Aquí aparece el fragmento que estés revisando. Se puede escribir a mano: notas separadas por espacios, compases por <code>|</code>; un guion bajo <code>_</code> es un silencio (<code>_</code>, <code>_n</code>, <code>_c</code>, <code>_r</code>). Sin sufijo = blanca; <code>r</code> = redonda; <code>n</code> = negra; <code>c</code> = corchea; un punto añade el puntillo (<code>do3.</code> = blanca con puntillo, para 3/4). Alteraciones: <code>fa#3</code>, <code>sib2</code>. Si no pones octava se toma la 3 (<code>do3</code> es el do del segundo espacio en clave de fa)<span id="ayuda-octava-soprano" hidden>; en una armonización de soprano, la 4 (<code>do4</code> es el do central)</span>.</p>
+          <p id="errores-bajo" class="error" hidden></p>
+
+          <div class="fila-campos fila-apretada">
+            <label class="campo">
+              <span>Tónica</span>
+              <select id="tonica"></select>
+            </label>
+            <label class="campo">
+              <span>Modo</span>
+              <select id="modo">
+                <option value="mayor">mayor</option>
+                <option value="menor">menor</option>
+              </select>
+            </label>
+            <label class="campo">
+              <span>Compás</span>
+              <select id="compas">
+                <option value="4/4">4/4</option>
+                <option value="3/4">3/4</option>
+                <option value="2/2">2/2</option>
+                <option value="2/4">2/4</option>
+                <option value="3/2">3/2</option>
+              </select>
+            </label>
+            <label class="campo campo-ancho">
+              <span>Título del ejercicio</span>
+              <input id="titulo" type="text" placeholder="Ejercicio 1">
+            </label>
+            <label class="campo campo-ancho">
+              <span>Colección (opcional)</span>
+              <input id="coleccion" type="text" placeholder="RO ascendente en Do mayor">
+            </label>
+          </div>
+        </details>
 
         <!-- CUANDO EL FRAGMENTO TRAE LA ARMONIZACIÓN ESCRITA (decisión 216). Se dice aquí,
              pegado al botón, porque es justo aquí donde hay que saberlo: lo que se pulsa no
@@ -686,20 +701,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261004-1400</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261004-1600</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261004-1400"></script>
-  <script src="js/teoria.js?v=20261004-1400"></script>
-  <script src="js/reglas.js?v=20261004-1400"></script>
-  <script src="js/ejercicios.js?v=20261004-1400"></script>
-  <script src="js/partitura.js?v=20261004-1400"></script>
-  <script src="js/musicxml.js?v=20261004-1400"></script>
-  <script src="js/musescore.js?v=20261004-1400"></script>
-  <script src="js/banco.js?v=20261004-1400"></script>
-  <script src="js/realizacion.js?v=20261004-1400"></script>
-  <script src="js/tecnicas.js?v=20261004-1400"></script>
-  <script src="js/configurador.js?v=20261004-1400"></script>
+  <script src="js/qr.js?v=20261004-1600"></script>
+  <script src="js/teoria.js?v=20261004-1600"></script>
+  <script src="js/reglas.js?v=20261004-1600"></script>
+  <script src="js/ejercicios.js?v=20261004-1600"></script>
+  <script src="js/partitura.js?v=20261004-1600"></script>
+  <script src="js/musicxml.js?v=20261004-1600"></script>
+  <script src="js/musescore.js?v=20261004-1600"></script>
+  <script src="js/banco.js?v=20261004-1600"></script>
+  <script src="js/realizacion.js?v=20261004-1600"></script>
+  <script src="js/tecnicas.js?v=20261004-1600"></script>
+  <script src="js/configurador.js?v=20261004-1600"></script>
 </body>
 </html>
