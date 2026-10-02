@@ -11,9 +11,32 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1600`, con la decisión
-  **233** (la **232** está ya subida: el clon va por `20261004-1400`). Archivos de esta
-  entrega: `js/configurador.js`, `configurar.html` y las ocho páginas (la marca).
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1800`, con la decisión
+  **234**. Archivos de esta entrega: `js/configurador.js`, `configurar.html`, `cifrados.html`,
+  `estructuras.html` y las ocho páginas (la marca).
+
+- **PARA QUE EL BOTÓN DE RESULTADOS FUNCIONE, UNA SOLA VEZ.** La hoja donde caen los envíos
+  de los alumnos es **«Práctica armónica — resultados»**:
+  `https://docs.google.com/spreadsheets/d/1yHGzGOOovaF5VqcSc0xl85ArLmFSHiecAvYfbTXIT6A/edit`
+  Hay que pegarla en «C · Recogida de resultados → Dirección de la hoja de respuestas». Se
+  queda en ese navegador —no viaja en `envio.json`—, así que **hay que pegarla en cada
+  navegador** desde el que se quiera el botón.
+
+- **PENDIENTE, A RETOMAR (Diego, 2/10/2026): la síncopa armónica en la melodía.** Un alumno dio
+  por bueno un I prolongado sobre la barra con el bajo arpegiado (I → I6), y la aplicación no
+  se lo marcó. Diagnóstico hecho: **la regla está escrita dos veces y no dicen lo mismo**.
+  `sincopaBajo` (la que corrige) la ve —«el mismo acorde: síncopa, mueva o no el bajo»— y, de
+  hecho, devuelve `true` para ese caso exacto; `enlaceValido` (la que PROPONE y valida enlaces)
+  exige que coincidan bajo y cifra, de modo que **exime el arpegio a propósito**, pensando en
+  la regla de la octava. De ahí sale la etiqueta «I arpegiado».
+  **Medido**: de los 547 enlaces de los 143 modelos de melodía, solo 9 mantienen el mismo
+  acorde al pasar a parte más fuerte. **3 son arpegios sobre la cabeza del compás** —`A3-2-01`
+  n.º 3, `A3-2-03` n.º 3, `A3-3-22` n.º 4—, que habría que rehacer; 4 ganan o sueltan la
+  séptima **dentro** del compás, que es lo que Diego permitió el 28/9 y no se toca; y 2 son
+  repeticiones literales que la regla ya prohíbe y aun así son el modelo (`A3-1-32` n.º 3,
+  `A4-11-06` n.º 9): hay que mirarlas.
+  **Qué falta antes de tocar nada**: el identificador del fragmento de la captura, para ver por
+  qué al alumno le salió en verde si el motor rechaza ese enlace cuando se le pregunta.
 - **El revisor del banco cabe ya en una pantalla** (decisión 233): escribir el fragmento y sus
   datos se han plegado, la voz que se revisa se conserva al pasar de un fragmento a otro, y los
   mandos del banco han bajado a la sección B, que es donde se buscan.

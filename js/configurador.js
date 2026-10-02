@@ -3055,7 +3055,7 @@
   };
 
   function conectarResultados() {
-    const campo = $('#envio-respuestas'), boton = $('#btn-resultados');
+    const campo = $('#envio-respuestas'), boton = $('#btn-resultados'), botonC = $('#btn-resultados-c');
     if (!campo || !boton) return;
     try { campo.value = localStorage.getItem(CLAVE_RESPUESTAS) || ''; } catch (e) { /* sin almacenamiento */ }
     const revisar = () => {
@@ -3063,9 +3063,18 @@
       const ok = hojaValida(t);
       boton.hidden = !ok;
       if (ok) boton.href = t;
+      /* El de la zona C no se esconde: se apaga y dice qué le falta (decisión 234). Es el que
+         está al lado de la casilla, así que es el que tiene que explicar la ausencia. */
+      if (botonC) {
+        botonC.setAttribute('aria-disabled', ok ? 'false' : 'true');
+        botonC.href = ok ? t : '#';
+        botonC.title = ok ? 'Abre la hoja de respuestas en otra pestaña'
+          : (t ? 'Esa dirección no parece una hoja de cálculo de Google' : 'Pega aquí arriba la dirección de la hoja de respuestas');
+      }
       campo.setAttribute('aria-invalid', t && !ok ? 'true' : 'false');
       try { localStorage.setItem(CLAVE_RESPUESTAS, ok ? t : ''); } catch (e) { /* nada */ }
     };
+    if (botonC) botonC.addEventListener('click', ev => { if (botonC.getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     campo.addEventListener('input', revisar);
     revisar();
   }

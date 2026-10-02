@@ -3880,6 +3880,24 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+234. **Las ventanas de ayuda, sin salidas falsas; y la hoja de resultados, a un botón**
+    (2/10/2026, Diego).
+    - **Fuera los enlaces de la banda oscura en `cifrados.html` y `estructuras.html`** («para
+      que los estudiantes no pulsen allí esperando regresar al fragmento en el que estaban
+      trabajando»). Es la decisión 225 llevada a su sitio natural: allí se ocultaron en la
+      pantalla del alumno cuando el enlace trae trabajo; aquí se quitan del todo, porque estas
+      dos páginas **son** la ventana de ayuda —se abren desde el ejercicio y se vuelve con
+      «Cerrar», que le devuelve el foco—. Un enlace ahí no lleva de vuelta: abre la aplicación
+      de cero en esa misma ventana. Queda el logotipo, que identifica el sitio y no hace nada.
+    - **El botón de la hoja de resultados, en la zona C** («necesito un botón que me abra la
+      hoja de cálculo o donde sea que se está recibiendo la información»). Existía —en la
+      cabecera, `#btn-resultados`— pero **solo aparecía con la dirección ya puesta**: quien
+      nunca la hubiera pegado no tenía manera de enterarse de que existía. Ahora hay otro al
+      lado de la casilla que lo enciende, y **apagado dice qué le falta**: «pega aquí arriba la
+      dirección de la hoja de respuestas», o «esa dirección no parece una hoja de cálculo de
+      Google» si lo pegado no vale. La dirección sigue viviendo solo en este navegador y **no
+      viaja en `envio.json`**: es suya y no tiene por qué publicarse en GitHub.
+
 233. **El revisor del banco cabe en una pantalla, y la voz no se pierde al pasar de fragmento**
     (2/10/2026, Diego, tres peticiones de la misma sesión de revisión).
     - **Escribir el fragmento se pliega.** El cuadro de texto con las notas y los datos del
