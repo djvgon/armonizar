@@ -860,31 +860,46 @@ const Ejercicios = (() => {
       .slice().sort((a, b) => a.nota - b.nota);
   }
   const modula = ej => modulaciones(ej).length > 0;
+  /* `ej.aviso` distinguía, en los enlaces antiguos, si la modulación se anunciaba entera o
+     solo se decía que existía. Desde la decisión 232 no decide nada —la fila la manda
+     `ej.tonalidades`—, pero la función se queda: está exportada y un enlace viejo puede
+     traer el dato. */
   function aviso(ej) { return ej.aviso === 'existe' ? 'existe' : 'completo'; }
 
-  /* ---- La fila «Tonalidad» ----
-     ej.tonalidades dice si el alumno ve las tonalidades del fragmento —y, por tanto, los
-     puntos de cambio de tono— y si las pone él. Es una opción aparte de las funciones
-     tonales, para poder combinarlas como se quiera (decisión 56):
+  /* ---- La fila «Tonalidad» (decisión 232, Diego 2/10/2026) ----
+     TODO FRAGMENTO LLEVA SU TONALIDAD INDICADA. Diego: «creo que es buena cosa que los
+     alumnos sepan la tonalidad del fragmento, bien porque se les pregunte o porque se les
+     muestre, porque eso les ayudará a decidir qué acordes han de emplear». De modo que la
+     fila está SIEMPRE, module o no module el fragmento, y lo único que se gradúa es quién
+     la rellena:
        'dadas' → la fila se muestra rellena: la tonalidad inicial y, en cada pivote, la nueva
-       'pedir' → la rellena el alumno: marca desde qué nota rige la tonalidad nueva y cuál es
-       'no'    → no hay fila. Si el fragmento modula, se cifra igualmente en las tonalidades
-                 verdaderas, pero no se le dicen: es la modulación SIN ANUNCIAR
-       ausente → como siempre: fila dada si el fragmento modula, nada si no modula. Los
-                 enlaces antiguos, que llevan `aviso`, siguen valiendo.
+       'pedir' → la rellena el alumno: el tono de partida y, si lo hay, desde qué nota rige
+                 el nuevo. Decidir que NO cambia de tono es parte del ejercicio.
+       ausente → 'dadas'. Es lo que llevan los enlaces repartidos y los ejercicios del
+                 corpus, que así ganan la fila sin tocar nada.
+       'no'    → el valor viejo. También pasa a 'dadas': era «sin fila», y sin fila ya no
+                 hay nada (ver abajo).
 
-     Pedir lo que no hay que pedir no es pedir (decisión 112). La opción 'pedir' es de la
-     FICHA entera, y en una ficha la mayoría de los fragmentos no modulan: en ellos la fila
-     «Tonalidad» no tiene nada que recoger y la paleta de tonos —cinco teclas y un renglón
-     entero del teclado del móvil— no sirve para nada. Así que 'pedir' solo pide donde hay
-     modulación; donde no la hay, no hay fila. No se descubre nada con ello: el enunciado
-     ya dice «este fragmento modula» cuando modula. */
+     EN AUDICIÓN NUNCA SE PIDE. Diego: «se le da siempre la tonalidad marcada, porque lo que
+     me interesa es el reconocimiento funcional, no el oído absoluto». Así que allí 'pedir'
+     se convierte en 'dadas'. Lo que NO se convierte es 'oculta', que es una decisión
+     deliberada del profesor; ver el párrafo siguiente.
+
+     'oculta' → NIVEL AVANZADO, preparado y todavía sin ofrecer en el configurador. No hay
+     fila: si el fragmento modula, se cifra igualmente en sus tonalidades verdaderas, pero
+     no se le dicen ni dónde cambia ni a qué tono. Es lo que antes hacía 'no'. Se le ha dado
+     valor propio para que el día que se ofrezca —Diego lo quiere sobre todo en audición—
+     no haya que distinguirlo de los enlaces viejos ni rehacer la regla de audición.
+
+     (Lo que desaparece es el modo AUTOMÁTICO: la fila dada solo si el fragmento modulaba.
+     Dejaba sin tonalidad indicada justo a los fragmentos que no modulan, que son la mayor
+     parte del banco, y eso es lo que Diego quiere evitar. La decisión 112 —«pedir lo que no
+     hay que pedir no es pedir»— queda revocada por la misma razón: en un fragmento que no
+     modula sí hay algo que pedir, que es el tono de partida.) */
   function tonalidades(ej) {
-    if (ej.tonalidades === 'pedir') return modula(ej) ? 'pedir' : null;
-    if (ej.tonalidades === 'dadas') return 'dadas';
-    if (ej.tonalidades === 'no') return null;
-    if (!modula(ej)) return null;
-    return aviso(ej) === 'existe' ? 'pedir' : 'dadas';
+    if (ej.tonalidades === 'oculta') return null;
+    if (ej.tonalidades === 'pedir') return modo(ej) === 'audicion' ? 'dadas' : 'pedir';
+    return 'dadas';
   }
   function tonalidadEn(ej, i) { return Teoria.tonalidadesPorNota(ej)[i] || ej.tonalidad; }
   // Tonalidad que regía ANTES de la nota i (la anterior al pivote, si i es pivote)

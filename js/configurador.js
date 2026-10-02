@@ -180,7 +180,11 @@
   // Audición» y, en la melodía de soprano, los textos del paso 1 (la voz dada es la melodía)
   function ajustarCampoAudicion() {
     const sel = $('#ficha-modo');
-    $('#campo-bajo-audicion').hidden = (sel && sel.value ? sel.value : modoElegido()) !== 'audicion';
+    const esAudicion = (sel && sel.value ? sel.value : modoElegido()) === 'audicion';
+    $('#campo-bajo-audicion').hidden = !esAudicion;
+    /* En audición la tonalidad se da siempre (decisión 232): el control de la fila no puede
+       decir «pedirlas» y callarse que allí no se piden. */
+    if ($('#ficha-tonalidades-audicion')) $('#ficha-tonalidades-audicion').hidden = !esAudicion;
     const sop = esSoprano();
     $('#titulo-voz').textContent = 'El fragmento en curso · ' + (sop ? 'la melodía' : 'el bajo');
     $('#etiqueta-voz').textContent = sop ? 'Escribe la melodía (soprano)' : 'Escribe el bajo';
@@ -1001,14 +1005,20 @@
         celdas2: ej.respuestas.map((_, i) => (pivotes.has(i) ? { texto: Ejercicios.funcionModelo(ej, i), clase: 'dada', fija: true } : null)),
         dobles: ej.respuestas.map((_, i) => pivotes.has(i))
       } : null,
-      /* La fila «Tonalidad», solo si el fragmento modula (decisión 186): es la que pone el
-         nombre del tono a la izquierda de cada renglón, y sin ella los dos renglones del
-         acorde común no dicen a qué tono pertenece cada uno. En un fragmento que no modula
-         sería un renglón de casillas todas iguales, así que no se dibuja. */
-      filaTonalidad: mods.length ? {
+      /* La fila «Tonalidad», SIEMPRE (decisión 232, Diego 2/10/2026: «muestra en el
+         configurador también la fila de tonalidad, para que al revisar los fragmentos pueda
+         comprobar si es correcta toda la información que se le presentará al estudiante»).
+         Antes se dibujaba solo cuando el fragmento modulaba, porque en los demás era un
+         renglón de casillas iguales; ahora que al alumno se le indica la tonalidad en todos
+         los fragmentos, el revisor tiene que poder comprobarla en todos.
+
+         Aquí va rellena NOTA A NOTA, que es más de lo que ve el alumno —él la ve en la
+         primera nota y en cada cambio de tono—: así cada renglón del sistema lleva su tono
+         escrito a la izquierda, que es lo que se está revisando. */
+      filaTonalidad: {
         visible: true, editable: false,
         celdas: ej.respuestas.map((_, i) => ({ texto: Teoria.nombreCorto(Ejercicios.tonalidadEn(ej, i)), clase: 'dada', fija: true }))
-      } : null,
+      },
       gradosBajo: Ejercicios.gradosBajo(ejV),   // el circulito sobre el bajo (decisiones 91 y 113)
       numerar: true,                       // el número de cada acorde es el de su fila en la tabla de revisión
       alPulsarNumero: irAFila,
@@ -1928,7 +1938,7 @@
     const fun = $('#ficha-funciones').value;
     if (fun === 'dadas' || fun === 'pedir') f.funciones = fun;
     const tons = $('#ficha-tonalidades').value;
-    if (['dadas', 'pedir', 'no'].includes(tons)) f.tonalidades = tons;
+    if (['dadas', 'pedir', 'oculta'].includes(tons)) f.tonalidades = tons;
     // El cuadro de estructuras, en el tono del fragmento (decisión 226)
     if ($('#ficha-estructuras-ton').value === 'fragmento') f.estructurasTon = 'fragmento';
     /* Armadura distinta de la tonalidad del fragmento (decisión 185): hasta 1, 2 o 3

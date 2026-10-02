@@ -11,9 +11,29 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1200`, con la decisión
-  **231**. Archivos de esta entrega: `configurar.html`, `css/estilo.css`, `js/configurador.js`
-  y las ocho páginas (la marca).
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1400`, con la decisión
+  **232**. Archivos de esta entrega: `js/ejercicios.js`, `js/banco.js`, `js/configurador.js`,
+  `f.html`, `configurar.html` y las ocho páginas (la marca). **`f.html` es el que lleva las
+  cuarenta tareas del libro**: si algo va a romperse, se rompe ahí y a la vez en todas.
+
+- **PENDIENTE, PEDIDO POR DIEGO (2/10/2026): el nivel avanzado de audición.**
+  «Quizá un nivel avanzado de audición puede ser que incluya modulación pero que no se diga
+  dónde tiene lugar ni a qué tono.» **Está hecho y probado, pero sin ofrecer**: es el valor
+  `tonalidades: 'oculta'` (decisión 232). No hay fila ni aviso, y el fragmento se cifra
+  igualmente en sus tonalidades verdaderas. La regla de audición —allí la tonalidad se da
+  siempre— está escrita de modo que **respeta `'oculta'`**, precisamente para que esto siga
+  siendo posible el día que se quiera.
+  **Para activarlo** basta añadir una tercera opción al desplegable *Fila tonalidad* del
+  configurador —algo como «Modulación sin anunciar (avanzado)», valor `oculta`—; el filtro ya
+  lo deja viajar y el motor ya lo entiende. Si se quisiera solo para una tarea concreta del
+  libro, se pone en esa línea de `MODOS` o `LECCIONES` de `f.html`.
+
+- **CINCO DE LAS CUARENTA TAREAS DEL LIBRO NO DAN EJERCICIO**, y no por el cambio de hoy:
+  comprobado que fallaban igual antes. Son los cuatro códigos de **`a38`** —lección A3-8,
+  tema 12, que no tiene **ni un fragmento** en el banco— y **`a410-soprano`** —el tema 13
+  solo tiene fragmentos de bajo, sin melodía—. El alumno que los escanee ve el aviso «en el
+  banco no hay todavía ningún ejercicio revisado que cumpla lo que pide esta ficha». Se
+  arregla metiendo fragmentos en el banco, no tocando los QR.
 - **OJO, QUE ESTO NO ES SOLO INTERFAZ** (decisión 231): al quitar «Sin fila…» de los dos
   controles, **toda ficha que generes desde ahora lleva la fila de funciones y la de
   tonalidad**. Lo único que eliges es si el alumno las lee o las escribe. Las fichas ya

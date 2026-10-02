@@ -160,7 +160,14 @@
   };
 
   /* Lo que comparten todas las fichas: nivel, alteraciones y el tope de ejercicios. */
-  var COMUN = { n: 10, nivel: [1, 5], alteraciones: [0, 2] };
+  /* Lo que llevan TODAS las tareas del libro. Cambiar una línea de aquí cambia las cuarenta
+     a la vez, sin reimprimir nada (decisión 232). */
+  var COMUN = {
+    n: 10, nivel: [1, 5], alteraciones: [0, 2],
+    funciones: 'pedir',            // el alumno indica la función tonal de cada acorde
+    tonalidades: 'dadas',          // la fila de tonalidad, dada: saber el tono le ayuda a elegir
+    estructurasTon: 'fragmento'    // el cuadro de estructuras, en el tono del fragmento
+  };
 
   function base64url(txt) {
     var b = btoa(unescape(encodeURIComponent(txt)));
@@ -214,7 +221,19 @@
     var filtro = {
       n: COMUN.n, modo: modo, nivel: COMUN.nivel, alteraciones: COMUN.alteraciones,
       leccion: lec.leccion, compases: m.compases,
-      titulo: lec.rotulo + ' · ' + m.rotulo
+      titulo: lec.rotulo + ' · ' + m.rotulo,
+      /* LO QUE AÑADE LA DECISIÓN 232 A LAS TAREAS DEL LIBRO. Los cuadernos impresos ya
+         están repartidos y algunos alumnos los tienen encuadernados, así que esto es lo que
+         hay que cambiar sin tocar ni un QR: el código impreso sigue valiendo y lo que
+         significa se decide AQUÍ.
+           funciones      → el alumno indica también la función tonal de cada acorde, que es
+                            lo que faltaba en los cuestionarios del libro.
+           tonalidades    → dada. Que sepa en qué tono está le ayuda a elegir los acordes, y
+                            marcarla él se deja para las fichas que prepare Diego.
+           estructurasTon → el cuadro de estructuras, en el tono del fragmento. */
+      funciones: COMUN.funciones,
+      tonalidades: COMUN.tonalidades,
+      estructurasTon: COMUN.estructurasTon
     };
     var destino = m.pagina + '#f=' + base64url(JSON.stringify(filtro));
     document.getElementById('manual').setAttribute('href', destino);

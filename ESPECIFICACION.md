@@ -3880,6 +3880,50 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+232. **Todo fragmento lleva su tonalidad indicada, y los QR del libro piden las funciones**
+    (2/10/2026, Diego: «creo que es buena cosa que los alumnos sepan la tonalidad del
+    fragmento, bien porque se les pregunte o porque se les muestre, porque eso les ayudará a
+    decidir qué acordes han de emplear»).
+    - **La regla, una para todo** —configurador, enlaces sueltos y QR—. La fila «Tonalidad»
+      **está siempre**, module o no module el fragmento, y lo único que se gradúa es quién la
+      rellena: `dadas` (se le muestra) o `pedir` (la marca él, incluido el tono de partida, y
+      decidir que NO cambia de tono es parte del ejercicio). **Desaparece el modo
+      automático** —fila solo si modulaba—, que dejaba sin tonalidad indicada justo a los
+      fragmentos que no modulan, la mayor parte del banco. Con él cae la **decisión 112**
+      («pedir lo que no hay que pedir no es pedir»): en un fragmento que no modula sí hay algo
+      que pedir, que es el tono de partida.
+    - **Lo repartido gana la fila sin tocar nada.** Los enlaces de los alumnos y los
+      ejercicios del corpus no llevan el dato `tonalidades`; ausente pasa a significar
+      `dadas`. El valor viejo `'no'` también: era «sin fila», y sin fila ya no hay.
+    - **En audición nunca se pide** (Diego: «se le da siempre la tonalidad marcada, porque lo
+      que me interesa es el reconocimiento funcional, no el oído absoluto»): allí `pedir` se
+      convierte en `dadas`. El configurador lo dice en su propia ayuda cuando el tipo es
+      audición, para no prometer algo que no va a pasar.
+    - **El nivel avanzado queda preparado y guardado: `'oculta'`.** Sin fila y sin aviso: si
+      el fragmento modula, se cifra igualmente en sus tonalidades verdaderas pero no se le
+      dice ni dónde cambia ni a qué tono. Es lo que antes hacía `'no'`, con valor propio para
+      que la regla de audición pueda respetarlo —es una decisión deliberada del profesor, no
+      un descuido— y para no confundirlo con los enlaces viejos. **No se ofrece todavía en el
+      configurador**; cuando Diego lo quiera, es una opción más en el desplegable.
+    - **Las cuarenta tareas del libro, sin reimprimir nada.** El QR impreso lleva un código
+      corto que traduce `f.html`, así que cambiar lo que significa es cambiar un archivo del
+      servidor (decisión 128). En `COMUN` se añade lo que faltaba en los cuestionarios:
+      `funciones: 'pedir'` —el alumno indica también la función tonal de cada acorde—,
+      `tonalidades: 'dadas'` y `estructurasTon: 'fragmento'` —el cuadro de estructuras, en el
+      tono del fragmento—. Ni un código cambia.
+    - **Y el revisor enseña la fila.** (Diego: «muestra en el configurador también la fila de
+      tonalidad, para que al revisar los fragmentos pueda comprobar si es correcta toda la
+      información que se le presentará al estudiante».) Antes se dibujaba solo si el fragmento
+      modulaba. Va rellena nota a nota —más de lo que ve el alumno, que la ve en la primera y
+      en cada cambio—, para que cada renglón del sistema lleve su tono escrito a la izquierda.
+    - **Medido**: los **40 códigos** impresos, uno a uno. **35 funcionan** con funciones,
+      tonalidad y cuadro de estructuras en su tema. **5 no dan ejercicio, y no por esto**:
+      los cuatro de `a38` (lección A3-8, tema 12, que **no tiene ni un fragmento en el banco**)
+      y `a410-soprano` (el tema 13 solo tiene fragmentos de bajo, sin melodía). Comprobado que
+      fallaban igual antes del cambio. Probado además el camino nuevo —`pedir` sobre un
+      fragmento que no modula—: la fila sale vacía, el alumno marca el tono y la corrección
+      responde «Tonalidad de partida: bien marcada (Do M)» o «has marcado Sol M (no es esa)».
+
 231. **Las dos filas de análisis ya no se pueden quitar: solo se dan o se piden** (2/10/2026,
     Diego: «en los controles “fila de funciones tonales” y “fila de tonalidad”, eliminar las
     opciones “Sin fila…”; lo que decidiremos será si se muestran automáticamente —más fácil y
