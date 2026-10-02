@@ -1391,7 +1391,9 @@
     $('#grados-bajo').value = Ejercicios.estadoGrados(ej);
     elegirModo(Ejercicios.modo(ej));
     $('#bajo-audicion').value = ej.mostrarBajo === true ? 'bajo' : '';
-    $('#ficha-funciones').value = Ejercicios.funciones(ej) || '';
+    /* Ya no hay «sin fila» (decisión 231): un ejercicio viejo que no la llevara se lee
+       como «dadas», que es el nuevo punto de partida. */
+    $('#ficha-funciones').value = Ejercicios.funciones(ej) === 'pedir' ? 'pedir' : 'dadas';
     estado.funciones = Array.isArray(ej.funcionesNotas) ? ej.funcionesNotas.slice() : null;
     if (Array.isArray(ej.acordes)) marcarAcordes(ej.acordes);
     $('#formula-tst').checked = ej.formulaTST !== false;
@@ -1399,7 +1401,7 @@
     $('#ficha-preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
     estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
     estado.melodica = Array.isArray(ej.melodica) ? ej.melodica.slice() : [];
-    $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ej.tonalidades) ? ej.tonalidades : '';
+    $('#ficha-tonalidades').value = ej.tonalidades === 'pedir' ? 'pedir' : 'dadas';
     $('#ficha-estructuras-ton').value = ej.estructurasTon === 'fragmento' ? 'fragmento' : '';
     estado.compases = ej.compases;
     abrirFragmento();
@@ -1459,9 +1461,8 @@
          las del paso 3 de entonces, para no perder lo que hubiera elegido. */
       $('#ficha-ayuda-grados').value = b.fichaAyudaGrados || b.ayudaGrados || 'lista';
       $('#ficha-preferir').value = b.fichaPreferir || b.preferir || '';
-      $('#ficha-funciones').value = b.fichaFunciones || (b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '');
-      const ton = b.fichaTonalidades || b.tonalidades;
-      $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ton) ? ton : '';
+      $('#ficha-funciones').value = (b.fichaFunciones || b.funciones) === 'pedir' ? 'pedir' : 'dadas';
+      $('#ficha-tonalidades').value = (b.fichaTonalidades || b.tonalidades) === 'pedir' ? 'pedir' : 'dadas';
       /* El valor por defecto es ahora «en la tonalidad del fragmento» (decisión 229): un
          borrador anterior, que no guardaba esta opción, hereda el nuevo defecto. */
       $('#ficha-estructuras-ton').value = b.fichaEstructurasTon === '' ? '' : 'fragmento';
@@ -1605,8 +1606,9 @@
         + 'No se ha vuelto a analizar nada: los acordes que marcaste siguen ahí, pero ahora se leen en el tono nuevo.', 11000);
     }));
     document.querySelectorAll('input[name="modo-ej"]').forEach(r => r.addEventListener('change', () => {
-      // La armonización de soprano parte de la función tonal de cada acorde: si no había fila, se activa
-      if (esSoprano() && !$('#ficha-funciones').value) $('#ficha-funciones').value = 'dadas';
+      /* La fila de funciones ya no se puede quitar (decisión 231), así que aquí no hay nada
+         que encender: en la armonización de soprano siempre está, que es lo que esto
+         garantizaba. */
       ajustarCampoAudicion(); limpiarDireccion();
       // Entre bajo dado y melodía de soprano cambia la voz dada y la forma de las respuestas
       const eraSoprano = estado.respuestas && estado.respuestas.some(a => a.some(x => String(x).includes('|')));

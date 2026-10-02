@@ -11,11 +11,13 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1000`, con la decisión
-  **230**. Las 221–229 están ya subidas (el clon va por `20261004-0800`). Archivos de esta
-  entrega: `configurar.html`, `css/estilo.css` y las ocho páginas (la marca). **Ni una línea
-  de JavaScript**: los dos bloques se reordenan en el HTML y los controles se siguen leyendo
-  por su identificador.
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1200`, con la decisión
+  **231**. Archivos de esta entrega: `configurar.html`, `css/estilo.css`, `js/configurador.js`
+  y las ocho páginas (la marca).
+- **OJO, QUE ESTO NO ES SOLO INTERFAZ** (decisión 231): al quitar «Sin fila…» de los dos
+  controles, **toda ficha que generes desde ahora lleva la fila de funciones y la de
+  tonalidad**. Lo único que eliges es si el alumno las lee o las escribe. Las fichas ya
+  repartidas no cambian: el motor sigue entendiendo las que no llevan fila.
 - **Dos nombres que me he inventado yo** y que cambias en una palabra si no te cuadran: los
   rótulos de grupo «Tamaño y título de la ficha» (parte A) y la coletilla «el otro botón» del
   cuadro de cifrados. Los demás son los que dictaste.

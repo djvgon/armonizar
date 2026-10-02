@@ -1456,6 +1456,12 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
 .grupo-en-linea > .rotulo-grupo { margin: 0 0 10px; flex: 0 0 auto; }
 .grupo-en-linea > .fila-campos { margin-top: 0; flex: 1 1 auto; }
 
+/* TRES COLUMNAS IGUALES (decisión 231): un control en cada una, alineadas por arriba —lo
+   que ha de cuadrar es el rótulo, no el pie de una explicación más larga que otra— y del
+   mismo ancho, repartido a partes iguales. */
+.fila-tres { margin-top: 6px; gap: 10px 22px; align-items: flex-start; }
+.fila-tres > .campo { flex: 1 1 0; min-width: 210px; }
+
 .fila-apretada { margin-top: 6px; gap: 8px 14px; }
 .fila-apretada > .campo { margin: 0; }
 .fila-apretada > .campo-linea { margin: 2px 0 0; }

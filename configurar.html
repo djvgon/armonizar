@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261004-1000">
-  <link rel="stylesheet" href="css/estilo.css?v=20261004-1000">
+  <link rel="stylesheet" href="css/bravura.css?v=20261004-1200">
+  <link rel="stylesheet" href="css/estilo.css?v=20261004-1200">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -239,31 +239,35 @@
         <!-- TRES GRUPOS (decisión 230, Diego 2/10/2026): qué mandos tiene delante, cómo se
              le corrige y qué ayuda puede abrir. -->
         <h4 class="rotulo-grupo">Controles que se le presentan</h4>
-        <div class="fila-campos fila-apretada">
+        <!-- TRES COLUMNAS IGUALES (decisión 231, Diego 2/10/2026): el nombre corto en el
+             desplegable y el matiz debajo, en texto normal. Las opciones largas hacían el
+             control tan ancho que no cabían tres en un renglón, y además el matiz leído
+             dentro de un desplegable cerrado no se lee: se adivina. -->
+        <div class="fila-campos fila-tres">
           <label class="campo">
             <span class="rotulo-mixto">Ayuda con los <b>sonidos fundamentales</b></span>
             <select id="ficha-ayuda-grados">
-              <option value="ninguna">Ninguna: paleta completa, sin lista</option>
-              <option value="lista" selected>Mostrar la lista de sonidos fundamentales en juego (paleta completa)</option>
-              <option value="paleta">Limitar la paleta a los sonidos fundamentales en juego</option>
+              <option value="lista" selected>Mostrar la lista</option>
+              <option value="paleta">Limitar la paleta</option>
+              <option value="ninguna">Ninguna</option>
             </select>
+            <span class="ayuda"><b>Mostrar la lista</b> los enumera encima de la paleta, que sigue entera; <b>limitar la paleta</b> deja solo esos botones, que es más fácil todavía; <b>ninguna</b> no da pista y el alumno los busca.</span>
           </label>
           <label class="campo">
             <span>Fila de funciones tonales</span>
             <select id="ficha-funciones">
-              <option value="" selected>Sin fila de funciones</option>
-              <option value="dadas">Dadas: el alumno ve la función de cada acorde</option>
-              <option value="pedir">Pedirlas: el alumno indica primero la función de cada acorde</option>
+              <option value="dadas" selected>Dadas automáticamente</option>
+              <option value="pedir">Pedirlas</option>
             </select>
+            <span class="ayuda">La fila <b>T · S · D</b> debajo de cada acorde. Dadas, el alumno la lee y le orienta; pidiéndolas, ha de decir él la función de cada acorde antes de cifrarlo.</span>
           </label>
           <label class="campo">
             <span>Fila tonalidad</span>
             <select id="ficha-tonalidades">
-              <option value="" selected>Automático: dadas si el fragmento modula</option>
-              <option value="dadas">Dadas: el alumno ve el tono y dónde cambia</option>
-              <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
-              <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
+              <option value="dadas" selected>Dadas automáticamente</option>
+              <option value="pedir">Pedirlas</option>
             </select>
+            <span class="ayuda">La fila que dice en qué tono va el fragmento y dónde cambia. Dadas, el alumno las lee; pidiéndolas, ha de marcar él el tono de partida y cada modulación, que es bastante más difícil.</span>
           </label>
           <label class="campo" id="campo-bajo-audicion" hidden>
             <span>Audición: qué ve el alumno mientras escucha</span>
@@ -682,20 +686,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261004-1000</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261004-1200</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261004-1000"></script>
-  <script src="js/teoria.js?v=20261004-1000"></script>
-  <script src="js/reglas.js?v=20261004-1000"></script>
-  <script src="js/ejercicios.js?v=20261004-1000"></script>
-  <script src="js/partitura.js?v=20261004-1000"></script>
-  <script src="js/musicxml.js?v=20261004-1000"></script>
-  <script src="js/musescore.js?v=20261004-1000"></script>
-  <script src="js/banco.js?v=20261004-1000"></script>
-  <script src="js/realizacion.js?v=20261004-1000"></script>
-  <script src="js/tecnicas.js?v=20261004-1000"></script>
-  <script src="js/configurador.js?v=20261004-1000"></script>
+  <script src="js/qr.js?v=20261004-1200"></script>
+  <script src="js/teoria.js?v=20261004-1200"></script>
+  <script src="js/reglas.js?v=20261004-1200"></script>
+  <script src="js/ejercicios.js?v=20261004-1200"></script>
+  <script src="js/partitura.js?v=20261004-1200"></script>
+  <script src="js/musicxml.js?v=20261004-1200"></script>
+  <script src="js/musescore.js?v=20261004-1200"></script>
+  <script src="js/banco.js?v=20261004-1200"></script>
+  <script src="js/realizacion.js?v=20261004-1200"></script>
+  <script src="js/tecnicas.js?v=20261004-1200"></script>
+  <script src="js/configurador.js?v=20261004-1200"></script>
 </body>
 </html>

@@ -3880,6 +3880,30 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+231. **Las dos filas de análisis ya no se pueden quitar: solo se dan o se piden** (2/10/2026,
+    Diego: «en los controles “fila de funciones tonales” y “fila de tonalidad”, eliminar las
+    opciones “Sin fila…”; lo que decidiremos será si se muestran automáticamente —más fácil y
+    rápido— o si el alumno ha de marcarlas —algo más difícil—»).
+    - **Qué desaparece.** De *Fila de funciones tonales*, «Sin fila de funciones»; de *Fila
+      tonalidad*, «Sin fila de tonalidades» **y también «Automático»**, que Diego quitó en la
+      misma frase. Los dos controles quedan con dos valores, **Dadas automáticamente** y
+      **Pedirlas**, y el primero es el de partida. Es un cambio pedagógico, no de interfaz:
+      **toda ficha nueva lleva las dos filas**, y lo único que se gradúa es si el alumno las
+      lee o las escribe.
+    - **Lo viejo sigue abriéndose.** El motor entiende igual que antes `funciones` ausente y
+      `tonalidades: 'no'`, de modo que las fichas repartidas no cambian. Lo que cambia es lo
+      que el configurador genera. Al cargar en el configurador un ejercicio o un borrador sin
+      fila, el control se coloca en «dadas», que es el nuevo punto de partida.
+    - **El nombre corto en el desplegable y el matiz debajo.** Las opciones eran frases —«Dadas:
+      el alumno ve la función de cada acorde»— y eso hacía el control tan ancho que no cabían
+      tres en un renglón; además, un matiz leído dentro de un desplegable cerrado no se lee,
+      se adivina. Ahora el desplegable dice **qué** y la explicación de debajo dice **qué
+      significa**, en texto normal.
+    - **Tres columnas iguales** (`fila-tres`): un control en cada una, del mismo ancho y
+      alineadas por arriba —lo que ha de cuadrar es el rótulo, no el pie de una explicación
+      más larga que otra—. La *ayuda con los sonidos fundamentales* se acorta igual
+      («Mostrar la lista», «Limitar la paleta», «Ninguna») con su explicación debajo.
+
 230. **Los dos bloques de la ficha, por grupos con rótulo** (2/10/2026, Diego dictando los
     grupos de los dos: «primero, los controles sobre formato o características no musicales…
     después controles sobre Armonía diatónica… después controles sobre Armonía cromática»).
