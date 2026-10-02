@@ -236,6 +236,13 @@ const Registro = (() => {
     return {
       titulo: p.titulo,
       tipo: p.tipo,
+      /* El MODO de la práctica, tal cual lo fijó quien la abrió: 'cifrar' | 'audicion' |
+         'armonizar' | 'soprano'. Va al formulario del profesor como un campo propio
+         (decisión 235, Diego 2/10/2026) para que el cuaderno de calificaciones pueda
+         separar las medias por modo SIN tener que adivinarlas leyendo el título de la
+         ficha, que el profesor escribe a mano y no siempre lo nombra. */
+      modo: p.modo,
+      leccion: p.leccion,
       alumno: p.alumno,
       fecha: p.inicio,
       previstos: p.previstos,

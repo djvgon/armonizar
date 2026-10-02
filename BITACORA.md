@@ -9,11 +9,30 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 1 de octubre de 2026
+## Estado a 2 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1800`, con la decisión
-  **234**. Archivos de esta entrega: `js/configurador.js`, `configurar.html`, `cifrados.html`,
-  `estructuras.html` y las ocho páginas (la marca).
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-2000`, con la decisión
+  **235**. Archivos de esta entrega: `js/registro.js`, `js/envio.js` y las ocho páginas (la
+  marca). La decisión **234** —`js/configurador.js`, `configurar.html`, `cifrados.html`,
+  `estructuras.html`— ya está publicada.
+
+- **LOS TRES PASOS DE LA DECISIÓN 235 QUE NO PUEDO DAR YO** (en este orden; sin el primero,
+  las medias por modo siguen deduciéndose del título, que es lo que había):
+  1. **El formulario.** Abrir el proyecto de Apps Script de `CrearFormularioPractica.gs`
+     (script.google.com) y pegar la versión nueva, que añade la pregunta **«Modo»**. Ejecutar
+     `crearFormularioPractica`: no duplica nada, añade la pregunta que falta y escribe en el
+     registro la **dirección plantilla** nueva. La pregunta aparece al final del formulario y
+     su columna a la derecha de todas en la hoja; las filas anteriores se quedan con esa
+     casilla en blanco, que es lo correcto —nadie mandó ese dato—.
+  2. **La plantilla, a la aplicación.** Copiar esa dirección entera, pegarla en el configurador
+     («C · Recogida de resultados → Dirección plantilla del formulario»), pulsar **Descargar
+     `envio.json`** y poner ese archivo en la carpeta de la web, junto a `banco.json`.
+     Entra en el mismo *commit* que los dos `js` de arriba o en otro, da igual: el orden no
+     importa, porque una marca sin valor se queda en blanco y un valor sin marca no se manda.
+  3. **El cuaderno.** En «Práctica armónica — resultados» → Extensiones → Apps Script, pegar
+     la versión nueva de `MontarCuadernoPractica.gs` encima de lo que haya y ejecutar
+     `montarCuaderno`. Crea **«Calificaciones»** y **«Contenidos»** y borra «Cuaderno». El
+     disparador no hay que tocarlo: sigue llamando a `alEnviar`.
 
 - **PARA QUE EL BOTÓN DE RESULTADOS FUNCIONE, UNA SOLA VEZ.** La hoja donde caen los envíos
   de los alumnos es **«Práctica armónica — resultados»**:

@@ -13,6 +13,11 @@
        { "plantilla": "https://docs.google.com/forms/d/e/…/viewform?usp=pp_url
                        &entry.111=ZZALUMNOZZ&entry.222=ZZPRACTICAZZ&…" }
 
+   Si la plantilla es de antes de que el formulario tuviera un campo, la marca
+   simplemente no está y ese valor no se manda: nada se rompe. Al revés también
+   —una marca sin valor se queda en blanco—, así que el formulario y la aplicación
+   pueden actualizarse por separado, sin coordinar el momento.
+
    Cada ZZ…ZZ es una marca que este módulo sustituye por el valor de verdad.
    Si el archivo no está (o no se puede leer), no pasa nada: el botón de enviar
    sencillamente no aparece y quedan el de copiar y el de descargar.
@@ -42,11 +47,21 @@ const Envio = (() => {
 
   /* Los valores que van a cada marca. El orden no importa: se sustituye por
      nombre. Lo que no exista se queda en blanco, nunca con la marca a la vista. */
+  /* El modo con el nombre que entiende un humano, porque acaba en una columna que el
+     profesor lee: 'cifrar' → «Análisis». Los rótulos son los de `Ejercicios.MODOS`, que
+     siempre está cargado antes que este módulo; si algún día no lo estuviera, va el
+     nombre interno, que es feo pero sirve igual para agrupar. */
+  function nombreDeModo(modo) {
+    if (!modo) return '';
+    try { return Ejercicios.MODOS[modo] || modo; } catch (e) { return modo; }
+  }
+
   function valores(r) {
     const coma = x => String(x).replace('.', ',');
     return {
       ALUMNO: r.alumno || '',
       PRACTICA: r.titulo || '',
+      MODO: nombreDeModo(r.modo),
       FECHA: Registro.fechaLocal(r.fecha),
       NOTA: coma(r.nota10),
       NOTAFIN: coma(r.nota10Final),

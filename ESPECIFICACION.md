@@ -3880,6 +3880,44 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+235. **El cuaderno de calificaciones, en dos hojas; y el modo de la práctica, dato y no conjetura**
+    (2/10/2026, Diego).
+    - **Dos hojas en lugar de una.** La hoja única «Cuaderno» mezclaba dos lecturas que se
+      hacen en momentos distintos, y Diego las separó por lo que cada una responde:
+      **«Contenidos»** —«me serviría para saber cómo lleva la materia»— con el resumen de toda
+      la clase arriba y el semáforo por alumno debajo; y **«Calificaciones»** —«para saber lo
+      aplicado que ha sido»— con un alumno por fila, una columna por práctica, la mejor nota de
+      primer intento, la media y las prácticas enviadas. «Cuaderno» se elimina al ejecutar, y
+      se elimina **al final**: si algo falla antes, queda la hoja vieja y no ninguna.
+      · En «Calificaciones» se congelan las dos primeras columnas: la tabla crece a lo ancho
+      con cada práctica nueva y sin eso se pierde de vista de quién es la fila.
+      · Corregido de paso un fallo latente: la hoja de respuestas se localizaba cogiendo *la
+      primera que no se llamara «Cuaderno»*, lo que con dos hojas nuevas y una «Hoja 1» suelta
+      podía acabar leyendo la equivocada. Ahora se reconoce **por su cabecera**.
+    - **La media por modo.** Cuatro columnas más en «Calificaciones», a la derecha de la media
+      general y antes de «Prácticas enviadas»: análisis, audición, armonización de bajo y de
+      soprano. Se calculan sobre **las mismas notas que la media general** —la mejor de cada
+      práctica, no cada envío—, así que repetir una ficha no pesa doble. «Prácticas enviadas»
+      no se colorea: es una cuenta, no una nota, y en verde engañaría.
+    - **El modo, exacto y no deducido.** La primera versión reconocía el modo leyendo el
+      **título** de la práctica, que es lo único que llegaba. Funcionaba con los títulos que
+      genera la aplicación sola —los de los códigos QR del libro y el automático del
+      configurador—, pero no con los que escribe Diego a mano, que no siempre lo nombran, y
+      podía equivocarse con un «El bajo de Corelli» que en realidad es análisis. Diego pidió
+      que fuera exacto, así que **el modo viaja ahora como un campo propio del formulario**:
+      `Registro.resumen()` lo expone (`modo`, el que fijó quien abrió la práctica) y
+      `envio.js` lo manda con el nombre que entiende un humano —«Análisis», «Audición»,
+      «Armonización de bajo», «Armonización de soprano»—, porque acaba en una columna que se
+      lee. El cuaderno usa ese campo siempre que está.
+      · **La deducción por el título se queda como plan B**, para las entregas anteriores al
+      campo, que lo tienen en blanco. Un título es siempre de un solo modo, así que basta con
+      que **un** alumno envíe con la aplicación nueva para que la columna entera quede bien
+      clasificada, incluidas las entregas viejas de ese mismo título. Al terminar, el script
+      dice cuántos modos ha tenido que deducir y qué títulos se quedan fuera de las cuatro
+      medias: si sale 0, son exactas y no hay nada que revisar.
+      · Formulario y aplicación **pueden actualizarse por separado**, sin coordinar el momento:
+      una marca `ZZ…ZZ` sin valor se queda en blanco, y un valor sin marca no se manda.
+
 234. **Las ventanas de ayuda, sin salidas falsas; y la hoja de resultados, a un botón**
     (2/10/2026, Diego).
     - **Fuera los enlaces de la banda oscura en `cifrados.html` y `estructuras.html`** («para
