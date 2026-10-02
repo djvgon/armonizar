@@ -11,10 +11,14 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 2 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-2000`, con la decisión
-  **235**. Archivos de esta entrega: `js/registro.js`, `js/envio.js` y las ocho páginas (la
-  marca). La decisión **234** —`js/configurador.js`, `configurar.html`, `cifrados.html`,
-  `estructuras.html`— ya está publicada.
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-2200`, con las
+  decisiones **235** y **236**. Archivos pendientes de subir: `js/app.js`, `js/registro.js`,
+  `js/envio.js`, las ocho páginas (la marca) y los dos documentos. La decisión **234**
+  —`js/configurador.js`, `configurar.html`, `cifrados.html`, `estructuras.html`— ya está
+  publicada.
+  · La **236** corrige un ejercicio sin salida: con los enlaces repartidos antes de la
+  decisión 233 (`pedirRomano: false`), la fila «Tonalidad» salía editable y sin paleta ni
+  atajos con que rellenarla. **Conviene que esto llegue a los alumnos pronto.**
 
 - **LOS TRES PASOS DE LA DECISIÓN 235 QUE NO PUEDO DAR YO** (en este orden; sin el primero,
   las medias por modo siguen deduciéndose del título, que es lo que había):

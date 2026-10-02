@@ -530,8 +530,19 @@
     const caja = $('#paleta-tonalidades-caja');
     const pal = $('#paleta-tonalidades');
     pal.innerHTML = '';
-    if (!hayFilaTonalidad() || !estado.pedirRomano) { caja.hidden = true; return; }
-    caja.hidden = !tonalidadEditable();
+    /* La paleta de tonos hace falta SIEMPRE que la fila «Tonalidad» se pueda editar, y eso
+       no tiene nada que ver con que se pida además el sonido fundamental.
+       Hasta la decisión 236 esta condición exigía `estado.pedirRomano`, y con ella un enlace
+       de los repartidos antes de la decisión 233 —los que llevan `pedirRomano: false`— abría
+       la fila editable y sin ninguna manera de rellenarla: ni paleta ni atajos de teclado,
+       porque las teclas ni se construían. El ejercicio no se podía terminar (Diego,
+       2/10/2026: «no aparecen los controles para seleccionar la tonalidad, con lo que es
+       imposible resolver el ejercicio satisfactoriamente»).
+       Al salir aquí sin construir las teclas, un número pulsado con el foco en una casilla
+       de tonalidad NO rellena nada cuando la fila viene dada: antes las teclas se creaban
+       igual, escondidas, y seguían respondiendo al atajo. */
+    if (!tonalidadEditable()) { caja.hidden = true; return; }
+    caja.hidden = false;
     const i = estado.activa;
     const sinEsta = Object.assign({}, estado.marcas); delete sinEsta[i];
     const antes = lecturaCon(sinEsta)[i].ton;

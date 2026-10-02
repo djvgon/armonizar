@@ -3880,6 +3880,27 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+236. **Si hay que marcar la tonalidad, tiene que haber con qué marcarla**
+    (2/10/2026, Diego: «no aparecen los controles para seleccionar la tonalidad, con lo que es
+    imposible resolver el ejercicio satisfactoriamente»).
+    **Fallo, reproducido y corregido.** La paleta de tonos se pintaba solo si además se pedía
+    el sonido fundamental: `if (!hayFilaTonalidad() || !estado.pedirRomano) …`. Son dos cosas
+    que no tienen nada que ver, y al atarlas aparecía un ejercicio **sin salida**: con un
+    enlace de los repartidos antes de la decisión 233 —los que llevan `pedirRomano: false`, que
+    la aplicación sigue entendiendo a propósito— la fila «Tonalidad» salía **editable**, con
+    sus casillas enfocables, y no había **ninguna** manera de rellenarlas: ni paleta ni atajos
+    de teclado, porque las teclas no se construían siquiera. Medido antes de tocar nada: tres
+    casillas editables, cero teclas.
+    Ahora la paleta depende de una sola cosa, la que corresponde: **que la fila se pueda
+    editar** (`tonalidadEditable()`, es decir, tonalidad por pedir, no bloqueada y sin
+    corregir). Comprobado en los cuatro modos y en enlace viejo y nuevo: con la tonalidad por
+    pedir la paleta aparece y la casilla se rellena **con el ratón y con el atajo de teclado**;
+    con la tonalidad dada —y en audición, que la da siempre por la decisión 232— sigue sin
+    aparecer, que es lo correcto, porque no hay nada que elegir.
+    · De paso se cierra un agujero pequeño: al salir sin construir las teclas, un número
+    pulsado con el foco en una casilla de tonalidad ya no rellena nada cuando la fila viene
+    dada. Antes las teclas se creaban igual, escondidas, y seguían respondiendo al atajo.
+
 235. **El cuaderno de calificaciones, en dos hojas; y el modo de la práctica, dato y no conjetura**
     (2/10/2026, Diego).
     - **Dos hojas en lugar de una.** La hoja única «Cuaderno» mezclaba dos lecturas que se
