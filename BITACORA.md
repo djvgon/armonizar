@@ -11,10 +11,14 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-0800`, con la decisión
-  **229**. Las 221–228 están ya subidas (`20261003-2200`, comprobado: las referencias local y
-  remota del clon coinciden). Archivos de esta entrega: `js/configurador.js`, `css/estilo.css`,
-  `configurar.html` y las ocho páginas (la marca).
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-1000`, con la decisión
+  **230**. Las 221–229 están ya subidas (el clon va por `20261004-0800`). Archivos de esta
+  entrega: `configurar.html`, `css/estilo.css` y las ocho páginas (la marca). **Ni una línea
+  de JavaScript**: los dos bloques se reordenan en el HTML y los controles se siguen leyendo
+  por su identificador.
+- **Dos nombres que me he inventado yo** y que cambias en una palabra si no te cuadran: los
+  rótulos de grupo «Tamaño y título de la ficha» (parte A) y la coletilla «el otro botón» del
+  cuadro de cifrados. Los demás son los que dictaste.
 - **Dos opciones menos en el configurador** (decisión 229): «dar los grados solo en el primer
   fragmento» y «pedir también el sonido fundamental». Salen del configurador, **no del motor**:
   una ficha ya repartida que las lleve sigue funcionando igual. Si alguna vez hiciera falta

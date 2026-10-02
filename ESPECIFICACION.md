@@ -3880,6 +3880,44 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+230. **Los dos bloques de la ficha, por grupos con rótulo** (2/10/2026, Diego dictando los
+    grupos de los dos: «primero, los controles sobre formato o características no musicales…
+    después controles sobre Armonía diatónica… después controles sobre Armonía cromática»).
+    - **«Qué fragmentos entran»**, en cuatro grupos: lo que NO es música —tipo de ejercicio,
+      lección, **nivel (dificultad)** y procedencia—; **Armonía diatónica** —modo y
+      alteraciones de la armadura—; **Armonía cromática** —modulación y el 6.º descendente—;
+      y el tamaño y el título de la ficha.
+    - **El 6.º descendente cambia de bloque.** Estaba en «Cómo se le presenta al alumno» y no
+      es una manera de presentar nada: dice **qué armonía se da por buena** sobre esa nota, que
+      es exactamente lo que hace el resto del filtro. Y junto a «Modulación» tiene sentido:
+      las dos son cromatismo. El código no se entera —los dos controles se leen por su
+      identificador—, de modo que el cambio es solo del HTML; lo único que gana es que el
+      botón «Valores por defecto» del bloque ahora también lo devuelve a su sitio.
+    - **«Cómo se le presenta al alumno»**, en tres: *Controles que se le presentan* —la ayuda
+      con los sonidos fundamentales, la **fila de funciones tonales** y la **fila
+      tonalidad**—; *Obtener feedback y evaluación* —la casilla de los reintentos, con el
+      texto que Diego dictó: «El estudiante tiene oportunidad de mejorar su respuesta antes de
+      conocer la solución definitiva»—; e *Información de apoyo* —los grados del bajo y las
+      dos ventanas que el alumno puede abrir—.
+    - **Rótulos con un término destacado.** «Ayuda con los **sonidos fundamentales**»,
+      «**Cuadro de estructuras armónicas**, el botón del alumno», «**Cuadro de cifrados**, el
+      otro botón»: el ojo cae en lo que nombra el control y no en la frase entera.
+      (`span.rotulo-mixto`: el rótulo en tinta normal y el `b` de dentro con el estilo de
+      siempre.)
+    - **Y apretado**: `fila-apretada` baja el aire entre renglones de 12/14 px a 8/6 y quita
+      el margen de los campos. El bloque del filtro, con once controles, pasa de ocupar media
+      pantalla a 514 px. De paso, los campos numéricos —los compases— reciben por fin el mismo
+      estilo que los demás: estaban sin tocar, con el borde y el alto que les pone el
+      navegador, y desalineaban su renglón.
+    - **Segunda vuelta, el mismo día.** Los rótulos de los dos grupos de armonía van **en el
+      mismo renglón que sus controles**, a su izquierda (`grupo-en-linea`): dos renglones para
+      un grupo de dos controles era medio bloque gastado en decir de qué van. Se alinean por
+      abajo y se levantan 10 px, para quedar a la altura del texto del desplegable y no de su
+      borde. Los otros dos grupos del bloque conservan su rótulo en renglón propio: el primero
+      no lo necesita —lo encabeza el título del bloque— y el último lleva tres controles, uno
+      de ellos ancho. Y «Obtener feedback y evaluación» se queda en **«Feedback y
+      evaluación»**.
+
 229. **«Cómo se le presenta al alumno», reordenado y con dos casillas menos** (2/10/2026,
     Diego, dictando el orden campo a campo y pidiendo quitar dos).
     - **El orden** es ahora el del trabajo: lo que toca la respuesta —la ayuda con los sonidos

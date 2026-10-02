@@ -453,7 +453,7 @@ svg.partitura .grado-cifra { font-family: Georgia, "Times New Roman", serif; fon
 .columna { flex: 1 1 340px; min-width: 0; }
 .campo { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--tinta-suave); }
 .campo > span { display: block; }
-.campo input[type="text"], .campo select, .campo textarea, textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion {
+.campo input[type="text"], .campo input[type="number"], .campo select, .campo textarea, textarea#direccion, textarea#direcciones-todos, textarea#ficha-direccion {
   font: inherit; font-size: 1rem; color: var(--tinta); padding: 8px 10px;
   border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); width: 100%;
 }
@@ -1437,16 +1437,39 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
   letter-spacing: normal; color: var(--tinta-suave);
 }
 
-/* «Información adicional de apoyo» (decisión 229): un grupo con rótulo propio dentro del
-   bloque, y dentro dos columnas —las dos ventanas de ayuda del alumno— que se parten en
-   una sola cuando no caben. Se alinean por ARRIBA, no por abajo como el resto de campos:
-   aquí lo que se compara es el rótulo y su explicación, de alturas distintas. */
-.rotulo-apoyo {
-  margin: 24px 0 0; font-family: var(--fuente-ui); font-size: .92rem; font-weight: 700;
-  letter-spacing: .01em; color: var(--marca-rotulo);
+/* ---- Grupos dentro de un bloque de opciones (decisiones 229 y 230) ----
+   Un bloque con once controles seguidos no se lee: se ordenan por lo que son —lo que no es
+   música, la armonía diatónica, la cromática— y cada grupo lleva su rótulo. El rótulo es
+   más pequeño que el del bloque y no abre caja: solo separa. */
+.rotulo-grupo {
+  margin: 16px 0 0; font-family: var(--fuente-ui); font-size: .84rem; font-weight: 700;
+  letter-spacing: .03em; text-transform: uppercase; color: var(--marca-rotulo);
 }
-.fila-apoyo { align-items: flex-start; margin-top: 10px; }
+/* APRETADO (Diego, 2/10/2026: «que esta parte ocupe lo menos posible… y no generando
+   espacio extra innecesario entre controles»). Los campos siguen fluyendo y partiéndose
+   solos; lo que se quita es el aire entre renglones y por encima de cada grupo. */
+/* EL RÓTULO DEL GRUPO, EN EL MISMO RENGLÓN QUE SUS CONTROLES (Diego, 2/10/2026). Dos
+   renglones para un grupo de dos controles era medio bloque gastado en decir de qué van.
+   Se alinea por abajo y se levanta un poco, para que quede a la altura del texto del
+   desplegable y no de su borde inferior. */
+.grupo-en-linea { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 16px; margin-top: 12px; }
+.grupo-en-linea > .rotulo-grupo { margin: 0 0 10px; flex: 0 0 auto; }
+.grupo-en-linea > .fila-campos { margin-top: 0; flex: 1 1 auto; }
+
+.fila-apretada { margin-top: 6px; gap: 8px 14px; }
+.fila-apretada > .campo { margin: 0; }
+.fila-apretada > .campo-linea { margin: 2px 0 0; }
+.fila-apretada > .campo-estrecho { flex: 0 0 auto; }
+.campo-estrecho input { max-width: 130px; }
+/* Las dos columnas de las ventanas de ayuda. Se alinean por ARRIBA, no por abajo como el
+   resto de campos: aquí lo que se compara es el rótulo y su explicación, de alturas
+   distintas. */
+.fila-apoyo { align-items: flex-start; margin-top: 6px; gap: 8px 22px; }
 .fila-apoyo > .campo { flex: 1 1 320px; min-width: 240px; }
+/* Un rótulo en el que solo DESTACA UN TÉRMINO (Diego, 2/10/2026): el resto va en tinta
+   normal, para que el ojo caiga en lo que nombra el control y no en la frase entera. */
+.campo > span.rotulo-mixto { font-weight: 400; color: var(--tinta); }
+.campo > span.rotulo-mixto b { font-weight: 700; color: var(--marca-rotulo); }
 
 /* Por dónde va la ficha, al lado de «Comprobar» (Diego, 28/9/2026): en la sans y en tinta
    suave, que es un dato y no una acción. */

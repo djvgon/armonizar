@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261004-0800">
-  <link rel="stylesheet" href="css/estilo.css?v=20261004-0800">
+  <link rel="stylesheet" href="css/bravura.css?v=20261004-1000">
+  <link rel="stylesheet" href="css/estilo.css?v=20261004-1000">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -84,7 +84,12 @@
         <h3 class="titulo-con-boton">Qué fragmentos entran
           <button type="button" id="btn-filtro-defecto" class="boton-pequeno"
             title="Devuelve todos los selectores de este bloque a su opción por defecto">Valores por defecto</button></h3>
-        <div class="fila-campos">
+        <!-- EL FILTRO, POR GRUPOS (decisión 230, Diego 2/10/2026). Primero lo que no es
+             música —qué ejercicio, de qué lección, de qué dificultad y de dónde sale—,
+             después la armonía diatónica, después la cromática, y al final el tamaño y el
+             nombre de la ficha. Apretado a propósito: son once controles y antes ocupaban
+             media pantalla. -->
+        <div class="fila-campos fila-apretada">
           <label class="campo">
             <span>Tipo de ejercicio</span>
             <select id="ficha-modo"></select>
@@ -93,6 +98,30 @@
             <span>Lección</span>
             <select id="ficha-leccion"><option value="">Todas</option></select>
           </label>
+          <label class="campo">
+            <span>Nivel (dificultad)</span>
+            <select id="ficha-nivel">
+              <option value="1-5">Todos (1 a 5)</option>
+              <option value="1-2">Fácil (1 y 2)</option>
+              <option value="2-3">Medio (2 y 3)</option>
+              <option value="3-5">Difícil (3 a 5)</option>
+            </select>
+          </label>
+          <!-- MÚSICA REAL O ESQUEMA (decisión 210, Diego 30/9/2026). Un fragmento es
+               «música real» cuando tiene obra: viene de una partitura y lo dice (198). -->
+          <label class="campo">
+            <span>Procedencia</span>
+            <select id="ficha-musica">
+              <option value="">Música real y fragmentos de práctica</option>
+              <option value="real">Solo música real</option>
+              <option value="practica">Solo fragmentos de práctica</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grupo-en-linea">
+        <h4 class="rotulo-grupo">Armonía diatónica</h4>
+        <div class="fila-campos fila-apretada">
           <label class="campo">
             <span>Modo</span>
             <select id="ficha-modotonal">
@@ -111,25 +140,12 @@
               <option value="3">Tres</option>
             </select>
           </label>
-          <label class="campo">
-            <span>Nivel</span>
-            <select id="ficha-nivel">
-              <option value="1-5">Todos (1 a 5)</option>
-              <option value="1-2">Fácil (1 y 2)</option>
-              <option value="2-3">Medio (2 y 3)</option>
-              <option value="3-5">Difícil (3 a 5)</option>
-            </select>
-          </label>
-          <!-- MÚSICA REAL O ESQUEMA (decisión 210, Diego 30/9/2026). Un fragmento es
-               «música real» cuando tiene obra: viene de una partitura y lo dice (198). -->
-          <label class="campo">
-            <span>Procedencia</span>
-            <select id="ficha-musica">
-              <option value="">Música real y fragmentos de práctica</option>
-              <option value="real">Solo música real</option>
-              <option value="practica">Solo fragmentos de práctica</option>
-            </select>
-          </label>
+        </div>
+        </div>
+
+        <div class="grupo-en-linea">
+        <h4 class="rotulo-grupo">Armonía cromática</h4>
+        <div class="fila-campos fila-apretada">
           <label class="campo">
             <span>Modulación</span>
             <select id="ficha-modula">
@@ -138,14 +154,28 @@
               <option value="si">Solo con modulación</option>
             </select>
           </label>
+          <!-- Viene de «Cómo se le presenta al alumno» (decisión 230): no es una manera de
+               presentar nada, es qué armonía se da por buena, y eso es de aquí. -->
+          <label class="campo">
+            <span>Sobre el grado 6 descendente, la respuesta modelo es</span>
+            <select id="ficha-preferir">
+              <option value="">II4/3 (tercero)</option>
+              <option value="+6">+6, dominante secundaria del V (cuarto)</option>
+            </select>
+          </label>
+        </div>
+        </div>
+
+        <h4 class="rotulo-grupo">Tamaño y título de la ficha</h4>
+        <div class="fila-campos fila-apretada">
           <!-- El tamaño de la ficha se mide en COMPASES, no en número de ejercicios
                (decisiones 127 y 191): da igual si salen repartidos en fragmentos de dos
                compases o en uno solo que los incluya todos. -->
-          <label class="campo">
+          <label class="campo campo-estrecho">
             <span>Compases por ficha, de</span>
             <input id="ficha-compases-min" type="number" min="0" max="120" value="20">
           </label>
-          <label class="campo">
+          <label class="campo campo-estrecho">
             <span>… a</span>
             <input id="ficha-compases-max" type="number" min="1" max="120" value="26">
           </label>
@@ -205,9 +235,13 @@
 
         <div class="bloque-opciones">
         <h3>Cómo se le presenta al alumno</h3>
-        <div class="fila-campos">
+
+        <!-- TRES GRUPOS (decisión 230, Diego 2/10/2026): qué mandos tiene delante, cómo se
+             le corrige y qué ayuda puede abrir. -->
+        <h4 class="rotulo-grupo">Controles que se le presentan</h4>
+        <div class="fila-campos fila-apretada">
           <label class="campo">
-            <span>Ayuda con los sonidos fundamentales</span>
+            <span class="rotulo-mixto">Ayuda con los <b>sonidos fundamentales</b></span>
             <select id="ficha-ayuda-grados">
               <option value="ninguna">Ninguna: paleta completa, sin lista</option>
               <option value="lista" selected>Mostrar la lista de sonidos fundamentales en juego (paleta completa)</option>
@@ -215,14 +249,7 @@
             </select>
           </label>
           <label class="campo">
-            <span>Sobre el grado 6 descendente, la respuesta modelo es</span>
-            <select id="ficha-preferir">
-              <option value="">II4/3 (tercero)</option>
-              <option value="+6">+6, dominante secundaria del V (cuarto)</option>
-            </select>
-          </label>
-          <label class="campo">
-            <span>Funciones tonales (fila T · S · D)</span>
+            <span>Fila de funciones tonales</span>
             <select id="ficha-funciones">
               <option value="" selected>Sin fila de funciones</option>
               <option value="dadas">Dadas: el alumno ve la función de cada acorde</option>
@@ -230,21 +257,13 @@
             </select>
           </label>
           <label class="campo">
-            <span>Tonalidades (fila «Tonalidad»)</span>
+            <span>Fila tonalidad</span>
             <select id="ficha-tonalidades">
               <option value="" selected>Automático: dadas si el fragmento modula</option>
               <option value="dadas">Dadas: el alumno ve el tono y dónde cambia</option>
               <option value="pedir">Pedirlas: el alumno marca dónde cambia el tono y cuál es</option>
               <option value="no">Sin fila de tonalidades (si modula, sin anunciar)</option>
             </select>
-          </label>
-          <label class="campo">
-            <span>Grados de la escala del bajo</span>
-            <select id="grados-bajo">
-              <option value="dado" selected>Dados: el circulito con el grado, encima de cada nota</option>
-              <option value="oculto">Ocultos: el alumno lee el bajo sin ayuda</option>
-            </select>
-            <span class="ayuda" id="grados-bajo-ayuda">Es una anotación sobre la música, no una respuesta: en los cuatro tipos de ficha la casilla de respuesta es la del sonido fundamental. En audición no se dibujan nunca, porque el bajo no se ve.</span>
           </label>
           <label class="campo" id="campo-bajo-audicion" hidden>
             <span>Audición: qué ve el alumno mientras escucha</span>
@@ -253,19 +272,33 @@
               <option value="bajo">Solo el bajo (la realización, no)</option>
             </select>
           </label>
+        </div>
+
+        <h4 class="rotulo-grupo">Feedback y evaluación</h4>
+        <div class="fila-campos fila-apretada">
           <label class="campo campo-linea">
             <input id="reintentos" type="checkbox" checked>
-            <span>Permitir corregir solo los errores antes de ver la solución</span>
+            <span>El estudiante tiene oportunidad de mejorar su respuesta antes de conocer la solución definitiva</span>
           </label>
         </div>
 
-        <!-- Las dos ventanas de ayuda que el alumno abre con sus botones (decisión 229):
-             juntas y en dos columnas, porque la pregunta que se hace uno al prepararlas es
-             la misma para las dos —¿en qué tono las verá?— y la respuesta es distinta. -->
-        <h4 class="rotulo-apoyo">Información adicional de apoyo</h4>
+        <h4 class="rotulo-grupo">Información de apoyo</h4>
+        <div class="fila-campos fila-apretada">
+          <label class="campo campo-ancho">
+            <span>Grados de la escala del bajo</span>
+            <select id="grados-bajo">
+              <option value="dado" selected>Dados: el circulito con el grado, encima de cada nota</option>
+              <option value="oculto">Ocultos: el alumno lee el bajo sin ayuda</option>
+            </select>
+            <span class="ayuda" id="grados-bajo-ayuda">Es una anotación sobre la música, no una respuesta: en los cuatro tipos de ficha la casilla de respuesta es la del sonido fundamental. En audición no se dibujan nunca, porque el bajo no se ve.</span>
+          </label>
+        </div>
+        <!-- Las dos ventanas de ayuda que el alumno abre con sus botones, en dos columnas:
+             la pregunta que se hace uno al prepararlas es la misma —¿en qué tono las verá?—
+             y la respuesta es distinta. -->
         <div class="fila-campos fila-apoyo">
           <label class="campo">
-            <span>Cuadro de estructuras armónicas</span>
+            <span class="rotulo-mixto"><b>Cuadro de estructuras armónicas</b>, el botón del alumno</span>
             <select id="ficha-estructuras-ton">
               <option value="fragmento" selected>En la tonalidad del fragmento: con su armadura</option>
               <option value="">En Do mayor y la menor, como en el libro</option>
@@ -273,7 +306,7 @@
             <span class="ayuda">Transportado, cada estructura conserva su modo y se va a la tonalidad de ese modo que tiene la armadura del fragmento: con un fragmento en re menor, las menores salen en re menor y las mayores en Fa mayor, y el cuadro entero se lee con un bemol.</span>
           </label>
           <div class="campo">
-            <span>Cuadro de cifrados</span>
+            <span class="rotulo-mixto"><b>Cuadro de cifrados</b>, el otro botón</span>
             <span class="ayuda">Sale <b>siempre</b> en la tonalidad del fragmento, y por eso no hay nada que elegir: lo que enseña no es el dibujo de la cifra —eso se aprende una vez— sino qué acorde manda escribir cada una, y en un tono que no es el suyo no le sirve de nada. Si la ficha le pide marcar la tonalidad, sale en la que él haya marcado; mientras no marque ninguna, en Do mayor, que es lo único que no le chiva la respuesta.</span>
           </div>
         </div>
@@ -649,20 +682,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261004-0800</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261004-1000</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261004-0800"></script>
-  <script src="js/teoria.js?v=20261004-0800"></script>
-  <script src="js/reglas.js?v=20261004-0800"></script>
-  <script src="js/ejercicios.js?v=20261004-0800"></script>
-  <script src="js/partitura.js?v=20261004-0800"></script>
-  <script src="js/musicxml.js?v=20261004-0800"></script>
-  <script src="js/musescore.js?v=20261004-0800"></script>
-  <script src="js/banco.js?v=20261004-0800"></script>
-  <script src="js/realizacion.js?v=20261004-0800"></script>
-  <script src="js/tecnicas.js?v=20261004-0800"></script>
-  <script src="js/configurador.js?v=20261004-0800"></script>
+  <script src="js/qr.js?v=20261004-1000"></script>
+  <script src="js/teoria.js?v=20261004-1000"></script>
+  <script src="js/reglas.js?v=20261004-1000"></script>
+  <script src="js/ejercicios.js?v=20261004-1000"></script>
+  <script src="js/partitura.js?v=20261004-1000"></script>
+  <script src="js/musicxml.js?v=20261004-1000"></script>
+  <script src="js/musescore.js?v=20261004-1000"></script>
+  <script src="js/banco.js?v=20261004-1000"></script>
+  <script src="js/realizacion.js?v=20261004-1000"></script>
+  <script src="js/tecnicas.js?v=20261004-1000"></script>
+  <script src="js/configurador.js?v=20261004-1000"></script>
 </body>
 </html>
