@@ -1,6 +1,6 @@
 {
  "version": 1,
- "creado": "2026-10-01",
+ "creado": "2026-10-02",
  "fragmentos": [
   {
    "id": "A3-1-01",
@@ -3580,10 +3580,10 @@
       "I|53"
      ],
      [
+      "V|6",
       "I|6",
       "I|53",
       "V|53",
-      "V|6",
       "V|7+"
      ],
      [
@@ -3594,7 +3594,8 @@
       "V|7+"
      ],
      [
-      "I|53"
+      "I|53",
+      "I|6"
      ],
      [
       "V|53",
@@ -3617,6 +3618,7 @@
     "modo": "mayor",
     "alteraciones": 0,
     "modula": false,
+    "cuatro": false,
     "cifras": [
      "53",
      "6"
@@ -3625,8 +3627,9 @@
     "nivel": 1
    },
    "formulaTST": false,
-   "cerrado": "2026-09-28",
-   "huella": "5186f8bb3e2ead50"
+   "tocado": "2026-10-02T06:22:22.770Z",
+   "cerrado": "2026-10-02",
+   "huella": "8207c786acb62cfb"
   },
   {
    "id": "A3-2-02",
