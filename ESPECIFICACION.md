@@ -3880,6 +3880,31 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+229. **«Cómo se le presenta al alumno», reordenado y con dos casillas menos** (2/10/2026,
+    Diego, dictando el orden campo a campo y pidiendo quitar dos).
+    - **El orden** es ahora el del trabajo: lo que toca la respuesta —la ayuda con los sonidos
+      fundamentales y el modelo del 6.º descendente—, lo que toca las filas de análisis
+      —funciones y tonalidades—, lo que toca la lectura del bajo —los grados de la escala—, y
+      por último cómo se corrige.
+    - **Un grupo propio para las dos ventanas de ayuda**, bajo el rótulo *Información
+      adicional de apoyo* y en dos columnas: a la izquierda el desplegable de las estructuras,
+      a la derecha el cuadro de cifrados, que no tiene nada que elegir y por eso es solo
+      explicación. Juntos porque la pregunta que se hace uno al prepararlos es la misma —¿en
+      qué tono los verá?— y la respuesta es distinta.
+    - **El cuadro de estructuras pasa a transportarse POR DEFECTO.** La opción sigue estando
+      —el cuadro en Do mayor y la menor es el del libro—, pero ya no es lo que sale sin tocar
+      nada. Un borrador guardado antes, que no llevaba esta opción, hereda el nuevo defecto.
+    - **Fuera «En una ficha, dar los grados solo en el primer fragmento»** y **fuera «Pedir
+      también el sonido fundamental del acorde»**. Las dos salen del configurador, no del
+      motor: `gradosPrimero` y `pedirRomano: false` siguen entendiéndose al abrir una ficha,
+      porque hay enlaces repartidos que los llevan y han de seguir funcionando; lo que ya no
+      se hace es generarlos. Desde aquí, el sonido fundamental se pide siempre.
+    - **Y la explicación de un campo deja de vestirse de rótulo.** La regla de estilo pintaba
+      de morado y en negrita cualquier `span` hijo de `.campo`, y eso se llevaba por delante
+      los `span.ayuda`, que salían como si fueran títulos (Diego: «el resto de la explicación
+      en texto normal del resto de explicaciones, no resaltado en morado»). Arreglado para
+      todos los campos, no solo para los nuevos.
+
 228. **La marca de versión viaja también a las ventanas de ayuda** (1/10/2026, Diego: «los
     cifrados y las estructuras de ejemplo no se muestran en la tonalidad del fragmento cuando
     se pulsan los botones correspondientes desde la ventana práctica del estudiante»).

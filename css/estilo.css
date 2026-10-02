@@ -1428,6 +1428,25 @@ button.primario:hover { background: var(--marca-honda); border-color: var(--marc
 /* El rótulo de una casilla de verificación va en el mismo renglón que ella y no manda
    sobre un desplegable: ese se queda como está, en tinta normal. */
 .campo-linea > span { font-weight: 400; color: var(--tinta); font-size: .95rem; }
+/* La EXPLICACIÓN de un campo no es su rótulo (Diego, 2/10/2026: «el resto de la explicación
+   en texto normal del resto de explicaciones, no resaltado en morado»). La regla de arriba
+   pinta de rótulo cualquier `span` hijo de `.campo`, y se llevaba por delante los
+   `span.ayuda`, que salían en morado y en negrita como si fueran títulos. */
+.campo > span.ayuda {
+  font-family: inherit; font-weight: 400; font-size: .85rem;
+  letter-spacing: normal; color: var(--tinta-suave);
+}
+
+/* «Información adicional de apoyo» (decisión 229): un grupo con rótulo propio dentro del
+   bloque, y dentro dos columnas —las dos ventanas de ayuda del alumno— que se parten en
+   una sola cuando no caben. Se alinean por ARRIBA, no por abajo como el resto de campos:
+   aquí lo que se compara es el rótulo y su explicación, de alturas distintas. */
+.rotulo-apoyo {
+  margin: 24px 0 0; font-family: var(--fuente-ui); font-size: .92rem; font-weight: 700;
+  letter-spacing: .01em; color: var(--marca-rotulo);
+}
+.fila-apoyo { align-items: flex-start; margin-top: 10px; }
+.fila-apoyo > .campo { flex: 1 1 320px; min-width: 240px; }
 
 /* Por dónde va la ficha, al lado de «Comprobar» (Diego, 28/9/2026): en la sans y en tinta
    suave, que es un dato y no una acción. */

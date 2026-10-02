@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261003-2200">
-  <link rel="stylesheet" href="css/estilo.css?v=20261003-2200">
+  <link rel="stylesheet" href="css/bravura.css?v=20261004-0800">
+  <link rel="stylesheet" href="css/estilo.css?v=20261004-0800">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -239,24 +239,12 @@
             </select>
           </label>
           <label class="campo">
-            <span>Cuadro de estructuras armónicas (el botón del alumno)</span>
-            <select id="ficha-estructuras-ton">
-              <option value="" selected>En Do mayor y la menor, como en el libro</option>
-              <option value="fragmento">En la tonalidad del fragmento: con su armadura</option>
-            </select>
-            <span class="ayuda">El cuadro de cifrados sale siempre en la tonalidad del fragmento —lo que enseña es qué acorde manda escribir cada cifra, y en otro tono no sirve—. El de estructuras se elige aquí: transportado, cada estructura conserva su modo y se va a la tonalidad de ese modo que tiene la armadura del fragmento (con un fragmento en re menor, las menores en re menor y las mayores en Fa mayor).</span>
-          </label>
-          <label class="campo">
             <span>Grados de la escala del bajo</span>
             <select id="grados-bajo">
               <option value="dado" selected>Dados: el circulito con el grado, encima de cada nota</option>
               <option value="oculto">Ocultos: el alumno lee el bajo sin ayuda</option>
             </select>
             <span class="ayuda" id="grados-bajo-ayuda">Es una anotación sobre la música, no una respuesta: en los cuatro tipos de ficha la casilla de respuesta es la del sonido fundamental. En audición no se dibujan nunca, porque el bajo no se ve.</span>
-          </label>
-          <label class="campo campo-linea">
-            <input id="grados-primero" type="checkbox">
-            <span>En una ficha, dar los grados solo en el primer fragmento y ocultarlos en los demás</span>
           </label>
           <label class="campo" id="campo-bajo-audicion" hidden>
             <span>Audición: qué ve el alumno mientras escucha</span>
@@ -266,13 +254,28 @@
             </select>
           </label>
           <label class="campo campo-linea">
-            <input id="pedir-romano" type="checkbox" checked>
-            <span>Pedir también el sonido fundamental del acorde</span>
-          </label>
-          <label class="campo campo-linea">
             <input id="reintentos" type="checkbox" checked>
             <span>Permitir corregir solo los errores antes de ver la solución</span>
           </label>
+        </div>
+
+        <!-- Las dos ventanas de ayuda que el alumno abre con sus botones (decisión 229):
+             juntas y en dos columnas, porque la pregunta que se hace uno al prepararlas es
+             la misma para las dos —¿en qué tono las verá?— y la respuesta es distinta. -->
+        <h4 class="rotulo-apoyo">Información adicional de apoyo</h4>
+        <div class="fila-campos fila-apoyo">
+          <label class="campo">
+            <span>Cuadro de estructuras armónicas</span>
+            <select id="ficha-estructuras-ton">
+              <option value="fragmento" selected>En la tonalidad del fragmento: con su armadura</option>
+              <option value="">En Do mayor y la menor, como en el libro</option>
+            </select>
+            <span class="ayuda">Transportado, cada estructura conserva su modo y se va a la tonalidad de ese modo que tiene la armadura del fragmento: con un fragmento en re menor, las menores salen en re menor y las mayores en Fa mayor, y el cuadro entero se lee con un bemol.</span>
+          </label>
+          <div class="campo">
+            <span>Cuadro de cifrados</span>
+            <span class="ayuda">Sale <b>siempre</b> en la tonalidad del fragmento, y por eso no hay nada que elegir: lo que enseña no es el dibujo de la cifra —eso se aprende una vez— sino qué acorde manda escribir cada una, y en un tono que no es el suyo no le sirve de nada. Si la ficha le pide marcar la tonalidad, sale en la que él haya marcado; mientras no marque ninguna, en Do mayor, que es lo único que no le chiva la respuesta.</span>
+          </div>
         </div>
         </div>
         <p class="ayuda" id="ficha-cuenta"></p>
@@ -646,20 +649,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261003-2200</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261004-0800</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261003-2200"></script>
-  <script src="js/teoria.js?v=20261003-2200"></script>
-  <script src="js/reglas.js?v=20261003-2200"></script>
-  <script src="js/ejercicios.js?v=20261003-2200"></script>
-  <script src="js/partitura.js?v=20261003-2200"></script>
-  <script src="js/musicxml.js?v=20261003-2200"></script>
-  <script src="js/musescore.js?v=20261003-2200"></script>
-  <script src="js/banco.js?v=20261003-2200"></script>
-  <script src="js/realizacion.js?v=20261003-2200"></script>
-  <script src="js/tecnicas.js?v=20261003-2200"></script>
-  <script src="js/configurador.js?v=20261003-2200"></script>
+  <script src="js/qr.js?v=20261004-0800"></script>
+  <script src="js/teoria.js?v=20261004-0800"></script>
+  <script src="js/reglas.js?v=20261004-0800"></script>
+  <script src="js/ejercicios.js?v=20261004-0800"></script>
+  <script src="js/partitura.js?v=20261004-0800"></script>
+  <script src="js/musicxml.js?v=20261004-0800"></script>
+  <script src="js/musescore.js?v=20261004-0800"></script>
+  <script src="js/banco.js?v=20261004-0800"></script>
+  <script src="js/realizacion.js?v=20261004-0800"></script>
+  <script src="js/tecnicas.js?v=20261004-0800"></script>
+  <script src="js/configurador.js?v=20261004-0800"></script>
 </body>
 </html>

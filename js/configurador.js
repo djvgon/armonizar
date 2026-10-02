@@ -164,12 +164,15 @@
   function opciones() {
     const pref = $('#ficha-preferir').value;
     const fun = $('#ficha-funciones').value;
-    return { pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked,
+    /* El sonido fundamental se pide SIEMPRE y los grados del bajo no hacen rampa: las dos
+       casillas que lo permitían se han quitado del configurador (decisión 229). El motor las
+       sigue entendiendo —`pedirRomano: false`, `gradosPrimero`— porque hay enlaces repartidos
+       que las llevan, pero desde aquí ya no se generan. */
+    return { pedirRomano: true, reintentos: $('#reintentos').checked,
       ayudaGrados: $('#ficha-ayuda-grados').value,
       modo: modoElegido(), preferir: pref ? [pref] : [], tonalidades: $('#ficha-tonalidades').value,
       bajoAudicion: $('#bajo-audicion').value === 'bajo',
       gradosBajo: $('#grados-bajo').value,          // 'dado' | 'oculto' (decisiones 91 y 113)
-      gradosPrimero: $('#grados-primero').checked,
       estructurasTon: $('#ficha-estructuras-ton').value,     // decisión 226
       funciones: fun === 'dadas' || fun === 'pedir' ? fun : null };
   }
@@ -203,7 +206,6 @@
     // El panel de acordes está siempre (plegado); en la soprano se abre solo, porque allí
     // no hay otra manera de decidir el repertorio.
     if (sop) $('#acordes-plegable').open = true;
-    $('#pedir-romano').closest('label').hidden = sop;   // en la soprano el grado siempre se pide: de él sale el bajo
     document.querySelectorAll('#tabla-revision .col-fun').forEach(e => { e.hidden = !opciones().funciones; });
   }
 
@@ -303,7 +305,6 @@
       respuestas: resp
     };
     if (op.preferir.length) ej.preferir = op.preferir;
-    if (!op.pedirRomano) ej.pedirRomano = false;
     if (!op.reintentos) ej.reintentos = false;
     if (op.ayudaGrados !== 'lista') ej.ayudaGrados = op.ayudaGrados;
     if (op.gradosBajo === 'oculto') ej.gradosBajo = 'oculto';
@@ -902,9 +903,8 @@
     const mods = Ejercicios.modulaciones(ej);
     const pivotes = new Set(mods.map(m => m.nota));
     /* La vista previa enseña lo que vería el alumno. El grado es el de la FUNDAMENTAL en
-       los cuatro tipos (decisión 113). Con «solo en el primer fragmento» marcado, la
-       previa es el fragmento 1, así que los circulitos del bajo van puestos. */
-    const ejV = opciones().gradosPrimero ? Object.assign({}, ej, { gradosBajo: 'dado' }) : ej;
+       los cuatro tipos (decisión 113). */
+    const ejV = ej;
     /* EL PIVOTE, LEÍDO EN LOS DOS TONOS TAMBIÉN EN LA MELODÍA (decisión 186, Diego
        29/9/2026: «en el primer acorde ha de aparecer ya que el primer acorde es el acorde
        común entre la menor (I) y Do Mayor (VI)»). En la armonización de bajo esto ya salía,
@@ -977,7 +977,7 @@
       etiquetas: mods.map(m => ({ i: m.nota,
         texto: (m.nota === 0 ? Teoria.nombreCorto(Ejercicios.tonalidadAntes(ej, 0)) + ' ' : '') + '→ ' + Teoria.nombreCorto(m.tonalidad),
         clase: 'dada' })),
-      pedirRomano: opciones().pedirRomano || sop,
+      pedirRomano: true,
       activa: -1, campo: 'cifra', corregido: false, resultados: null, soloLectura: true,
       /* El profesor siempre puede ver la realización modelo… y, si el fragmento trae LAS
          CUATRO VOCES escritas por él (decisión 200), son esas las que se dibujan: así
@@ -1386,7 +1386,6 @@
     $('#compas').value = (ej.compas || [4, 4]).join('/');
     $('#titulo').value = ej.titulo || ''; $('#coleccion').value = ej.coleccion || '';
     document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (ej.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
-    $('#pedir-romano').checked = ej.pedirRomano !== false;
     $('#reintentos').checked = ej.reintentos !== false;
     $('#ficha-ayuda-grados').value = Ejercicios.ayudaGrados(ej);
     $('#grados-bajo').value = Ejercicios.estadoGrados(ej);
@@ -1426,11 +1425,11 @@
       localStorage.setItem(CLAVE_BORRADOR, JSON.stringify({
         texto: $('#texto-bajo').value, tonica: $('#tonica').value, modo: $('#modo').value, compas: $('#compas').value,
         titulo: $('#titulo').value, coleccion: $('#coleccion').value, repertorio: repertorio(),
-        pedirRomano: $('#pedir-romano').checked, reintentos: $('#reintentos').checked,
+        reintentos: $('#reintentos').checked,
         tipo: modoElegido(), respuestas: estado.respuestas,
         bancoId: estado.banco ? estado.banco.entrada.id : null, bancoVoz: estado.banco ? estado.banco.voz : null,
         modulaciones: estado.modulaciones, melodica: estado.melodica, bajoAudicion: $('#bajo-audicion').value,
-        gradosBajo: $('#grados-bajo').value, gradosPrimero: $('#grados-primero').checked,
+        gradosBajo: $('#grados-bajo').value,
         fichaAyudaGrados: $('#ficha-ayuda-grados').value, fichaPreferir: $('#ficha-preferir').value, fichaFunciones: $('#ficha-funciones').value,
         fichaTonalidades: $('#ficha-tonalidades').value,
         fichaEstructurasTon: $('#ficha-estructuras-ton').value,
@@ -1454,8 +1453,7 @@
       $('#texto-bajo').value = b.texto || ''; $('#tonica').value = b.tonica || 'C'; $('#modo').value = modoTon;
       $('#compas').value = b.compas || '4/4'; $('#titulo').value = b.titulo || ''; $('#coleccion').value = b.coleccion || '';
       document.querySelectorAll('#repertorio-opciones input').forEach(i => { i.checked = (b.repertorio || Ejercicios.REPERTORIO_RO).includes(i.value); });
-      $('#pedir-romano').checked = b.pedirRomano !== false; $('#reintentos').checked = b.reintentos !== false; $('#grados-bajo').value = b.gradosBajo === 'oculto' || b.gradosBajo === 'pedido' ? 'oculto' : 'dado';
-      $('#grados-primero').checked = !!b.gradosPrimero;
+      $('#reintentos').checked = b.reintentos !== false; $('#grados-bajo').value = b.gradosBajo === 'oculto' || b.gradosBajo === 'pedido' ? 'oculto' : 'dado';
       /* Las opciones del alumno viven ahora solo en la ficha (decisión 66). En un borrador
          antiguo estaban por duplicado: se recogen las de la ficha y, si no las hubiera,
          las del paso 3 de entonces, para no perder lo que hubiera elegido. */
@@ -1464,7 +1462,9 @@
       $('#ficha-funciones').value = b.fichaFunciones || (b.funciones === 'dadas' || b.funciones === 'pedir' ? b.funciones : '');
       const ton = b.fichaTonalidades || b.tonalidades;
       $('#ficha-tonalidades').value = ['dadas', 'pedir', 'no'].includes(ton) ? ton : '';
-      $('#ficha-estructuras-ton').value = b.fichaEstructurasTon === 'fragmento' ? 'fragmento' : '';
+      /* El valor por defecto es ahora «en la tonalidad del fragmento» (decisión 229): un
+         borrador anterior, que no guardaba esta opción, hereda el nuevo defecto. */
+      $('#ficha-estructuras-ton').value = b.fichaEstructurasTon === '' ? '' : 'fragmento';
       estado.fichaGuardada = b.ficha && typeof b.ficha === 'object' ? b.ficha : null;
       elegirModo(tipo);
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
@@ -1567,7 +1567,7 @@
     }
 
     $('#texto-bajo').addEventListener('input', () => { estado.banco = null; pintarOrigenBanco(); estado.companera = null; leerBajo(); estado.respuestas = null; $('#paso-revision').hidden = true; $('#paso-direccion').hidden = true; limpiarDireccion(); guardarBorrador(); });
-    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#pedir-romano', '#reintentos', '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-tonalidades', '#ficha-estructuras-ton', '#bajo-audicion', '#grados-bajo', '#grados-primero'].forEach(sel => {
+    ['#tonica', '#modo', '#compas', '#titulo', '#coleccion', '#reintentos', '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-tonalidades', '#ficha-estructuras-ton', '#bajo-audicion', '#grados-bajo'].forEach(sel => {
       $(sel).addEventListener('change', () => { guardarBorrador(); limpiarDireccion(); ajustarCampoAudicion(); if (estado.respuestas) pintarRevision(); });
     });
     // Cambiar la opción de funciones en una melodía cambia qué acordes se admiten: se vuelve a analizar
@@ -1945,10 +1945,8 @@
     if (f.tonos || typeof f.maxAlt === 'number' || f.armaduraAjena) f.semilla = estado.semillaFicha || (estado.semillaFicha = Math.random().toString(36).slice(2, 7));
     // Las demás siguen viniendo del paso 3
     const op = opciones();
-    if (!op.pedirRomano && f.modo !== 'soprano') f.pedirRomano = false;
     if (!op.reintentos) f.reintentos = false;
     if (op.gradosBajo === 'oculto') f.gradosBajo = 'oculto';
-    if (op.gradosPrimero) f.gradosPrimero = true;
     if (f.modo === 'audicion' && op.bajoAudicion) f.mostrarBajo = true;
     if (f.modo === 'soprano') {
       f.acordes = acordesElegidos();

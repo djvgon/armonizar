@@ -11,10 +11,16 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 1 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261003-2200`, con las
-  decisiones **227** y **228** (las 221–226 están ya subidas: el sitio publicado va por
-  `20261003-2000`, comprobado). Archivos de esta entrega: `js/app.js`, `js/configurador.js`,
-  `js/estructuras.js`, `configurar.html` y las ocho páginas (la marca).
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-0800`, con la decisión
+  **229**. Las 221–228 están ya subidas (`20261003-2200`, comprobado: las referencias local y
+  remota del clon coinciden). Archivos de esta entrega: `js/configurador.js`, `css/estilo.css`,
+  `configurar.html` y las ocho páginas (la marca).
+- **Dos opciones menos en el configurador** (decisión 229): «dar los grados solo en el primer
+  fragmento» y «pedir también el sonido fundamental». Salen del configurador, **no del motor**:
+  una ficha ya repartida que las lleve sigue funcionando igual. Si alguna vez hiciera falta
+  volver a generarlas, el soporte está intacto en `banco.js` y en `app.js`.
+- **El cuadro de estructuras se transporta ya por defecto**, así que las fichas que generes
+  desde ahora salen con las estructuras en la tonalidad del fragmento sin tocar nada.
 - **Si el cuadro de cifrados sale en Do mayor cuando no debería**, es una copia guardada de
   `cifrados.html` en el navegador: la decisión 228 lo arregla metiendo la marca de versión en
   la dirección. Mientras tanto, cerrar la ventana de ayuda y recargar sin caché
