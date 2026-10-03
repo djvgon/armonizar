@@ -3880,6 +3880,33 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+237. **Cada renglón dice lo que es**
+    (3/10/2026, Diego: «junto al cifrado se muestra la etiqueta Función:. Sería conveniente
+    que también apareciera, de forma similar, Cifrado interválico:, Sonido fundamental: y
+    Tonalidad:, de manera que supiera a qué se refiere cada renglón»).
+    Las cuatro filas se rotulan ahora igual, a la izquierda de la suya y una sola vez. Antes
+    solo lo hacía «Función:», que era el rótulo menos necesario de los cuatro: la fila de las
+    funciones es la única con un contenido —T, S, D— que no se confunde con nada.
+    - **De dónde sale el sitio.** A la altura de los renglones, a la izquierda del primer
+      acorde, no se dibuja nada: la clave, la armadura y el compás van arriba, en el
+      pentagrama. Lo que pasaba es que el viewBox empieza en 0 y lo que se saliera por la
+      izquierda se recortaba. Ahora el margen izquierdo se agranda **lo justo** para que quepa
+      el rótulo más largo de los que ese ejercicio vaya a escribir, y nada más: un ejercicio
+      sin fila de funciones no paga por «Función:».
+    - **El nombre de la tonalidad no estorba.** La caja de «Do M:» ocupa el hueco pegado al
+      primer acorde en el renglón de las fundamentales (o en el de las funciones, si no se
+      piden las fundamentales). El rótulo de ese renglón se pone **a su izquierda** y se
+      cuenta con su ancho, medido con el nombre de este fragmento. Con eso se arregla de paso
+      un solapamiento que ya existía: con `pedirRomano: false`, «Función:» y «Do M:» caían en
+      el mismo sitio.
+    - **Lo que cuesta.** El hueco reservado son unas 75 unidades de las ~450 del dibujo, así
+      que la música se dibuja alrededor de un 15 % más pequeña. Comprobado en móvil (390 px):
+      se sigue leyendo bien. Si algún día estorba, los rótulos cortos —«Cifrado:»,
+      «Fundamental:»— cuestan la mitad y es cambiar dos cadenas.
+    - Comprobado en los cuatro modos, con la tonalidad dada y por pedir, sin fila de
+      funciones y con un enlace sin fundamentales: ningún rótulo se recorta por la izquierda,
+      ninguno pisa el nombre de la tonalidad, y cada fila escribe el suyo solo si existe.
+
 236. **Si hay que marcar la tonalidad, tiene que haber con qué marcarla**
     (2/10/2026, Diego: «no aparecen los controles para seleccionar la tonalidad, con lo que es
     imposible resolver el ejercicio satisfactoriamente»).

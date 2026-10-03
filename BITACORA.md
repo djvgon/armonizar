@@ -9,11 +9,12 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 2 de octubre de 2026
+## Estado a 3 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261004-2200`, con las
-  decisiones **235** y **236**. Archivos pendientes de subir: `js/app.js`, `js/registro.js`,
-  `js/envio.js`, las ocho páginas (la marca) y los dos documentos. La decisión **234**
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261005-0800`, con las
+  decisiones **235**, **236** y **237**. Archivos pendientes de subir: `js/app.js`,
+  `js/registro.js`, `js/envio.js`, `js/partitura.js`, las ocho páginas (la marca) y los dos
+  documentos. La decisión **234**
   —`js/configurador.js`, `configurar.html`, `cifrados.html`, `estructuras.html`— ya está
   publicada.
   · La **236** corrige un ejercicio sin salida: con los enlaces repartidos antes de la

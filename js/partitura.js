@@ -183,7 +183,8 @@ const Partitura = (() => {
     const numNotas = notas.filter(e => e.k >= 0).length;
 
     // Medidas horizontales (en unidades del viewBox)
-    const MARGEN = 1.5 * SP;
+    const MARGEN_FIJO = 1.5 * SP;        // el margen de siempre; MARGEN se calcula más abajo,
+                                         // cuando ya se sabe qué rótulos de renglón hay que meter
     const ANCHO_CLAVE = 4.2 * SP;
     /* LA ARMADURA PUEDE NO SER LA DEL FRAGMENTO (decisión 185, Diego 29/9/2026). En medio
        de una composición la música ha modulado, así que el fragmento está en un tono y la
@@ -287,6 +288,51 @@ const Partitura = (() => {
     const ALTO_FUN = 2.7 * SP;
     const ALTO_TON = 2.7 * SP;
     const TAM_ROTULO = 1.6 * SP;              // el nombre de la tonalidad, como las fundamentales
+
+    /* ---------- LOS RÓTULOS DE LOS RENGLONES (decisión 237) ----------
+       Diego, 3/10/2026: «junto al cifrado se muestra la etiqueta Función:. Sería conveniente
+       que también apareciera, de forma similar, Cifrado interválico:, Sonido fundamental: y
+       Tonalidad:, de manera que supiera a qué se refiere cada renglón». Las cuatro filas se
+       rotulan ahora igual, a la izquierda de la suya y una sola vez.
+       El sitio no hay que quitárselo a nadie: a la altura de los renglones, a la izquierda
+       del primer acorde, no se dibuja nada —la clave, la armadura y el compás van arriba, en
+       el pentagrama—. Lo que pasa es que el viewBox empieza en 0, así que lo que se saliera
+       por la izquierda se recortaría; de ahí que el margen se agrande lo justo para que
+       quepa el rótulo más largo, y nada más.
+       Dos renglones tienen ocupado ese hueco: el que lleve el nombre de la tonalidad
+       («Do M:»), que va pegado al primer acorde. En esos, el rótulo se pone a su izquierda y
+       se cuenta con su caja; así se arregla de paso un solapamiento que ya existía entre
+       «Función:» y ese nombre cuando no se piden las fundamentales. */
+    const TAM_RENGLON = 12;                   // igual que .renglon-ton en la hoja de estilo
+    const HUECO_RENGLON = 0.7 * SP;           // lo que ya separaba «Función:» del primer acorde
+    /* Ancho de un rótulo. El 0,45 sale de medir los de verdad en Georgia de 12 px:
+       «Función:» 43 px, «Tonalidad:» 51, «Sonido fundamental:» 100. Se queda un pelo largo,
+       que es el lado bueno por el que equivocarse. */
+    const anchoRenglon = t => t.length * 0.45 * TAM_RENGLON;
+    /* El hueco que ya había libre a la izquierda del primer acorde: la clave, la armadura y
+       el compás —que están arriba, en el pentagrama— más el margen de siempre, del que se
+       deja un pelo para que el rótulo no llegue a tocar el borde. */
+    const LIBRE_IZQ = (sinSistema ? 6 * SP : ANCHO_CLAVE + ANCHO_ARM + ANCHO_COMPAS)
+      + MARGEN_FIJO - 0.3 * SP - HUECO_RENGLON;
+    /* La caja del nombre de la tonalidad, para el renglón que la lleve. Se mide con el
+       nombre de ESTE fragmento, que es lo que se va a dibujar: reservar por el más largo
+       posible («Si♭ m») gastaba casi un signo de más en la mayoría de los ejercicios. */
+    const ANCHO_CAJA_TON = filaTon
+      ? Math.max(ANCHO_CASILLA, Teoria.nombreCorto(ton).length * 0.58 * TAM_ROTULO + 0.9 * SP) + 0.55 * SP : 0;
+    const ROTULOS_RENGLON = [
+      { txt: 'Cifrado interválico:', ocupado: 0 },
+      pedirRomano ? { txt: 'Sonido fundamental:', ocupado: ANCHO_CAJA_TON } : null,
+      filaFun ? { txt: 'Función:', ocupado: pedirRomano ? 0 : ANCHO_CAJA_TON } : null,
+      filaTon ? { txt: 'Tonalidad:', ocupado: 0 } : null
+    ].filter(Boolean);
+    const ROTULOS_EXTRA = ROTULOS_RENGLON.reduce((m, r) =>
+      Math.max(m, anchoRenglon(r.txt) + r.ocupado - LIBRE_IZQ), 0);
+    const MARGEN = MARGEN_FIJO + ROTULOS_EXTRA;
+    /* Escribe el rótulo de un renglón. `x` es el borde izquierdo de la primera casilla;
+       `ocupado`, lo que haya entre ese borde y el rótulo (la caja de la tonalidad). */
+    const rotuloRenglon = (txt, xCasilla, yArriba, alto, ocupado) => svg.appendChild(
+      el('text', { x: xCasilla - HUECO_RENGLON - (ocupado || 0), y: yArriba + alto / 2 + 0.45 * SP,
+        'text-anchor': 'end', class: 'renglon-ton' }, txt));
     /* Modulación: cada tonalidad escribe sus grados en un renglón nuevo, un poco más
        abajo; el pivote (dobles[i]) lleva dos grados apilados —el de la tonalidad anterior
        en su renglón y el de la nueva en el siguiente— unidos por dos líneas verticales.
@@ -919,6 +965,7 @@ const Partitura = (() => {
           g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); alPulsar(i, 'cifra'); } });
         }
         svg.appendChild(g);
+        if (i === 0) rotuloRenglon('Cifrado interválico:', cx - ANCHO_CASILLA / 2, Y_CASILLA, ALTO_CASILLA, 0);
       }
 
       // Casilla del grado (número romano), debajo de la cifra, en el renglón de su
@@ -972,6 +1019,10 @@ const Partitura = (() => {
           }
           svg.appendChild(g);
         });
+        /* El rótulo va a la izquierda de la caja del nombre de la tonalidad, que ocupa el
+           hueco pegado al primer acorde en este mismo renglón. */
+        if (i === 0) rotuloRenglon('Sonido fundamental:', cx - ANCHO_CASILLA / 2,
+          yRenglon(renglon[0]), ALTO_ROMANO, ANCHO_CAJA_TON);
         if (esPivote) {
           // Las dos líneas verticales que unen los dos grados del pivote: | I | sobre | IV |
           const yA = yRenglon(rArriba);
@@ -1058,7 +1109,10 @@ const Partitura = (() => {
           [xF, xF + ANCHO_CASILLA].forEach(x => svg.appendChild(
             el('line', { x1: x, x2: x, y1: yA - 0.3 * SP, y2: yB + 0.3 * SP, class: 'pivote-barra' })));
         }
-        if (i === 0) svg.appendChild(el('text', { x: cx - ANCHO_CASILLA / 2 - 0.7 * SP, y: yRenglonFun(renglon[0]) + ALTO_FUN / 2 + 0.55 * SP, 'text-anchor': 'end', class: 'renglon-ton' }, 'Función:'));
+        /* Cuando no se piden las fundamentales, el nombre de la tonalidad baja a ESTE
+           renglón, así que es aquí donde hay que esquivarlo. */
+        if (i === 0) rotuloRenglon('Función:', cx - ANCHO_CASILLA / 2,
+          yRenglonFun(renglon[0]), ALTO_FUN, pedirRomano ? 0 : ANCHO_CAJA_TON);
       }
 
       // Fila «Tonalidad»: desde qué nota rige cada tonalidad (modulación)
@@ -1088,6 +1142,9 @@ const Partitura = (() => {
         }
         svg.appendChild(g);
         }
+        /* El rótulo, aunque esta nota no dibuje casilla: con la tonalidad dada solo se
+           dibujan las notas donde se declara una, y la primera puede no ser ninguna. */
+        if (i === 0) rotuloRenglon('Tonalidad:', cx - ANCHO_CASILLA / 2, Y_TON, ALTO_TON, 0);
       }
 
       // Botón ▶ encima del acorde: hace sonar ese acorde de la propuesta
