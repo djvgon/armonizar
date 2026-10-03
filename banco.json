@@ -1,6 +1,6 @@
 {
  "version": 1,
- "creado": "2026-10-02",
+ "creado": "2026-10-03",
  "fragmentos": [
   {
    "id": "A3-1-01",
@@ -23564,6 +23564,533 @@
    },
    "cerrado": "2026-10-01",
    "huella": "cfffd5858283a4c6"
+  },
+  {
+   "id": "A3-3-25",
+   "leccion": "A3-3",
+   "leccionNombre": "V7 en inversión",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6"
+   ],
+   "fuente": "A3-7. V7 en inversión - Fragmentos bajo y soprano.mscz",
+   "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "C",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    4,
+    4
+   ],
+   "bajo": {
+    "compases": [
+     [
+      [
+       "C4",
+       1
+      ],
+      [
+       "D4",
+       1
+      ],
+      [
+       "C4",
+       2
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       "A4",
+       1
+      ],
+      [
+       "B4",
+       1
+      ],
+      [
+       "C5",
+       2
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [],
+     [
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ]
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [
+    "alguna nota de la melodía se queda sin acorde posible"
+   ],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 3,
+    "compases": 1,
+    "modo": "mayor",
+    "alteraciones": 0,
+    "modula": false,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "+6"
+    ],
+    "grados": [],
+    "nivel": 1
+   },
+   "tocado": "2026-10-03T21:22:34.686Z"
+  },
+  {
+   "id": "A3-3-26",
+   "leccion": "A3-3",
+   "leccionNombre": "V7 en inversión",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6"
+   ],
+   "fuente": "A3-7. V7 en inversión - Fragmentos bajo y soprano.mscz",
+   "titulo": "",
+   "autor": "Carl Philipp Emanuel Bach (1714-1788)",
+   "obra": "Marcha en Re Mayor",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "D",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    4,
+    4
+   ],
+   "bajo": {
+    "compases": [
+     [
+      [
+       null,
+       3
+      ],
+      [
+       null,
+       1
+      ]
+     ],
+     [
+      [
+       "D3",
+       1
+      ],
+      [
+       "G3",
+       1
+      ],
+      [
+       "F#3",
+       1
+      ],
+      [
+       "E3",
+       1
+      ]
+     ],
+     [
+      [
+       "D3",
+       1
+      ],
+      [
+       "G3",
+       1
+      ],
+      [
+       "F#3",
+       1
+      ],
+      [
+       "E3",
+       1
+      ]
+     ],
+     [
+      [
+       "F#3",
+       1
+      ],
+      [
+       "D3",
+       1
+      ],
+      [
+       "C#3",
+       1
+      ],
+      [
+       "A2",
+       1
+      ]
+     ],
+     [
+      [
+       "D2",
+       1
+      ],
+      [
+       "D3",
+       0.5
+      ],
+      [
+       "C#3",
+       0.5
+      ],
+      [
+       "D3",
+       1
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "+4"
+     ],
+     [
+      "6"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "+4"
+     ],
+     [
+      "6"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "65d",
+      "6"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       null,
+       3
+      ],
+      [
+       "A4",
+       1
+      ]
+     ],
+     [
+      [
+       "D5",
+       1
+      ],
+      [
+       "A4",
+       2
+      ],
+      [
+       "B4",
+       0.5
+      ],
+      [
+       "C#5",
+       0.5
+      ]
+     ],
+     [
+      [
+       "D5",
+       1
+      ],
+      [
+       "A4",
+       2
+      ],
+      [
+       "B4",
+       0.5
+      ],
+      [
+       "C#5",
+       0.5
+      ]
+     ],
+     [
+      [
+       "D5",
+       0.5
+      ],
+      [
+       "E5",
+       0.5
+      ],
+      [
+       "F#5",
+       0.5
+      ],
+      [
+       "G5",
+       0.5
+      ],
+      [
+       "A5",
+       0.5
+      ],
+      [
+       "G5",
+       0.5
+      ],
+      [
+       "F#5",
+       0.5
+      ],
+      [
+       "E5",
+       0.5
+      ]
+     ],
+     [
+      [
+       "F#5",
+       1
+      ],
+      [
+       "D5",
+       2
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "I|6",
+      "I|53"
+     ],
+     [
+      "I|6",
+      "I|53",
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "V|6",
+      "V|7+",
+      "V|+4"
+     ],
+     [],
+     [
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "V|65d",
+      "I|53",
+      "I|6",
+      "V|53",
+      "V|+6",
+      "V|6",
+      "V|7+",
+      "V|+4"
+     ],
+     [],
+     [
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "V|65d",
+      "V|53",
+      "V|+6",
+      "V|6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|53"
+     ],
+     [
+      "V|65d",
+      "V|+6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6",
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "V|6",
+      "V|7+",
+      "V|+4"
+     ],
+     [
+      "V|65d",
+      "V|+6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|53"
+     ],
+     [
+      "V|65d",
+      "V|53",
+      "V|+6",
+      "V|6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|53"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ]
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [
+    "alguna nota de la melodía se queda sin acorde posible"
+   ],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 16,
+    "compases": 5,
+    "modo": "mayor",
+    "alteraciones": 2,
+    "modula": false,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "+4",
+     "6",
+     "+6",
+     "65d"
+    ],
+    "grados": [],
+    "nivel": 4
+   },
+   "tocado": "2026-10-03T21:22:34.686Z"
   }
  ]
 }
