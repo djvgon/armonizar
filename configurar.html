@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261005-0800">
-  <link rel="stylesheet" href="css/estilo.css?v=20261005-0800">
+  <link rel="stylesheet" href="css/bravura.css?v=20261005-1000">
+  <link rel="stylesheet" href="css/estilo.css?v=20261005-1000">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -540,6 +540,17 @@
                subir a mirarlo. Y desde aquí mismo se cierra y se reabre. -->
           <h3>Revisión de las respuestas <span id="sello-leccion" class="sello-leccion" hidden></span> <button type="button" id="sello-chip" class="sello-chip" hidden></button></h3>
           <div id="vista-previa" class="partitura-caja"></div>
+          <!-- EL RITMO ARMÓNICO (decisión 238). Solo sale en los fragmentos de partitura
+               real con las dos voces, que son los únicos que llevan rejilla. -->
+          <div class="caja-rejilla" id="caja-rejilla" hidden>
+            <h4>Ritmo armónico <span id="rejilla-cuenta" class="rejilla-cuenta"></span></h4>
+            <p class="ayuda">Hay acorde en cada ataque que cae <b>en parte</b>; lo que ataca a contratiempo es nota de paso, bordadura o escapada, y no lleva acorde. Cada botón de abajo es un momento en que ataca alguna de las dos voces: <b>marcado</b> quiere decir que lleva acorde. Toca los que haga falta —una armonía sincopada, una nota de paso del bajo en tiempo fuerte— y pulsa «Rehacer». <b>El motor rehará los cifrados de las dos voces</b>, así que se pierde lo que hayas asignado a mano en este fragmento.</p>
+            <div id="rejilla-chips" class="rejilla-chips"></div>
+            <div class="botonera">
+              <button type="button" id="btn-rejilla-aplicar" class="primario">Rehacer con esta rejilla</button>
+              <button type="button" id="btn-rejilla-auto" class="secundario">Volver a la automática</button>
+            </div>
+          </div>
           <!-- DE QUÉ OBRA VIENE (decisión 198). Sale del texto «@Autor: Obra» de la
                partitura, y se escribe o se corrige aquí sin volver a importar nada. No
                entra en la huella del sello, así que un fragmento cerrado puede recibir su
@@ -708,20 +719,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261005-0800</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261005-1000</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261005-0800"></script>
-  <script src="js/teoria.js?v=20261005-0800"></script>
-  <script src="js/reglas.js?v=20261005-0800"></script>
-  <script src="js/ejercicios.js?v=20261005-0800"></script>
-  <script src="js/partitura.js?v=20261005-0800"></script>
-  <script src="js/musicxml.js?v=20261005-0800"></script>
-  <script src="js/musescore.js?v=20261005-0800"></script>
-  <script src="js/banco.js?v=20261005-0800"></script>
-  <script src="js/realizacion.js?v=20261005-0800"></script>
-  <script src="js/tecnicas.js?v=20261005-0800"></script>
-  <script src="js/configurador.js?v=20261005-0800"></script>
+  <script src="js/qr.js?v=20261005-1000"></script>
+  <script src="js/teoria.js?v=20261005-1000"></script>
+  <script src="js/reglas.js?v=20261005-1000"></script>
+  <script src="js/ejercicios.js?v=20261005-1000"></script>
+  <script src="js/partitura.js?v=20261005-1000"></script>
+  <script src="js/musicxml.js?v=20261005-1000"></script>
+  <script src="js/musescore.js?v=20261005-1000"></script>
+  <script src="js/banco.js?v=20261005-1000"></script>
+  <script src="js/realizacion.js?v=20261005-1000"></script>
+  <script src="js/tecnicas.js?v=20261005-1000"></script>
+  <script src="js/configurador.js?v=20261005-1000"></script>
 </body>
 </html>

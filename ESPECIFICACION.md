@@ -3880,6 +3880,116 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+239. **La melodía y el bajo de un mismo fragmento hablaban de armonías distintas**
+    (4/10/2026, Diego, mirando el modelo de la Marcha en Re: «pues no… la armonía de Bach en
+    el primer compás debería ser I V+4 I6 V+6 y seguir así»).
+    **Fallo, encontrado y corregido.** `preferir()` es la función que, en cada nota, pone
+    delante el acorde que encaja con la otra voz escrita: es lo que hace que el bajo y la
+    melodía de un mismo fragmento describan **la misma armonía**. Para decidirlo compara la
+    fundamental del acorde con el bajo que suena ahí. Pero `Teoria.bajoDe` devuelve ese bajo
+    **sin octava** —solo le hace falta decir qué nota es—, y `Teoria.clase` la calcula desde
+    la nota midi, que sin octava sale `NaN`. La comparación daba **siempre falso**, de modo
+    que en la melodía esa preferencia **no se ha aplicado nunca**: el modelo acababa siendo
+    el primero que proponía el motor, sin mirar el bajo del propio fragmento.
+    - Se compara ahora por clase de altura poniéndole una octava cualquiera, que para eso da
+      igual cuál sea.
+    - Y entre los acordes que cuadran se elige **el del mismo cifrado que la otra voz**:
+      sobre un mismo bajo caben el 6 y el 6/5̸ —con séptima y sin ella—, y mirando solo la
+      nota del bajo se quedaba el primero de la lista. Para eso `preferir` recibe ahora el
+      modelo de la voz ya analizada.
+    - Medido: de los 145 fragmentos del banco, **81 darían otro modelo si se volvieran a
+      importar**, todos ellos de los 114 que tienen las dos voces escritas. Dos ejemplos:
+      en A3-1-08 el bajo dice `53 53 7+ 53` y la melodía decía I·**V7+**·V53·I, cuando ha de
+      decir I·**V53**·V7+·I; en A3-2-05 el bajo dice `53 6 53` y la melodía decía
+      I·**I53**·V, cuando ha de decir I·**I6**·V. En los dos casos el modelo viejo
+      contradecía al bajo del propio fragmento.
+    - **En el banco publicado no cambia nada**: las respuestas guardadas no se recalculan
+      nunca (decisión 219). Esto actúa al importar, y por tanto en lo que entre de aquí en
+      adelante.
+
+238. **Ritmo armónico: una nota puede llevar dos acordes, y una nota puede no llevar ninguno**
+    (4/10/2026, Diego, en tres pasos. Primero: «quiero incorporar esta partitura, que incluye
+    una blanca en la soprano y dos negras en el bajo… aunque haya una blanca, que pueda haber
+    sobre ella dos números de acorde… el la de la soprano sirve tanto para el sol negra como
+    para el fa negra». Después: «las corcheas de la soprano no todas implican cambio de
+    acorde, sino que las armonías van al ritmo de las notas del bajo… ¿tantos acordes para
+    las corcheas como notas negras en el bajo, y allí donde el bajo hace sonar las negras?».
+    Y por último: «también puede suceder que sea el bajo el que se mueva en corcheas y la
+    soprano en ritmo de acorde: por ejemplo, el do corchea del final, que no le corresponde
+    acorde ninguno».)
+
+    Hasta aquí la aplicación daba por supuesto que **cada nota escrita lleva un acorde y solo
+    uno**. En un fragmento de práctica es cierto, porque las dos voces se escriben al mismo
+    paso. En música de verdad no: la Marcha en Re de C. Ph. E. Bach pedía dos acordes sobre
+    su blanca sin manera de decirlo, y pedía ninguno sobre su do corchea.
+
+    - **La regla.** No manda ninguna de las dos voces: manda el **pulso**. Hay acorde en cada
+      momento en que ataca alguna de las dos voces y ese momento **cae en parte** del compás;
+      lo que ataca a contratiempo es nota de paso, bordadura o escapada, y no lleva acorde.
+      Así sale bien en los dos sentidos —la blanca de la soprano recibe los dos acordes de
+      las dos negras del bajo, y el do corchea del bajo no recibe ninguno— sin tener que
+      decidir quién lleva la voz cantante. Se exige además que **las dos voces estén
+      sonando**: donde el bajo calla no hay acorde, que es el caso de la anacrusa («las
+      anacrusas usualmente no se armonizan»). El pulso sale del compás: negra en 4/4 y 3/4,
+      blanca en 2/2, negra con puntillo en 6/8, 9/8 y 12/8, corchea en 3/8.
+    - **Solo en música real con las dos voces.** La marca es tener obra (decisión 210) y que
+      haya bajo y soprano: la rejilla nace de compararlos. En los fragmentos de práctica no
+      cambia absolutamente nada.
+    - **Qué se guarda.** En la entrada, las dos voces **tal como están escritas** y, aparte,
+      `rejilla`: los momentos que llevan acorde, en negras desde el principio del fragmento.
+      Va en la entrada y no en cada voz porque la armonía es una sola, y por eso **las dos
+      voces tienen por fuerza los mismos acordes**. Las respuestas van **por acorde**, no por
+      nota.
+    - **Cómo se las arregla el resto del programa para no enterarse.** Al construir el
+      ejercicio, la voz se **remuestrea** sobre la rejilla: un acontecimiento por acorde, con
+      la nota que esté sonando en él. Eso es lo que miran el motor, la corrección, el
+      recorrido y el registro, que siguen viendo exactamente un acorde por nota y no han
+      tenido que tocarse. La voz escrita viaja aparte, en `compasesEscritos`, y los momentos
+      de los acordes en `tiempos`; las usa solo la partitura.
+    - **El dibujo, por tiempo.** La partitura ya no coloca las notas una detrás de otra: hace
+      una lista de **momentos** —todos los ataques escritos y todos los acordes, mezclados y
+      en orden—, le da a cada momento su x, y después dibuja cada cosa en el suyo. Las
+      cabezas de nota, con su figura escrita: la blanca sigue siendo una blanca. Las casillas
+      y los números, en los momentos de la rejilla. Sin rejilla las dos listas son la misma y
+      el dibujo sale **idéntico** al de antes: comprobado sobre los 145 fragmentos en los
+      cuatro modos —580 partituras— comparando el SVG elemento por elemento, cero
+      diferencias.
+    - **La nota real de la melodía.** Una nota de paso puede caer **en parte**, justo donde
+      empieza el acorde, y entonces la nota que representa a la melodía en ese acorde no es
+      la que ataca con él sino la siguiente (Diego: «ese si corchea no es nota real, sino
+      nota de paso en tiempo fuerte, y la nota real es el do… y lo mismo con el fa♯: la nota
+      real es el mi de a continuación»). Y no hay que adivinarlo, porque **el bajo lo dice**:
+      de las notas de la melodía que atacan dentro del acorde se toma la primera que forme
+      acorde con el bajo —la que cabe en alguno de los cifrados que el motor admite ahí—; si
+      ninguna cabe, o si la melodía viene ligada y no ataca, se deja la que suena. En la
+      Marcha acierta en los quince acordes: sustituye exactamente el si → do♯ de los compases
+      2 y 3 y el fa♯ → mi del compás 4, y no toca ninguno de los otros doce. Lo elegido se
+      guarda en `reales` y entra en la huella del sello.
+    - **El aviso de una voz solo tapa a esa voz.** Un fragmento con avisos no sale en las
+      fichas; pero en música de verdad la melodía puede traer apoyaturas que se queden sin
+      acorde posible mientras el bajo está impecable, y entonces el fragmento sirve
+      perfectamente para cifrar el bajo. Antes de este cambio, la Marcha estaba en el banco y
+      **no llegaba a ningún alumno, ni siquiera para el bajo**. Medido sobre el banco
+      publicado: los modos de bajo —análisis, armonización de bajo y audición— pasan de 129 a
+      131 fragmentos (entran A3-3-25 y A3-3-26); la armonización de soprano se queda en 126.
+      No sale ninguno de ninguna lista.
+    - **Retoque a mano.** La regla no lo ve todo: una armonía sincopada de verdad cambia a
+      contratiempo. En el configurador, al revisar un fragmento con rejilla, aparece el cuadro
+      **«Ritmo armónico»**: un botón por cada momento en que ataca alguna de las dos voces
+      —«2·1» es compás 2, tiempo 1; «5·2,5» es a contratiempo—, marcado cuando lleva acorde.
+      Se toca lo que haga falta y «Rehacer con esta rejilla» vuelve a analizar las dos voces;
+      «Volver a la automática» deshace. Lo que el profesor marque manda. Un fragmento cerrado
+      no se toca sin reabrirlo, como siempre.
+    - **El editor del configurador, con rejilla.** Trabaja con la voz vista desde la rejilla
+      —un acontecimiento por acorde, que es lo que tiene la tabla de revisión y lo que casa
+      con las respuestas—; la música escrita se queda en la entrada y se le devuelve al
+      guardar. Quien quiera cambiar la música tiene el cuadro de texto, y al tocarlo el
+      fragmento se suelta del banco y vuelve a ser uno normal, como hasta ahora.
+    - **La Marcha en Re, de punta a punta.** 15 acordes donde la melodía escrita tiene 19
+      notas y el bajo 16. Bajo: `53 +4 6 +6 | 53 +4 6 +6 | 6 53 6 53 | 53 53 53`. Melodía:
+      `I53 V+4 I6 V+6 | I53 V+4 I6 V+6 | I6 I53 V6 V53 | I53 I53 I53`. Los quince coinciden
+      uno a uno entre las dos voces, y sin ningún aviso.
+
 237. **Cada renglón dice lo que es**
     (3/10/2026, Diego: «junto al cifrado se muestra la etiqueta Función:. Sería conveniente
     que también apareciera, de forma similar, Cifrado interválico:, Sonido fundamental: y

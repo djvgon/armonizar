@@ -43,6 +43,11 @@ const Banco = (() => {
   const vozDeModo = id => modoDe(id).voz;
   const paginaDeModo = id => modoDe(id).pagina;
 
+  /* Los dos avisos que son DE UNA VOZ. Se escriben una sola vez para poder reconocerlos
+     después: un aviso de la melodía no tiene por qué tapar el ejercicio de bajo. */
+  const AVISO_BAJO = 'alguna nota del bajo se queda sin cifra posible';
+  const AVISO_SOPRANO = 'alguna nota de la melodía se queda sin acorde posible';
+
   /* ---------- Etiquetas ---------- */
 
   // Nivel base (1-5) del fragmento, por la música: cuántas notas, cuántas cifras
@@ -70,6 +75,202 @@ const Banco = (() => {
 
   /* ---------- Construir una entrada a partir de un fragmento importado ---------- */
 
+  /* ---------- LA REJILLA DE ACORDES (decisión 238) ----------
+     Diego, 4/10/2026. Dos observaciones suyas, en este orden:
+     «Aunque haya una blanca, que pueda haber sobre ella dos números de acorde… el la de la
+     soprano sirve tanto para el sol negra como para el fa negra»; y después: «las corcheas
+     de la soprano no todas implican cambio de acorde, sino que las armonías van al ritmo
+     de las notas del bajo… también puede suceder que sea el bajo el que se mueva en
+     corcheas y la soprano en ritmo de acorde: por ejemplo, el do corchea del final, que no
+     le corresponde acorde ninguno».
+
+     Esto es RITMO ARMÓNICO, y hasta aquí la aplicación no lo tenía: daba por supuesto que
+     cada nota escrita lleva un acorde y solo uno. En un fragmento de práctica eso es cierto
+     porque las dos voces se escriben al mismo paso; en música de verdad no.
+
+     LA REGLA. No manda ninguna de las dos voces: manda el PULSO. Hay acorde en cada
+     momento en que ataca alguna de las dos voces y ese momento cae en parte del compás;
+     lo que ataca a contratiempo es nota de paso, bordadura o escapada, y no lleva acorde.
+     Así sale bien en los dos sentidos —la blanca de la soprano recibe los dos acordes de
+     las dos negras del bajo, y el do corchea del bajo no recibe ninguno— sin tener que
+     decidir quién lleva la voz cantante. Además se exige que las DOS voces estén sonando:
+     donde el bajo calla no hay acorde, que es lo que pasa en la anacrusa.
+
+     LO QUE LA REGLA NO VE: una armonía sincopada de verdad, que cambie a contratiempo.
+     Para eso —y para cualquier excepción— el profesor retoca la rejilla a mano en el
+     configurador, y lo que él marque manda (la rejilla viaja en `opciones.rejilla`).
+
+     QUÉ SE GUARDA. En la entrada, las dos voces TAL COMO ESTÁN ESCRITAS y, aparte,
+     `rejilla`: los momentos en que hay acorde, en negras desde el principio del fragmento.
+     Las respuestas van por ACORDE, no por nota, y las dos voces tienen por fuerza las
+     mismas, que para eso es la misma armonía. Al construir el ejercicio, la voz se
+     REMUESTREA sobre la rejilla —en cada acorde, la nota que está sonando—, de modo que el
+     motor, la corrección, el recorrido y el registro siguen viendo exactamente un acorde
+     por nota y no se enteran de nada. La voz escrita viaja aparte, solo para dibujarla. */
+
+  // Acontecimientos de una voz con su momento absoluto, en negras desde el principio
+  function conTiempo(compases) {
+    const out = [];
+    let t = 0;
+    (compases || []).forEach(c => c.forEach(([n, d]) => { out.push({ nota: n, dur: d, t }); t += d; }));
+    return out;
+  }
+
+  // Momento en que empieza cada compás (y, al final, el final del fragmento)
+  function iniciosDeCompas(compases) {
+    const out = [];
+    let t = 0;
+    (compases || []).forEach(c => { out.push(t); c.forEach(([, d]) => { t += d; }); });
+    out.push(t);
+    return out;
+  }
+
+  /* El PULSO del compás, en negras: 4/4 y 3/4 → negra · 2/2 → blanca · 6/8, 9/8 y 12/8 →
+     negra con puntillo · 3/8 → corchea. Es lo que decide qué es «caer en parte». */
+  function pulso(compas) {
+    const num = (compas && compas[0]) || 4, den = (compas && compas[1]) || 4;
+    if (den === 2) return 2;
+    if (den === 8) return (num % 3 === 0 && num > 3) ? 1.5 : 0.5;
+    if (den === 16) return 0.25;
+    return 1;
+  }
+
+  // ¿Suena esa voz en ese momento? (dentro de una nota, no de un silencio ni fuera)
+  function sonandoEn(evs, t) {
+    for (let i = 0; i < evs.length; i++) {
+      const e = evs[i];
+      if (t >= e.t - 0.01 && t < e.t + e.dur - 0.01) return e.nota !== null && e.nota !== undefined;
+    }
+    return false;
+  }
+
+  /* Los momentos que PODRÍAN llevar acorde: ataca alguna de las dos voces y las dos están
+     sonando. Es la lista que se le ofrece al profesor en el configurador para marcar y
+     desmarcar; la regla del pulso solo elige dentro de ella. */
+  function candidatas(cb, cs) {
+    const eb = conTiempo(cb), es = conTiempo(cs);
+    if (!eb.length || !es.length) return [];
+    const ts = [];
+    eb.concat(es).forEach(e => {
+      if (e.nota === null || e.nota === undefined) return;
+      if (!ts.some(x => Math.abs(x - e.t) < 0.01)) ts.push(e.t);
+    });
+    ts.sort((a, b) => a - b);
+    return ts.filter(t => sonandoEn(eb, t) && sonandoEn(es, t));
+  }
+
+  // ¿Cae ese momento en parte del compás?
+  function enParte(t, inicios, p) {
+    let inicio = 0;
+    for (let i = 0; i < inicios.length - 1; i++) if (t >= inicios[i] - 0.01) inicio = inicios[i];
+    const q = (t - inicio) / p;
+    return Math.abs(q - Math.round(q)) < 0.01;
+  }
+
+  // La rejilla que propone la regla: las candidatas que caen en parte
+  function rejillaAutomatica(cb, cs, compas) {
+    const inicios = iniciosDeCompas(cb && cb.length ? cb : cs);
+    const p = pulso(compas);
+    return candidatas(cb, cs).filter(t => enParte(t, inicios, p));
+  }
+
+  /* La voz vista desde la rejilla: un acontecimiento por acorde, con la nota que esté
+     sonando en ese momento. Cada uno dura hasta el acorde siguiente (el último, hasta el
+     final), y se guarda en el compás en el que empieza. */
+  function enRejilla(compases, rejilla) {
+    if (!rejilla || !rejilla.length) return compases;
+    const evs = conTiempo(compases);
+    const inicios = iniciosDeCompas(compases);
+    const total = inicios[inicios.length - 1];
+    const fuera = (compases || []).map(() => []);
+    rejilla.forEach((t, i) => {
+      const hasta = (i + 1 < rejilla.length) ? rejilla[i + 1] : total;
+      let nota = null;
+      for (let q = 0; q < evs.length; q++) {
+        const e = evs[q];
+        if (t >= e.t - 0.01 && t < e.t + e.dur - 0.01) { nota = e.nota; break; }
+      }
+      let ci = 0;
+      for (let q = 0; q < inicios.length - 1; q++) if (t >= inicios[q] - 0.01) ci = q;
+      if (fuera[ci]) fuera[ci].push([nota, Math.max(hasta - t, 0.25)]);
+    });
+    return fuera;
+  }
+
+  /* LA NOTA REAL DE LA MELODÍA EN CADA ACORDE (decisión 238, Diego 4/10/2026: «ese si
+     corchea no es nota real, sino nota de paso en tiempo fuerte, y la nota real es el do
+     –buf, qué lío para computarlo como regla, eh?–, y lo mismo con el fa♯: la nota real es
+     el mi de a continuación»).
+
+     Una nota de paso puede caer EN PARTE, justo donde empieza el acorde. Entonces la nota
+     que representa a la melodía en ese acorde no es la que ataca con él, sino la siguiente.
+     Y no es ningún lío de computar, porque el BAJO lo dice: en estos fragmentos está
+     escrito y ya lo ha analizado el motor. De las notas de la melodía que ATACAN dentro del
+     acorde se toma la primera que forme acorde con el bajo —la que cabe en alguno de los
+     cifrados que el motor admite ahí—; si ninguna cabe, o si la melodía no ataca en ese
+     tramo porque viene ligada, se deja la que suena, que es lo de siempre.
+
+     La prueba es la misma que usa `preferir` para poner delante el acorde que encaja con la
+     otra voz, de modo que las dos piezas hablan del mismo acorde.
+
+     Devuelve una lista por acorde: la nota elegida, o `null` cuando es la de siempre. */
+  function notasReales(compasesS, rejilla, vb, respuestasBajo, ton, mods) {
+    if (!rejilla || !rejilla.length || !respuestasBajo || !compasesS) return null;
+    const evS = conTiempo(compasesS).filter(e => e.nota !== null && e.nota !== undefined);
+    if (!evS.length) return null;
+    const bajos = Teoria.notasDeCompases(vb).map(n => Teoria.nota(n));
+    const total = iniciosDeCompas(compasesS).slice(-1)[0];
+    let tons = null;
+    try { tons = Teoria.tonalidadesPorNota({ compases: vb, tonalidad: ton, modulaciones: mods || [] }); }
+    catch (e) { tons = null; }
+    const clase = n => Teoria.clase(Teoria.nota(n));
+    let alguna = false;
+    const fuera = rejilla.map((t, i) => {
+      const hasta = (i + 1 < rejilla.length) ? rejilla[i + 1] : total;
+      const dentro = evS.filter(e => e.t >= t - 0.01 && e.t < hasta - 0.01);
+      if (dentro.length < 2 || !bajos[i]) return null;        // nada que elegir
+      const tonI = (tons && tons[i]) || ton;
+      const cabe = nota => (respuestasBajo[i] || []).some(id => {
+        try {
+          const tt = Teoria.tonParaBajo(id, bajos[i], tonI, Teoria.nota(nota));
+          return [clase(bajos[i]), ...Teoria.vocesSuperiores(id, bajos[i], tt).map(v => Teoria.clase(v))]
+            .includes(clase(nota));
+        } catch (e) { return false; }
+      });
+      if (cabe(dentro[0].nota)) return null;                  // la que ataca ya es la buena
+      const buena = dentro.slice(1).find(e => cabe(e.nota));
+      if (!buena) return null;                                // ninguna cabe: se deja como está
+      alguna = true;
+      return buena.nota;
+    });
+    return alguna ? fuera : null;
+  }
+
+  // Aplica las notas reales a la voz ya remuestreada (una por acorde, en orden)
+  function conNotasReales(compases, reales) {
+    if (!reales || !reales.length) return compases;
+    let i = 0;
+    return (compases || []).map(c => c.map(([n, d]) => {
+      const nueva = reales[i++];
+      return [nueva || n, d];
+    }));
+  }
+
+  /* Dónde cae cada modulación cuando se pasa a la rejilla: el índice que traía era de
+     notas escritas y pasa a ser de acordes. Se va al primer acorde que empiece en esa
+     nota o después de ella, que es donde empieza a regir la tonalidad nueva. */
+  function modulacionesEnRejilla(mods, compases, rejilla) {
+    if (!rejilla || !rejilla.length || !mods || !mods.length) return mods || [];
+    const notas = conTiempo(compases).filter(e => e.nota !== null && e.nota !== undefined);
+    return mods.map(m => {
+      const e = notas[m.nota];
+      if (!e) return m;
+      let k = rejilla.findIndex(t => t >= e.t - 0.01);
+      if (k < 0) k = rejilla.length - 1;
+      return Object.assign({}, m, { nota: k });
+    });
+  }
+
   // Por cada nota de una voz, la nota de la otra que suena a la vez (fija el modelo)
   function companera(propios, otros) {
     if (!otros || !otros.length || !propios || !propios.length) return null;
@@ -90,19 +291,29 @@ const Banco = (() => {
      del mismo acorde. No toca las notas que fijó la sintaxis de la cadencia (`fijados`):
      ahí manda la regla de Diego —subdominante antes de la dominante, dominante antes de
      la tónica— por encima de la coincidencia entre las dos voces. */
-  function preferir(respuestas, compases, comp, ton, mods, esSop, fijados) {
+  function preferir(respuestas, compases, comp, ton, mods, esSop, fijados, modeloOtra) {
     if (!comp) return respuestas;
     const ej = { compases, tonalidad: ton, modulaciones: mods || [] };
     let tons;
     try { tons = Teoria.tonalidadesPorNota(ej); } catch (e) { return respuestas; }
     const notas = Teoria.notasDeCompases(compases);
-    const clase = n => Teoria.clase(Teoria.nota(n));
+    /* LA CLASE DE ALTURA, SIN DEPENDER DE LA OCTAVA (4/10/2026). `Teoria.bajoDe` devuelve
+       el bajo del acorde SIN octava —solo le hace falta decir qué nota es—, y la clase se
+       calcula a partir de la nota midi, que sin octava sale NaN. La comparación daba
+       siempre falso y esta preferencia NO SE ESTABA APLICANDO NUNCA en la melodía: el
+       modelo del fragmento acababa siendo el primero que proponía el motor y no el acorde
+       que de verdad encaja con el bajo escrito. Se le pone una octava cualquiera, que para
+       comparar clases de altura da igual. */
+    const clase = n => {
+      const x = Teoria.nota(n);
+      return Teoria.clase(x.octava === undefined ? { letra: x.letra, alt: x.alt, octava: 3 } : x);
+    };
     return respuestas.map((adm, i) => {
       if (!adm || adm.length < 2 || !comp[i] || !notas[i]) return adm;
       if (fijados && fijados[i]) return adm;
       let bueno = null;
       try {
-        bueno = adm.find(id => {
+        const cuadra = id => {
           if (esSop) {
             const pr = Ejercicios.par(id);
             const t = Teoria.tonParaAcorde(pr.romano, pr.cifra, tons[i], notas[i]);
@@ -111,7 +322,14 @@ const Banco = (() => {
           }
           const t = Teoria.tonParaBajo(id, notas[i], tons[i], comp[i]);
           return [clase(notas[i]), ...Teoria.vocesSuperiores(id, notas[i], t).map(v => Teoria.clase(v))].includes(clase(comp[i]));
-        });
+        };
+        const buenos = adm.filter(cuadra);
+        /* Y ENTRE LOS QUE CUADRAN, EL DEL MISMO CIFRADO QUE LA OTRA VOZ (4/10/2026). Sobre
+           un mismo bajo caben el 6 y el 6/5̸ —con séptima y sin ella—, y mirando solo la
+           nota del bajo se quedaba el primero que propusiera el motor. Cuando la otra voz
+           ya tiene su modelo, se toma el acorde que dice lo mismo que ella, de modo que el
+           bajo y la melodía del fragmento describen la MISMA armonía. */
+        bueno = (modeloOtra && buenos.find(id => Ejercicios.cifraDe(id) === modeloOtra[i])) || buenos[0] || null;
       } catch (e) { bueno = null; }
       return bueno ? [bueno, ...adm.filter(x => x !== bueno)] : adm;
     });
@@ -273,31 +491,64 @@ const Banco = (() => {
     const partes = {};
     const avisos = [];
     if (cambiada) avisos.push(avisoDeArmadura(f.tonalidad, ton, ultimaBajo));
+    /* LA REJILLA SOLO EN MÚSICA DE VERDAD (decisión 238). Un fragmento es «real» cuando
+       dice de qué obra viene, que es el mismo criterio con el que ya los separa el filtro
+       del configurador, y hacen falta las dos voces: la rejilla nace de compararlas. En los
+       fragmentos de práctica las dos voces se escriben al mismo paso, cada nota lleva su
+       acorde y todo sigue exactamente igual que antes. */
+    const esReal = !!String(opciones.obra || f.obra || '').trim();
+    const rejilla = (esReal && hayB && hayS)
+      ? ((Array.isArray(opciones.rejilla) && opciones.rejilla.length)
+        ? opciones.rejilla.slice().sort((a, b) => a - b)      // la que marcó el profesor
+        : rejillaAutomatica(f.compasesBajo, f.compasesSoprano, compas))
+      : null;
+    // Las dos voces vistas desde la rejilla; sin rejilla, las escritas tal cual
+    const vb = rejilla ? enRejilla(f.compasesBajo, rejilla) : f.compasesBajo;
+    let vs = rejilla ? enRejilla(f.compasesSoprano, rejilla) : f.compasesSoprano;
+    let reales = null;                       // notas de paso en tiempo fuerte, si las hay
+
     if (hayB) {
-      const r = analizar(f.compasesBajo, ton, f.modulacionesBajo, false,
-        Object.assign({}, op, { companera: hayS ? companera(f.compasesBajo, f.compasesSoprano) : null }));
+      const mods = modulacionesEnRejilla(f.modulacionesBajo, f.compasesBajo, rejilla);
+      const r = analizar(vb, ton, mods, false,
+        Object.assign({}, op, { companera: hayS ? companera(vb, vs) : null }));
       if (r) {
         partes.bajo = {
+          // La voz TAL COMO ESTÁ ESCRITA; las respuestas van por acorde, no por nota
           compases: f.compasesBajo,
-          modulaciones: (f.modulacionesBajo || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } })),
+          modulaciones: (mods || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } })),
           // El bajo NO pasa por preferir(): la voz compañera ya entra en el motor
           // (ej.companera), de modo que la eligen las reglas y no un retoque posterior.
           respuestas: r.respuestas
         };
-        if (r.incompleto) avisos.push('alguna nota del bajo se queda sin cifra posible');
-        const fin = finalExtrano(partes.bajo, ton, compas);
+        if (r.incompleto) avisos.push(AVISO_BAJO);
+        const fin = finalExtrano({ compases: vb, respuestas: r.respuestas, modulaciones: mods }, ton, compas);
         if (fin) avisos.push(fin);
+        /* Y AHORA, con el bajo ya analizado, se mira si alguna nota de la melodía que cae en
+           parte es nota de paso. El bajo se analizó con la nota que ataca como compañera: no
+           se vuelve a analizar con la corregida, porque la compañera solo sirve para elegir
+           entre los cifrados que YA son admisibles, y una nota extraña no cabe en ninguno,
+           de modo que allí no estaba influyendo en nada. */
+        if (rejilla && hayS) {
+          reales = notasReales(f.compasesSoprano, rejilla, vb, r.respuestas, ton, mods);
+          if (reales) vs = conNotasReales(vs, reales);
+        }
       }
     }
     if (hayS) {
-      const r = analizar(f.compasesSoprano, ton, f.modulacionesSoprano, true, op);
+      const mods = modulacionesEnRejilla(f.modulacionesSoprano, f.compasesSoprano, rejilla);
+      const r = analizar(vs, ton, mods, true, op);
       if (r) {
         partes.soprano = {
           compases: f.compasesSoprano,
-          modulaciones: (f.modulacionesSoprano || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } })),
-          respuestas: preferir(r.respuestas, f.compasesSoprano, hayB ? companera(f.compasesSoprano, f.compasesBajo) : null, ton, f.modulacionesSoprano, true, r.fijados)
+          modulaciones: (mods || []).map(m => ({ nota: m.nota, tonalidad: { tonica: m.tonalidad.tonica, modo: m.tonalidad.modo } })),
+          respuestas: preferir(r.respuestas, vs, hayB ? companera(vs, vb) : null, ton, mods, true, r.fijados,
+            (partes.bajo && partes.bajo.respuestas) ? partes.bajo.respuestas.map(a => a[0]) : null)
         };
-        if (r.incompleto) avisos.push('alguna nota de la melodía se queda sin acorde posible');
+        /* La nota que representa a la melodía en cada acorde cuando no es la que ataca con
+           él: hace falta guardarla, porque es lo que el ejercicio pone en la casilla y de
+           ella salen el grado y la comprobación. Se guarda SOLO cuando la hay. */
+        if (reales) partes.soprano.reales = reales.slice();
+        if (r.incompleto) avisos.push(AVISO_SOPRANO);
       }
     }
     if (!partes.bajo && !partes.soprano) return null;
@@ -327,6 +578,11 @@ const Banco = (() => {
       armaduraEscrita: cambiada ? { tonica: f.tonalidad.tonica, modo: f.tonalidad.modo } : null,
       ultimaBajo: cambiada ? ultimaBajo : null,      // solo hace falta para redactar ese aviso
       compas: compas.slice(),
+      /* LA REJILLA DE ACORDES (decisión 238): los momentos del fragmento que llevan
+         acorde, en negras desde el principio. Va en la entrada y no en cada voz porque la
+         armonía es una sola: las dos voces tienen por fuerza los mismos acordes. `null`
+         en todo lo que no sea música real a dos voces, y entonces nada cambia. */
+      rejilla: rejilla,
       bajo: partes.bajo || null,
       soprano: partes.soprano || null,
       nivelManual: null,
@@ -468,11 +724,16 @@ const Banco = (() => {
     // a que se vuelvan a calcular las etiquetas
     if (e.armaduraEscrita) avisos.push(avisoDeArmadura(e.armaduraEscrita, ton, e.ultimaBajo));
     if (partes.bajo) {
-      if ((partes.bajo.respuestas || []).some(r => !r || !r.length)) avisos.push('alguna nota del bajo se queda sin cifra posible');
-      const fin = finalExtrano(partes.bajo, ton, compas);
+      if ((partes.bajo.respuestas || []).some(r => !r || !r.length)) avisos.push(AVISO_BAJO);
+      /* El final se mira sobre la voz VISTA DESDE LA REJILLA (decisión 238): las respuestas
+         van por acorde, y la voz escrita puede tener más notas que acordes —el do corchea
+         del final de la Marcha no lleva ninguno—. Comparando una cosa con la otra, el
+         último cifrado caía sobre la nota equivocada y salía un aviso falso. */
+      const vb = e.rejilla ? enRejilla(partes.bajo.compases, e.rejilla) : partes.bajo.compases;
+      const fin = finalExtrano({ compases: vb, respuestas: partes.bajo.respuestas, modulaciones: partes.bajo.modulaciones }, ton, compas);
       if (fin) avisos.push(fin);
     }
-    if (partes.soprano && (partes.soprano.respuestas || []).some(r => !r || !r.length)) avisos.push('alguna nota de la melodía se queda sin acorde posible');
+    if (partes.soprano && (partes.soprano.respuestas || []).some(r => !r || !r.length)) avisos.push(AVISO_SOPRANO);
     e.avisos = avisos;
     // Etiquetas: todas salen del análisis
     const principal = partes.bajo || partes.soprano;
@@ -487,7 +748,8 @@ const Banco = (() => {
 
     const et = {
       voces: partes.bajo && partes.soprano ? 'ambas' : (partes.bajo ? 'bajo' : 'soprano'),
-      notas: Teoria.numeroDeNotas(principal.compases),
+      // Cuántas casillas tiene el ejercicio: con rejilla son los acordes, no las notas escritas
+      notas: e.rejilla ? (principal.respuestas || []).length : Teoria.numeroDeNotas(principal.compases),
       compases: principal.compases.length,
       modo: ton.modo,
       alteraciones: Math.abs(Teoria.armadura(ton)),
@@ -502,6 +764,63 @@ const Banco = (() => {
     return e;
   }
 
+  /* ---------- Retocar la rejilla a mano (decisión 238) ----------
+     La regla del pulso acierta en lo corriente, pero no lo ve todo: una armonía sincopada
+     de verdad cambia a contratiempo, y una nota de paso del bajo en tiempo fuerte lleva
+     casilla sin merecerla. Para eso el profesor quita y pone acordes en el configurador, y
+     lo que él marque manda. Aquí se rehace el fragmento con la rejilla nueva: la música
+     escrita y todo lo que lo describe se quedan como están; lo que se vuelve a calcular son
+     los acordes de las dos voces, que es lo que la rejilla cambia. */
+
+  // Dónde cae un momento: número de compás y de tiempo, los dos empezando en 1
+  function posicionDe(t, compases, compas) {
+    const inicios = iniciosDeCompas(compases);
+    let ci = 0;
+    for (let i = 0; i < inicios.length - 1; i++) if (t >= inicios[i] - 0.01) ci = i;
+    return { compas: ci + 1, tiempo: (t - inicios[ci]) / pulso(compas) + 1 };
+  }
+
+  /* El camino de vuelta de `modulacionesEnRejilla`: el índice vuelve a ser de notas
+     escritas, que es lo que `entrada` espera recibir. */
+  function modulacionesEnNotas(mods, compases, rejilla) {
+    if (!rejilla || !rejilla.length || !mods || !mods.length) return mods || [];
+    const notas = conTiempo(compases).filter(e => e.nota !== null && e.nota !== undefined);
+    return mods.map(m => {
+      const t = rejilla[m.nota];
+      if (t === undefined) return m;
+      let k = notas.findIndex(e => e.t >= t - 0.01);
+      if (k < 0) k = notas.length - 1;
+      return Object.assign({}, m, { nota: k });
+    });
+  }
+
+  function rehacerConRejilla(e, rejilla) {
+    if (!e || !e.bajo || !e.soprano) return null;
+    const f = {
+      compasesBajo: e.bajo.compases,
+      compasesSoprano: e.soprano.compases,
+      modulacionesBajo: modulacionesEnNotas(e.bajo.modulaciones, e.bajo.compases, e.rejilla),
+      modulacionesSoprano: modulacionesEnNotas(e.soprano.modulaciones, e.soprano.compases, e.rejilla),
+      tonalidad: e.tonalidad,
+      tonalidadSegura: e.tonalidadSegura,
+      compas: e.compas,
+      autor: e.autor, obra: e.obra, enlace: e.enlace
+    };
+    const nuevo = entrada(f, {
+      id: e.id, leccion: e.leccion, leccionNombre: e.leccionNombre, fuente: e.fuente,
+      titulo: e.titulo, autor: e.autor, obra: e.obra, enlace: e.enlace, compas: e.compas,
+      repertorio: e.leccionRepertorio, acordes: e.leccionAcordes,
+      // Lo que marcó el profesor. Vacía quiere decir «ninguno», y entonces no hay ejercicio.
+      rejilla: (rejilla && rejilla.length) ? rejilla.slice().sort((a, b) => a - b) : null
+    });
+    if (!nuevo) return null;
+    // Lo que no describe la armonía y vale igual
+    if (e.nivelManual !== undefined) nuevo.nivelManual = e.nivelManual;
+    if (e.voces) nuevo.voces = e.voces;
+    nuevo.tocado = new Date().toISOString().slice(0, 10);
+    return nuevo;
+  }
+
   /* ---------- Filtros ---------- */
 
   /* filtro: { n, modo, leccion, lecciones:[], modoTonal:'mayor'|'menor', alteraciones:[min,max],
@@ -512,8 +831,13 @@ const Banco = (() => {
     const voz = vozDeModo(f.modo || 'armonizar');
     if (!e[voz]) return false;                                   // no tiene esa voz escrita
     const et = e.etiquetas || {};
-    // Un fragmento con avisos (alguna nota sin cifra posible) no sale en las fichas
-    if (!f.conAvisos && e.avisos && e.avisos.length) return false;
+    /* Un fragmento con avisos no sale en las fichas… PERO EL AVISO DE UNA VOZ SOLO TAPA A
+       ESA VOZ (decisión 238, Diego 4/10/2026). En música de verdad la melodía puede llevar
+       apoyaturas y notas de paso en parte, que se quedan sin acorde posible, mientras el
+       bajo está impecable: la Marcha en Re de C. Ph. E. Bach es justo eso, y sirve
+       perfectamente para cifrar el bajo aunque no sirva para armonizar la melodía. */
+    const tapa = a => !((voz === 'bajo' && a === AVISO_SOPRANO) || (voz === 'soprano' && a === AVISO_BAJO));
+    if (!f.conAvisos && (e.avisos || []).some(tapa)) return false;
     if (f.leccion && e.leccion !== f.leccion) return false;
     if (f.lecciones && f.lecciones.length && !f.lecciones.includes(e.leccion)) return false;
     if (f.modoTonal && et.modo !== f.modoTonal) return false;
@@ -659,6 +983,12 @@ const Banco = (() => {
       p.modulaciones = (p.modulaciones || []).map(m => ({
         nota: m.nota, tonalidad: Teoria.transportarTonalidad(m.tonalidad, iv.pasos, iv.semitonos)
       }));
+      // Las notas de paso en tiempo fuerte (238) viajan con la voz y con su misma octava
+      if (Array.isArray(p.reales)) p.reales = p.reales.map(n => {
+        if (!n) return n;
+        const x = mueve(n);
+        return Teoria.texto({ letra: x.letra, alt: x.alt, octava: x.octava + octavas });
+      });
     });
     /* Las voces de en medio viajan con las otras dos y CON EL MISMO desplazamiento de
        octava (decisión 200): si no, se cruzarían con el bajo o con la soprano. */
@@ -824,7 +1154,17 @@ const Banco = (() => {
       voces: (e.voces && e.voces.length) ? e.voces : null,
       tonalidad: e.tonalidad,
       compas: e.compas,
-      compases: parte.compases,
+      /* LA REJILLA (decisión 238). `compases` es la voz REMUESTREADA sobre la rejilla —un
+         acontecimiento por acorde—, que es lo que mira todo lo que razona acorde a acorde:
+         el motor, la corrección, el recorrido, el registro. Así ninguna de esas piezas se
+         entera de nada y siguen valiendo tal cual: para ellas sigue habiendo un acorde por
+         nota. `compasesEscritos` es la voz TAL COMO ESTÁ ESCRITA y `tiempos` dice en qué
+         momento empieza cada acorde; las usa solo la partitura, para dibujar el ritmo de
+         verdad y poner las casillas donde van. Sin rejilla, `compases` es la voz escrita y
+         las otras dos van en blanco: todo igual que antes. */
+      compases: e.rejilla ? conNotasReales(enRejilla(parte.compases, e.rejilla), parte.reales) : parte.compases,
+      compasesEscritos: e.rejilla ? parte.compases : null,
+      tiempos: e.rejilla ? e.rejilla.slice() : null,
       respuestas: parte.respuestas,
       repertorio: suyos
     };
@@ -1000,12 +1340,18 @@ const Banco = (() => {
        fragmentos firmados antes de existir esta marca conservan su huella intacta. */
     const voz = v => (e[v]
       ? [JSON.stringify(e[v].compases || []), JSON.stringify(e[v].modulaciones || []), JSON.stringify(e[v].respuestas || [])]
-        .concat((e[v].melodica && e[v].melodica.length) ? [JSON.stringify(e[v].melodica)] : []).join('|')
+        .concat((e[v].melodica && e[v].melodica.length) ? [JSON.stringify(e[v].melodica)] : [])
+        .concat((e[v].reales && e[v].reales.some(Boolean)) ? ['&' + JSON.stringify(e[v].reales)] : []).join('|')
       : '—');
+    /* LA REJILLA (decisión 238) entra también SOLO cuando la hay, y por la misma razón: es
+       parte de lo que el profesor firma —dice qué momentos llevan acorde, y él la retoca a
+       mano— y sin ella las respuestas no cuadrarían con la música; pero los fragmentos
+       cerrados antes de que existiera no la llevan y conservan su huella intacta. */
+    const rej = (e.rejilla && e.rejilla.length) ? '%' + JSON.stringify(e.rejilla) : '';
     /* Las cuatro voces escritas (200) entran en la huella SOLO cuando las hay, igual que el
        6.º elevado: los fragmentos firmados antes de que existieran conservan la suya. */
     const cuatro = (e.voces && e.voces.length) ? '#' + JSON.stringify(e.voces) : '';
-    return [JSON.stringify(e.tonalidad || {}), JSON.stringify(e.compas || []), voz('bajo'), voz('soprano')].join('#') + cuatro;
+    return [JSON.stringify(e.tonalidad || {}), JSON.stringify(e.compas || []), voz('bajo'), voz('soprano')].join('#') + cuatro + rej;
   }
   /* Dos pasadas distintas sobre el mismo texto (FNV-1a y la de Java), en hexadecimal: 16
      dígitos. No es criptografía —no hace falta: aquí nadie falsifica nada—, es detección de
@@ -1054,6 +1400,7 @@ const Banco = (() => {
     ejercicio, repertorioDe, codificar, decodificar, archivo, leerArchivo, lecciones, comparaLecciones, etiquetar,
     transportarEntrada, transportada, tonicasDeFicha, tonicaEn,
     analizarVoz: analizar, companeraDe: companera,
+    candidatas, rejillaAutomatica, enRejilla, conNotasReales, conTiempo, pulso, posicionDe, rehacerConRejilla,
     cifraDeLoEscrito, modeloDeLoEscrito,
     huellaDe, estaCerrada, cerrar, abrir, huellaRota, rotas, cuentaCerradas,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, rotuloLeccion, temaDeLeccion,

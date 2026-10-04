@@ -182,6 +182,87 @@ const Partitura = (() => {
     const notas = Teoria.eventos(ej.compases).map(e => ({ nota: e.nota === null ? null : Teoria.nota(e.nota), dur: e.dur, ci: e.ci, k: e.k }));
     const numNotas = notas.filter(e => e.k >= 0).length;
 
+    /* LA REJILLA DE ACORDES (decisión 238, Diego 4/10/2026). En los fragmentos de música
+       real a dos voces, el ritmo ESCRITO y el ritmo de las ARMONÍAS no son el mismo: una
+       blanca de la soprano puede llevar dos acordes (los de las dos negras del bajo) y una
+       corchea a contratiempo —una bordadura— no lleva ninguno.
+
+       El banco resuelve el reparto y le pasa a la partitura tres cosas:
+         · `ej.compases`         → un acontecimiento por ACORDE, con la nota que suena en él.
+                                   Es lo que mira todo lo demás (motor, corrección, recorrido,
+                                   registro), que así sigue viendo un acorde por nota.
+         · `ej.compasesEscritos` → la voz TAL COMO ESTÁ ESCRITA, que es lo que se dibuja.
+         · `ej.tiempos`          → en qué momento empieza cada acorde, en negras.
+
+       Aquí se juntan las dos lecturas por el único sitio por el que se pueden juntar: el
+       TIEMPO. Se hace una lista de momentos —todos los ataques escritos y todos los
+       acordes, mezclados y en orden—, se le da a cada momento su x, y después cada cosa se
+       dibuja en el suyo: las cabezas de nota con su figura escrita, las casillas y los
+       números en los momentos de la rejilla. Sin rejilla las dos listas son la misma y todo
+       sale exactamente igual que antes. */
+    const conRejilla = Array.isArray(ej.tiempos) && ej.tiempos.length
+      && Array.isArray(ej.compasesEscritos) && ej.compasesEscritos.length;
+
+    // Clave con la que se busca un momento (en cuarentaiochoavos de negra: vale para
+    // corcheas, semicorcheas y tresillos sin que los decimales den guerra)
+    const clave = t => Math.round(t * 48);
+
+    /* Lo que se DIBUJA: la voz escrita, con el momento en que empieza cada cosa. Sin
+       rejilla es la misma lista de siempre. */
+    const escritas = [];
+    {
+      const fuente = conRejilla ? ej.compasesEscritos : ej.compases;
+      let t = 0;
+      (fuente || []).forEach((c, ci) => c.forEach(([n, d]) => {
+        escritas.push({ nota: (n === null || n === undefined) ? null : Teoria.nota(n), dur: d, ci, t });
+        t += d;
+      }));
+    }
+
+    // Momento en que empieza cada compás (y, al final, el final del fragmento)
+    const iniciosCompas = [];
+    {
+      const fuente = conRejilla ? ej.compasesEscritos : ej.compases;
+      let t = 0;
+      (fuente || []).forEach(c => { iniciosCompas.push(t); c.forEach(([, d]) => { t += d; }); });
+      iniciosCompas.push(t);
+    }
+    const compasDe = t => {
+      let ci = 0;
+      for (let i = 0; i < iniciosCompas.length - 1; i++) if (t >= iniciosCompas[i] - 0.01) ci = i;
+      return ci;
+    };
+
+    // Momento de cada acontecimiento de `ej.compases` (los acordes)
+    const tEvento = [];
+    {
+      if (conRejilla) {
+        let i = 0;
+        (ej.compases || []).forEach(c => c.forEach(() => { tEvento.push(ej.tiempos[i++]); }));
+      } else {
+        let t = 0;
+        (ej.compases || []).forEach(c => c.forEach(([, d]) => { tEvento.push(t); t += d; }));
+      }
+    }
+    // Momento → acontecimiento de acorde que empieza en él
+    const evEn = new Map();
+    tEvento.forEach((t, ev) => { if (t !== undefined) evEn.set(clave(t), ev); });
+    // Para cada cosa escrita, el acorde que empieza a la vez (o −1: nota de paso)
+    const acordeDe = escritas.map(e => {
+      const ev = evEn.get(clave(e.t));
+      return (ev === undefined || !notas[ev] || notas[ev].k < 0) ? -1 : notas[ev].k;
+    });
+
+    // Todos los momentos que ocupan sitio, en orden
+    const momentos = [];
+    {
+      const vistos = new Set();
+      const meter = t => { const c = clave(t); if (!vistos.has(c)) { vistos.add(c); momentos.push(t); } };
+      escritas.forEach(e => meter(e.t));
+      tEvento.forEach(t => { if (t !== undefined) meter(t); });
+      momentos.sort((a, b) => a - b);
+    }
+
     // Medidas horizontales (en unidades del viewBox)
     const MARGEN_FIJO = 1.5 * SP;        // el margen de siempre; MARGEN se calcula más abajo,
                                          // cuando ya se sabe qué rótulos de renglón hay que meter
@@ -463,26 +544,45 @@ const Partitura = (() => {
     const Y_GLOBO = Y_SOLUCION + 2.6 * SP;                 // borde superior de la banda del globo
     const ALTO_TOTAL = Y_SOLUCION + 2.6 * SP + ALTO_GLOBO;
 
-    // Cálculo de posiciones x
+    /* CÁLCULO DE POSICIONES X, POR TIEMPO (decisión 238). Se recorre compás a compás la
+       lista de MOMENTOS —ataques escritos y acordes, mezclados—; cada uno recibe su x y el
+       hueco que deja hasta el siguiente. Sin rejilla la lista de momentos es exactamente la
+       de acontecimientos de siempre y el hueco de cada uno es su propia duración, así que
+       el resultado es idéntico al de antes, nota por nota. */
     let x = sinSistema ? MARGEN + 6 * SP : MARGEN + ANCHO_CLAVE + ANCHO_ARM + ANCHO_COMPAS;   // sin sistema queda sitio para «Do M:»
     const barras = [];                                     // x de cada barra de compás
-    const xNotas = [];                                     // por acontecimiento
-    const xDeNota = [];                                    // por nota (rótulos y números)
-    let ev = 0;
-    ej.compases.forEach((c, ci) => {
+    const xDeTiempo = new Map();                           // momento → x
+    for (let ci = 0; ci < iniciosCompas.length - 1; ci++) {
+      const t0 = iniciosCompas[ci], t1 = iniciosCompas[ci + 1];
       x += RELLENO_COMPAS;
-      c.forEach(([n, d]) => {
-        const f = figura(d);
-        xNotas.push(x);
-        if (notas[ev] && notas[ev].k >= 0) xDeNota[notas[ev].k] = x;
-        ev++;
+      const dentro = momentos.filter(t => t >= t0 - 0.01 && t < t1 - 0.01);
+      dentro.forEach((t, q) => {
+        xDeTiempo.set(clave(t), x);
+        const f = figura(((q + 1 < dentro.length) ? dentro[q + 1] : t1) - t);
         x += f.base >= 4 ? HUECO_REDONDA : f.base <= 1 ? HUECO_NEGRA : HUECO_BLANCA;
         if (f.puntillo) x += 1.2 * SP;
       });
       x += 0.2 * SP;
-      barras.push({ x, final: ci === ej.compases.length - 1 });
-    });
+      barras.push({ x, final: ci === iniciosCompas.length - 2 });
+    }
     const ANCHO_TOTAL = x + MARGEN;
+    const xDe = t => { const v = xDeTiempo.get(clave(t)); return v === undefined ? MARGEN : v; };
+    const xNotas = tEvento.map(t => xDe(t));               // por acontecimiento de acorde
+    const xEscritas = escritas.map(e => xDe(e.t));         // por cosa escrita
+    const xDeNota = [];                                    // por nota (rótulos y números)
+    notas.forEach((it, idx) => { if (it.k >= 0) xDeNota[it.k] = xNotas[idx]; });
+    /* Anchura de la cabeza que de verdad se dibuja en ese momento: es lo que centra la
+       casilla y el circulito del número justo debajo de la nota. Con rejilla la cabeza es
+       la ESCRITA (una blanca mide más que una negra); donde no hay cabeza escrita —un
+       acorde en medio de una nota larga— se usa la del acorde. */
+    const anchoEn = (() => {
+      const m = new Map();
+      escritas.forEach(e => { if (e.nota) m.set(clave(e.t), figura(e.dur).ancho); });
+      return idx => {
+        const a = m.get(clave(tEvento[idx]));
+        return a === undefined ? figura(notas[idx] ? notas[idx].dur : 1).ancho : a;
+      };
+    })();
 
     // Tamaño en pantalla: ESCALA_PX píxeles por unidad (SP = 10 unidades → 10 px por espacio);
     // si no cabe, el CSS lo reduce proporcionalmente (max-width: 100 %)
@@ -589,32 +689,57 @@ const Partitura = (() => {
        una comprobación suelta no habría manera de llevar la cuenta. */
     const necesitanAlt = new Set();
     {
-      const clave = n => n.letra + '|' + n.octava;
+      /* Se decide POR MOMENTO, no por acorde (decisión 238): con rejilla hay notas escritas
+         —las de paso— que no son acorde ninguno, y una alteración suya rige igualmente en
+         lo que queda de compás. El momento identifica a cada cosa dibujada sin ambigüedad,
+         porque dos cosas en el mismo momento son voces distintas del mismo acorde. */
+      const nombre = n => n.letra + '|' + n.octava;
       let ciActual = null, mem = new Map();
-      notas.forEach(it => {
-        if (it.ci !== ciActual) { ciActual = it.ci; mem = new Map(); }   // compás nuevo, memoria en blanco
-        if (it.k < 0) return;
+      momentos.forEach(t => {
+        const ci = compasDe(t);
+        if (ci !== ciActual) { ciActual = ci; mem = new Map(); }   // compás nuevo, memoria en blanco
         const voces = [];
-        const nb = bajoDe(it);
-        if (nb) voces.push({ voz: 0, n: nb });
-        const ac = (Array.isArray(estado.realizacion) && estado.realizacion[it.k]) || null;
-        if (ac) ac.forEach((n, q) => { if (n) voces.push({ voz: q + 1, n }); });
-        else if (sopranoDada && it.nota) voces.push({ voz: 3, n: it.nota });
+        const ev = evEn.get(clave(t));
+        const it = (ev === undefined) ? null : notas[ev];
+        const hayAcorde = !!(it && it.k >= 0);
+        if (hayAcorde) {
+          const nb = bajoDe(it);
+          if (nb) voces.push({ voz: 0, n: nb });
+          const ac = (Array.isArray(estado.realizacion) && estado.realizacion[it.k]) || null;
+          if (ac) ac.forEach((n, q) => { if (n) voces.push({ voz: q + 1, n }); });
+        }
+        /* La melodía escrita de soprano va por su cuenta: con rejilla puede haber notas
+           suyas sin acorde, y sin rejilla es la misma nota del acontecimiento. No se añade
+           cuando el acorde de la realización ya la lleva, que entonces no se dibuja. */
+        if (sopranoDada) {
+          const yaConAcorde = hayAcorde && Array.isArray(estado.realizacion) && estado.realizacion[it.k];
+          escritas.forEach(e => {
+            if (!e.nota || Math.abs(e.t - t) > 0.01 || yaConAcorde) return;
+            voces.push({ voz: 3, n: e.nota });
+          });
+        } else if (!hayAcorde || conRejilla) {
+          // Bajo escrito que no cae en acorde (una bordadura a contratiempo): se dibuja igual
+          escritas.forEach(e => {
+            if (!e.nota || Math.abs(e.t - t) > 0.01) return;
+            if (!voces.some(v => v.voz === 0)) voces.push({ voz: 0, n: e.nota });
+          });
+        }
         const enEsteAcorde = new Map();
         voces.forEach(v => {
-          const c = clave(v.n);
+          const c = nombre(v.n);
           const vigente = enEsteAcorde.has(c) ? enEsteAcorde.get(c)
             : (mem.has(c) ? mem.get(c) : altArmadura(v.n.letra));
-          if (v.n.alt !== vigente) necesitanAlt.add(it.k + '|' + v.voz);
+          if (v.n.alt !== vigente) necesitanAlt.add(clave(t) + '|' + v.voz);
           enEsteAcorde.set(c, v.n.alt);
         });
         enEsteAcorde.forEach((val, c) => mem.set(c, val));
       });
     }
-    /* `k` es el acorde y `voz` 0 bajo · 1 tenor · 2 contralto · 3 soprano. Sin acorde
-       —dibujos sueltos, como la cadencia de referencia— se cae a la comparación de siempre. */
-    const pideAlt = (k, voz, n) => (typeof k === 'number' && k >= 0
-      ? necesitanAlt.has(k + '|' + voz)
+    /* Se pregunta por MOMENTO y voz: 0 bajo · 1 tenor · 2 contralto · 3 soprano. Sin
+       momento —dibujos sueltos, como la cadencia de referencia— se cae a la comparación de
+       siempre contra la armadura. */
+    const pideAlt = (t, voz, n) => (typeof t === 'number'
+      ? necesitanAlt.has(clave(t) + '|' + voz)
       : n.alt !== altArmadura(n.letra));
 
     // Números de los acordes (los mismos que la columna # de la tabla de revisión)
@@ -622,7 +747,7 @@ const Partitura = (() => {
     if (numerar) notas.forEach((it, idx) => {
       if (it.k < 0) return;
       const i = it.k;
-      const cx = xNotas[idx] + figura(it.dur).ancho * SP / 2, cy = 1.7 * SP;
+      const cx = xNotas[idx] + anchoEn(idx) * SP / 2, cy = 1.7 * SP;
       const g = el('g', { class: 'numero-acorde', 'data-indice': i });
       g.appendChild(el('title', {}, 'Acorde ' + (i + 1) + ' (fila ' + (i + 1) + ' de la tabla)'));
       g.appendChild(el('circle', { cx, cy, r: 1.35 * SP }));
@@ -637,7 +762,7 @@ const Partitura = (() => {
          del alumno no existe, y así no tapa las casillas. Transparente, de modo que
          tampoco se ve: lo único que hace es ensanchar el blanco. */
       if (typeof estado.alPasarNumero === 'function') {
-        const anchoFig = figura(it.dur).ancho * SP;
+        const anchoFig = anchoEn(idx) * SP;
         /* La zona va en una lista y se pega al FINAL del dibujo (más abajo), no aquí:
            los circulitos se dibujan antes que el pentagrama, así que una zona puesta
            ahora quedaría debajo de las notas y de las casillas, y el ratón solo la
@@ -671,7 +796,7 @@ const Partitura = (() => {
       let tonsNota = Array.isArray(estado.tonalidadesNota) ? estado.tonalidadesNota : null;
       if (!tonsNota) { try { tonsNota = Teoria.tonalidadesPorNota(ej); } catch (e) { tonsNota = null; } }
       const cyG = Y_TOP - SUBIDA_GRADOS;      // la fila, por encima de la nota más aguda del bajo
-      notas.forEach(it => {
+      notas.forEach((it, idx) => {
         if (it.k < 0 || xDeNota[it.k] === undefined) return;
         const n = bajoDe(it);            // en la melodía de soprano, el bajo deducido
         if (!n) return;
@@ -680,7 +805,7 @@ const Partitura = (() => {
         if (!gr) return;
         const alt = gr.alt > 0 ? '♯' : gr.alt < 0 ? '♭' : '';
         const texto = alt + gr.grado;
-        const cx = xDeNota[it.k] + figura(it.dur).ancho * SP / 2;
+        const cx = xDeNota[it.k] + anchoEn(idx) * SP / 2;
         /* El circulito del grado, del color de la voz que anota (decisión 169): con el bajo
            dado va en color como él; con el bajo deducido de los acordes del alumno, en
            negro. Estaba siempre en negro, y desde la 167 el bajo del configurador salía en
@@ -793,13 +918,15 @@ const Partitura = (() => {
 
     // Una nota suelta (cabeza, alteración, líneas adicionales, puntillo y plica) en un
     // pentagrama cuya línea inferior está en yBase; p = paso diatónico desde esa línea.
-    function notaSuelta(g, n, p, yBase, xN, f, plicaAbajoDesde = 4, k = null, voz = 0) {
+    // `t` es el MOMENTO en que se dibuja la nota (decisión 238): con él se busca si lleva
+    // alteración escrita. `null` en los dibujos sueltos, que no tienen momento.
+    function notaSuelta(g, n, p, yBase, xN, f, plicaAbajoDesde = 4, t = null, voz = 0) {
       const ancho = f.ancho, y = yBase - p * SP / 2, extra = 0.4 * SP;
       if (p >= 10) for (let q = 10; q <= p; q += 2)
         g.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: yBase - q * SP / 2, y2: yBase - q * SP / 2, class: 'linea' }));
       if (p <= -2) for (let q = -2; q >= p; q -= 2)
         g.appendChild(el('line', { x1: xN - extra, x2: xN + ancho * SP + extra, y1: yBase - q * SP / 2, y2: yBase - q * SP / 2, class: 'linea' }));
-      if (pideAlt(k, voz, n)) g.appendChild(glifo(xN - (anchoAlt(n.alt) + 0.25) * SP, y, glifoAlt(n.alt)));
+      if (pideAlt(t, voz, n)) g.appendChild(glifo(xN - (anchoAlt(n.alt) + 0.25) * SP, y, glifoAlt(n.alt)));
       const cabeza = glifo(xN, y, f.cabeza, EM, { class: 'nota' });
       g.appendChild(cabeza);
       if (f.puntillo) puntillo(g, xN + ancho * SP, p, yBase);
@@ -814,15 +941,18 @@ const Partitura = (() => {
       return cabeza;
     }
 
-    // Melodía de soprano en el pentagrama de sol (cuando no la lleva ya el acorde de la realización)
-    if (sopranoDada) notas.forEach((it, idx) => {
-      if (it.k < 0) return;
-      const i = it.k;
-      if (Array.isArray(estado.realizacion) && estado.realizacion[i]) return;
+    /* Melodía de soprano en el pentagrama de sol (cuando no la lleva ya el acorde de la
+       realización). Se recorre la voz ESCRITA, no la de los acordes: así la blanca de Bach
+       se dibuja como una blanca —con dos casillas debajo— y las corcheas de paso salen
+       todas, aunque no lleven acorde. Sin rejilla las dos listas son la misma. */
+    if (sopranoDada) escritas.forEach((e, idx) => {
+      if (!e.nota) return;                                 // los silencios van más abajo
+      const i = acordeDe[idx];                             // −1 si es nota de paso
+      if (i >= 0 && Array.isArray(estado.realizacion) && estado.realizacion[i]) return;
       const g = el('g', { class: 'melodia' + (estado.sopranoDada || estado.extremasDadas ? ' dada' : '') });
-      const f = figura(it.dur);
-      const cabeza = notaSuelta(g, it.nota, pasoSol(it.nota), Y_BOT_SOL, xNotas[idx], f, 4, i, 3);
-      señalar(cabeza, i, 3, xNotas[idx] + f.ancho * SP / 2, Y_BOT_SOL - pasoSol(it.nota) * SP / 2);
+      const f = figura(e.dur);
+      const cabeza = notaSuelta(g, e.nota, pasoSol(e.nota), Y_BOT_SOL, xEscritas[idx], f, 4, e.t, 3);
+      if (i >= 0) señalar(cabeza, i, 3, xEscritas[idx] + f.ancho * SP / 2, Y_BOT_SOL - pasoSol(e.nota) * SP / 2);
       svg.appendChild(g);
     });
 
@@ -892,7 +1022,7 @@ const Partitura = (() => {
       let columna = 0;
       for (let k = ac.length - 1; k >= 0; k--) {
         const n = ac[k];
-        if (!pideAlt(i, k + 1, n)) continue;
+        if (!pideAlt(tEvento[idx], k + 1, n)) continue;
         const y = Y_BOT_SOL - pasos[k] * SP / 2;
         g.appendChild(glifo(xIzq - (anchoAlt(n.alt) + 0.25) * SP - columna * 1.1 * SP, y, glifoAlt(n.alt)));
         columna++;
@@ -909,26 +1039,43 @@ const Partitura = (() => {
       svg.appendChild(g);
     });
 
-    // Notas del bajo (dadas, o deducidas de las respuestas en la melodía de soprano) y,
-    // bajo cada una, sus casillas
-    const cxNota = [], bajoNota = [];          // centro y bajo de cada acorde, para las marcas de después
-    notas.forEach((it, idx) => {
-      const xN = xNotas[idx];
-      const f = figura(it.dur);
-      const ancho = f.ancho;
-      if (it.k < 0) {                                      // silencio: se dibuja en los pentagramas visibles, sin casillas
-        if (!sinBajo) { const g = el('g', { class: 'silencio-g' }); silencio(g, it.dur, xN, Y_BOT); svg.appendChild(g); }
-        if (conSol) { const g = el('g', { class: 'silencio-g' }); silencio(g, it.dur, xN, Y_BOT_SOL); svg.appendChild(g); }
+    /* SILENCIOS Y BAJO ESCRITO. Van en su propia pasada, sobre la voz ESCRITA (decisión
+       238): con rejilla, lo escrito y los acordes no coinciden —hay bordaduras sin casilla
+       y acordes en medio de una nota larga—, así que lo que se dibuja sale de una lista y
+       lo que se cifra, de la otra. Con la melodía de soprano dada, en el pentagrama de fa
+       no va el bajo escrito sino el DEDUCIDO de los acordes del alumno, que se dibuja en la
+       pasada siguiente, acorde a acorde. Sin rejilla las dos listas son la misma. */
+    escritas.forEach((e, idx) => {
+      const xN = xEscritas[idx];
+      if (!e.nota) {                                       // silencio: en los pentagramas visibles, sin casillas
+        if (!sinBajo) { const g = el('g', { class: 'silencio-g' }); silencio(g, e.dur, xN, Y_BOT); svg.appendChild(g); }
+        if (conSol) { const g = el('g', { class: 'silencio-g' }); silencio(g, e.dur, xN, Y_BOT_SOL); svg.appendChild(g); }
         return;
       }
+      if (sinBajo || sopranoDada) return;
+      const i = acordeDe[idx];                             // −1 si es nota de paso: se dibuja sin marcas
+      const f = figura(e.dur);
+      const g = el('g', { class: 'bajo' + (i >= 0 && estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') + (estado.bajoDado ? ' dada' : '') });
+      const cabeza = notaSuelta(g, e.nota, paso(e.nota), Y_BOT, xN, f, 4, e.t, 0);
+      if (i >= 0) señalar(cabeza, i, 0, xN + f.ancho * SP / 2, Y_BOT - paso(e.nota) * SP / 2);
+      svg.appendChild(g);
+    });
+
+    // Las casillas de cada acorde (y, con la melodía dada, el bajo deducido encima de ellas)
+    const cxNota = [], bajoNota = [];          // centro y bajo de cada acorde, para las marcas de después
+    notas.forEach((it, idx) => {
+      if (it.k < 0) return;                                // los silencios ya están dibujados
+      const xN = xNotas[idx];
+      const ancho = anchoEn(idx);
       const i = it.k;
       const n = it.nota;
       const nb = bajoDe(it);
       bajoNota[i] = nb;
-      if (!sinBajo && nb) {
-        const g = el('g', { class: (sopranoDada ? 'bajo-alumno' : 'bajo') + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') + (estado.bajoDado ? ' dada' : '') });
-        const cabeza = notaSuelta(g, nb, paso(nb), Y_BOT, xN, f, 4, i, 0);
-        señalar(cabeza, i, 0, xN + ancho * SP / 2, Y_BOT - paso(nb) * SP / 2);
+      if (!sinBajo && sopranoDada && nb) {
+        const f = figura(it.dur);
+        const g = el('g', { class: 'bajo-alumno' + (estado.bajosMal && estado.bajosMal[i] ? ' mal' : '') + (estado.bajoDado ? ' dada' : '') });
+        const cabeza = notaSuelta(g, nb, paso(nb), Y_BOT, xN, f, 4, tEvento[idx], 0);
+        señalar(cabeza, i, 0, xN + f.ancho * SP / 2, Y_BOT - paso(nb) * SP / 2);
         svg.appendChild(g);
       }
 

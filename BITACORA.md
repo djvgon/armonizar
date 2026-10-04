@@ -9,17 +9,33 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 3 de octubre de 2026
+## Estado a 4 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261005-0800`, con las
-  decisiones **235**, **236** y **237**. Archivos pendientes de subir: `js/app.js`,
-  `js/registro.js`, `js/envio.js`, `js/partitura.js`, las ocho páginas (la marca) y los dos
+- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261005-1000`, con las
+  decisiones **235**, **236**, **237**, **238** y **239**. Archivos pendientes de subir:
+  `js/app.js`, `js/registro.js`, `js/envio.js`, `js/partitura.js`, `js/banco.js`,
+  `js/configurador.js`, `css/estilo.css`, `envio.json`, las ocho páginas (la marca) y los dos
   documentos. La decisión **234**
   —`js/configurador.js`, `configurar.html`, `cifrados.html`, `estructuras.html`— ya está
   publicada.
   · La **236** corrige un ejercicio sin salida: con los enlaces repartidos antes de la
   decisión 233 (`pedirRomano: false`), la fila «Tonalidad» salía editable y sin paleta ni
   atajos con que rellenarla. **Conviene que esto llegue a los alumnos pronto.**
+
+- **DESPUÉS DEL *PUSH*: REIMPORTAR LA MARCHA EN RE** (decisión 238). El fragmento
+  `A3-3-26` que hay en el banco se cerró **antes** de que existiera la rejilla, así que no la
+  lleva: sigue pidiendo 16 cifrados al bajo y 19 a la melodía, y conserva su aviso. Para que
+  tenga los **15 acordes**, hay que volver a importarlo del archivo
+  `A3-7. V7 en inversión - Fragmentos bajo y soprano.mscz`.
+  · Entrará como fragmento **nuevo**, porque la huella se calcula del contenido y el
+  contenido cambia; el viejo seguirá ahí con su sello intacto y **hay que quitarlo a mano**
+  desde la tabla del banco.
+  · Lo mismo vale para los otros dos de música real, `A3-4-15` (Beethoven) y `A4-11-09`
+  (Schindler): los dos salen con rejilla y sin aviso, pero su música no cambia y **no corre
+  prisa**.
+  · Al reimportar cualquier fragmento que tenga las dos voces, el modelo de la melodía saldrá
+  distinto del que esté guardado, y mejor: es la decisión **239**. Nada de lo ya guardado se
+  toca solo.
 
 - ~~**LOS TRES PASOS DE LA DECISIÓN 235**~~ **HECHOS** el 4/10/2026, ejecutados por mí en tu
   cuenta a petición tuya («¿puedes ejecutar tú mismo el script? Estoy liado con la tesis»).

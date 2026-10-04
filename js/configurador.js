@@ -343,6 +343,18 @@
        esa puerta el alumno veía la reconstrucción del motor y ningún crédito. Por la otra
        puerta —la ficha del banco— sí llegaban, porque los pone `Banco.ejercicio`. Ahora
        llegan por las dos. */
+    /* LA REJILLA (decisión 238). Revisando un fragmento del banco que la lleva, el editor
+       trabaja con la voz VISTA DESDE LA REJILLA —un acontecimiento por acorde, que es lo
+       que tiene la tabla y lo que casa con las respuestas—, pero el dibujo ha de enseñar el
+       ritmo ESCRITO. Las dos cosas viajan con el ejercicio, igual que en la página del
+       alumno, y así la vista previa y la dirección del fragmento suelto salen bien. Si se
+       toca la música a mano, `estado.banco` se suelta y esto no se añade. */
+    const bk = estado.banco;
+    if (bk && bk.entrada && Array.isArray(bk.entrada.rejilla) && bk.entrada[bk.voz]
+        && Ejercicios.numNotas({ compases }) === bk.entrada.rejilla.length) {
+      ej.compasesEscritos = bk.entrada[bk.voz].compases;
+      ej.tiempos = bk.entrada.rejilla.slice();
+    }
     const proc = procedenciaDe(extra.origen);
     if (proc) {
       if (proc.autor) ej.autor = proc.autor;
@@ -2259,7 +2271,13 @@
     estado.banco = { entrada: e, voz: Banco.vozDeModo(modo) };
     estado.fragmentos = null; estado.fragmentoActual = null; estado.companera = null;
     $('#fragmentos').hidden = true;
-    $('#texto-bajo').value = Teoria.textoDesdeBajo(parte.compases);
+    /* Con rejilla (decisión 238) el editor trabaja con la voz VISTA DESDE LA REJILLA: un
+       acontecimiento por acorde, que es lo que tiene la tabla de revisión y lo que casa con
+       las respuestas. La voz escrita se queda en la entrada y se le devuelve al guardar. */
+    const musica = Array.isArray(e.rejilla)
+      ? Banco.conNotasReales(Banco.enRejilla(parte.compases, e.rejilla), parte.reales)
+      : parte.compases;
+    $('#texto-bajo').value = Teoria.textoDesdeBajo(musica);
     $('#tonica').value = e.tonalidad.tonica;
     $('#modo').value = e.tonalidad.modo;
     $('#compas').value = (e.compas || [4, 4]).join('/');
@@ -2317,12 +2335,107 @@
     analizar(true, true);
   }
 
+  /* ---------- EL RITMO ARMÓNICO (decisión 238) ----------
+     Solo en los fragmentos de partitura real con las dos voces, que son los únicos que
+     llevan rejilla. Se listan las CANDIDATAS —los momentos en que ataca alguna de las dos
+     voces estando las dos sonando— y se marca cuáles llevan acorde. La regla del pulso
+     propone; lo que el profesor marque manda (Diego, 4/10/2026). */
+  const claveT = t => Math.round(t * 48);
+
+  function rejillaMarcada() {
+    return Array.from(document.querySelectorAll('#rejilla-chips button'))
+      .filter(b => b.getAttribute('aria-pressed') === 'true')
+      .map(b => Number(b.dataset.t))
+      .sort((a, b) => a - b);
+  }
+
+  function contarRejilla() {
+    const c = $('#rejilla-cuenta');
+    if (!c) return;
+    const total = document.querySelectorAll('#rejilla-chips button').length;
+    const n = rejillaMarcada().length;
+    c.textContent = '· ' + n + (n === 1 ? ' acorde' : ' acordes') + ' de ' + total + ' ataques';
+  }
+
+  // «2·1» es compás 2, tiempo 1; «5·2,5» es a contratiempo, entre el 2 y el 3
+  function rotuloMomento(pos) {
+    const n = pos.tiempo;
+    const t = Math.abs(n - Math.round(n)) < 0.01
+      ? String(Math.round(n))
+      : String(Math.round(n * 100) / 100).replace('.', ',');
+    return { corto: pos.compas + '·' + t, largo: 'Compás ' + pos.compas + ', tiempo ' + t };
+  }
+
+  function pintarRejilla() {
+    const caja = $('#caja-rejilla');
+    if (!caja) return;
+    const b = estado.banco;
+    const e = b && b.entrada;
+    const puede = !!(e && e.bajo && e.soprano && Array.isArray(e.rejilla));
+    caja.hidden = !puede;
+    if (!puede) return;
+    const cands = Banco.candidatas(e.bajo.compases, e.soprano.compases);
+    const puestos = new Set((e.rejilla || []).map(claveT));
+    const cont = $('#rejilla-chips');
+    cont.textContent = '';
+    let anterior = null;
+    cands.forEach(t => {
+      const pos = Banco.posicionDe(t, e.bajo.compases, e.compas);
+      if (anterior !== null && pos.compas !== anterior) {
+        const raya = document.createElement('span');
+        raya.className = 'barra-compas';
+        cont.appendChild(raya);
+      }
+      anterior = pos.compas;
+      const rot = rotuloMomento(pos);
+      const bt = document.createElement('button');
+      bt.type = 'button';
+      bt.dataset.t = String(t);
+      bt.textContent = rot.corto;
+      bt.title = rot.largo;
+      bt.setAttribute('aria-pressed', puestos.has(claveT(t)) ? 'true' : 'false');
+      bt.addEventListener('click', () => {
+        bt.setAttribute('aria-pressed', bt.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+        contarRejilla();
+      });
+      cont.appendChild(bt);
+    });
+    contarRejilla();
+  }
+
+  function aplicarRejilla(automatica) {
+    const b = estado.banco;
+    const e = b && b.entrada;
+    if (!e || !e.bajo || !e.soprano) return;
+    if (Banco.estaCerrada(e)) {
+      aviso('El fragmento ' + (e.id || '') + ' está cerrado (lo firmaste el ' + e.cerrado
+        + '). Pulsa «Reabrir para cambiarlo» si de verdad quieres tocarlo.', 10000);
+      return;
+    }
+    const rej = automatica
+      ? Banco.rejillaAutomatica(e.bajo.compases, e.soprano.compases, e.compas)
+      : rejillaMarcada();
+    if (!rej.length) { aviso('Deja marcado al menos un acorde: sin ninguno no hay ejercicio.'); return; }
+    const i = banco.indexOf(e);
+    if (i < 0) { aviso('Ese fragmento ya no está en el banco.'); return; }
+    const nuevo = Banco.rehacerConRejilla(e, rej);
+    if (!nuevo) { aviso('No se ha podido rehacer el fragmento con esa rejilla.'); return; }
+    banco[i] = nuevo;
+    guardarBanco();
+    pintarBanco();
+    cargarDelBanco(nuevo, modoElegido());
+    aviso('Rehecho ' + (nuevo.id || '') + ' con ' + rej.length + ' acordes'
+      + ((nuevo.avisos && nuevo.avisos.length) ? ' · ' + nuevo.avisos.join('; ') : '')
+      + '. Acuérdate de descargar banco.json y subirlo a GitHub.', 9000);
+  }
+
   // Cartel del paso 4 que dice qué fragmento del banco se está revisando
   function pintarOrigenBanco() {
     const caja = $('#banco-origen');
     if (!caja) return;
     const b = estado.banco;
     caja.hidden = !b;
+    pintarRejilla();                 // el ritmo armónico va con el fragmento (decisión 238)
     /* SIN FRAGMENTO DEL BANCO, TAMBIÉN HAY QUE BORRAR LO QUE LO DESCRIBÍA (decisión 212).
        Se ocultaba el recuadro de abajo, pero la chapa del sello, el nombre de la lección y
        la casilla «De qué obra viene» se quedaban con los datos del fragmento anterior. */
@@ -2570,11 +2683,20 @@
     e.tonalidad = { tonica: ton.tonica, modo: ton.modo };
     e.tonalidadSegura = true;                       // la ha fijado el profesor a mano
     e.compas = compas();
+    /* CON REJILLA, LA MÚSICA ESCRITA NO SE TOCA (decisión 238). Lo que hay en el editor es
+       la voz vista desde la rejilla —un acontecimiento por acorde—, no la voz escrita; lo
+       que se revisa aquí son los CIFRADOS. La música sigue siendo la de la partitura, y con
+       ella las notas de paso en tiempo fuerte que se eligieron al importar. Quien quiera
+       cambiar la música tiene el cuadro de texto, y al tocarlo el fragmento se suelta del
+       banco y vuelve a ser uno normal. */
+    const antes = e[b.voz] || {};
+    const conRej = Array.isArray(e.rejilla);
     e[b.voz] = {
-      compases: estado.compases.map(c => c.map(x => x.slice())),
+      compases: conRej ? antes.compases : estado.compases.map(c => c.map(x => x.slice())),
       modulaciones: mods,
       respuestas: estado.respuestas.map(a => a.slice())
     };
+    if (conRej && Array.isArray(antes.reales)) e[b.voz].reales = antes.reales.slice();
     // El 6.º grado elevado (179) solo se guarda cuando lo hay: así no cambia nada de lo ya firmado
     const mel = (estado.melodica || []).filter(Number.isInteger).sort((x, y) => x - y);
     if (mel.length) e[b.voz].melodica = mel;
@@ -2583,11 +2705,21 @@
     const otra = b.voz === 'bajo' ? 'soprano' : 'bajo';
     let rehecha = false;
     if (cambiaTon && e[otra]) {
-      const r = Banco.analizarVoz(e[otra].compases, ton, mods, otra === 'soprano', {
+      // Con rejilla, las dos voces se analizan vistas desde ella, que es como se guardaron
+      const vOtra = conRej
+        ? Banco.conNotasReales(Banco.enRejilla(e[otra].compases, e.rejilla), e[otra].reales)
+        : e[otra].compases;
+      const vEsta = conRej
+        ? Banco.conNotasReales(Banco.enRejilla(e[b.voz].compases, e.rejilla), e[b.voz].reales)
+        : e[b.voz].compases;
+      const r = Banco.analizarVoz(vOtra, ton, mods, otra === 'soprano', {
         compas: e.compas, repertorio: e.leccionRepertorio, acordes: e.leccionAcordes,
-        companera: Banco.companeraDe(e[otra].compases, e[b.voz].compases)
+        companera: Banco.companeraDe(vOtra, vEsta)
       });
-      if (r) { e[otra] = { compases: e[otra].compases, modulaciones: mods.slice(), respuestas: r.respuestas }; rehecha = true; }
+      if (r) {
+        e[otra] = Object.assign({}, e[otra], { modulaciones: mods.slice(), respuestas: r.respuestas });
+        rehecha = true;
+      }
     }
     /* LAS VOCES ESCRITAS VAN CON EL BAJO (decisión 216). Son un acorde por nota suya; si al
        revisar se ha tocado el bajo a mano y ya no hay tantos acordes como notas, esas voces
@@ -3179,6 +3311,8 @@
     bancoPublicado();
     $('#btn-banco-anadir').addEventListener('click', anadirAlBanco);
     $('#btn-banco-guardar').addEventListener('click', guardarEnBanco);
+    $('#btn-rejilla-aplicar').addEventListener('click', () => aplicarRejilla(false));
+    $('#btn-rejilla-auto').addEventListener('click', () => aplicarRejilla(true));
     $('#btn-banco-cerrar').addEventListener('click', cerrarActual);
     $('#btn-banco-abrir').addEventListener('click', abrirActual);
     $('#btn-voz-bajo').addEventListener('click', () => revisarVoz('bajo'));

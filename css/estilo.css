@@ -778,6 +778,32 @@ svg.partitura .zona-acorde { fill: transparent; pointer-events: all; }
 .sello-chip[data-estado="cerrado"] { background: var(--bien-suave); border-color: var(--bien); color: var(--bien); }
 .sello-chip[data-estado="rota"] { background: var(--mal-suave); border-color: var(--mal); color: var(--mal); font-weight: 600; }
 
+/* ---- El ritmo armónico (decisión 238) ----
+   Solo aparece en los fragmentos de partitura real a dos voces. Un botón por cada
+   momento en que ataca alguna de las dos; pulsado = lleva acorde. */
+.caja-rejilla {
+  margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--linea);
+  border-radius: var(--radio-control); background: rgba(36, 22, 48, .05);
+}
+.caja-rejilla > h4 { margin: 0 0 .4rem; font-size: 1rem; }
+.caja-rejilla .ayuda { margin-top: 0; }
+.rejilla-cuenta { font-weight: 400; color: var(--tinta-suave); font-size: .85rem; }
+.rejilla-chips { display: flex; flex-wrap: wrap; gap: .35rem; margin: .6rem 0; }
+.rejilla-chips button {
+  font: inherit; font-size: .8rem; font-variant-numeric: tabular-nums;
+  padding: .22rem .55rem; cursor: pointer; min-width: 3.6rem;
+  border: 1px solid var(--linea); border-radius: 999px;
+  background: var(--papel); color: var(--tinta-suave);
+}
+.rejilla-chips button:hover { border-color: var(--tinta-suave); }
+.rejilla-chips button[aria-pressed="true"] {
+  background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 600;
+}
+/* El primer momento de cada compás, con la raya de compás delante */
+.rejilla-chips .barra-compas {
+  flex: 0 0 auto; width: 1px; align-self: stretch; background: var(--linea); margin: 0 .25rem;
+}
+
 /* Cartel del paso 4 cuando se está revisando un fragmento que viene del banco */
 .banco-origen { margin-top: 1rem; padding: .8rem 1rem; border: 1px solid var(--linea); border-radius: var(--radio-control); background: rgba(36, 22, 48, .05); }
 .banco-origen > .ayuda:first-child { margin-top: 0; font-weight: 600; }
