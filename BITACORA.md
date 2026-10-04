@@ -21,23 +21,21 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   decisión 233 (`pedirRomano: false`), la fila «Tonalidad» salía editable y sin paleta ni
   atajos con que rellenarla. **Conviene que esto llegue a los alumnos pronto.**
 
-- **LOS TRES PASOS DE LA DECISIÓN 235 QUE NO PUEDO DAR YO** (en este orden; sin el primero,
-  las medias por modo siguen deduciéndose del título, que es lo que había):
-  1. **El formulario.** Abrir el proyecto de Apps Script de `CrearFormularioPractica.gs`
-     (script.google.com) y pegar la versión nueva, que añade la pregunta **«Modo»**. Ejecutar
-     `crearFormularioPractica`: no duplica nada, añade la pregunta que falta y escribe en el
-     registro la **dirección plantilla** nueva. La pregunta aparece al final del formulario y
-     su columna a la derecha de todas en la hoja; las filas anteriores se quedan con esa
-     casilla en blanco, que es lo correcto —nadie mandó ese dato—.
-  2. **La plantilla, a la aplicación.** Copiar esa dirección entera, pegarla en el configurador
-     («C · Recogida de resultados → Dirección plantilla del formulario»), pulsar **Descargar
-     `envio.json`** y poner ese archivo en la carpeta de la web, junto a `banco.json`.
-     Entra en el mismo *commit* que los dos `js` de arriba o en otro, da igual: el orden no
-     importa, porque una marca sin valor se queda en blanco y un valor sin marca no se manda.
-  3. **El cuaderno.** En «Práctica armónica — resultados» → Extensiones → Apps Script, pegar
-     la versión nueva de `MontarCuadernoPractica.gs` encima de lo que haya y ejecutar
-     `montarCuaderno`. Crea **«Calificaciones»** y **«Contenidos»** y borra «Cuaderno». El
-     disparador no hay que tocarlo: sigue llamando a `alEnviar`.
+- ~~**LOS TRES PASOS DE LA DECISIÓN 235**~~ **HECHOS** el 4/10/2026, ejecutados por mí en tu
+  cuenta a petición tuya («¿puedes ejecutar tú mismo el script? Estoy liado con la tesis»).
+  1. **Formulario.** `CrearFormularioPractica.gs` actualizado con el campo `MODO` y ejecutado:
+     el formulario pasa de 16 a **17 preguntas** y la hoja de respuestas tiene ya su columna
+     **«Modo»** (la S), en blanco en las entregas anteriores, que es lo correcto.
+  2. **Plantilla.** `envio.json` reescrito con la dirección nueva —17 marcas `ZZ…ZZ`, con
+     `ZZMODOZZ` al final, mismo formulario de siempre— en el clon y en Drive. **Falta subirlo
+     a GitHub**: va en el mismo *commit* pendiente.
+  3. **Cuaderno.** `MontarCuadernoPractica.gs` sustituido y ejecutado: la hoja tiene ahora
+     **«Calificaciones»** —con las cuatro medias por modo— y **«Contenidos»**, y «Cuaderno» ha
+     desaparecido. Comprobado sobre las 24 entregas reales: 5 alumnos, 11 títulos distintos,
+     9 modos deducidos del título (los anteriores al campo) y dos títulos sin modo, «Ficha» y
+     «RO ascendente en Do mayor», fuera de las cuatro medias. El disparador sigue en pie.
+  · A partir del primer envío que haga un alumno con la web ya publicada, el modo dejará de
+  deducirse para ese título y las medias por modo serán exactas.
 
 - **PARA QUE EL BOTÓN DE RESULTADOS FUNCIONE, UNA SOLA VEZ.** La hoja donde caen los envíos
   de los alumnos es **«Práctica armónica — resultados»**:
