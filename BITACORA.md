@@ -37,6 +37,21 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   · A partir del primer envío que haga un alumno con la web ya publicada, el modo dejará de
   deducirse para ese título y las medias por modo serán exactas.
 
+- **VERSIÓN ESTABLE MARCADA: `v2026.10.04-estable`** (Diego, 4/10/2026: «marquemos una
+  versión estable… esto es un cambio que me gustaría poder revertir»). El punto al que
+  volver antes de meter mano a las casillas por tiempo (lo de la blanca con dos acordes).
+  - **Qué es:** marca `20261005-0800`, commit **5bc95c78**, banco de **145 fragmentos, los
+    145 cerrados**, decisiones hasta la **237**. Clon y GitHub en el mismo punto.
+  - **Copia en Drive:** `4 VERSIONES ESTABLES/v2026.10.04-estable/`, con la carpeta web
+    entera, los dos `.gs` de Apps Script —que no viven en GitHub— y un `LEEME.txt` que
+    explica cómo volver. 5 MB. No depende de git para nada.
+  - **Etiqueta: HECHA** el 4/10/2026. Publicada como *release* en GitHub sobre el commit
+    `5bc95c7`: <https://github.com/djvgon/armonizar/releases/tag/v2026.10.04-estable>.
+    Lleva adjuntos el zip y el tar.gz del código completo, así que se puede descargar entera
+    sin usar git. La copia de Drive es la red por debajo.
+  - **Cómo volver, si hiciera falta:** descargar el zip de esa *release*, o copiar encima la
+    carpeta `web/` de `4 VERSIONES ESTABLES/v2026.10.04-estable/` y subirla.
+
 - **PARA QUE EL BOTÓN DE RESULTADOS FUNCIONE, UNA SOLA VEZ.** La hoja donde caen los envíos
   de los alumnos es **«Práctica armónica — resultados»**:
   `https://docs.google.com/spreadsheets/d/1yHGzGOOovaF5VqcSc0xl85ArLmFSHiecAvYfbTXIT6A/edit`
