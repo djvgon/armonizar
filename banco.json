@@ -1,6 +1,6 @@
 {
  "version": 1,
- "creado": "2026-10-03",
+ "creado": "2026-10-05",
  "fragmentos": [
   {
    "id": "A3-1-01",
@@ -23692,9 +23692,9 @@
    "huella": "ebf648f0da3bc3b3"
   },
   {
-   "id": "A3-3-26",
-   "leccion": "A3-3",
-   "leccionNombre": "V7 en inversión",
+   "id": "A3-4-16",
+   "leccion": "A3-4",
+   "leccionNombre": "IV, II y II6",
    "leccionRepertorio": [
     "53",
     "6",
@@ -23714,13 +23714,13 @@
     "V|+4",
     "VII|6"
    ],
-   "fuente": "A3-7. V7 en inversión - Fragmentos bajo y soprano.mscz",
+   "fuente": "A3-8. IV, II y II6 - Fragmentos bajo y partituras reales.mscz",
    "titulo": "",
-   "autor": "C. Ph. E. Bach",
-   "obra": "Marcha en Re",
+   "autor": "",
+   "obra": "",
    "enlace": "",
    "tonalidad": {
-    "tonica": "D",
+    "tonica": "F",
     "modo": "mayor"
    },
    "tonalidadSegura": true,
@@ -23730,88 +23730,160 @@
     4,
     4
    ],
+   "rejilla": null,
    "bajo": {
     "compases": [
      [
       [
-       null,
-       3
+       "D3",
+       2
       ],
       [
-       null,
-       1
+       "F3",
+       2
       ]
      ],
      [
       [
-       "D3",
-       1
+       "G3",
+       2
       ],
       [
        "G3",
-       1
-      ],
-      [
-       "F#3",
-       1
-      ],
-      [
-       "E3",
-       1
+       2
       ]
      ],
      [
       [
-       "D3",
-       1
-      ],
-      [
-       "G3",
-       1
-      ],
-      [
-       "F#3",
-       1
-      ],
-      [
-       "E3",
-       1
+       "F3",
+       4
       ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [],
+     [
+      "53"
      ],
      [
-      [
-       "F#3",
-       1
-      ],
-      [
-       "D3",
-       1
-      ],
-      [
-       "C#3",
-       1
-      ],
+      "+6",
+      "6"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": null,
+   "nivelManual": null,
+   "avisos": [
+    "alguna nota del bajo se queda sin cifra posible"
+   ],
+   "etiquetas": {
+    "voces": "bajo",
+    "notas": 5,
+    "compases": 3,
+    "modo": "mayor",
+    "alteraciones": 1,
+    "modula": false,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "+6"
+    ],
+    "grados": [],
+    "nivel": 1
+   },
+   "tocado": "2026-10-05T05:50:14.129Z"
+  },
+  {
+   "id": "A3-4-17",
+   "leccion": "A3-4",
+   "leccionNombre": "IV, II y II6",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6"
+   ],
+   "fuente": "A3-8. IV, II y II6 - Fragmentos bajo y partituras reales.mscz",
+   "titulo": "",
+   "autor": "F. Mendelssohn",
+   "obra": "Lieder ohne Worte, op. 62 nº 6. Cc. 1–15",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "A",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    2,
+    4
+   ],
+   "rejilla": [
+    0,
+    2,
+    4,
+    6,
+    8,
+    10
+   ],
+   "bajo": {
+    "compases": [
+     [
       [
        "A2",
-       1
+       2
       ]
      ],
      [
       [
-       "D2",
-       1
-      ],
-      [
-       "D3",
-       0.5
-      ],
-      [
        "C#3",
-       0.5
-      ],
+       2
+      ]
+     ],
+     [
       [
        "D3",
-       1
+       2
+      ]
+     ],
+     [
+      [
+       "B2",
+       2
+      ]
+     ],
+     [
+      [
+       "G#2",
+       2
+      ]
+     ],
+     [
+      [
+       "A2",
+       2
       ]
      ]
     ],
@@ -23821,45 +23893,15 @@
       "53"
      ],
      [
+      "6"
+     ],
+     [
+      "6",
       "+4"
      ],
      [
-      "6"
-     ],
-     [
-      "+6",
-      "6"
-     ],
-     [
-      "53"
-     ],
-     [
-      "+4"
-     ],
-     [
-      "6"
-     ],
-     [
-      "+6",
-      "6"
-     ],
-     [
-      "6"
-     ],
-     [
-      "53"
-     ],
-     [
-      "6"
-     ],
-     [
-      "53"
-     ],
-     [
-      "53"
-     ],
-     [
-      "53"
+      "53",
+      "+6"
      ],
      [
       "65d",
@@ -23874,91 +23916,37 @@
     "compases": [
      [
       [
-       null,
-       3
-      ],
-      [
-       "A4",
-       1
+       "C#5",
+       2
       ]
      ],
      [
-      [
-       "D5",
-       1
-      ],
       [
        "A4",
        2
-      ],
-      [
-       "B4",
-       0.5
-      ],
-      [
-       "C#5",
-       0.5
       ]
      ],
      [
       [
-       "D5",
-       1
-      ],
-      [
-       "A4",
+       "B4",
        2
-      ],
+      ]
+     ],
+     [
+      [
+       "F#4",
+       2
+      ]
+     ],
+     [
       [
        "B4",
-       0.5
-      ],
+       2
+      ]
+     ],
+     [
       [
        "C#5",
-       0.5
-      ]
-     ],
-     [
-      [
-       "D5",
-       0.5
-      ],
-      [
-       "E5",
-       0.5
-      ],
-      [
-       "F#5",
-       0.5
-      ],
-      [
-       "G5",
-       0.5
-      ],
-      [
-       "A5",
-       0.5
-      ],
-      [
-       "G5",
-       0.5
-      ],
-      [
-       "F#5",
-       0.5
-      ],
-      [
-       "E5",
-       0.5
-      ]
-     ],
-     [
-      [
-       "F#5",
-       1
-      ],
-      [
-       "D5",
        2
       ]
      ]
@@ -23966,58 +23954,23 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "I|53",
-      "I|6"
+      "I|53"
      ],
      [
       "I|6",
       "I|53"
      ],
      [
-      "I|6",
-      "I|53",
+      "V|+4",
+      "V|65d",
       "V|53",
       "V|+6",
-      "V|65d",
       "V|6",
       "V|7+",
-      "V|+4"
+      "VII|6"
      ],
      [],
      [
-      "V|53",
-      "V|+6",
-      "V|7+",
-      "V|+4",
-      "VII|6"
-     ],
-     [
-      "I|53",
-      "I|6"
-     ],
-     [
-      "V|65d",
-      "I|53",
-      "I|6",
-      "V|53",
-      "V|+6",
-      "V|6",
-      "V|7+",
-      "V|+4"
-     ],
-     [],
-     [
-      "V|53",
-      "V|+6",
-      "V|7+",
-      "V|+4",
-      "VII|6"
-     ],
-     [
-      "I|53",
-      "I|6"
-     ],
-     [
       "V|65d",
       "V|53",
       "V|+6",
@@ -24027,46 +23980,6 @@
      ],
      [
       "I|53"
-     ],
-     [
-      "V|65d",
-      "V|+6",
-      "V|7+",
-      "VII|6"
-     ],
-     [
-      "I|53",
-      "I|6",
-      "V|53",
-      "V|+6",
-      "V|65d",
-      "V|6",
-      "V|7+",
-      "V|+4"
-     ],
-     [
-      "V|65d",
-      "V|+6",
-      "V|7+",
-      "VII|6"
-     ],
-     [
-      "I|53"
-     ],
-     [
-      "V|65d",
-      "V|53",
-      "V|+6",
-      "V|6",
-      "V|7+",
-      "VII|6"
-     ],
-     [
-      "I|53"
-     ],
-     [
-      "I|53",
-      "I|6"
      ]
     ]
    },
@@ -24074,27 +23987,59 @@
    "avisos": [
     "alguna nota de la melodía se queda sin acorde posible"
    ],
+   "voces": [
+    [
+     "E4",
+     "A4",
+     "C#5"
+    ],
+    [
+     "C#4",
+     "E4",
+     "A4"
+    ],
+    [
+     "D4",
+     "F#4",
+     "B4"
+    ],
+    [
+     "B3",
+     "D4",
+     "F#4"
+    ],
+    [
+     "D4",
+     "E4",
+     "B4"
+    ],
+    [
+     "C#4",
+     "E4",
+     "C#5"
+    ]
+   ],
+   "acordesFuera": [
+    3,
+    4
+   ],
    "etiquetas": {
     "voces": "ambas",
-    "notas": 16,
-    "compases": 5,
+    "notas": 6,
+    "compases": 6,
     "modo": "mayor",
-    "alteraciones": 2,
+    "alteraciones": 3,
     "modula": false,
-    "cuatro": false,
+    "cuatro": true,
     "cifras": [
      "53",
-     "+4",
      "6",
-     "+6",
      "65d"
     ],
     "grados": [],
-    "nivel": 4
+    "nivel": 2
    },
-   "tocado": "2026-10-03T21:27:58.095Z",
-   "cerrado": "2026-10-03",
-   "huella": "5d04a933a3898aca"
+   "tocado": "2026-10-05T05:50:14.129Z"
   }
  ]
 }
