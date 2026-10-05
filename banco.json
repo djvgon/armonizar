@@ -23692,120 +23692,6 @@
    "huella": "e946ce6257e16655"
   },
   {
-   "id": "A3-4-16",
-   "leccion": "A3-4",
-   "leccionNombre": "IV, II y II6",
-   "leccionRepertorio": [
-    "53",
-    "6",
-    "7+",
-    "+6",
-    "65d",
-    "+4"
-   ],
-   "leccionAcordes": [
-    "I|53",
-    "I|6",
-    "IV|53",
-    "II|53",
-    "II|6",
-    "V|53",
-    "V|7+",
-    "V|6",
-    "V|65d",
-    "V|+6",
-    "V|+4",
-    "VII|6"
-   ],
-   "fuente": "A3-8. IV, II y II6 - Fragmentos bajo y partituras reales.mscz",
-   "titulo": "",
-   "autor": "",
-   "obra": "",
-   "enlace": "",
-   "tonalidad": {
-    "tonica": "D",
-    "modo": "menor"
-   },
-   "tonalidadSegura": true,
-   "armaduraEscrita": null,
-   "ultimaBajo": null,
-   "compas": [
-    4,
-    4
-   ],
-   "rejilla": null,
-   "bajo": {
-    "compases": [
-     [
-      [
-       "D3",
-       2
-      ],
-      [
-       "F3",
-       2
-      ]
-     ],
-     [
-      [
-       "G3",
-       2
-      ],
-      [
-       "G3",
-       2
-      ]
-     ],
-     [
-      [
-       "F3",
-       4
-      ]
-     ]
-    ],
-    "modulaciones": [],
-    "respuestas": [
-     [
-      "53"
-     ],
-     [
-      "6"
-     ],
-     [
-      "6"
-     ],
-     [
-      "+4"
-     ],
-     [
-      "6"
-     ]
-    ]
-   },
-   "soprano": null,
-   "nivelManual": null,
-   "avisos": [],
-   "etiquetas": {
-    "voces": "bajo",
-    "notas": 5,
-    "compases": 3,
-    "modo": "menor",
-    "alteraciones": 1,
-    "modula": false,
-    "cuatro": false,
-    "cifras": [
-     "53",
-     "6",
-     "+4"
-    ],
-    "grados": [],
-    "nivel": 2
-   },
-   "tocado": "2026-10-05T15:28:34.734Z",
-   "cerrado": "2026-10-05",
-   "huella": "44c3e2a63b08c719"
-  },
-  {
    "id": "A3-4-17",
    "leccion": "A3-4",
    "leccionNombre": "IV, II y II6",
@@ -23820,9 +23706,6 @@
    "leccionAcordes": [
     "I|53",
     "I|6",
-    "IV|53",
-    "II|53",
-    "II|6",
     "V|53",
     "V|7+",
     "V|6",
@@ -24047,130 +23930,6 @@
    "tocado": "2026-10-05T15:26:02.137Z",
    "cerrado": "2026-10-05",
    "huella": "71a1d55c65cdb9bf"
-  },
-  {
-   "id": "A3-3-26",
-   "leccion": "A3-3",
-   "leccionNombre": "V7 en inversión",
-   "leccionRepertorio": [
-    "53",
-    "6",
-    "7+",
-    "+6",
-    "65d",
-    "+4"
-   ],
-   "leccionAcordes": [
-    "I|53",
-    "I|6",
-    "V|53",
-    "V|7+",
-    "V|6",
-    "V|65d",
-    "V|+6",
-    "V|+4",
-    "VII|6"
-   ],
-   "fuente": "A3-7. V7 en inversión - Fragmentos bajo y soprano.mscz",
-   "titulo": "",
-   "autor": "",
-   "obra": "",
-   "enlace": "",
-   "tonalidad": {
-    "tonica": "C",
-    "modo": "mayor"
-   },
-   "tonalidadSegura": true,
-   "armaduraEscrita": null,
-   "ultimaBajo": null,
-   "compas": [
-    4,
-    4
-   ],
-   "rejilla": null,
-   "bajo": {
-    "compases": [
-     [
-      [
-       "C4",
-       1
-      ],
-      [
-       "D4",
-       1
-      ],
-      [
-       "C4",
-       2
-      ]
-     ]
-    ],
-    "modulaciones": [],
-    "respuestas": [
-     [
-      "53"
-     ],
-     [
-      "+6",
-      "6"
-     ],
-     [
-      "53"
-     ]
-    ]
-   },
-   "soprano": {
-    "compases": [
-     [
-      [
-       "A4",
-       1
-      ],
-      [
-       "B4",
-       1
-      ],
-      [
-       "C5",
-       2
-      ]
-     ]
-    ],
-    "modulaciones": [],
-    "respuestas": [
-     [],
-     [
-      "V|+6",
-      "V|53",
-      "V|7+",
-      "V|+4",
-      "VII|6"
-     ],
-     [
-      "I|53",
-      "I|6"
-     ]
-    ]
-   },
-   "nivelManual": null,
-   "avisos": [
-    "alguna nota de la melodía se queda sin acorde posible"
-   ],
-   "etiquetas": {
-    "voces": "ambas",
-    "notas": 3,
-    "compases": 1,
-    "modo": "mayor",
-    "alteraciones": 0,
-    "modula": false,
-    "cuatro": false,
-    "cifras": [
-     "53",
-     "+6"
-    ],
-    "grados": [],
-    "nivel": 1
-   }
   },
   {
    "id": "A3-3-27",
@@ -24593,7 +24352,9 @@
     ],
     "grados": [],
     "nivel": 3
-   }
+   },
+   "cerrado": "2026-10-05",
+   "huella": "799c61f7dd76b1ac"
   },
   {
    "id": "A4-10-09",
