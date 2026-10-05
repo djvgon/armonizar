@@ -723,6 +723,37 @@ const Reglas = (() => {
      ===================================================================== */
 
   const RO_PREF = { 1: ['53'], 2: ['+6', '53', '6', '7'], 3: ['6'], 4: ['53', '65', '+4', '6'], 5: ['53', '7+'], 6: ['53', '6', '43', '+6'], 7: ['65d', '6'] };
+
+  /* EL 4.º GRADO NO SE PUEDE ORDENAR SIN SABER ADÓNDE VA (decisión 240, 5/10/2026).
+     `RO_PREF` ordena por el grado del bajo **sin mirar el contexto**, y el 4.º es
+     justamente el que lo necesita: subiendo al 5.º pide la subdominante —el 6/5 delante,
+     que es el conjunto completo, después el II6 y por último el IV—, bajando al 3.º pide
+     el V4/2, y si no hace ninguna de las dos cosas pide el IV a secas. Con la lista fija
+     salía el IV delante en los tres casos.
+
+     Esto es una CORRECCIÓN sobre el coste de `RO_PREF`, y tiene un límite que conviene
+     dejar escrito: **`RO_PREF` es una tabla plana**, que ordena por el grado del bajo sin
+     mirar el contexto, de modo que no se puede cambiar el orden DENTRO del 4.º grado sin
+     tocar a la vez lo atractivo que ese grado resulta para el bajo. Probadas las dos
+     salidas: premiando al 6/5 y al II6, el bajo se va AL 4.º grado donde antes no estaba
+     (sale el V4/2 donde había V4/3, y nueve modelos se mueven); castigando al IV, el bajo
+     se va DEL 4.º grado al 2.º, y entonces delante de la dominante sale el II en vez del
+     IV —que es lo que la decisión 76 pide de todos modos, porque IV → V en estado
+     fundamental son las quintas paralelas de siempre— y se mueven cinco. Se ha elegido lo
+     segundo por ser menos y por ir en la dirección buena.
+     Lo correcto de verdad sería separar las dos decisiones —qué grado lleva el bajo y qué
+     cifra va encima—, y eso es un trabajo de fondo en el proponedor de melodía.
+     (`RO_PREF[4]` vale 0 · 3 · 6 · 9 para 5/3 · 6/5 · 4+ · 6.) */
+  const RO_CUARTO = {
+    5: { '65': -3, '6': -6, '53': 6 },        // sube al 5.º → 6/5 (0) · II6 (3) · IV (6)
+    3: { '+4': -6, '53': 3 },                 // baja al 3.º → V4/2 (0) · IV (3)
+    0: {}                                      // ni una cosa ni la otra → el IV, que ya va delante
+  };
+  function costeCuarto(p, q) {
+    if (p.gradoBajo !== 4) return 0;
+    const tabla = RO_CUARTO[q.gradoBajo === 5 ? 5 : q.gradoBajo === 3 ? 3 : 0];
+    return tabla[p.cifra] || 0;
+  }
   const MIEMBRO_TXT = { 0: 'fundamental', 2: 'tercera', 4: 'quinta', 6: 'séptima', 1: 'novena' };
 
   function claseDe(n) { return Teoria.clase(Teoria.nota(n)); }
@@ -964,7 +995,8 @@ const Reglas = (() => {
         capas[i].forEach(nd => {
           capas[i - 1].forEach((pv, k) => {
             if (!pv.alcanzable || !enlaceValido(pv.x, nd.x, notas[i - 1], notas[i], forzadas[i - 1], forzadas[i], reglasEn(i))) return;
-            let extra = nd.x.coste + costeEnlace(pv.x, nd.x, notas[i - 1], notas[i], i === fin);
+            let extra = nd.x.coste + costeEnlace(pv.x, nd.x, notas[i - 1], notas[i], i === fin)
+              + costeCuarto(pv.x, nd.x);          // la regla de la octava sobre el 4.º grado (240)
             // Cadencia: mejor V en estado fundamental → I (perfecta); antes, mejor una subdominante (T S D T) o el 6/4 cadencial
             if (i === fin) extra += (pv.x.romano === 'V' && (pv.x.cifra === '53' || pv.x.cifra === '7+')) ? 0 : pv.x.funciones.every(f => f === 'D') ? 3 : finPlagal.has(fin) ? 0 : pv.x.funciones.includes('S') ? 4 : 6;
             if (i === fin - 1 && largo > 3) extra += (pv.x.cifra === '64' || pv.x.funciones.includes('S')) ? 0 : 4;

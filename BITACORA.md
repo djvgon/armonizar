@@ -14,20 +14,24 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 - **PUBLICADO el `20261005-1000`**, con las decisiones 235 a 239. Comprobado en la web: la
   marca, los `.js` servidos con ella y la rejilla cargada.
 
-- **SIN SUBIR: el `20261005-1800`** (decisión **240**, la regla de la octava sobre el 4.º
-  grado ascendente). Es **solo texto**: cambia el porqué que lee el alumno, no cambia
-  ninguna respuesta del motor. Archivos: `js/reglas.js`, las ocho páginas (la marca) y los
-  dos documentos. No corre prisa; puede ir con el siguiente cambio de fondo.
+- **SIN SUBIR: el `20261005-2200`**, con las decisiones **240**, **241** y **242**.
+  Archivos: `js/reglas.js`, `REGLA-DE-LA-OCTAVA-ENTERA.md`,
+  `herramientas/generar-regla-octava.js` (nuevo), las ocho páginas (la marca) y los dos
+  documentos. **En el banco publicado no cambia nada**: las respuestas guardadas no se
+  recalculan nunca. Los cinco modelos de melodía que cambian (241) lo hacen al reimportar.
 
-- **EL DOCUMENTO DE LA REGLA DE LA OCTAVA ESTÁ DESFASADO.** `REGLA-DE-LA-OCTAVA-ENTERA.md`
-  dice de sí mismo que está generado desde el motor recorriendo los 1272 contextos, y ya no
-  lo refleja. Dos filas comprobadas contra el motor, sobre el 4.º grado del bajo:
-  · «cualquiera → 2.ª asc» dice `6/5 · —` y el motor da `6/5 · 6 · —` (le falta el II6, que
-  es justo lo de la decisión 240);
-  · «2.ª asc → 2.ª desc» dice `+4` y el motor da `+4 · —`.
-  Habrá más. **Hay que regenerarlo entero desde el motor**, y el guion que lo generó no se
-  conserva en ninguna parte: hay que volver a escribirlo. Es un trabajo propio, no un
-  parche, porque el documento promete que los apuntes y el programa no se separan.
+- ~~**EL DOCUMENTO DE LA REGLA DE LA OCTAVA ESTÁ DESFASADO**~~ **ARREGLADO** el 5/10/2026
+  (decisión 242). El guion que lo genera vive ya en `herramientas/generar-regla-octava.js`
+  y se vuelve a pasar cada vez que se toca una regla:
+  `node herramientas/generar-regla-octava.js > REGLA-DE-LA-OCTAVA-ENTERA.md`.
+  Necesita Playwright, porque ejecuta los módulos de la aplicación en un navegador.
+  **6279 contextos, 73 respuestas distintas.** Las dos filas que estaban mal ya dicen lo que
+  dice el motor.
+
+- **PENDIENTE, DE FONDO: separar las dos decisiones del proponedor de melodía** —qué grado
+  lleva el bajo y qué cifra va encima—. Hoy `RO_PREF` las mezcla en una sola tabla plana, y
+  por eso el orden dentro de un grado no se puede tocar sin mover el bajo (decisión 241).
+  Mientras no se separe, cualquier retoque de ese orden tendrá efectos laterales.
 
 - **Lo anterior, ya publicado.** Clon y Drive estuvieron por `20261005-1000`, con las
   decisiones **235**, **236**, **237**, **238** y **239**. Archivos pendientes de subir:
@@ -54,6 +58,14 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   · Al reimportar cualquier fragmento que tenga las dos voces, el modelo de la melodía saldrá
   distinto del que esté guardado, y mejor: es la decisión **239**. Nada de lo ya guardado se
   toca solo.
+  · **Comprobado el 5/10/2026 con el archivo de Diego** (`A3-7. V7 en inversión`, MuseScore
+  4.7.5, un solo instrumento de dos pentagramas y una voz cada uno): el importador saca
+  **15 fragmentos**, y el **15.º es la Marcha** —5 compases, bajo y soprano, rótulo
+  `@C. Ph. E. Bach: Marcha en Re`, **sin un solo aviso**—. Si parece que «la toma como un
+  bajo» es porque la lista del banco marca el fragmento con **`· dos voces`** mientras la
+  vista previa y el editor muestran **solo la voz del tipo de ejercicio elegido**; y porque,
+  si el `A3-3-26` viejo sigue en la tabla, el importador **deja el viejo intacto** y el nuevo
+  no aparece. **Quitar primero el viejo.**
 
 - ~~**LOS TRES PASOS DE LA DECISIÓN 235**~~ **HECHOS** el 4/10/2026, ejecutados por mí en tu
   cuenta a petición tuya («¿puedes ejecutar tú mismo el script? Estoy liado con la tesis»).

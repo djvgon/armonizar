@@ -23594,8 +23594,8 @@
    "obra": "",
    "enlace": "",
    "tonalidad": {
-    "tonica": "C",
-    "modo": "mayor"
+    "tonica": "A",
+    "modo": "menor"
    },
    "tonalidadSegura": true,
    "armaduraEscrita": null,
@@ -23624,14 +23624,13 @@
     "modulaciones": [],
     "respuestas": [
      [
-      "53"
-     ],
-     [
-      "+6",
       "6"
      ],
      [
-      "53"
+      "+4"
+     ],
+     [
+      "6"
      ]
     ]
    },
@@ -23654,11 +23653,14 @@
     ],
     "modulaciones": [],
     "respuestas": [
-     [],
      [
-      "V|53",
+      "I|53",
+      "I|6"
+     ],
+     [
+      "V|65d",
       "V|+6",
-      "V|7+",
+      "V|53",
       "V|+4",
       "VII|6"
      ],
@@ -23669,27 +23671,25 @@
     ]
    },
    "nivelManual": null,
-   "avisos": [
-    "alguna nota de la melodía se queda sin acorde posible"
-   ],
+   "avisos": [],
    "etiquetas": {
     "voces": "ambas",
     "notas": 3,
     "compases": 1,
-    "modo": "mayor",
+    "modo": "menor",
     "alteraciones": 0,
     "modula": false,
     "cuatro": false,
     "cifras": [
-     "53",
-     "+6"
+     "6",
+     "+4"
     ],
     "grados": [],
     "nivel": 1
    },
-   "tocado": "2026-10-03T21:27:58.095Z",
-   "cerrado": "2026-10-03",
-   "huella": "ebf648f0da3bc3b3"
+   "tocado": "2026-10-05T14:42:23.930Z",
+   "cerrado": "2026-10-05",
+   "huella": "e946ce6257e16655"
   },
   {
    "id": "A3-4-16",
@@ -23720,8 +23720,8 @@
    "obra": "",
    "enlace": "",
    "tonalidad": {
-    "tonica": "D",
-    "modo": "menor"
+    "tonica": "F",
+    "modo": "mayor"
    },
    "tonalidadSegura": true,
    "armaduraEscrita": null,
@@ -23762,45 +23762,44 @@
     ],
     "modulaciones": [],
     "respuestas": [
+     [],
      [
       "53"
      ],
      [
+      "+6",
       "6"
      ],
      [
+      "+6",
       "6"
      ],
      [
-      "+4"
-     ],
-     [
-      "6"
+      "53"
      ]
     ]
    },
    "soprano": null,
    "nivelManual": null,
-   "avisos": [],
+   "avisos": [
+    "alguna nota del bajo se queda sin cifra posible"
+   ],
    "etiquetas": {
     "voces": "bajo",
     "notas": 5,
     "compases": 3,
-    "modo": "menor",
+    "modo": "mayor",
     "alteraciones": 1,
     "modula": false,
     "cuatro": false,
     "cifras": [
      "53",
-     "6",
-     "+4"
+     "+6"
     ],
     "grados": [],
-    "nivel": 2
+    "nivel": 1
    },
-   "tocado": "2026-10-05T13:57:17.507Z",
-   "cerrado": "2026-10-05",
-   "huella": "44c3e2a63b08c719"
+   "tocado": "2026-10-05T05:50:14.129Z"
   },
   {
    "id": "A3-4-17",
@@ -24040,9 +24039,7 @@
     "grados": [],
     "nivel": 2
    },
-   "tocado": "2026-10-05T05:50:14.129Z",
-   "cerrado": "2026-10-05",
-   "huella": "34a8a6eeef0dd0d7"
+   "tocado": "2026-10-05T05:50:14.129Z"
   }
  ]
 }

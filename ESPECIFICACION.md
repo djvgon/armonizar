@@ -3880,6 +3880,56 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+242. **El documento de la regla de la octava vuelve a salir del motor, y su guion se guarda**
+    (5/10/2026, Diego: «actualiza el documento sobre la regla de la octava para que no esté
+    desfasado»).
+    `REGLA-DE-LA-OCTAVA-ENTERA.md` promete que está generado desde `js/reglas.js` y que, si
+    cambia una regla, cambian los dos a la vez. La primera versión se generó con un guion
+    que **no se guardó en ninguna parte**, así que el documento se fue quedando desfasado
+    sin que nadie pudiera notarlo: le faltaba el II6 sobre el 4.º grado ascendente —justo lo
+    de la decisión 240— y daba `+4` solo donde el motor da `+4 · —`.
+    - **El guion vive ahora en `herramientas/generar-regla-octava.js`** y se vuelve a pasar
+      cada vez que se toca una regla. No lee el código: lo **ejecuta**. Para cada modo, cada
+      grado del bajo y cada nota anterior y siguiente posibles —en las tres octavas que
+      convierten un mismo par de grados en paso o en salto— construye un bajo de verdad y le
+      pregunta al motor qué propone sobre la nota del medio. **6279 contextos**, que se
+      agrupan en **73 respuestas distintas**.
+    - Usa `Reglas.proponerEn`, no `Reglas.proponer`: el segundo aplica encima la sintaxis de
+      la cadencia, que reescribe cifras mirando el fragmento entero, y lo que el documento
+      describe son **las reglas**.
+    - Detrás de la nota del medio se pone una de relleno, para que no caiga en la posición
+      de penúltima, que la regla de la cadencia mira y falsearía el resultado.
+    - La fila que motivó todo esto dice ya, en los dos modos: 4.º grado, sale 2.ª ascendente
+      → **`6/5 · 6 · —`**, es decir II6/5, II6 y IV.
+
+241. **El 4.º grado del bajo no se puede ordenar sin saber adónde va**
+    (5/10/2026, Diego: «corrige esto también, de acuerdo a lo que introdujimos»).
+    Continuación de la decisión 240, esta vez en el ejercicio de **solo melodía**. Allí el
+    bajo no está escrito: lo elige el motor, y para ordenar los candidatos usa `RO_PREF`,
+    una tabla que ordena los acordes **por el grado del bajo y sin mirar el contexto**. Para
+    el 4.º grado decía `IV · II6/5 · V4/2 · II6`, con el IV delante **en los tres casos**:
+    subiendo al 5.º, bajando al 3.º y sin hacer ninguna de las dos cosas. Es justo el grado
+    que no se puede ordenar así.
+    Ahora el orden lo decide `costeCuarto`, en el ENLACE, que es el único sitio donde se
+    sabe adónde va el bajo: subiendo al 5.º, `6/5 · II6 · IV` (decisión 240); bajando al
+    3.º, el V4/2 delante; y si no hace ninguna de las dos cosas, el IV, que es lo que dice
+    R7.
+    - **El límite, escrito para que no se vuelva a intentar a ciegas.** Con una tabla plana
+      no se puede cambiar el orden DENTRO de un grado sin cambiar a la vez lo atractivo que
+      ese grado resulta para el bajo. Probadas las dos salidas y medidas sobre los 128
+      fragmentos con melodía: **premiando** al 6/5 y al II6, el bajo se va **al** 4.º grado
+      donde antes no estaba —aparece el V4/2 donde había V4/3— y se mueven **9** modelos;
+      **castigando** al IV, el bajo se va **del** 4.º grado al 2.º y se mueven **5**. Se ha
+      elegido lo segundo: son menos y van en la dirección que pide la decisión 76, porque
+      delante de la dominante sale el II en vez del IV, y IV → V en estado fundamental son
+      las quintas paralelas de siempre.
+    - **Lo correcto de verdad** sería separar las dos decisiones —qué grado lleva el bajo y
+      qué cifra va encima— en el proponedor de melodía. Es un trabajo de fondo y queda
+      anotado en la bitácora.
+    - **En el banco publicado no cambia nada**: las respuestas guardadas no se recalculan.
+      Los cinco modelos que cambian lo hacen al reimportar.
+    - Discrepancias del corpus: **11 de 273**, las mismas de antes.
+
 240. **El II6/5 del 4.º grado ascendente pide una función, no un acorde**
     (5/10/2026, Diego: «en la regla de la octava, tal como te la pasé y como aparece también
     en Furno, el 4.º grado de la escala, cuando asciende, se armoniza con II6/5. Esto ha de
@@ -3909,10 +3959,10 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       del bajo desde la decisión 239, así que sobre el 4.º grado ascendente las dos voces
       dicen II6/5. Comprobado sobre la escala do–re–mi–fa–sol–do con melodía: bajo
       `53 +6 6 65 53 53`, melodía `I53 V+6 I6 II65 V53 I53`.
-    - **Pendiente, anotado en la bitácora:** en un fragmento de **solo melodía** el orden por
-      grado del bajo (`RO_PREF`) pone el IV delante y el II6 el último, y no distingue si el
-      4.º grado asciende o desciende. Hacerlo sensible al contexto es un cambio mayor y no
-      afecta a la música real.
+    - **Quedaba pendiente** el ejercicio de **solo melodía**, donde el orden por grado del
+      bajo (`RO_PREF`) ponía el IV delante y el II6 el último sin distinguir si el 4.º grado
+      asciende o desciende. **Corregido el mismo día en la decisión 241**, con `costeCuarto`
+      en el enlace.
     - De paso, un porqué que mentía: la rama del 4.º grado que baja al 3.º sin venir del 5.º
       decía «llegando por salto», y cubre también el principio de la frase y la 2.ª
       ascendente. Ahora dice «sin venir del grado 5».
