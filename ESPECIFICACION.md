@@ -3880,6 +3880,43 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+240. **El II6/5 del 4.º grado ascendente pide una función, no un acorde**
+    (5/10/2026, Diego: «en la regla de la octava, tal como te la pasé y como aparece también
+    en Furno, el 4.º grado de la escala, cuando asciende, se armoniza con II6/5. Esto ha de
+    entenderse de la siguiente manera: cualquier combinación que incluya los sonidos
+    incluidos en el II6/5, es decir, tanto el II6/5 como el II6 o el IV, entendidos como
+    subconjuntos del conjunto de notas completo que es el II6/5… El II6/5 sobre la nota 4.ª
+    lo que está pidiendo es usar la función subdominante delante de la dominante que irá en
+    el 5.º, cual subdominante puede ser más variado»).
+    En Do mayor, con fa en el bajo: **II6/5 = fa–la–do–re**, **II6 = fa–la–re**, **IV =
+    fa–la–do**. Los tres comparten el núcleo fa–la, los tres llevan el 4.º grado en el bajo y
+    los tres son la misma subdominante camino de la dominante. Escribir II6 —como hace
+    Mendelssohn en la partitura que motivó esto— **no incumple la regla de la octava**: la
+    realiza con menos notas. Importa de cara a la música real, donde el compositor elige.
+    - **El motor ya los admitía los tres.** Medido sobre la escala entera en Do mayor:
+      `do 53 | re +6,6 | mi 6 | fa 65,6,53 | sol 53,7+ | la 6,53 | si 65d,6 | do 53`. Un II6
+      sobre el 4.º grado ascendente nunca se ha dado por malo.
+    - **Lo que estaba mal era cómo se contaba.** El porqué que lee el alumno decía «6/5; si
+      la lección no lo tiene, II6 (IV solo si la melodía trae la tónica)», que presenta el II6
+      y el IV como el recurso de cuando falta el bueno. Ahora dice: «la subdominante que
+      precede a la dominante. El 6/5 es el conjunto completo (4̂ 6̂ 1̂ 2̂); el II6 y el IV son
+      subconjuntos suyos y valen igual». R5 funcional se ha redactado igual.
+    - **El modelo sigue siendo el II6/5** (Diego, preguntado: «siempre el II6/5»): es la
+      formulación llena de la regla, y el II6 y el IV quedan admitidos detrás. El orden entre
+      esos dos no cambia (decisión 76): II6 antes que IV, porque IV → V en estado fundamental
+      son las quintas paralelas de siempre.
+    - En un fragmento de **música real con las dos voces**, el modelo de la melodía sigue al
+      del bajo desde la decisión 239, así que sobre el 4.º grado ascendente las dos voces
+      dicen II6/5. Comprobado sobre la escala do–re–mi–fa–sol–do con melodía: bajo
+      `53 +6 6 65 53 53`, melodía `I53 V+6 I6 II65 V53 I53`.
+    - **Pendiente, anotado en la bitácora:** en un fragmento de **solo melodía** el orden por
+      grado del bajo (`RO_PREF`) pone el IV delante y el II6 el último, y no distingue si el
+      4.º grado asciende o desciende. Hacerlo sensible al contexto es un cambio mayor y no
+      afecta a la música real.
+    - De paso, un porqué que mentía: la rama del 4.º grado que baja al 3.º sin venir del 5.º
+      decía «llegando por salto», y cubre también el principio de la frase y la 2.ª
+      ascendente. Ahora dice «sin venir del grado 5».
+
 239. **La melodía y el bajo de un mismo fragmento hablaban de armonías distintas**
     (4/10/2026, Diego, mirando el modelo de la Marcha en Re: «pues no… la armonía de Bach en
     el primer compás debería ser I V+4 I6 V+6 y seguir así»).

@@ -9,9 +9,27 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 4 de octubre de 2026
+## Estado a 5 de octubre de 2026
 
-- **LO PRIMERO: el *commit* y el *push*.** Clon y Drive por `20261005-1000`, con las
+- **PUBLICADO el `20261005-1000`**, con las decisiones 235 a 239. Comprobado en la web: la
+  marca, los `.js` servidos con ella y la rejilla cargada.
+
+- **SIN SUBIR: el `20261005-1800`** (decisión **240**, la regla de la octava sobre el 4.º
+  grado ascendente). Es **solo texto**: cambia el porqué que lee el alumno, no cambia
+  ninguna respuesta del motor. Archivos: `js/reglas.js`, las ocho páginas (la marca) y los
+  dos documentos. No corre prisa; puede ir con el siguiente cambio de fondo.
+
+- **EL DOCUMENTO DE LA REGLA DE LA OCTAVA ESTÁ DESFASADO.** `REGLA-DE-LA-OCTAVA-ENTERA.md`
+  dice de sí mismo que está generado desde el motor recorriendo los 1272 contextos, y ya no
+  lo refleja. Dos filas comprobadas contra el motor, sobre el 4.º grado del bajo:
+  · «cualquiera → 2.ª asc» dice `6/5 · —` y el motor da `6/5 · 6 · —` (le falta el II6, que
+  es justo lo de la decisión 240);
+  · «2.ª asc → 2.ª desc» dice `+4` y el motor da `+4 · —`.
+  Habrá más. **Hay que regenerarlo entero desde el motor**, y el guion que lo generó no se
+  conserva en ninguna parte: hay que volver a escribirlo. Es un trabajo propio, no un
+  parche, porque el documento promete que los apuntes y el programa no se separan.
+
+- **Lo anterior, ya publicado.** Clon y Drive estuvieron por `20261005-1000`, con las
   decisiones **235**, **236**, **237**, **238** y **239**. Archivos pendientes de subir:
   `js/app.js`, `js/registro.js`, `js/envio.js`, `js/partitura.js`, `js/banco.js`,
   `js/configurador.js`, `css/estilo.css`, `envio.json`, las ocho páginas (la marca) y los dos

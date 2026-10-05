@@ -170,7 +170,7 @@ const Reglas = (() => {
     if (c.grado === 6 && c.salida === 'saltoDesc' && c.gradoSig === 4)
       return R(['53', '6'], 'Grado 6 que salta a grado 4 hacia la dominante: VI (o IV6).', 'R5 funcional');
     if (c.grado === 4 && c.llegada === 'saltoDesc' && c.gradoAnt === 6 && c.gradoSig === 5)
-      return R(['6', '53', '65'], 'Grado 4 entre grado 6 y grado 5: II6 (o IV, o II6/5) hacia la dominante.', 'R5 funcional');
+      return R(['6', '53', '65'], 'Grado 4 entre grado 6 y grado 5: la subdominante hacia la dominante, en cualquiera de sus formas —II6, IV o II6/5—, que son el mismo conjunto de notas visto con más o menos miembros.', 'R5 funcional');
     // 2̂ que salta a 5̂: II o II7
     if (c.grado === 2 && esSalto(c.salida) && c.gradoSig === 5)
       return R(['53', '7'], 'Grado 2 que salta a la dominante: II (o II7, séptima diatónica), función subdominante.', 'R5 funcional');
@@ -191,17 +191,30 @@ const Reglas = (() => {
       case 2: return R(['+6', '6'], 'Grado 2: +6 (V7 en segunda inversión); también VII6.', 'R7 RO');
       case 3: return R(['6'], 'Grado 3: primera inversión de la tónica.', 'R7 RO');
       case 4:
-        /* Grado 4 que sube al 5: la subdominante que va a la dominante. El orden es el de
-           Diego (decisión 76): primero el 6/5 (II6/5, la respuesta de la RO, que además trae
-           la tónica); si la lección todavía no lo tiene, **II6 antes que IV**, porque IV → V
-           con los dos acordes en estado fundamental es el tropiezo clásico de las quintas
-           paralelas. El IV solo cuando la melodía trae la tónica —que el II6 no contiene—, y
-           de eso se encarga solo el desempate por voz compañera de más abajo. Es además lo
-           que ya hacía R5 para el 4.º grado entre el 6.º y el 5.º: ahora R7 dice lo mismo. */
-        if (s === '2asc') return R(['65', '6', '53'], 'Grado 4 que asciende a grado 5: 6/5; si la lección no lo tiene, II6 (IV solo si la melodía trae la tónica).', 'R7 RO');
+        /* Grado 4 que sube al 5: LA SUBDOMINANTE QUE VA A LA DOMINANTE, y lo que la regla
+           de la octava pide ahí no es un acorde concreto sino esa función (decisión 240,
+           Diego 5/10/2026: «el II6/5 sobre la nota 4.ª lo que está pidiendo es usar la
+           función subdominante delante de la dominante que irá en el 5.º; cualquier
+           combinación que incluya los sonidos del II6/5 —tanto el II6/5 como el II6 o el
+           IV— ha de entenderse como subconjunto del conjunto completo»). En Do mayor, con
+           fa en el bajo: II6/5 es fa–la–do–re, II6 es fa–la–re y IV es fa–la–do. Los tres
+           comparten el núcleo fa–la, los tres llevan el 4.º grado en el bajo y los tres son
+           la misma subdominante; usar el II6 no incumple la regla, la realiza con menos
+           notas. Por eso los tres se admiten siempre, sin que ninguno sea el recurso de
+           cuando falta el bueno.
+           El ORDEN sí tiene criterio (decisión 76): delante el 6/5, que es el conjunto
+           completo y la formulación de la regla; después **II6 antes que IV**, porque
+           IV → V con los dos acordes en estado fundamental es el tropiezo clásico de las
+           quintas paralelas. El IV se adelanta solo cuando la melodía trae la tónica —que
+           el II6 no contiene—, y de eso se encarga el desempate por voz compañera de más
+           abajo. Es lo mismo que hace R5 para el 4.º grado entre el 6.º y el 5.º. */
+        if (s === '2asc') return R(['65', '6', '53'], 'Grado 4 que asciende a grado 5: la subdominante que precede a la dominante. El 6/5 es el conjunto completo (4̂ 6̂ 1̂ 2̂); el II6 y el IV son subconjuntos suyos y valen igual.', 'R7 RO');
         if (s === '2desc') {
           if (c.llegada === '2desc') return R(['+4'], 'Grado 4 que desciende de grado 5 a grado 3: +4 (V7 en tercera inversión).', 'R7 RO');
-          return R(['+4', '53'], 'Grado 4 que desciende a grado 3 (llegando por salto): +4, o IV.', 'R7 RO');
+          /* Esta rama cubre TODO lo que no sea venir del 5.º grado: el principio de la frase,
+             la 2.ª ascendente y los dos saltos. Decía «llegando por salto», que es falso en
+             dos de esos cuatro casos y lo lee el alumno en el globo (5/10/2026). */
+          return R(['+4', '53'], 'Grado 4 que desciende a grado 3 sin venir del grado 5: +4, o IV.', 'R7 RO');
         }
         return R(['53'], 'Grado 4 que ni asciende a grado 5 ni desciende a grado 3: IV en estado fundamental.', 'R7 RO');
       /* Grado 5: la dominante; y, cuando la nota se repite, también el 6/4 CADENCIAL
