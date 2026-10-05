@@ -23720,8 +23720,8 @@
    "obra": "",
    "enlace": "",
    "tonalidad": {
-    "tonica": "F",
-    "modo": "mayor"
+    "tonica": "D",
+    "modo": "menor"
    },
    "tonalidadSegura": true,
    "armaduraEscrita": null,
@@ -23762,44 +23762,45 @@
     ],
     "modulaciones": [],
     "respuestas": [
-     [],
      [
       "53"
      ],
      [
-      "+6",
       "6"
      ],
      [
-      "+6",
       "6"
      ],
      [
-      "53"
+      "+4"
+     ],
+     [
+      "6"
      ]
     ]
    },
    "soprano": null,
    "nivelManual": null,
-   "avisos": [
-    "alguna nota del bajo se queda sin cifra posible"
-   ],
+   "avisos": [],
    "etiquetas": {
     "voces": "bajo",
     "notas": 5,
     "compases": 3,
-    "modo": "mayor",
+    "modo": "menor",
     "alteraciones": 1,
     "modula": false,
     "cuatro": false,
     "cifras": [
      "53",
-     "+6"
+     "6",
+     "+4"
     ],
     "grados": [],
-    "nivel": 1
+    "nivel": 2
    },
-   "tocado": "2026-10-05T05:50:14.129Z"
+   "tocado": "2026-10-05T13:57:17.507Z",
+   "cerrado": "2026-10-05",
+   "huella": "44c3e2a63b08c719"
   },
   {
    "id": "A3-4-17",
@@ -24039,7 +24040,9 @@
     "grados": [],
     "nivel": 2
    },
-   "tocado": "2026-10-05T05:50:14.129Z"
+   "tocado": "2026-10-05T05:50:14.129Z",
+   "cerrado": "2026-10-05",
+   "huella": "34a8a6eeef0dd0d7"
   }
  ]
 }
