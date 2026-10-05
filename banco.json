@@ -24041,6 +24041,1380 @@
    "tocado": "2026-10-05T15:26:02.137Z",
    "cerrado": "2026-10-05",
    "huella": "71a1d55c65cdb9bf"
+  },
+  {
+   "id": "A3-3-26",
+   "leccion": "A3-3",
+   "leccionNombre": "V7 en inversión",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6"
+   ],
+   "fuente": "A3-7. V7 en inversión - Fragmentos bajo y soprano.mscz",
+   "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "C",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    4,
+    4
+   ],
+   "rejilla": null,
+   "bajo": {
+    "compases": [
+     [
+      [
+       "C4",
+       1
+      ],
+      [
+       "D4",
+       1
+      ],
+      [
+       "C4",
+       2
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       "A4",
+       1
+      ],
+      [
+       "B4",
+       1
+      ],
+      [
+       "C5",
+       2
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [],
+     [
+      "V|+6",
+      "V|53",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ]
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [
+    "alguna nota de la melodía se queda sin acorde posible"
+   ],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 3,
+    "compases": 1,
+    "modo": "mayor",
+    "alteraciones": 0,
+    "modula": false,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "+6"
+    ],
+    "grados": [],
+    "nivel": 1
+   }
+  },
+  {
+   "id": "A3-3-27",
+   "leccion": "A3-3",
+   "leccionNombre": "V7 en inversión",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6"
+   ],
+   "fuente": "A3-7. V7 en inversión - Fragmentos bajo y soprano.mscz",
+   "titulo": "",
+   "autor": "C. Ph. E. Bach",
+   "obra": "Marcha en Re",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "D",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    4,
+    4
+   ],
+   "rejilla": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ],
+   "bajo": {
+    "compases": [
+     [
+      [
+       null,
+       3
+      ],
+      [
+       null,
+       1
+      ]
+     ],
+     [
+      [
+       "D3",
+       1
+      ],
+      [
+       "G3",
+       1
+      ],
+      [
+       "F#3",
+       1
+      ],
+      [
+       "E3",
+       1
+      ]
+     ],
+     [
+      [
+       "D3",
+       1
+      ],
+      [
+       "G3",
+       1
+      ],
+      [
+       "F#3",
+       1
+      ],
+      [
+       "E3",
+       1
+      ]
+     ],
+     [
+      [
+       "F#3",
+       1
+      ],
+      [
+       "D3",
+       1
+      ],
+      [
+       "C#3",
+       1
+      ],
+      [
+       "A2",
+       1
+      ]
+     ],
+     [
+      [
+       "D2",
+       1
+      ],
+      [
+       "D3",
+       0.5
+      ],
+      [
+       "C#3",
+       0.5
+      ],
+      [
+       "D3",
+       1
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "+4"
+     ],
+     [
+      "6"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "+4"
+     ],
+     [
+      "6"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       null,
+       3
+      ],
+      [
+       "A4",
+       1
+      ]
+     ],
+     [
+      [
+       "D5",
+       1
+      ],
+      [
+       "A4",
+       2
+      ],
+      [
+       "B4",
+       0.5
+      ],
+      [
+       "C#5",
+       0.5
+      ]
+     ],
+     [
+      [
+       "D5",
+       1
+      ],
+      [
+       "A4",
+       2
+      ],
+      [
+       "B4",
+       0.5
+      ],
+      [
+       "C#5",
+       0.5
+      ]
+     ],
+     [
+      [
+       "D5",
+       0.5
+      ],
+      [
+       "E5",
+       0.5
+      ],
+      [
+       "F#5",
+       0.5
+      ],
+      [
+       "G5",
+       0.5
+      ],
+      [
+       "A5",
+       0.5
+      ],
+      [
+       "G5",
+       0.5
+      ],
+      [
+       "F#5",
+       0.5
+      ],
+      [
+       "E5",
+       0.5
+      ]
+     ],
+     [
+      [
+       "F#5",
+       1
+      ],
+      [
+       "D5",
+       2
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "V|+4",
+      "V|65d",
+      "I|53",
+      "I|6",
+      "V|53",
+      "V|+6",
+      "V|6",
+      "V|7+"
+     ],
+     [
+      "I|6",
+      "I|53",
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "V|6",
+      "V|7+",
+      "V|+4"
+     ],
+     [
+      "V|+6",
+      "V|53",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "V|+4",
+      "I|53",
+      "I|6",
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "V|6",
+      "V|7+"
+     ],
+     [
+      "I|6",
+      "I|53",
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "V|6",
+      "V|7+",
+      "V|+4"
+     ],
+     [
+      "V|+6",
+      "V|+4",
+      "V|53",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|6",
+      "I|53"
+     ],
+     [
+      "I|53"
+     ],
+     [
+      "V|6",
+      "V|65d",
+      "I|6",
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "V|+4"
+     ],
+     [
+      "V|53",
+      "V|65d",
+      "V|+6",
+      "V|6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|53"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ]
+    ],
+    "reales": [
+     null,
+     null,
+     null,
+     "C#5",
+     null,
+     null,
+     null,
+     "C#5",
+     null,
+     null,
+     null,
+     "E5",
+     null,
+     null,
+     null
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 15,
+    "compases": 5,
+    "modo": "mayor",
+    "alteraciones": 2,
+    "modula": false,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "+4",
+     "6",
+     "+6"
+    ],
+    "grados": [],
+    "nivel": 3
+   }
+  },
+  {
+   "id": "A4-10-09",
+   "leccion": "A4-10",
+   "leccionNombre": "Modulación al V",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "64",
+    "65",
+    "43",
+    "42",
+    "7",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "VI|53",
+    "IV|53",
+    "IV|6",
+    "IV|7",
+    "IV|65",
+    "IV|43",
+    "IV|42",
+    "II|53",
+    "II|6",
+    "II|7",
+    "II|65",
+    "II|43",
+    "II|42",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6",
+    "I|64"
+   ],
+   "fuente": "A4-13. Modulación al V - Fragmentos bajo y soprano.mscz",
+   "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "C",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    4,
+    4
+   ],
+   "rejilla": null,
+   "bajo": {
+    "compases": [
+     [
+      [
+       "C3",
+       1
+      ],
+      [
+       "C3",
+       1
+      ],
+      [
+       "B2",
+       1
+      ],
+      [
+       "G2",
+       1
+      ]
+     ],
+     [
+      [
+       "C3",
+       4
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "6"
+     ],
+     [
+      "7+",
+      "53"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       "E4",
+       1
+      ],
+      [
+       "F#4",
+       1
+      ],
+      [
+       "G4",
+       1
+      ],
+      [
+       "F4",
+       1
+      ]
+     ],
+     [
+      [
+       "E4",
+       4
+      ]
+     ]
+    ],
+    "modulaciones": [],
+    "respuestas": [
+     [
+      "I|53"
+     ],
+     [],
+     [
+      "I|64"
+     ],
+     [
+      "V|7+"
+     ],
+     [
+      "I|53"
+     ]
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [
+    "alguna nota de la melodía se queda sin acorde posible"
+   ],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 5,
+    "compases": 2,
+    "modo": "mayor",
+    "alteraciones": 0,
+    "modula": false,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "6",
+     "7+"
+    ],
+    "grados": [],
+    "nivel": 2
+   }
+  },
+  {
+   "id": "A4-10-10",
+   "leccion": "A4-10",
+   "leccionNombre": "Modulación al V",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "64",
+    "65",
+    "43",
+    "42",
+    "7",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "VI|53",
+    "IV|53",
+    "IV|6",
+    "IV|7",
+    "IV|65",
+    "IV|43",
+    "IV|42",
+    "II|53",
+    "II|6",
+    "II|7",
+    "II|65",
+    "II|43",
+    "II|42",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6",
+    "I|64"
+   ],
+   "fuente": "A4-13. Modulación al V - Fragmentos bajo y soprano.mscz",
+   "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "G",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    4,
+    4
+   ],
+   "rejilla": null,
+   "bajo": {
+    "compases": [
+     [
+      [
+       null,
+       3
+      ],
+      [
+       "G3",
+       1
+      ]
+     ],
+     [
+      [
+       "C3",
+       1
+      ],
+      [
+       "C#3",
+       1
+      ],
+      [
+       "D3",
+       1
+      ],
+      [
+       "D3",
+       1
+      ]
+     ],
+     [
+      [
+       "G2",
+       4
+      ]
+     ]
+    ],
+    "modulaciones": [
+     {
+      "nota": 2,
+      "tonalidad": {
+       "tonica": "D",
+       "modo": "mayor"
+      }
+     },
+     {
+      "nota": 3,
+      "tonalidad": {
+       "tonica": "G",
+       "modo": "mayor"
+      }
+     }
+    ],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "65d",
+      "6"
+     ],
+     [
+      "53",
+      "64"
+     ],
+     [
+      "7+",
+      "53"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       null,
+       3
+      ],
+      [
+       "D5",
+       1
+      ]
+     ],
+     [
+      [
+       "E5",
+       1
+      ],
+      [
+       "E5",
+       1
+      ],
+      [
+       "D5",
+       1
+      ],
+      [
+       "C5",
+       1
+      ]
+     ],
+     [
+      [
+       "B4",
+       4
+      ]
+     ]
+    ],
+    "modulaciones": [
+     {
+      "nota": 2,
+      "tonalidad": {
+       "tonica": "D",
+       "modo": "mayor"
+      }
+     },
+     {
+      "nota": 3,
+      "tonalidad": {
+       "tonica": "G",
+       "modo": "mayor"
+      }
+     }
+    ],
+    "respuestas": [
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "IV|53",
+      "VI|53",
+      "II|53",
+      "II|65",
+      "II|43",
+      "II|42",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|6",
+      "II|7",
+      "IV|65"
+     ],
+     [
+      "II|65",
+      "II|43",
+      "II|42",
+      "II|6"
+     ],
+     [
+      "I|64"
+     ],
+     [
+      "V|7+"
+     ],
+     [
+      "I|53"
+     ]
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 6,
+    "compases": 3,
+    "modo": "mayor",
+    "alteraciones": 1,
+    "modula": true,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "65d",
+     "7+"
+    ],
+    "grados": [],
+    "nivel": 3
+   }
+  },
+  {
+   "id": "A4-10-11",
+   "leccion": "A4-10",
+   "leccionNombre": "Modulación al V",
+   "leccionRepertorio": [
+    "53",
+    "6",
+    "64",
+    "65",
+    "43",
+    "42",
+    "7",
+    "7+",
+    "+6",
+    "65d",
+    "+4"
+   ],
+   "leccionAcordes": [
+    "I|53",
+    "I|6",
+    "VI|53",
+    "IV|53",
+    "IV|6",
+    "IV|7",
+    "IV|65",
+    "IV|43",
+    "IV|42",
+    "II|53",
+    "II|6",
+    "II|7",
+    "II|65",
+    "II|43",
+    "II|42",
+    "V|53",
+    "V|7+",
+    "V|6",
+    "V|65d",
+    "V|+6",
+    "V|+4",
+    "VII|6",
+    "I|64"
+   ],
+   "fuente": "A4-13. Modulación al V - Fragmentos bajo y soprano.mscz",
+   "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "tonalidad": {
+    "tonica": "C",
+    "modo": "mayor"
+   },
+   "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
+   "compas": [
+    3,
+    4
+   ],
+   "rejilla": null,
+   "bajo": {
+    "compases": [
+     [
+      [
+       "C3",
+       2
+      ],
+      [
+       "F3",
+       1
+      ]
+     ],
+     [
+      [
+       "F3",
+       1
+      ],
+      [
+       "E3",
+       1
+      ],
+      [
+       "D3",
+       1
+      ]
+     ],
+     [
+      [
+       "C3",
+       2
+      ],
+      [
+       "C3",
+       1
+      ]
+     ],
+     [
+      [
+       "B2",
+       1
+      ],
+      [
+       "A2",
+       1
+      ],
+      [
+       "G2",
+       1
+      ]
+     ],
+     [
+      [
+       "C3",
+       1
+      ],
+      [
+       "C3",
+       1
+      ],
+      [
+       "D3",
+       1
+      ]
+     ],
+     [
+      [
+       "G2",
+       3
+      ]
+     ]
+    ],
+    "modulaciones": [
+     {
+      "nota": 5,
+      "tonalidad": {
+       "tonica": "G",
+       "modo": "mayor"
+      }
+     }
+    ],
+    "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "+4"
+     ],
+     [
+      "6"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "+4",
+      "53"
+     ],
+     [
+      "6"
+     ],
+     [
+      "+6",
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53",
+      "7+"
+     ],
+     [
+      "53"
+     ]
+    ]
+   },
+   "soprano": {
+    "compases": [
+     [
+      [
+       "C5",
+       2
+      ],
+      [
+       "A4",
+       1
+      ]
+     ],
+     [
+      [
+       "B4",
+       1
+      ],
+      [
+       "C5",
+       1
+      ],
+      [
+       "D5",
+       1
+      ]
+     ],
+     [
+      [
+       "E5",
+       2
+      ],
+      [
+       "F#4",
+       1
+      ]
+     ],
+     [
+      [
+       "G4",
+       1
+      ],
+      [
+       "A4",
+       1
+      ],
+      [
+       "B4",
+       1
+      ]
+     ],
+     [
+      [
+       "C5",
+       1
+      ],
+      [
+       "A4",
+       1
+      ],
+      [
+       "F#4",
+       1
+      ]
+     ],
+     [
+      [
+       "G4",
+       3
+      ]
+     ]
+    ],
+    "modulaciones": [
+     {
+      "nota": 5,
+      "tonalidad": {
+       "tonica": "G",
+       "modo": "mayor"
+      }
+     }
+    ],
+    "respuestas": [
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "IV|53",
+      "VI|53",
+      "II|53",
+      "II|65",
+      "II|43",
+      "II|42",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|6",
+      "II|7",
+      "IV|65"
+     ],
+     [
+      "V|+4",
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|6",
+      "I|53",
+      "VI|53"
+     ],
+     [
+      "II|53",
+      "II|65",
+      "V|53",
+      "V|7+",
+      "II|43",
+      "V|+4",
+      "II|42",
+      "II|6",
+      "II|7"
+     ],
+     [
+      "IV|53",
+      "VI|53",
+      "II|53",
+      "II|65",
+      "II|43",
+      "II|42",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|6",
+      "II|7",
+      "IV|65"
+     ],
+     [
+      "V|+4",
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "I|6",
+      "VI|53",
+      "I|53"
+     ],
+     [
+      "V|+6",
+      "V|65d",
+      "V|53",
+      "II|53",
+      "II|65",
+      "V|6",
+      "V|7+",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "VI|53",
+      "IV|65",
+      "IV|43",
+      "IV|7"
+     ],
+     [
+      "IV|53",
+      "II|53",
+      "IV|6",
+      "II|43",
+      "II|42",
+      "IV|65",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|65",
+      "II|7",
+      "II|6"
+     ],
+     [
+      "II|65",
+      "II|53",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7"
+     ],
+     [
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ]
+    ]
+   },
+   "nivelManual": null,
+   "avisos": [],
+   "etiquetas": {
+    "voces": "ambas",
+    "notas": 14,
+    "compases": 6,
+    "modo": "mayor",
+    "alteraciones": 0,
+    "modula": true,
+    "cuatro": false,
+    "cifras": [
+     "53",
+     "+4",
+     "6",
+     "+6"
+    ],
+    "grados": [],
+    "nivel": 4
+   }
   }
  ]
 }
