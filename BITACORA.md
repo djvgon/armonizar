@@ -16,8 +16,8 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 - **SIN SUBIR: el `20261005-2330`**, con las decisiones **240**, **241**, **242** y **243**.
   Archivos: `js/reglas.js`, `REGLA-DE-LA-OCTAVA-ENTERA.md`,
-  `herramientas/generar-regla-octava.js` (nuevo), las ocho páginas (la marca) y los dos
-  documentos. **En el banco publicado no cambia nada**: las respuestas guardadas no se
+  `herramientas/generar-regla-octava.js` (nuevo), **`banco.json` (151 fragmentos, con la
+  Marcha en Re)**, las ocho páginas (la marca) y los dos documentos. **En el banco publicado no cambia nada**: las respuestas guardadas no se
   recalculan nunca. Los cinco modelos de melodía que cambian (241) y los cinco fragmentos de
   práctica que cambian (243) lo hacen al reimportar.
   · La **243** cierra el caso que quedaba suelto de la 240: el 4.º grado al que el bajo llega
@@ -50,7 +50,32 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   decisión 233 (`pedirRomano: false`), la fila «Tonalidad» salía editable y sin paleta ni
   atajos con que rellenarla. **Conviene que esto llegue a los alumnos pronto.**
 
-- **DESPUÉS DEL *PUSH*: REIMPORTAR LA MARCHA EN RE** (decisión 238). El fragmento
+- **LA MARCHA EN RE YA ESTÁ EN EL BANCO: `A3-3-27`** (5/10/2026). La importación la hizo
+  Claude con el configurador de verdad, partiendo del `banco.json` del clon —146
+  fragmentos, con el `A3-3-26` viejo ya quitado por Diego— y con las opciones de la lección
+  copiadas de los fragmentos que ya estaban (`A3-3`, «V7 en inversión», las seis cifras y
+  los nueve acordes). **Banco: 146 → 151.** Ninguna de las 146 entradas anteriores cambia ni
+  un byte: las 20 que el importador reconoció están **cerradas** y se dejaron intactas.
+  · `A3-3-27` · **la Marcha**: 5 compases, Re mayor, las dos voces, rótulo
+  `@C. Ph. E. Bach: Marcha en Re`, **rejilla de 15 acordes de 22 ataques**, **sin un solo
+  aviso**. Bajo `53 +4 6 +6 | 53 +4 6 +6 | 6 53 6 53 | 53 53 53`; melodía
+  `I53 V+4 I6 V+6 | I53 V+4 I6 V+6 | I6 I53 V6 V53 | I53 I53 I53`, una a una con el bajo. La
+  anacrusa se queda sin acorde, como debe.
+  · `A3-3-26` · **sobra: es el `A3-3-25` leído en la tonalidad equivocada.** Misma música
+  —bajo do–re–do, melodía la–si–do—, pero en Do mayor en vez de la menor, y de ahí su aviso:
+  el la de la melodía sobre el do del bajo no tiene acorde posible en Do mayor. La armadura
+  del fragmento está vacía y el importador se queda con la mayor; el `A3-3-25` lo tiene bien
+  porque Diego lo arregló a mano y lo cerró. **Conviene borrarlo desde la tabla del banco.**
+  · `A4-10-09`, `A4-10-10`, `A4-10-11`, del archivo `A4-13. Modulación al V`: los tres con
+  las dos voces. El `-09` trae aviso, y tiene causa conocida: es el fragmento del rótulo
+  «Sol M» mal colocado —el importador avisa de que abre un fragmento cuya armadura es de Do
+  M / la m—, así que el fa♯ de la melodía se queda sin acorde. **Se arregla en la partitura**,
+  moviendo ese rótulo a donde de verdad llega la modulación.
+  · Los **otros 7 del archivo A4-13 están cerrados** y siguen siendo de **bajo solo**: el
+  importador no les puso la melodía. Si se quiere, hay que **reabrirlos** uno a uno en la
+  tabla del banco y volver a importar el archivo.
+
+- ~~**DESPUÉS DEL *PUSH*: REIMPORTAR LA MARCHA EN RE**~~ **HECHO** (decisión 238). El fragmento
   `A3-3-26` que hay en el banco se cerró **antes** de que existiera la rejilla, así que no la
   lleva: sigue pidiendo 16 cifrados al bajo y 19 a la melodía, y conserva su aviso. Para que
   tenga los **15 acordes**, hay que volver a importarlo del archivo
