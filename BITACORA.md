@@ -14,11 +14,17 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 - **PUBLICADO el `20261005-1000`**, con las decisiones 235 a 239. Comprobado en la web: la
   marca, los `.js` servidos con ella y la rejilla cargada.
 
-- **SIN SUBIR: el `20261005-2200`**, con las decisiones **240**, **241** y **242**.
+- **SIN SUBIR: el `20261005-2330`**, con las decisiones **240**, **241**, **242** y **243**.
   Archivos: `js/reglas.js`, `REGLA-DE-LA-OCTAVA-ENTERA.md`,
   `herramientas/generar-regla-octava.js` (nuevo), las ocho páginas (la marca) y los dos
   documentos. **En el banco publicado no cambia nada**: las respuestas guardadas no se
-  recalculan nunca. Los cinco modelos de melodía que cambian (241) lo hacen al reimportar.
+  recalculan nunca. Los cinco modelos de melodía que cambian (241) y los cinco fragmentos de
+  práctica que cambian (243) lo hacen al reimportar.
+  · La **243** cierra el caso que quedaba suelto de la 240: el 4.º grado al que el bajo llega
+  **saltando desde el 6.º** camino del 5.º no lo atiende la regla de la octava sino R5
+  funcional, que tenía su propio orden y ponía el II6 delante. Ahora las dos reglas dicen lo
+  mismo: `II6/5 · II6 · IV`. Afecta a cinco fragmentos de práctica de A4-10 y A4-11, en una o
+  dos notas cada uno, y a **ningún** fragmento de música real.
 
 - ~~**EL DOCUMENTO DE LA REGLA DE LA OCTAVA ESTÁ DESFASADO**~~ **ARREGLADO** el 5/10/2026
   (decisión 242). El guion que lo genera vive ya en `herramientas/generar-regla-octava.js`

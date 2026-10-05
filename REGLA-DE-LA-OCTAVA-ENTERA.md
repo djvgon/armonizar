@@ -69,7 +69,7 @@ hueco del espacio de combinaciones que nadie visita.
 | R1 final | repite, 2.ª asc, 2.ª desc, salto asc, salto desc | — | **—** | IV |
 | R3 repetición | repite | repite, 2.ª asc, 2.ª desc, salto asc, salto desc | **—** | IV |
 | R4 arpegio | salto asc, salto desc | repite, 2.ª asc, 2.ª desc, salto asc, salto desc | **+4** | V |
-| R5 funcional | salto desc | 2.ª asc, salto asc, salto desc | **6 · — · 6/5** | II IV II |
+| R5 funcional | salto desc | 2.ª asc, salto asc, salto desc | **6/5 · 6 · —** | II II IV |
 | R6 4̂ salta | —, 2.ª asc, 2.ª desc, salto asc, salto desc | salto asc, salto desc | **+4** | V |
 | R7 RO | 2.ª desc | 2.ª desc | **+4** | V |
 | R7 RO | —, 2.ª asc, salto asc, salto desc | 2.ª desc | **+4 · —** | V IV |
@@ -148,7 +148,7 @@ hueco del espacio de combinaciones que nadie visita.
 | R1 final | repite, 2.ª asc, 2.ª desc, salto asc, salto desc | — | **—** | IV |
 | R3 repetición | repite | repite, 2.ª asc, 2.ª desc, salto asc, salto desc | **—** | IV |
 | R4 arpegio | salto asc, salto desc | repite, 2.ª asc, 2.ª desc, salto asc, salto desc | **+4** | V |
-| R5 funcional | salto desc | 2.ª asc, salto asc, salto desc | **6 · — · 6/5** | II IV II |
+| R5 funcional | salto desc | 2.ª asc, salto asc, salto desc | **6/5 · 6 · —** | II II IV |
 | R6 4̂ salta | —, 2.ª asc, 2.ª desc, salto asc, salto desc | salto asc, salto desc | **+4** | V |
 | R7 RO | 2.ª desc | 2.ª desc | **+4** | V |
 | R7 RO | —, 2.ª asc, salto asc, salto desc | 2.ª desc | **+4 · —** | V IV |

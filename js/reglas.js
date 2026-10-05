@@ -169,8 +169,16 @@ const Reglas = (() => {
     // 6̂ que salta a 4̂ y este va a 5̂: VI–II6–V o IV6–IV–V
     if (c.grado === 6 && c.salida === 'saltoDesc' && c.gradoSig === 4)
       return R(['53', '6'], 'Grado 6 que salta a grado 4 hacia la dominante: VI (o IV6).', 'R5 funcional');
+    /* Grado 4 entre el 6.º y el 5.º. Aquí vale lo mismo que en la regla de la octava
+       (decisiones 240 y 243, Diego 5/10/2026: «cuando el bajo hace 6.º – 4.º – 5.º la
+       armonía típica sobre el 4.º puede ser II6/5, aunque se admitirán igualmente II6 y
+       IV»): el modelo es el CONJUNTO COMPLETO, y el II6 y el IV son subconjuntos suyos que
+       valen igual. El orden entre esos dos es el de la decisión 76: II6 antes que IV,
+       porque IV → V con los dos en estado fundamental son las quintas paralelas de siempre.
+       El modelo del 6.º grado que lo precede sigue siendo el VI, que es el que enlaza con
+       el II6/5 (la–do–mi → fa–la–do–re); la lectura IV6 → IV queda detrás. */
     if (c.grado === 4 && c.llegada === 'saltoDesc' && c.gradoAnt === 6 && c.gradoSig === 5)
-      return R(['6', '53', '65'], 'Grado 4 entre grado 6 y grado 5: la subdominante hacia la dominante, en cualquiera de sus formas —II6, IV o II6/5—, que son el mismo conjunto de notas visto con más o menos miembros.', 'R5 funcional');
+      return R(['65', '6', '53'], 'Grado 4 entre grado 6 y grado 5: la subdominante que precede a la dominante. El 6/5 es el conjunto completo (4̂ 6̂ 1̂ 2̂); el II6 y el IV son subconjuntos suyos y valen igual.', 'R5 funcional');
     // 2̂ que salta a 5̂: II o II7
     if (c.grado === 2 && esSalto(c.salida) && c.gradoSig === 5)
       return R(['53', '7'], 'Grado 2 que salta a la dominante: II (o II7, séptima diatónica), función subdominante.', 'R5 funcional');

@@ -3880,6 +3880,35 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+243. **El 6.º – 4.º – 5.º del bajo también pide el conjunto completo**
+    (5/10/2026, Diego: «cuando el bajo hace 6.º – 4.º – 5.º la armonía típica sobre el 4.º
+    puede ser II6/5, aunque se admitirán igualmente II6 y IV»).
+    Quedaba un caso suelto después de la decisión 240. Esa decisión arregló la regla de la
+    octava (R7), pero el 4.º grado al que se **llega por salto descendente desde el 6.º**
+    camino del 5.º no lo atiende R7: lo atiende antes **R5 funcional**, que es una regla
+    distinta, con su propio orden, escrito mucho antes. Allí el modelo seguía siendo el
+    **II6**, con el II6/5 en último lugar. Es decir: el mismo 4.º grado, con la misma
+    función y hacia la misma dominante, decía una cosa si el bajo llegaba por grados y otra
+    si llegaba saltando desde el 6.º.
+    Ahora R5 dice lo mismo que R7: **`II6/5 · II6 · IV`**. El 6/5 delante porque es el
+    conjunto completo (4̂ 6̂ 1̂ 2̂) y la formulación llena de la regla; detrás, el II6 antes
+    que el IV (decisión 76), porque IV → V con los dos acordes en estado fundamental son las
+    quintas paralelas de siempre.
+    - **Los tres admitidos no cambian**: eran los mismos antes y después. Lo único que cambia
+      es **cuál es el modelo**, que es lo que el alumno ve como respuesta y lo que arrastra
+      el modelo de la melodía (decisión 239).
+    - **El 6.º grado que precede** sigue teniendo el **VI** como modelo, que no se ha tocado
+      y es además el que enlaza con el II6/5: en Do mayor, la–do–mi → fa–la–do–re. La lectura
+      alternativa IV6 → IV queda detrás, como estaba.
+    - **A quién afecta, medido sobre los 145 fragmentos del banco publicado**: a **cinco**,
+      todos de **práctica** —`A4-10-02`, `A4-10-04`, `A4-11-03`, `A4-11-04`, `A4-11-05`—, y
+      en una o dos notas de cada uno. **Ningún fragmento de música real cambia.** Como el
+      conjunto de admitidos es idéntico, ninguna respuesta ya guardada se vuelve incorrecta:
+      los cinco solo cambian si se reimportan.
+    - Discrepancias del corpus: **11 de 273**, las mismas. `REGLA-DE-LA-OCTAVA-ENTERA.md`
+      regenerado con el guion de la decisión 242; cambian **exactamente dos filas**, la de
+      R5 sobre el 4.º grado en cada modo, de `6 · — · 6/5` a `6/5 · 6 · —`.
+
 242. **El documento de la regla de la octava vuelve a salir del motor, y su guion se guarda**
     (5/10/2026, Diego: «actualiza el documento sobre la regla de la octava para que no esté
     desfasado»).
@@ -3950,7 +3979,8 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       la lección no lo tiene, II6 (IV solo si la melodía trae la tónica)», que presenta el II6
       y el IV como el recurso de cuando falta el bueno. Ahora dice: «la subdominante que
       precede a la dominante. El 6/5 es el conjunto completo (4̂ 6̂ 1̂ 2̂); el II6 y el IV son
-      subconjuntos suyos y valen igual». R5 funcional se ha redactado igual.
+      subconjuntos suyos y valen igual». R5 funcional se ha redactado igual —y, el mismo día,
+      **también reordenada**: decisión 243.
     - **El modelo sigue siendo el II6/5** (Diego, preguntado: «siempre el II6/5»): es la
       formulación llena de la regla, y el II6 y el IV quedan admitidos detrás. El orden entre
       esos dos no cambia (decisión 76): II6 antes que IV, porque IV → V en estado fundamental
