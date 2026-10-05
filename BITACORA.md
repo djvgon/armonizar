@@ -75,6 +75,32 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
   importador no les puso la melodía. Si se quiere, hay que **reabrirlos** uno a uno en la
   tabla del banco y volver a importar el archivo.
 
+- **LA LISTA DE ACORDES DE LA LECCIÓN, CORREGIDA EN `A3-4-16` Y `A3-4-17`** (5/10/2026).
+  Los dos fragmentos que vienen de `A3-8. IV, II y II6 - Fragmentos bajo y partituras
+  reales.mscz` llevaban guardada **la lista de acordes de A3-3** —«V7 en inversión»: I, I6,
+  los cinco de V y VII6—, sin IV ni II, porque al importarlos el configurador tenía marcadas
+  las casillas de la lección anterior. De ahí el aviso «fuera de la lista de acordes de esta
+  lección» sobre el II6 del 4.º grado, que es justamente el acorde que da nombre a la
+  lección. Ahora llevan la de A3-4, **la misma, literal, que los trece primeros**
+  (Diego: «ponles la lista de la lección, porque será la referencia que demos a los
+  estudiantes»): `I53 · I6 · IV53 · II53 · II6 · V53 · V7+ · V6 · V65d · V+6 · V4/2 · VII6`.
+  Comprobado con `Reglas.acordePermitido`: **todas** las cifras marcadas de los dos
+  fragmentos quedan dentro. El repertorio de cifras no hacía falta tocarlo: era ya el mismo.
+  · **No se puede hacer desde la aplicación.** `guardarEnBanco` no reescribe
+  `leccionRepertorio` ni `leccionAcordes` —solo tonalidad, compás, voz y respuestas—, y
+  reimportar encuentra el fragmento y lo deja. Se ha corregido en el `banco.json`, sin tocar
+  ni una respuesta. **Si esto vuelve a pasar, hace falta un botón** que refresque las
+  opciones de la lección de un fragmento del banco.
+  · El `A3-4-14` y el `A3-4-15` **conservan la lista completa a propósito**: el Beethoven
+  del `-15` usa el **II6/5**, que la lista de la lección no trae.
+
+- **DOS FRAGMENTOS REPETIDOS EN EL TEMA 8: `A3-4-14` y `A3-4-16`.** Misma música —bajo
+  `re fa | sol sol | fa`, 3 compases, 4/4— y, desde que Diego puso el `-16` en re menor, la
+  misma tonalidad; vienen de los dos archivos del tema, el nuevo y el viejo. Antes no se
+  notaba porque el `-16` estaba leído en Fa mayor. Conviene quedarse con uno: el **`-16`**
+  lleva ya la lista de la lección, que es la referencia del alumno; el `-14` admite además
+  el IV en la nota 3 y lleva la lista completa.
+
 - ~~**DESPUÉS DEL *PUSH*: REIMPORTAR LA MARCHA EN RE**~~ **HECHO** (decisión 238). El fragmento
   `A3-3-26` que hay en el banco se cerró **antes** de que existiera la rejilla, así que no la
   lleva: sigue pidiendo 16 cifrados al bajo y 19 a la melodía, y conserva su aviso. Para que
