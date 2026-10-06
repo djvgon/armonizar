@@ -9,15 +9,23 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 5 de octubre de 2026
+## Estado a 6 de octubre de 2026
 
 - **PUBLICADO el `20261005-1000`**, con las decisiones 235 a 239. Comprobado en la web: la
   marca, los `.js` servidos con ella y la rejilla cargada.
 
-- **SIN SUBIR: el `20261005-2330`**, con las decisiones **240**, **241**, **242** y **243**.
+- **SIN SUBIR: el `20261006-0845`**, con la decisión **244**: en la interfaz del alumno la
+  fila **«Tonalidad» pasa a ser la primera**, encima del cifrado, porque es lo primero que el
+  alumno escribe. Archivos: `js/partitura.js`, las ocho páginas (la marca) y los dos
+  documentos. **No toca el banco ni ninguna respuesta**, solo el dibujo; y sin fila
+  «Tonalidad» el dibujo queda idéntico al de antes, píxel a píxel.
+
+- **PUBLICADO el `20261005-2330`**, con las decisiones **240**, **241**, **242** y **243**.
   Archivos: `js/reglas.js`, `REGLA-DE-LA-OCTAVA-ENTERA.md`,
-  `herramientas/generar-regla-octava.js` (nuevo), **`banco.json` (151 fragmentos, con la
-  Marcha en Re)**, las ocho páginas (la marca) y los dos documentos. **En el banco publicado no cambia nada**: las respuestas guardadas no se
+  `herramientas/generar-regla-octava.js` (nuevo), **`banco.json`**, las ocho páginas (la
+  marca) y los dos documentos. **Comprobado en la web el 6/10**: marca `20261005-2330`,
+  **151 fragmentos**, la Marcha (`A3-3-27`) dentro y el `A3-4-16` con la lista de acordes de
+  su lección. **En el banco publicado no cambia nada**: las respuestas guardadas no se
   recalculan nunca. Los cinco modelos de melodía que cambian (241) y los cinco fragmentos de
   práctica que cambian (243) lo hacen al reimportar.
   · La **243** cierra el caso que quedaba suelto de la 240: el 4.º grado al que el bajo llega

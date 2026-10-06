@@ -3880,6 +3880,32 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+244. **La fila «Tonalidad», la primera de todas**
+    (6/10/2026, Diego: «en la interfaz del estudiante, en los controles para seleccionar el
+    cifrado, la fila de las tonalidades debe ir la primera de todas, no la última, como está
+    ahora, pues es lo primero que han de introducir»).
+    Desde la decisión 106 el orden de las bandas bajo el pentagrama era **cifrado ·
+    fundamental · función · tonalidad**, con un criterio de lectura: arriba la cifra, pegada a
+    la música, y debajo lo que se deduce de ella. Pero el alumno no LEE la tonalidad: la
+    **escribe**, y la escribe antes que nada, porque sin saber en qué tono está no puede poner
+    ni la fundamental ni la función. El orden de la página tiene que ser el del trabajo, no el
+    de la deducción. Ahora es **tonalidad · cifrado · fundamental · función**.
+    - En `js/partitura.js` la banda de la tonalidad tenía su `Y` calculado al final de todo
+      (`Y_FIN_RENGLONES + 0,8 SP`). Ahora hay un `Y_PRIMERA` —el borde de arriba del bloque de
+      análisis, justo debajo de la música—, la tonalidad se dibuja ahí y el cifrado baja lo que
+      ella ocupa. `Y_FIN_CASILLAS` deja de contarla, así que el dibujo **no crece**: lo que
+      antes sobresalía por abajo ahora sobresale por arriba.
+    - **Sin fila «Tonalidad» no cambia ni un píxel**: `Y_CASILLA` vale entonces `Y_PRIMERA`,
+      que es exactamente la fórmula de antes. Comprobado dibujando: la primera casilla sigue
+      en la misma `y`, y el alto total es el mismo.
+    - Los cuadros de las técnicas, que llegaban hasta el borde de arriba de las casillas,
+      pasan a medirse desde `Y_PRIMERA`, para que sigan abarcando el bloque entero.
+    - El rótulo del renglón —«Tonalidad:», decisión 237— se mueve con su banda. El nombre de
+      la tonalidad pegado al primer acorde («Re M:») sigue donde estaba, en el renglón de la
+      fundamental, que es el suyo.
+    - **El recorrido con el teclado no cambia**: la fila «Tonalidad» sigue fuera de él, como
+      desde la decisión 188; el cambio de tono se marca aparte.
+
 243. **El 6.º – 4.º – 5.º del bajo también pide el conjunto completo**
     (5/10/2026, Diego: «cuando el bajo hace 6.º – 4.º – 5.º la armonía típica sobre el 4.º
     puede ser II6/5, aunque se admitirán igualmente II6 y IV»).

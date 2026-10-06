@@ -324,9 +324,16 @@ const Partitura = (() => {
     const HUECO_SISTEMA = conGrados ? Math.max(7.5 * SP, ALTO_GRADOS + 4 * SP) : 7.5 * SP;
     const Y_TOP = conSol ? Y_BOT_SOL + HUECO_SISTEMA : 5.5 * SP + Y0 + ALTO_GRADOS; // línea superior del pentagrama del bajo
     const Y_BOT = Y_TOP + 4 * SP;                          // línea inferior
-    /* ---- Orden de las filas bajo el pentagrama (decisión 106, Diego) ----
-       De arriba abajo: CIFRADO · FUNDAMENTAL · FUNCIÓN · TONALIDAD, cada uno en su banda,
+    /* ---- Orden de las filas bajo el pentagrama (decisión 106, y 244 para la tonalidad) ----
+       De arriba abajo: TONALIDAD · CIFRADO · FUNDAMENTAL · FUNCIÓN, cada uno en su banda,
        y en el acorde pivote la casilla se parte en dos apiladas dentro de su propia banda.
+
+       LA TONALIDAD, LA PRIMERA (decisión 244, Diego 6/10/2026: «la fila de las tonalidades
+       debe ir la primera de todas, no la última, como está ahora, pues es lo primero que han
+       de introducir»). Estaba al pie desde la decisión 106, donde se puso para que debajo del
+       cifrado fuera bajando lo que se deduce de él. Pero el alumno no la lee: la ESCRIBE, y la
+       escribe antes que nada, porque sin saber en qué tono está no puede poner ni la
+       fundamental ni la función. El orden de la página ha de ser el del trabajo.
 
        Es el reparto en bandas de la decisión 93 con el orden cambiado, y deja sin efecto el
        de bloques por tonalidad de la decisión 104: aquel ponía juntas las tres lecturas de
@@ -337,7 +344,13 @@ const Partitura = (() => {
     const filaFun = estado.filaFunciones && estado.filaFunciones.visible ? estado.filaFunciones : null;   // fila «Función» (T · S · D)
     const filaTon = estado.filaTonalidad && estado.filaTonalidad.visible ? estado.filaTonalidad : null;   // fila «Tonalidad» (modulación)
     const marcasB = !!estado.marcasBerklee;                       // flecha de resolución y corchete del II emparentado
-    const Y_CASILLA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;   // el cifrado, lo primero
+    const ALTO_TON = 2.7 * SP;
+    const HUECO_TON = 0.8 * SP;                                   // lo que separa la tonalidad del cifrado
+    /* Arriba del todo del bloque de análisis, justo debajo de la música. Lo primero que se
+       dibuja aquí es la fila «Tonalidad» cuando la hay, y si no, el cifrado. */
+    const Y_PRIMERA = sinSistema ? Y0 + 1.2 * SP : Y_BOT + 3.4 * SP;
+    const Y_TON = Y_PRIMERA;                                                  // la tonalidad, lo primero (244)
+    const Y_CASILLA = Y_PRIMERA + (filaTon ? ALTO_TON + HUECO_TON : 0);       // y debajo el cifrado
     const ALTO_ROMANO = 3.1 * SP;
     /* La casilla del cifrado se queda más alta que la de la fundamental: se probó a
        igualarlas, pero la cifra hay que encogerla tanto —el 6/4 y el 6/5 van en dos pisos—
@@ -367,7 +380,6 @@ const Partitura = (() => {
     /* La función ya no necesita banda doble para el pivote: cada una de sus dos lecturas va
        con la fundamental de SU tonalidad, o sea en su propio renglón (Diego, 27/9/2026). */
     const ALTO_FUN = 2.7 * SP;
-    const ALTO_TON = 2.7 * SP;
     const TAM_ROTULO = 1.6 * SP;              // el nombre de la tonalidad, como las fundamentales
 
     /* ---------- LOS RÓTULOS DE LOS RENGLONES (decisión 237) ----------
@@ -401,10 +413,10 @@ const Partitura = (() => {
     const ANCHO_CAJA_TON = filaTon
       ? Math.max(ANCHO_CASILLA, Teoria.nombreCorto(ton).length * 0.58 * TAM_ROTULO + 0.9 * SP) + 0.55 * SP : 0;
     const ROTULOS_RENGLON = [
+      filaTon ? { txt: 'Tonalidad:', ocupado: 0 } : null,
       { txt: 'Cifrado interválico:', ocupado: 0 },
       pedirRomano ? { txt: 'Sonido fundamental:', ocupado: ANCHO_CAJA_TON } : null,
-      filaFun ? { txt: 'Función:', ocupado: pedirRomano ? 0 : ANCHO_CAJA_TON } : null,
-      filaTon ? { txt: 'Tonalidad:', ocupado: 0 } : null
+      filaFun ? { txt: 'Función:', ocupado: pedirRomano ? 0 : ANCHO_CAJA_TON } : null
     ].filter(Boolean);
     const ROTULOS_EXTRA = ROTULOS_RENGLON.reduce((m, r) =>
       Math.max(m, anchoRenglon(r.txt) + r.ocupado - LIBRE_IZQ), 0);
@@ -502,8 +514,8 @@ const Partitura = (() => {
     /* Debajo del cifrado, un renglón por tonalidad (decisión 83), y cada renglón lleva DOS
        casillas: la FUNDAMENTAL y, casi pegada debajo, su FUNCIÓN tonal. Las dos lecturas
        del mismo acorde van juntas, y al modular baja el renglón entero —fundamental y
-       función—, como ya bajaba antes la fundamental sola. La TONALIDAD queda en una única
-       banda al pie, debajo del último renglón (Diego, 27/9/2026).
+       función—, como ya bajaba antes la fundamental sola. La TONALIDAD va en una única banda
+       ARRIBA, encima del cifrado (decisión 244); hasta entonces estuvo al pie.
        Antes la función era una banda propia debajo de TODOS los renglones: se separaba de la
        fundamental a la que se refiere y gastaba alto de más. */
     const HUECO_FUN = 0.3 * SP;                                   // fundamental y función, casi pegadas
@@ -518,8 +530,7 @@ const Partitura = (() => {
     const yRenglonFun = r => yRenglon(r) + (pedirRomano ? ALTO_ROMANO + HUECO_FUN : 0);
     const Y_FIN_RENGLONES = conRenglones
       ? yRenglon(NUM_RENGLONES - 1) + ALTO_RENGLON : Y_CASILLA + ALTO_CASILLA;
-    const Y_TON = Y_FIN_RENGLONES + 0.8 * SP;
-    const Y_FIN_CASILLAS = filaTon ? Y_TON + ALTO_TON : Y_FIN_RENGLONES;
+    const Y_FIN_CASILLAS = Y_FIN_RENGLONES;   // la tonalidad ya no va al pie (244)
     const R_SONAR = 1.25 * SP, CY_SONAR = Y0 - 1.6 * SP;   // botones ▶ en la banda superior, justo sobre el sistema
     /* El renglón de la SOLUCIÓN, en naranja, bajo las casillas (decisión 152): función,
        grado y cifra en una sola línea centrada en la nota. Se encoge si no cabe entre nota
@@ -1418,7 +1429,7 @@ const Partitura = (() => {
         /* Los topes se ALTERNAN (Diego, 28/9/2026): uno un poco más alto, el siguiente a la
            altura de siempre, y así. Con todos a la misma altura, dos cuadros seguidos se
            leían como uno solo; escalonados se distingue dónde acaba cada uno. */
-        const y1 = (sinSistema ? Y_CASILLA - SP : Y_SISTEMA_TOP - 0.8 * SP) - (k % 2 === 0 ? 1.1 * SP : 0);
+        const y1 = (sinSistema ? Y_PRIMERA - SP : Y_SISTEMA_TOP - 0.8 * SP) - (k % 2 === 0 ? 1.1 * SP : 0);
         /* Y por abajo el cuadro llega hasta el CIFRADO NARANJA de la solución, «pues es
            precisamente este el que cumple la técnica que describe el cuadro» (Diego). Solo
            cuando lo hay: si el alumno acertó esos acordes no hay renglón naranja debajo, y
@@ -1433,7 +1444,7 @@ const Partitura = (() => {
         /* El rótulo no va al centro geométrico del cuadro —ahí caía sobre el pentagrama del
            bajo y tapaba las notas—, sino al HUECO entre el sistema y las casillas, que es el
            único sitio del cuadro donde no hay nada dibujado. Cada carril baja un escalón. */
-        const hueco = sinSistema ? (y1 + y2) / 2 : (Y_SISTEMA_BOT + Y_CASILLA) / 2;
+        const hueco = sinSistema ? (y1 + y2) / 2 : (Y_SISTEMA_BOT + Y_PRIMERA) / 2;
         const cyR = Math.min(Math.max(hueco + carril * 2.4 * SP, y1 + 1.2 * SP), y2 - 1.2 * SP);
         const gr = el('g', { class: 'tecnica-rotulo',
           transform: 'translate(' + p.cxR.toFixed(2) + ',' + cyR.toFixed(2) + ') scale(' + p.escala.toFixed(3) + ')' });
