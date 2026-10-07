@@ -9,16 +9,29 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
-## Estado a 6 de octubre de 2026
+## Estado a 7 de octubre de 2026
+
+- **SIN SUBIR: el `20261007-1054`**, con la decisión **245**: el **cuaderno a un toque desde
+  el configurador**. Archivos: `configurar.html`, `js/configurador.js`,
+  `herramientas/probar-botones-cuaderno.js` (nuevo), las ocho páginas (la marca) y los dos
+  documentos. **No toca el banco, ni el motor, ni nada que vea el alumno**: solo la zona C del
+  configurador y la cabecera. Las 24 comprobaciones de
+  `node herramientas/probar-botones-cuaderno.js` pasan con el servidor local.
+
+- **EL CUADERNO YA ESTÁ PUBLICADO** (7/10/2026), como aplicación web de Apps Script con acceso
+  **«Solo yo»**, desde la hoja «Práctica armónica — resultados». La dirección está en el
+  proyecto, en `Cuaderno-de-resultados-panel.md`. Hay que **pegarla en la casilla «Dirección
+  del cuaderno»** del configurador para que se enciendan los dos botones; se queda en ese
+  navegador y no se publica. **El acceso tiene que seguir siendo «Solo yo»**: en
+  `murciaeduca.es` están también los alumnos.
+
+- **PUBLICADO el `20261006-0845`**, con la decisión **244**: en la interfaz del alumno la
+  fila **«Tonalidad» pasa a ser la primera**, encima del cifrado, porque es lo primero que el
+  alumno escribe. Comprobado el 7/10: el clon y GitHub en el mismo punto (`054ecdb`) y ningún
+  archivo tocado desde el último commit.
 
 - **PUBLICADO el `20261005-1000`**, con las decisiones 235 a 239. Comprobado en la web: la
   marca, los `.js` servidos con ella y la rejilla cargada.
-
-- **SIN SUBIR: el `20261006-0845`**, con la decisión **244**: en la interfaz del alumno la
-  fila **«Tonalidad» pasa a ser la primera**, encima del cifrado, porque es lo primero que el
-  alumno escribe. Archivos: `js/partitura.js`, las ocho páginas (la marca) y los dos
-  documentos. **No toca el banco ni ninguna respuesta**, solo el dibujo; y sin fila
-  «Tonalidad» el dibujo queda idéntico al de antes, píxel a píxel.
 
 - **PUBLICADO el `20261005-2330`**, con las decisiones **240**, **241**, **242** y **243**.
   Archivos: `js/reglas.js`, `REGLA-DE-LA-OCTAVA-ENTERA.md`,
@@ -906,6 +919,10 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261007-1054 | El cuaderno, a un toque desde el configurador: casilla «Dirección del cuaderno» en la zona C y dos botones nuevos, en la cabecera y en la zona C, delante de los de la hoja de resultados (245). La dirección no viaja en `envio.json` |
+| 20261006-0845 | La fila «Tonalidad», la primera de todas bajo el pentagrama, encima del cifrado (244) |
+| 20261005-2330 | El 6.º – 4.º – 5.º del bajo pide también el conjunto completo (243); orden de preferencia de la regla de la octava y coste del 6/4 (240, 241); el documento de la regla de la octava se genera desde el motor (242); banco a 151 fragmentos con la Marcha en Re |
+| 20261005-1000 | Decisiones 235 a 239 |
 | 20261003-1000 | Se leen todas las voces de un pentagrama, no solo la primera, y los acordes se toman de lo que SUENA en cada momento y no de lo que ataca: el medio compás del tema de John Williams con la soprano sostenida sobre dos acordes entra entero (218) |
 | 20261003-0800 | Botón «Código QR» junto a «Abrir como alumno», en la ficha y en el fragmento suelto: el código se calcula en la propia aplicación (`js/qr.js`, nuevo) y se enseña a tamaño de proyección, con descarga en PNG (217) |
 | 20261003-0600 | Basta un acorde a cuatro voces para que la armonización sea del compositor y no se toque; donde escribió menos voces, se dibujan menos (216). Cartel en el editor, botón «Revisar el fragmento» y mandos de voz apagados también con un fragmento recién importado; corregido el botón, que al cargar del banco se quedaba con el nombre del fragmento anterior |

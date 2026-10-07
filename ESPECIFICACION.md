@@ -3880,6 +3880,34 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+245. **El cuaderno, a un toque desde el configurador**
+    (7/10/2026, Diego: «quizá el formulario podría contar para llegar a él con un botón antes
+    del de resultados en el configurador, de manera que se puedan consultar el formulario y la
+    hoja de cálculo con los resultados para ver las entregas»).
+    El cuaderno es una **aplicación web de Apps Script** publicada desde la propia hoja de
+    respuestas por `MontarCuadernoPractica.gs`, con acceso **«Solo yo»**: se elige la clase o
+    el grupo en dos desplegables y salen las calificaciones —media y media por modo de
+    ejercicio— y los contenidos —acierto por modo, total, apariciones y fallos—. Su dirección
+    acaba en `/exec`.
+    - En el configurador hay ahora una casilla **«Dirección del cuaderno»** en la zona C,
+      debajo de la de la hoja de respuestas, y **dos** botones nuevos: «Ver el cuaderno →» en
+      la cabecera y «Abrir el cuaderno →» en la zona C, los dos **delante** de los de la hoja
+      de resultados. El orden es el del uso: el cuaderno es lo que se mira a diario; la hoja de
+      respuestas, para comprobar una entrega suelta.
+    - **La dirección no viaja en `envio.json`**, igual que la de la hoja de respuestas
+      (decisión 234 y la nota de la 61): ese archivo se sube a GitHub, y esta dirección es
+      privada —da acceso a las notas de todos—. Se guarda solo en este navegador, bajo
+      `armonizar.cuaderno`.
+    - Se exige `/exec` y se rechaza `/dev`: la dirección de pruebas de Apps Script solo
+      funciona con el editor abierto, y pegarla aquí daría un botón que falla sin decir por
+      qué. Se admiten las dos formas de dirección, la de cuenta suelta
+      (`script.google.com/macros/s/…/exec`) y la de centro
+      (`script.google.com/a/macros/<dominio>/s/…/exec`), que es la de Diego.
+    - El mecanismo de «una dirección guardada en este navegador que enciende un botón de la
+      cabecera y otro de la zona C» estaba escrito para la hoja de respuestas; ahora está
+      escrito **una sola vez** (`conectarEnlaceGuardado`) y se usa dos veces, con su validador
+      y sus textos. El comportamiento de la hoja de respuestas no cambia.
+
 244. **La fila «Tonalidad», la primera de todas**
     (6/10/2026, Diego: «en la interfaz del estudiante, en los controles para seleccionar el
     cifrado, la fila de las tonalidades debe ir la primera de todas, no la última, como está

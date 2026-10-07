@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261006-0845">
-  <link rel="stylesheet" href="css/estilo.css?v=20261006-0845">
+  <link rel="stylesheet" href="css/bravura.css?v=20261007-1054">
+  <link rel="stylesheet" href="css/estilo.css?v=20261007-1054">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -21,6 +21,11 @@
       <span class="quees">· profesor</span>
     </div>
     <span class="accesos-cabecera">
+      <!-- El cuaderno, DELANTE de los resultados (Diego, 7/10/2026): el panel que enseña una
+           clase de un vistazo. Va primero porque es lo que se mira a diario; la hoja de
+           respuestas es para comprobar entregas sueltas. Igual que el de al lado, aparece
+           solo cuando su dirección está puesta, abajo en «Recogida de resultados». -->
+      <a id="btn-cuaderno" class="enlace-boton" href="#" target="_blank" rel="noopener" hidden>Ver el cuaderno →</a>
       <!-- Los resultados que envían los alumnos, a un toque (Diego, 28/9/2026): la hoja de
            respuestas del formulario. Aparece solo cuando su dirección está puesta, abajo en
            «Recogida de resultados». -->
@@ -675,7 +680,18 @@
         <input id="envio-respuestas" type="url" spellcheck="false" placeholder="https://docs.google.com/spreadsheets/d/…">
       </label>
       <p class="ayuda">Es la hoja que crea el mismo script, donde cae una fila por envío. Con ella puesta se encienden el botón <b>«Abrir la hoja de resultados»</b> de aquí abajo y el de la cabecera; sin ella, el de abajo sale apagado. Esta dirección <b>no viaja en <code>envio.json</code></b>: se queda en este navegador, porque es tuya y no tiene por qué publicarse en GitHub.</p>
+      <!-- El cuaderno (Diego, 7/10/2026). La hoja de respuestas es el dato en bruto; el cuaderno
+           es la lectura: se elige la clase y salen las calificaciones y los contenidos por modo
+           de ejercicio. Lo publica MontarCuadernoPractica.gs como aplicación web. -->
+      <label class="campo">
+        <span>Dirección del cuaderno</span>
+        <input id="envio-cuaderno" type="url" spellcheck="false" placeholder="https://script.google.com/…/exec">
+      </label>
+      <p class="ayuda">El cuaderno es la aplicación web que publica <code>MontarCuadernoPractica.gs</code> desde la propia hoja de respuestas: <b>Implementar → Nueva implementación → Aplicación web</b>, con acceso <b>«Solo yo»</b>. Enseña, por clase o por grupo, las medias de cada alumno y el acierto en cada contenido separado por modo de ejercicio. Esta dirección <b>tampoco viaja en <code>envio.json</code></b>: se queda en este navegador.</p>
       <div class="botonera">
+        <!-- El botón de abrir el cuaderno, delante del de la hoja, por el mismo orden que arriba. -->
+        <a id="btn-cuaderno-c" class="enlace-boton" href="#" target="_blank" rel="noopener"
+           aria-disabled="true" title="Pega arriba la dirección del cuaderno">Abrir el cuaderno →</a>
         <!-- El botón de abrir la hoja, AQUÍ (decisión 234, Diego 2/10/2026: «necesito un botón
              que me abra la hoja de cálculo o donde sea que se está recibiendo la información»).
              Existía arriba, en la cabecera, pero solo aparecía con la dirección ya puesta: si
@@ -719,20 +735,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261006-0845</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261007-1054</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261006-0845"></script>
-  <script src="js/teoria.js?v=20261006-0845"></script>
-  <script src="js/reglas.js?v=20261006-0845"></script>
-  <script src="js/ejercicios.js?v=20261006-0845"></script>
-  <script src="js/partitura.js?v=20261006-0845"></script>
-  <script src="js/musicxml.js?v=20261006-0845"></script>
-  <script src="js/musescore.js?v=20261006-0845"></script>
-  <script src="js/banco.js?v=20261006-0845"></script>
-  <script src="js/realizacion.js?v=20261006-0845"></script>
-  <script src="js/tecnicas.js?v=20261006-0845"></script>
-  <script src="js/configurador.js?v=20261006-0845"></script>
+  <script src="js/qr.js?v=20261007-1054"></script>
+  <script src="js/teoria.js?v=20261007-1054"></script>
+  <script src="js/reglas.js?v=20261007-1054"></script>
+  <script src="js/ejercicios.js?v=20261007-1054"></script>
+  <script src="js/partitura.js?v=20261007-1054"></script>
+  <script src="js/musicxml.js?v=20261007-1054"></script>
+  <script src="js/musescore.js?v=20261007-1054"></script>
+  <script src="js/banco.js?v=20261007-1054"></script>
+  <script src="js/realizacion.js?v=20261007-1054"></script>
+  <script src="js/tecnicas.js?v=20261007-1054"></script>
+  <script src="js/configurador.js?v=20261007-1054"></script>
 </body>
 </html>

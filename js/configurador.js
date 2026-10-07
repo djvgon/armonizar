@@ -3180,35 +3180,65 @@
      `envio.json` a propósito: ese archivo se sube a GitHub, y la dirección de la hoja es
      suya. Aquí basta con tenerla a mano para el botón de la cabecera. */
   const CLAVE_RESPUESTAS = 'armonizar.respuestas';
+  /* El cuaderno, lo mismo y por lo mismo (Diego, 7/10/2026): es una aplicación web privada,
+     publicada con acceso «Solo yo», y su dirección no tiene por qué viajar a GitHub. */
+  const CLAVE_CUADERNO = 'armonizar.cuaderno';
 
   const hojaValida = t => {
     t = (t || '').trim();
     return /^https:\/\/docs\.google\.com\/(spreadsheets|document)\//.test(t) || /^https:\/\/drive\.google\.com\//.test(t);
   };
 
-  function conectarResultados() {
-    const campo = $('#envio-respuestas'), boton = $('#btn-resultados'), botonC = $('#btn-resultados-c');
+  /* La dirección de una aplicación web de Apps Script. Las hay de dos formas según la cuenta:
+     «/macros/s/…/exec» en una cuenta suelta y «/a/macros/<dominio>/s/…/exec» en una de centro,
+     que es la de Diego. Se exige «/exec» y no «/dev» a propósito: la de pruebas solo funciona
+     con el editor abierto, y pegarla aquí daría un botón que falla sin decir por qué. */
+  const cuadernoValido = t => {
+    t = (t || '').trim();
+    return /^https:\/\/script\.google\.com\/(a\/macros\/[^/]+|macros)\/s\/[\w-]+\/exec\b/.test(t);
+  };
+
+  /* Un enlace que se guarda en ESTE navegador y enciende dos botones: el de la cabecera, que
+     aparece o no, y el de la zona C, que nunca se esconde —se apaga y dice qué le falta
+     (decisión 234)—. Es el mismo mecanismo para la hoja de respuestas y para el cuaderno, así
+     que está escrito una sola vez y se le pasan los textos. */
+  function conectarEnlaceGuardado(cfg) {
+    const campo = $(cfg.campo), boton = $(cfg.boton), botonC = $(cfg.botonC);
     if (!campo || !boton) return;
-    try { campo.value = localStorage.getItem(CLAVE_RESPUESTAS) || ''; } catch (e) { /* sin almacenamiento */ }
+    try { campo.value = localStorage.getItem(cfg.clave) || ''; } catch (e) { /* sin almacenamiento */ }
     const revisar = () => {
       const t = campo.value.trim();
-      const ok = hojaValida(t);
+      const ok = cfg.valida(t);
       boton.hidden = !ok;
       if (ok) boton.href = t;
-      /* El de la zona C no se esconde: se apaga y dice qué le falta (decisión 234). Es el que
-         está al lado de la casilla, así que es el que tiene que explicar la ausencia. */
       if (botonC) {
         botonC.setAttribute('aria-disabled', ok ? 'false' : 'true');
         botonC.href = ok ? t : '#';
-        botonC.title = ok ? 'Abre la hoja de respuestas en otra pestaña'
-          : (t ? 'Esa dirección no parece una hoja de cálculo de Google' : 'Pega aquí arriba la dirección de la hoja de respuestas');
+        botonC.title = ok ? cfg.bien : (t ? cfg.mal : cfg.falta);
       }
       campo.setAttribute('aria-invalid', t && !ok ? 'true' : 'false');
-      try { localStorage.setItem(CLAVE_RESPUESTAS, ok ? t : ''); } catch (e) { /* nada */ }
+      try { localStorage.setItem(cfg.clave, ok ? t : ''); } catch (e) { /* nada */ }
     };
     if (botonC) botonC.addEventListener('click', ev => { if (botonC.getAttribute('aria-disabled') === 'true') ev.preventDefault(); });
     campo.addEventListener('input', revisar);
     revisar();
+  }
+
+  function conectarResultados() {
+    conectarEnlaceGuardado({
+      campo: '#envio-respuestas', boton: '#btn-resultados', botonC: '#btn-resultados-c',
+      clave: CLAVE_RESPUESTAS, valida: hojaValida,
+      bien: 'Abre la hoja de respuestas en otra pestaña',
+      mal: 'Esa dirección no parece una hoja de cálculo de Google',
+      falta: 'Pega aquí arriba la dirección de la hoja de respuestas'
+    });
+    conectarEnlaceGuardado({
+      campo: '#envio-cuaderno', boton: '#btn-cuaderno', botonC: '#btn-cuaderno-c',
+      clave: CLAVE_CUADERNO, valida: cuadernoValido,
+      bien: 'Abre el cuaderno en otra pestaña',
+      mal: 'Esa dirección no parece la de una aplicación web de Apps Script (ha de acabar en /exec)',
+      falta: 'Pega aquí arriba la dirección del cuaderno'
+    });
   }
 
   function plantillaValida(t) {
