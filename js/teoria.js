@@ -779,7 +779,15 @@ const Teoria = (() => {
      **DD**, la doble dominante de Diether de la Motte.
      Por dentro el acorde sigue siendo la séptima de dominante levantada sobre el 2.º grado
      (II con cifra marcada); lo que cambia es cómo se escribe y cómo se llama. */
-  const SECUNDARIAS = { II: { grado: 'V/V', funcion: 'DD', nombre: 'dominante de la dominante' } };
+  /* LA FUNCIÓN SE LLAMA «DS», DOMINANTE SECUNDARIA (Diego, 8/10/2026). Antes era `DD`,
+     «doble dominante», que es el nombre del cifrado funcional y vale para el V/V; pero la
+     lección A-17 trae la FAMILIA —V/V, V/IV, V/II, V/III, V/VI— y la A-21 la séptima
+     disminuida secundaria, que también es dominante por función. Una sola letra para todas
+     ellas deja la fila de funciones en cuatro botones (T · S · D · DS) y el destino se
+     compone en la fila del grado: DS, luego el acorde que hace de dominante, luego su
+     objetivo. Es lo que cabe en un móvil. La subdominante secundaria será `SS`.
+     El nombre propio de cada una sigue estando aquí, en `nombre`. */
+  const SECUNDARIAS = { II: { grado: 'V/V', funcion: 'DS', nombre: 'dominante de la dominante' } };
   const GRADOS_CROMATICOS = Object.keys(SECUNDARIAS).map(k => SECUNDARIAS[k].grado);
   // ¿Este acorde es una dominante secundaria? (cifra de dominante sobre un grado que no es el V)
   const esSecundaria = (romano, cifra) => !!(DOMINANTES.includes(cifra) && romano !== 'V' && SECUNDARIAS[romano]);
@@ -814,7 +822,7 @@ const Teoria = (() => {
   }
 
   const FUNCIONES = ['T', 'S', 'D'];                 // las diatónicas (cuadro verde)
-  const FUNCIONES_CROMATICAS = Object.keys(SECUNDARIAS).map(k => SECUNDARIAS[k].funcion);   // DD (cuadro azul)
+  const FUNCIONES_CROMATICAS = Object.keys(SECUNDARIAS).map(k => SECUNDARIAS[k].funcion);   // DS (cuadro azul)
   /* Y una función que no es función: **ninguna** (decisión 116, Diego). El III no tiene
      función tonal —ni tónica ni subdominante ni dominante—, y se ve con toda claridad
      cuando hace de acorde pivote: viniendo de Do M, el mi menor es el III de Do y el v
@@ -825,8 +833,8 @@ const Teoria = (() => {
   const FUNCIONES_EXTRA = FUNCIONES_CROMATICAS.concat([SIN_FUNCION]);   // solo se ofrecen si el ejercicio las pide
   const TODAS_FUNCIONES = FUNCIONES.concat(FUNCIONES_EXTRA);
   const FUNCION_DE ={ I: ['T'], II: ['S'], III: [SIN_FUNCION], IV: ['S'], V: ['D'], VI: ['T', 'S'], VII: ['D'] };
-  const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante', DD: 'dominante de la dominante', N: 'sin función tonal' };
-  const TEXTO_FUNCION = { T: 'T', S: 'S', D: 'D', DD: 'DD', N: '—' };
+  const NOMBRE_FUNCION = { T: 'tónica', S: 'subdominante', D: 'dominante', DS: 'dominante secundaria', N: 'sin función tonal' };
+  const TEXTO_FUNCION = { T: 'T', S: 'S', D: 'D', DS: 'DS', N: '—' };
   // Cómo se ESCRIBE una función en la paleta, la casilla y el desplegable
   const textoFuncion = f => (f ? (TEXTO_FUNCION[f] || f) : '');
   // Funciones posibles de un grado (la primera es la habitual)
@@ -914,9 +922,9 @@ const Teoria = (() => {
     const f = funcionesDe(romano);
     if (romano === 'VI') {
       const fAnt = anterior && anterior.romano ? funcionesDeAcorde(anterior.romano, anterior.cifra)[0] : null;
-      if (fAnt === 'D' || fAnt === 'DD') return 'T';         // cadencia rota: el VI hace de tónica
+      if (fAnt === 'D' || fAnt === 'DS') return 'T';         // cadencia rota: el VI hace de tónica
       const fSig = romanoSiguiente ? funcionesDeAcorde(romanoSiguiente, cifraSiguiente)[0] : null;
-      if (fSig === 'D' || fSig === 'DD' || fSig === 'S') return 'S';
+      if (fSig === 'D' || fSig === 'DS' || fSig === 'S') return 'S';
     }
     return f[0];
   }

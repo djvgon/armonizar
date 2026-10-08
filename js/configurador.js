@@ -170,7 +170,13 @@
        que las llevan, pero desde aquí ya no se generan. */
     return { pedirRomano: true, reintentos: $('#reintentos').checked,
       ayudaGrados: $('#ficha-ayuda-grados').value,
-      modo: modoElegido(), preferir: pref ? [pref] : [], tonalidades: $('#ficha-tonalidades').value,
+      modo: modoElegido(),
+      /* El desplegable del 6.º grado tiene tres posiciones: el diatónico, el cromático
+         preferido, y el cromático OBLIGATORIO, que se escribe con un «!» delante para que
+         quepa en un solo control (8/10/2026). */
+      preferir: pref ? [pref.replace(/^!/, '')] : [],
+      exigir: pref.charAt(0) === '!' ? [pref.slice(1)] : [],
+      tonalidades: $('#ficha-tonalidades').value,
       bajoAudicion: $('#bajo-audicion').value === 'bajo',
       gradosBajo: $('#grados-bajo').value,          // 'dado' | 'oculto' (decisiones 91 y 113)
       estructurasTon: $('#ficha-estructuras-ton').value,     // decisión 226
@@ -314,6 +320,7 @@
       respuestas: resp
     };
     if (op.preferir.length) ej.preferir = op.preferir;
+    if (op.exigir && op.exigir.length) ej.exigir = op.exigir;
     if (!op.reintentos) ej.reintentos = false;
     if (op.ayudaGrados !== 'lista') ej.ayudaGrados = op.ayudaGrados;
     if (op.gradosBajo === 'oculto') ej.gradosBajo = 'oculto';
@@ -1425,7 +1432,11 @@
     if (Array.isArray(ej.acordes)) marcarAcordes(ej.acordes);
     $('#formula-tst').checked = ej.formulaTST !== false;
     ajustarCampoAudicion();
-    $('#ficha-preferir').value = ej.preferir && ej.preferir.includes('+6') ? '+6' : '';
+    /* Los enlaces de antes del 8/10/2026 llevan la cifra suelta (`+6`); los de ahora, el
+       acorde (`II|+6`). Se reconocen los dos. */
+    const tiene = (l, x) => Array.isArray(l) && (l.includes(x) || l.includes('II|' + x));
+    $('#ficha-preferir').value = tiene(ej.exigir, '+6') ? '!II|+6'
+      : tiene(ej.preferir, '+6') ? 'II|+6' : '';
     estado.modulaciones = Ejercicios.modulaciones(ej).map(m => ({ nota: m.nota, tonalidad: m.tonalidad }));
     estado.melodica = Array.isArray(ej.melodica) ? ej.melodica.slice() : [];
     $('#ficha-tonalidades').value = ej.tonalidades === 'pedir' ? 'pedir' : 'dadas';
@@ -1952,7 +1963,10 @@
     const ayuda = $('#ficha-ayuda-grados').value;
     if (ayuda !== 'lista') f.ayudaGrados = ayuda;
     const pref = $('#ficha-preferir').value;
-    if (pref) f.preferir = [pref];
+    if (pref) {
+      f.preferir = [pref.replace(/^!/, '')];
+      if (pref.charAt(0) === '!') f.exigir = [pref.slice(1)];
+    }
     const fun = $('#ficha-funciones').value;
     if (fun === 'dadas' || fun === 'pedir') f.funciones = fun;
     const tons = $('#ficha-tonalidades').value;

@@ -757,8 +757,38 @@ const Ejercicios = (() => {
       if (f.length) ids = f;
     }
     ids = soloDeLaLeccion(ej, i, ids);
+    /* EXIGIR, no solo preferir (Diego, 8/10/2026): «en las lecciones en las que, como la de
+       la dominante secundaria, este desplegable exija emplear la versión cromática, solo la
+       versión cromática debería tomarse como válida». `preferir` pone la cifra delante y deja
+       las demás admisibles; `exigir` descarta las demás. Si la cifra exigida no está entre las
+       admisibles de esta nota —el fragmento no tiene ahí ese acorde—, no se descarta nada: no
+       se deja nunca una nota sin respuesta posible. */
+    /* CÓMO SE NOMBRA LA CIFRA QUE SE PREFIERE O SE EXIGE. Una cifra suelta —`+6`— vale en
+       cualquier nota donde salga. Un par `ROMANO|cifra` —`II|7+`— vale SOLO en la nota cuyo
+       acorde es ese, y hace falta: el `7+` del V/V es la misma cifra que el V7 de toda la
+       vida, así que pedir «7+» a secas también convertiría la dominante del tono en V7, que
+       no es lo que dice el desplegable. Con `II|7+` se señala el acorde y la dominante se
+       queda como estaba (8/10/2026). */
+    const señala = (lista, id, i) => lista.some(x => {
+      if (String(x).indexOf('|') < 0) return x === cifraDe(id);
+      if (cifraDe(x) !== cifraDe(id)) return false;
+      try {
+        const nota = Teoria.notasDeCompases(ej.compases)[i];
+        return Teoria.romanoEscrito(id, Teoria.nota(nota), tonalidadEn(ej, i)) === String(x).split('|')[0]
+            || Teoria.romano(id, Teoria.nota(nota), tonalidadEn(ej, i)) === String(x).split('|')[0];
+      } catch (e) { return false; }
+    });
+    /* EXIGIR, no solo preferir (Diego, 8/10/2026): «en las lecciones en las que, como la de
+       la dominante secundaria, este desplegable exija emplear la versión cromática, solo la
+       versión cromática debería tomarse como válida». `preferir` pone la cifra delante y deja
+       las demás admisibles; `exigir` descarta las demás. Si lo exigido no está entre las
+       admisibles de esta nota, no se descarta nada: no se deja nunca una nota sin respuesta. */
+    if (ej.exigir) {
+      const f = ids.filter(id => señala(ej.exigir, id, i));
+      if (f.length) ids = f;
+    }
     if (ej.preferir) {
-      const pref = ids.find(id => ej.preferir.includes(cifraDe(id)));
+      const pref = ids.find(id => señala(ej.preferir, id, i));
       if (pref) ids = [pref, ...ids.filter(id => id !== pref)];
     }
     /* En Análisis y Audición el alumno NO elige la armonización: tiene el acorde delante

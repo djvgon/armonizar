@@ -1186,6 +1186,8 @@ const Banco = (() => {
     if (f.funciones) ej.funciones = f.funciones;
     // La respuesta modelo preferida sobre el 6.º descendente (+6 en cuarto curso)
     if (Array.isArray(f.preferir) && f.preferir.length) ej.preferir = f.preferir.slice();
+    // …y la EXIGIDA, cuando la lección no admite la versión diatónica (8/10/2026)
+    if (Array.isArray(f.exigir) && f.exigir.length) ej.exigir = f.exigir.slice();
     // La fila «Tonalidad»: rige module o no el fragmento (decisión 56)
     /* 'oculta' es el nivel avanzado, todavía sin ofrecer en el configurador; 'no' es el
        valor viejo, que el motor traduce a 'dadas' (decisión 232). */
