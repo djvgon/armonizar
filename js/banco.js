@@ -1312,10 +1312,15 @@ const Banco = (() => {
     'A-23': 'Marchas progresivas (II)'
   };
 
-  /* Los códigos de antes del 8/10/2026. Están escritos en los archivos de MuseScore que
-     ya existen, en los enlaces de fichas repartidos y en el redirector de los QR
-     impresos, así que se traducen al leerlos y no hay que renombrar ni reimprimir nada.
-     Es el único sitio donde vive la traducción, y solo se lee: nunca se escribe. */
+  /* Los códigos internos de antes del 8/10/2026 (`A3-1`…`A4-11`). Están escritos en los
+     ENLACES DE FICHAS repartidos y en el redirector de los QR impresos, así que se traducen
+     al leerlos y no hay que reimprimir nada.
+
+     OJO: esta tabla NO vale para los nombres de los archivos. Los archivos de MuseScore se
+     llamaban ya por el número de TEMA —«A3-5. I, V y V7» es el tema 5— y no por el código
+     interno, que para ese archivo era A3-1. Traducirlos con esta tabla los mandaría a la
+     lección equivocada: los 19 archivos de la carpeta de Diego, todos. De eso se encarga
+     `leccionDeNombre`, que simplemente tira el dígito del curso. */
   const CODIGO_ANTIGUO = {
     'A3-1': 'A-5',  'A3-2': 'A-6',  'A3-3': 'A-7',  'A3-4': 'A-8',
     'A3-5': 'A-9',  'A3-6': 'A-10', 'A3-7': 'A-11', 'A3-8': 'A-12',
@@ -1340,12 +1345,17 @@ const Banco = (() => {
   /* «A-7. V7 en inversión - Fragmentos bajo.mscz» → «A-7».
      MANDA EL CÓDIGO (Diego, 8/10/2026). Antes mandaba el título, por la ambigüedad que
      ya no existe; ahora el título del archivo no decide nada, de modo que renombrarlo no
-     puede llevarse un fragmento a otra lección. Los códigos viejos se traducen. */
+     puede llevarse un fragmento a otra lección.
+
+     Y los nombres de antes se leen tirando el dígito del curso, porque **ya estaban
+     numerados por el TEMA**: «A3-5. I, V y V7» es el tema 5, o sea A-5 (su código interno
+     era A3-1, que es otra cosa); «A4-13. Modulación al V» es A-13. Comprobado contra los
+     19 archivos de la carpeta «Fragmentos por lecciones». */
   function leccionDeNombre(nombre) {
-    const m = /^\s*([A-Za-z]{1,3})(\d*)\s*-\s*(\d{1,2})/.exec(String(nombre || ''));
+    const m = /^\s*([A-Za-z]{1,3})\d*\s*-\s*(\d{1,2})/.exec(String(nombre || ''));
     if (!m) return '';
     const pre = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
-    return leccionCanonica(pre + (m[2] || '') + '-' + m[3]);
+    return pre + '-' + m[2];
   }
   /* El título. Sale de la tabla, que es la única fuente; del nombre del archivo solo se
      saca cuando el código no está en ella —una lección nueva que todavía no se ha dado de
