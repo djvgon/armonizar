@@ -1754,9 +1754,10 @@
     const nom = Banco.nombreDeLeccion(estado.nombreArchivo || '');
     if (lec) $('#banco-leccion').value = lec;
     if (nom) $('#banco-leccion-nombre').value = nom;
-    /* El archivo se llama por el TEMA —«A3-5. I, V y V7»— y la casilla guarda el código
-       interno de la lección —«A3-1»—, que es el que llevan los 143 fragmentos del banco.
-       Para que no haya que traducir nada, el aviso dice los dos (1/10/2026). */
+    /* Desde el 8/10/2026 hay UNA numeración: el código del archivo —«A-9. El 64
+       cadencial»— es ya el de la lección y el del tema del libro, así que la casilla
+       guarda eso mismo y no hay nada que traducir. Los archivos con el código viejo
+       («A3-5. …») siguen entrando donde deben: `Banco.leccionDeNombre` los traduce. */
     const tema = Banco.temaDeLeccion(lec);
     $('#banco-anadir-ayuda').textContent = 'Se analizan los ' + estado.fragmentos.length
       + ' fragmentos del archivo con las opciones actuales (repertorio, acordes y fórmula T S T).'

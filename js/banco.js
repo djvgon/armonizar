@@ -1221,7 +1221,12 @@ const Banco = (() => {
   function decodificar(texto) {
     let b64 = String(texto).replace(/-/g, '+').replace(/_/g, '/');
     while (b64.length % 4) b64 += '=';
-    return JSON.parse(decodeURIComponent(escape(atob(b64))));
+    const f = JSON.parse(decodeURIComponent(escape(atob(b64))));
+    /* UNA FICHA REPARTIDA ANTES DEL 8/10/2026 lleva dentro el código viejo de su lección
+       (`A3-1`). Se traduce aquí, que es por donde entra TODA ficha, venga del enlace, del
+       QR o del historial: así ninguna hoja entregada deja de funcionar. */
+    if (f && f.leccion) f.leccion = leccionCanonica(f.leccion);
+    return f;
   }
 
   /* ---------- El archivo del banco ---------- */
@@ -1233,11 +1238,11 @@ const Banco = (() => {
     if (!Array.isArray(lista)) throw new Error('El archivo no tiene una lista de fragmentos.');
     return lista.filter(e => e && (e.bajo || e.soprano));
   }
-  /* Las lecciones, en el orden del PROGRAMA, que va del 1 al 19 seguido: la 1 a la 9 son
-     1.º de Armonía (`A3-…`) y la 10 a la 19, 2.º (`A4-…`). Ordenar los códigos como texto
-     ponía `A3-10` entre `A3-1` y `A3-2`, así que se ordena por curso y por número, como
-     números. Se hace aquí y no rellenando los códigos con ceros: el dato se queda legible
-     y el arreglo vive en un solo sitio (decisión 117). */
+  /* Las lecciones, en el orden del PROGRAMA: del 3 al 23 seguido, con el prefijo de la
+     asignatura delante (`A-` Armonía, `Co-` Fundamentos). Ordenar los códigos como texto
+     pondría `A-10` entre `A-1` y `A-2`, así que se ordena por asignatura y por número,
+     como números. Se hace aquí y no rellenando los códigos con ceros: el dato se queda
+     legible y el arreglo vive en un solo sitio (decisión 117). */
   const troceaLeccion = c => {
     const m = /^([A-Z]*)(\d*)\D*(\d+)/i.exec(String(c || ''));
     return m ? [m[1].toUpperCase(), Number(m[2] || 0), Number(m[3])] : ['', 0, 0];
@@ -1252,56 +1257,102 @@ const Banco = (() => {
     return out.sort(comparaLecciones);
   };
   /* ===================================================================
-     EL NÚMERO DEL ARCHIVO ES EL DEL TEMA DEL LIBRO  (Diego, 1/10/2026:
-     «el número del archivo ha de referirse al tema para el que propone
-     fragmentos… si no, es un dolor tener que estar traduciendo»).
+     UNA SOLA NUMERACIÓN DE LECCIONES  (Diego, 8/10/2026)
 
-     Los archivos de `ejemplos/Fragmentos por lecciones` se llaman desde
-     hoy «A3-5. I, V y V7 - …», donde el 5 es el TEMA DEL LIBRO. El código
-     interno de la lección, en cambio, sigue siendo el de siempre —«A3-1»—
-     porque está escrito en los 143 fragmentos del banco, en los códigos
-     cortos de los QR ya impresos y en las hojas repartidas. Esta tabla es
-     el puente entre los dos, y el único sitio donde vive la traducción.
+     «Me gustaría poder [cambiar los títulos] sin tener que cambiar toda
+     la estructura de la app. ¿Es posible que… el identificador entre
+     archivos y tabla y lecciones/temas sea el código?»
 
-     El desfase no es constante: de la 1 a la 8 son cuatro temas, pero la
-     lección 9 de Diego —la serie de sextas— no tiene todavía hoja, y a
-     partir de ahí las de 2.º caen en los temas 13 y 14. Por eso es una
-     tabla y no una suma.
+     Hasta hoy vivían dos numeraciones: la interna de la aplicación
+     (`A3-1`…`A3-8`, `A4-10`, `A4-11`) y la de las lecciones del libro
+     (los temas 5…14). El desfase era +4 en 1.º y se rompía en 2.º, de
+     modo que «A3-5» era AMBIGUO —la lección A3-5 o el tema 5— y el
+     desempate tenía que hacerlo el título. De ahí venía el problema:
+     cambiar un título movía fragmentos de lección.
+
+     Desde hoy hay UNA: el código ES el número de lección, el del libro,
+     el que Diego piensa y el que ven los alumnos. El prefijo dice la
+     asignatura, no el curso —así un tema puede cambiar de curso sin
+     tocar nada—:
+
+         A-    Armonía
+         Co-   Fundamentos de composición
+
+     Y el TÍTULO deja de identificar: es una etiqueta que se enseña, y
+     vive solo aquí. Cambiar uno es cambiar esta línea; ni los fragmentos
+     del banco ni los nombres de los archivos se enteran.
+
+     Las lecciones 22 y 23 no se corresponden con temas del libro (Diego,
+     8/10/2026): son las dos de marchas progresivas, que van al final
+     para no mover el tramo 5–21, que ya está impreso y repartido.
      =================================================================== */
-  const TEMA_DE_LECCION = { 'A3-1': 5, 'A3-2': 6, 'A3-3': 7, 'A3-4': 8, 'A3-5': 9,
-    'A3-6': 10, 'A3-7': 11, 'A3-8': 12, 'A4-10': 13, 'A4-11': 14 };
-  const LECCION_DE_TEMA = {};
-  Object.keys(TEMA_DE_LECCION).forEach(l => { LECCION_DE_TEMA[l.split('-')[0] + '-' + TEMA_DE_LECCION[l]] = l; });
-  /* El título de cada lección, que es lo que de verdad la identifica. Se usa para
-     desempatar: «A3-5» significa el tema 5 si el archivo se llama «I, V y V7», y la
-     lección A3-5 de toda la vida si se llama «El 64 cadencial». Así un archivo con el
-     nombre viejo, si aparece alguno, sigue entrando donde debe. */
-  const TITULO_DE_LECCION = { 'A3-1': 'i, v y v7', 'A3-2': 'i6, v6 y vii6',
-    'A3-3': 'v7 en inversión', 'A3-4': 'iv, ii y ii6', 'A3-5': 'el 64 cadencial',
-    'A3-6': 'vi y iv6', 'A3-7': 'ii7 y iv7', 'A3-8': 'otros usos del iv, iv6 y vi',
-    'A4-10': 'modulación al v', 'A4-11': 'modulación al relativo mayor' };
+  const LECCIONES = {
+    'A-3':  'Melodías y esquemas de acordes. Escritura para coro',
+    'A-4':  'Enlace de acordes. Escritura para coro',
+    'A-5':  'I, V y V7',
+    'A-6':  'I6, V6 y VII6',
+    'A-7':  'V7 en inversión',
+    'A-8':  'II, IV y II6',
+    'A-9':  'El 64 cadencial',
+    'A-10': 'El VI y IV6',
+    'A-11': 'El II7',
+    'A-12': 'Otros usos del IV, IV6 y VI',
+    'A-13': 'La modulación al V',
+    'A-14': 'La modulación al relativo',
+    'A-15': 'Modulación diatónica al resto de tonos (1 alteración)',
+    'A-16': 'Modulación diatónica al resto de tonos (2 alteraciones)',
+    'A-17': 'Las dominantes secundarias',
+    'A-18': 'Préstamos del homónimo',
+    'A-19': 'La sexta napolitana',
+    'A-20': 'La séptima disminuida (dominante)',
+    'A-21': 'La séptima disminuida (dominante secundaria)',
+    'A-22': 'Marchas progresivas (I)',
+    'A-23': 'Marchas progresivas (II)'
+  };
 
-  const temaDeLeccion = lec => TEMA_DE_LECCION[String(lec || '').toUpperCase()] || null;
+  /* Los códigos de antes del 8/10/2026. Están escritos en los archivos de MuseScore que
+     ya existen, en los enlaces de fichas repartidos y en el redirector de los QR
+     impresos, así que se traducen al leerlos y no hay que renombrar ni reimprimir nada.
+     Es el único sitio donde vive la traducción, y solo se lee: nunca se escribe. */
+  const CODIGO_ANTIGUO = {
+    'A3-1': 'A-5',  'A3-2': 'A-6',  'A3-3': 'A-7',  'A3-4': 'A-8',
+    'A3-5': 'A-9',  'A3-6': 'A-10', 'A3-7': 'A-11', 'A3-8': 'A-12',
+    'A3-9': 'A-22', 'A4-10': 'A-13', 'A4-11': 'A-14'
+  };
+  // Un código cualquiera, viejo o nuevo, llevado al de hoy
+  const leccionCanonica = lec => {
+    const c = String(lec || '').trim().toUpperCase();
+    return CODIGO_ANTIGUO[c] || String(lec || '').trim();
+  };
 
-  /* «A3-5. I, V y V7 - Fragmentos bajo.mscz» → «A3-1» (tema 5 = lección A3-1).
-     Manda el TÍTULO cuando se reconoce; si no, el número se lee como tema; y si tampoco,
-     se devuelve el código tal cual, que es lo que hacía antes. */
+  /* El número de la lección sale del propio código: ya no hay tabla que consultar.
+     Conserva el nombre `temaDeLeccion` porque es como la llaman el configurador y la
+     pantalla del alumno, y porque sigue siendo el número de tema del libro en el tramo
+     3–21. */
+  const numeroDeLeccion = lec => {
+    const m = /-(\d{1,2})$/.exec(String(lec || '').trim());
+    return m ? parseInt(m[1], 10) : null;
+  };
+  const temaDeLeccion = numeroDeLeccion;
+
+  /* «A-7. V7 en inversión - Fragmentos bajo.mscz» → «A-7».
+     MANDA EL CÓDIGO (Diego, 8/10/2026). Antes mandaba el título, por la ambigüedad que
+     ya no existe; ahora el título del archivo no decide nada, de modo que renombrarlo no
+     puede llevarse un fragmento a otra lección. Los códigos viejos se traducen. */
   function leccionDeNombre(nombre) {
-    const m = /^\s*([AC]?\d\s*-\s*\d+)/i.exec(String(nombre || '').replace(/^([A-Z])(\d)/i, '$1$2'));
-    const codigo = m ? m[1].replace(/\s+/g, '').toUpperCase() : '';
-    const titulo = nombreDeLeccion(nombre).toLowerCase();
-    if (titulo) {
-      const porTitulo = Object.keys(TITULO_DE_LECCION).find(l => TITULO_DE_LECCION[l] === titulo);
-      if (porTitulo) return porTitulo;
-    }
-    return LECCION_DE_TEMA[codigo] || codigo;
+    const m = /^\s*([A-Za-z]{1,3})(\d*)\s*-\s*(\d{1,2})/.exec(String(nombre || ''));
+    if (!m) return '';
+    const pre = m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase();
+    return leccionCanonica(pre + (m[2] || '') + '-' + m[3]);
   }
-  /* …y su NOMBRE: «I, V y V7». Hace falta para saber qué acordes trae cada lección, que es
-     lo que de verdad dice el filtro de una ficha. Se quita el código, la extensión y la
-     coletilla «- Fragmentos …» del nombre del archivo. */
+  /* El título. Sale de la tabla, que es la única fuente; del nombre del archivo solo se
+     saca cuando el código no está en ella —una lección nueva que todavía no se ha dado de
+     alta—, y entonces se quita el código, la extensión y la coletilla «- Fragmentos …». */
   function nombreDeLeccion(nombre) {
+    const lec = leccionDeNombre(nombre);
+    if (lec && LECCIONES[lec]) return LECCIONES[lec];
     let t = String(nombre || '').replace(/\.(mscz|mscx|musicxml|xml|json)$/i, '');
-    t = t.replace(/^\s*[AC]?\d\s*-\s*\d+\s*[.)\-–]?\s*/i, '');
+    t = t.replace(/^\s*[A-Za-z]{1,3}\d*\s*-\s*\d{1,2}\s*[.)\-–]?\s*/, '');
     t = t.split(/\s+[-–]\s+/)[0];
     return t.trim();
   }
@@ -1314,7 +1365,9 @@ const Banco = (() => {
     const cabeza = t ? 'Tema ' + t : (lec || '');
     return cabeza + (nombre ? ' · ' + nombre : '');
   }
-  const etiquetaLeccion = e => rotuloLeccion(e.leccion, e.leccionNombre);
+  /* El título lo manda la tabla, no lo que quedó guardado en el fragmento: así cambiar
+     un título en LECCIONES se ve en todas las pantallas sin volver a migrar el banco. */
+  const etiquetaLeccion = e => rotuloLeccion(e.leccion, LECCIONES[e.leccion] || e.leccionNombre);
   // El repertorio que tiene guardado una lección (el de su primer fragmento)
   function repertorioDeLeccion(entradas, leccion) {
     const e = (entradas || []).find(x => x.leccion === leccion);
@@ -1390,7 +1443,7 @@ const Banco = (() => {
     const out = {};
     (entradas || []).forEach(e => {
       if (!e.leccion || out[e.leccion]) return;
-      const n = e.leccionNombre || nombreDeLeccion(e.fuente);
+      const n = LECCIONES[e.leccion] || e.leccionNombre || nombreDeLeccion(e.fuente);
       if (n) out[e.leccion] = n;
     });
     return out;
@@ -1404,5 +1457,5 @@ const Banco = (() => {
     cifraDeLoEscrito, modeloDeLoEscrito,
     huellaDe, estaCerrada, cerrar, abrir, huellaRota, rotas, cuentaCerradas,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, rotuloLeccion, temaDeLeccion,
-    nombresDeLecciones, repertorioDeLeccion };
+    nombresDeLecciones, repertorioDeLeccion, LECCIONES, CODIGO_ANTIGUO, leccionCanonica };
 })();

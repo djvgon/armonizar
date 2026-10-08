@@ -280,8 +280,8 @@
       /* El tema lo trae ya el ejercicio servido (1/10/2026). Antes se sacaba del código
          de la lección leyendo el principio de `ej.leccion`, y eso dejó de valer el día en
          que esa etiqueta pasó a decir «Tema 14 · …» en vez de «A4-11 · …». */
-      const codigo = String(ej.leccion || '').match(/^A\d+-\d+/);
-      const tema = ej.tema || (codigo ? TEMA_DE_LECCION[codigo[0]] : null);
+      const codigo = String(ej.leccion || '').match(/^[A-Za-z]{1,3}\d*-\d{1,2}/);
+      const tema = ej.tema || (codigo ? temaDeCodigo(codigo[0]) : null);
       btnEst.hidden = !tema;
       btnEst.dataset.tema = tema ? String(tema) : '';
     }
@@ -881,8 +881,10 @@
      Cada lección tiene su cuadro de estructuras —las mismas que encabezan la hoja de
      ejercicios en papel—, y el alumno lo abre cuando lo necesita, no siempre. Va en otra
      ventana para poder dejarlo al lado mientras se trabaja. */
-  const TEMA_DE_LECCION = { 'A3-1': 5, 'A3-2': 6, 'A3-3': 7, 'A3-4': 8, 'A3-5': 9,
-                            'A3-6': 10, 'A3-7': 11, 'A3-8': 12, 'A4-10': 13, 'A4-11': 14 };
+  /* Ya no hay tabla: con una sola numeración (8/10/2026) el número de la lección ES el
+     número del tema, y sale del propio código. Antes aquí vivía una COPIA de la tabla de
+     `banco.js`, que es exactamente la clase de cosa que se queda desfasada. */
+  const temaDeCodigo = c => { const m = /-(\d{1,2})$/.exec(String(c || '')); return m ? parseInt(m[1], 10) : null; };
 
   /* ---------- La tonalidad con la que se abren las ventanas de ayuda (decisión 226) ----------
      Diego, 1/10/2026: los acordes de ejemplo del cuadro de cifrados han de salir «en la

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261007-1054">
-  <link rel="stylesheet" href="css/estilo.css?v=20261007-1054">
+  <link rel="stylesheet" href="css/bravura.css?v=20261008-1234">
+  <link rel="stylesheet" href="css/estilo.css?v=20261008-1234">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -431,7 +431,7 @@
         <div class="banco-anadir" id="banco-anadir" hidden>
           <label class="campo">
             <span>Lección</span>
-            <input id="banco-leccion" type="text" placeholder="A3-1" size="8">
+            <input id="banco-leccion" type="text" placeholder="A-5" size="8">
           </label>
           <label class="campo">
             <span>Nombre de la lección</span>
@@ -622,9 +622,9 @@
       <div id="banco-tabla" hidden>
         <p class="buscar-id">
           <label for="banco-buscar">Ir a un fragmento por su id</label>
-          <input type="search" id="banco-buscar" placeholder="A3-7-09" autocomplete="off" spellcheck="false">
+          <input type="search" id="banco-buscar" placeholder="A-11-09" autocomplete="off" spellcheck="false">
           <button type="button" id="btn-banco-buscar">Abrir</button>
-          <span class="ayuda" id="banco-buscar-ayuda">Lo abre en «El fragmento en curso», esté o no dentro del filtro. También funciona desde fuera: <code>configurar.html#id=A3-7-09</code>.</span>
+          <span class="ayuda" id="banco-buscar-ayuda">Lo abre en «El fragmento en curso», esté o no dentro del filtro. También funciona desde fuera: <code>configurar.html#id=A-11-09</code>.</span>
         </p>
         <!-- El sello (decisión 166). La cola de repaso: esta fila NO toca el filtro de la
              ficha, solo lo que se ve en la tabla y por dónde pasan las flechas. -->
@@ -652,7 +652,7 @@
             title="Devuelve el repaso, la procedencia y la búsqueda por id a su estado inicial">Valores por defecto</button>
         </p>
         <p class="ayuda"><b>El candado</b> dice si el fragmento está <b>cerrado</b>, es decir, firmado por ti: un fragmento cerrado no lo reescribe ninguna parte del programa, y su huella se comprueba cada vez que se carga el banco. Para repasar de corrido, pon «Repaso» en «Solo los que están sin cerrar»: la tabla y las flechas de recorrido se convierten en una cola que se vacía a medida que firmas. Esto no cambia qué fragmentos entran en la ficha.</p>
-        <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A3-7-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados interválicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
+        <p class="ayuda">Se muestran los que cumplen el filtro de arriba. Cada fragmento tiene un <b>identificador único</b> (<code>A-11-09</code>): es el nombre con el que referirse a él sin ambigüedad —búscalo con Cmd+F— y el que aparece también al revisarlo y en las flechas de recorrido. El nivel se puede corregir a mano. <b>«Cargar» abre el fragmento en «El fragmento en curso»</b> con su análisis tal como está guardado —tonalidad, modulaciones y cifrados interválicos de cada nota—, para verlo y corregirlo; lo que cambies se guarda con «Guardar los cambios en el banco». «Quitar» lo saca del banco.</p>
         <div class="tabla-caja">
           <table id="tabla-banco" class="tabla-revision tabla-banco">
             <thead><tr><th title="Cerrado: firmado por ti; nada del programa lo reescribe. La doble corchea marca los fragmentos tomados de música real">🔒 ♫</th><th>Id</th><th>Lección</th><th>Tonalidad</th><th>Compás</th><th>Notas</th><th>Voces</th><th>Cifrados del modelo</th><th>Nivel</th><th></th></tr></thead>
@@ -735,20 +735,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261007-1054</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261008-1234</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261007-1054"></script>
-  <script src="js/teoria.js?v=20261007-1054"></script>
-  <script src="js/reglas.js?v=20261007-1054"></script>
-  <script src="js/ejercicios.js?v=20261007-1054"></script>
-  <script src="js/partitura.js?v=20261007-1054"></script>
-  <script src="js/musicxml.js?v=20261007-1054"></script>
-  <script src="js/musescore.js?v=20261007-1054"></script>
-  <script src="js/banco.js?v=20261007-1054"></script>
-  <script src="js/realizacion.js?v=20261007-1054"></script>
-  <script src="js/tecnicas.js?v=20261007-1054"></script>
-  <script src="js/configurador.js?v=20261007-1054"></script>
+  <script src="js/qr.js?v=20261008-1234"></script>
+  <script src="js/teoria.js?v=20261008-1234"></script>
+  <script src="js/reglas.js?v=20261008-1234"></script>
+  <script src="js/ejercicios.js?v=20261008-1234"></script>
+  <script src="js/partitura.js?v=20261008-1234"></script>
+  <script src="js/musicxml.js?v=20261008-1234"></script>
+  <script src="js/musescore.js?v=20261008-1234"></script>
+  <script src="js/banco.js?v=20261008-1234"></script>
+  <script src="js/realizacion.js?v=20261008-1234"></script>
+  <script src="js/tecnicas.js?v=20261008-1234"></script>
+  <script src="js/configurador.js?v=20261008-1234"></script>
 </body>
 </html>
