@@ -182,6 +182,9 @@ const Escucha = (() => {
      lo enciende (la pone la página del alumno), el segundo en que entra cada acorde, hasta
      dónde llega el fragmento y cuál está encendido ahora mismo. */
   let iluminar = null, momentos = null, finDelFragmento = null, encendido = -1;
+  // Los datos del pasaje y sus tres tramos, listos desde que se carga el ejercicio: así el
+  // botón «Escuchar la grabación» de la barra del alumno suena en el mismo clic que lo pulsa.
+  let frActual = null, tramosActuales = null;
 
   /* EL AVISO DEL TONO (Diego, 9/10/2026). La grabación se ofrece también cuando la ficha ha
      transportado el fragmento, y entonces hay que decirlo: el audio suena en la tonalidad en
@@ -208,8 +211,10 @@ const Escucha = (() => {
       + '<button type="button" class="escucha-cerrar" title="Cerrar la escucha">Cerrar</button></div>'
       + '<p class="escucha-aviso" hidden></p>'
       + '<p class="escucha-tono" hidden></p>'
-      + '<img class="escucha-partitura" alt="Partitura del pasaje" hidden>'
+      /* Los tres botones ENCIMA de la imagen (Diego, 9/10/2026): son lo que se usa, y así se
+         tienen a mano sin pasar por delante toda la partitura, que en el móvil es alta. */
       + '<div class="escucha-botones" role="group" aria-label="Qué oír"></div>'
+      + '<img class="escucha-partitura" alt="Partitura del pasaje" hidden>'
       + '<audio class="escucha-audio" preload="metadata" controls hidden></audio>'
       + '<p class="escucha-credito"></p>';
     audio = caja.querySelector('.escucha-audio');
@@ -228,10 +233,10 @@ const Escucha = (() => {
        final del módulo se apunta lo contrario en `Sonido`. */
     audio.addEventListener('play', () => {
       if (typeof Sonido !== 'undefined' && Sonido.parar) Sonido.parar();
-      vigilar();
+      vigilar(); contar(true);
     });
-    audio.addEventListener('pause', () => { cancelAnimationFrame(rafId); apagar(); });
-    audio.addEventListener('ended', () => { limite = null; apagar(); });
+    audio.addEventListener('pause', () => { cancelAnimationFrame(rafId); apagar(); contar(false); });
+    audio.addEventListener('ended', () => { limite = null; apagar(); contar(false); });
     /* Si el alumno se mueve por el audio a mano y se sale del tramo, se le deja: el límite
        era del botón que pulsó, no una cárcel. */
     audio.addEventListener('seeked', () => {
@@ -264,6 +269,13 @@ const Escucha = (() => {
     if (iluminar && encendido >= 0) { encendido = -1; iluminar(null); }
     encendido = -1;
   }
+
+  /* Avisar de si la grabación suena o no. Lo usa la página del alumno para enseñar y
+     esconder su botón «■ Parar», que es el único sitio desde donde se puede detener cuando el
+     panel está cerrado. */
+  let alCambiar = null;
+  function anotarEstado(fn) { alCambiar = typeof fn === 'function' ? fn : null; }
+  function contar(suena) { if (alCambiar) { try { alCambiar(!!suena); } catch (e) { /* no es asunto nuestro */ } } }
   function vigilar() {
     cancelAnimationFrame(rafId);
     const paso = () => { comprobarLimite(); if (!audio.paused) rafId = requestAnimationFrame(paso); };
@@ -289,7 +301,20 @@ const Escucha = (() => {
     const ir = () => { try { audio.currentTime = tramo.t0; } catch (e) { /* aún no se puede */ } limite = tramo.t1; };
     if (audio.readyState >= 1) ir(); else audio.addEventListener('loadedmetadata', ir, { once: true });
     const p = audio.play();
-    if (p && p.catch) p.catch(() => { aviso('El navegador no ha dejado sonar el audio. Vuelve a pulsar el botón.'); });
+    if (p && p.catch) p.catch(() => {
+      // Si el aviso cae en un panel cerrado no lo lee nadie: se abre para decirlo
+      if (caja.hidden) { caja.hidden = false; aLaVista(); }
+      aviso('El navegador no ha dejado sonar el audio. Vuelve a pulsar el botón.');
+    });
+  }
+
+  /* Sonar los compases del ejercicio SIN abrir el panel (Diego, 9/10/2026): es el botón
+     «Escuchar la grabación» de la barra del alumno, al lado de «Escuchar propuesta». Hace lo
+     mismo que «El fragmento» del panel. Con los datos ya preparados suena en el mismo clic;
+     si todavía no han llegado, se esperan y suena en cuanto lleguen. */
+  function sonarFragmento() {
+    if (tramosActuales && tramosActuales.fragmento) { sonar(tramosActuales.fragmento); return; }
+    preparar().then(() => { if (tramosActuales && tramosActuales.fragmento) sonar(tramosActuales.fragmento); });
   }
 
   /* QUE SE VEA AL ABRIRSE (Diego, 9/10/2026, desde un móvil: «la partitura y el reproductor
@@ -314,8 +339,29 @@ const Escucha = (() => {
     p.hidden = !txt;
   }
 
-  /* Prepara el panel para el ejercicio que hay en pantalla y lo mete donde se le diga.
-     No carga nada todavía: eso pasa cuando el alumno pulsa el rótulo. */
+  /* Deja listo lo que no se ve: los datos del pasaje, los tres tramos, el segundo de cada
+     acorde y la dirección del audio. Son unos pocos kilobytes —el JSON y la cabecera del
+     mp3—, y a cambio los botones suenan en el mismo clic, que es lo que exige el navegador.
+     Si algo falla aquí no se dice nada: ya se dirá al abrir el panel. */
+  function preparar() {
+    if (!actual) return Promise.resolve(null);
+    return cargar().then(d => {
+      const fr = (d && d.fragmentos && d.fragmentos[actual.fragmento]) || null;
+      if (!fr) return null;
+      frActual = fr;
+      momentos = momentosDe(fr, ejercicio);
+      finDelFragmento = segundo(fr, actual.hasta);
+      tramosActuales = tramos(fr, actual.desde, actual.hasta);
+      if (fr.audio && audio) {
+        const s = raiz() + fr.audio;
+        if (audio.getAttribute('src') !== s) audio.src = s;
+      }
+      return fr;
+    }).catch(() => null);
+  }
+
+  /* Prepara el panel para el ejercicio que hay en pantalla y lo mete donde se le diga. El
+     panel no se enseña: eso pasa cuando el alumno pulsa el rótulo. */
   function montar(ej, donde, alIluminar) {
     const c = construir();
     if (donde && c.parentNode !== donde) donde.appendChild(c);
@@ -323,9 +369,10 @@ const Escucha = (() => {
     actual = (ej && ej.auditivo && ej.auditivo.fragmento) ? ej.auditivo : null;
     ejercicio = ej || null;
     iluminar = typeof alIluminar === 'function' ? alIluminar : null;
-    momentos = null; finDelFragmento = null;
+    momentos = null; finDelFragmento = null; frActual = null; tramosActuales = null;
     cerrar();
     if (audio) { audio.removeAttribute('src'); audio.hidden = true; audio.load(); }
+    if (actual) preparar();          // en segundo plano, para que los botones suenen al pulsarlos
     return !!actual;
   }
 
@@ -337,8 +384,7 @@ const Escucha = (() => {
     aviso('Cargando la grabación…');
     caja.querySelector('.escucha-botones').textContent = '';
     aLaVista();
-    cargar().then(d => {
-      const fr = d && d.fragmentos && d.fragmentos[actual.fragmento];
+    (frActual ? Promise.resolve(frActual) : preparar()).then(fr => {
       if (!fr) throw new Error('el banco auditivo no tiene el fragmento ' + actual.fragmento);
       pintar(fr);
       aLaVista();
@@ -368,11 +414,7 @@ const Escucha = (() => {
     if (fr.audio) { if (!audio.getAttribute('src')) audio.src = raiz() + fr.audio; audio.hidden = false; }
     else { audio.hidden = true; }
 
-    // Cuándo entra cada acorde del ejercicio y hasta dónde llega el fragmento
-    momentos = momentosDe(fr, ejercicio);
-    finDelFragmento = segundo(fr, actual.hasta);
-
-    const t = tramos(fr, actual.desde, actual.hasta);
+    const t = tramosActuales || tramos(fr, actual.desde, actual.hasta);
     const botones = caja.querySelector('.escucha-botones');
     botones.textContent = '';
     const poner = (texto, tramo, titulo) => {
@@ -399,5 +441,5 @@ const Escucha = (() => {
      alumno—, la grabación se para. `sonido.js` avisa aquí. */
   if (typeof Sonido !== 'undefined' && Sonido.anotarAlSonar) Sonido.anotarAlSonar(() => parar());
 
-  return { montar, alternar, parar, cerrar, tramos, segundo, segundoEnNegra, momentosDe, unidadContexto, punto, rotuloCompases };
+  return { montar, alternar, sonarFragmento, parar, cerrar, anotarEstado, tramos, segundo, segundoEnNegra, momentosDe, unidadContexto, punto, rotuloCompases };
 })();

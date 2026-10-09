@@ -3931,6 +3931,17 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       fragmento completo, la luz entra cuando la música llega a los compases del ejercicio y se
       apaga al salir de ellos. Comprobado con los seis acordes del uso de A-6 y con la anacrusa
       del de A-5.
+    - **«▶ La grabación», en la barra del alumno** (Diego, 9/10/2026: «como sucede en
+      los fragmentos de HookTheory, escuchar el fragmento en reproducción de piano o en
+      reproducción original»). **Debajo** de «Escuchar propuesta» y no a su lado —«para no
+      variar la posición del resto de controles»—: los dos forman una columna del ancho del
+      más largo, de modo que «Escuchar tono», «Escuchar mi cifrado» y el instrumento se quedan
+      donde estaban. Solo cuando el fragmento trae conexión: suenan los mismos compases que «El fragmento» del panel, sin abrirlo, con la
+      misma luz sobre la partitura. Los datos del pasaje se piden al montar el ejercicio —unos
+      kilobytes— para que suene en el mismo clic, que es lo que el navegador exige. Mientras
+      suena se ve «■ Parar», que con el panel cerrado es el único sitio desde donde detenerla.
+    - **Los tres botones del panel van ENCIMA de la imagen** (Diego, 9/10/2026): son lo que se
+      usa, y así están a mano sin pasar por delante toda la partitura, que en el móvil es alta.
     - **Señalar los compases sobre la IMAGEN de la partitura real** —un recuadro, o una línea
       que avance— está pedido al chat auditivo y pendiente del dato que falta: la posición de
       cada compás dentro de la imagen. El tiempo ya lo sabemos; lo que no sabemos es el sitio.

@@ -195,6 +195,9 @@
        toca la realización, así que la luz es la de siempre y no hay dos maneras de encender
        lo mismo. */
     const hayEscucha = typeof Escucha !== 'undefined' && Escucha.montar(ej, $('#escucha-sitio'), marcarSonando);
+    // El botón «Escuchar la grabación» solo tiene sentido si hay grabación que escuchar
+    const botonOriginal = $('#btn-original');
+    if (botonOriginal) botonOriginal.hidden = !hayEscucha;
     if (cred) {
       const obra = ej.obra || '';
       const rotulo = obra ? (ej.autor ? ej.autor + ', ' : '') + obra : '';
@@ -2484,6 +2487,14 @@
     ['pointerdown', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => Sonido.desbloquear(), { once: true, passive: true }));
     $('#btn-cadencia').addEventListener('click', escucharCadencia);
     $('#btn-propuesta').addEventListener('click', escucharPropuesta);
+    /* La grabación de la obra, desde la barra: suenan los mismos compases que «El fragmento»
+       del panel, sin abrirlo (Diego, 9/10/2026). Mientras suena se ve «■ Parar», que es el
+       único sitio desde donde detenerla con el panel cerrado. */
+    const bOrig = $('#btn-original');
+    if (bOrig) bOrig.addEventListener('click', () => { if (typeof Escucha !== 'undefined') Escucha.sonarFragmento(); });
+    if (typeof Escucha !== 'undefined' && Escucha.anotarEstado) {
+      Escucha.anotarEstado(suena => { if (suena) $('#btn-parar').hidden = false; else if (!Sonido.enCurso()) $('#btn-parar').hidden = true; });
+    }
     $('#btn-mio').addEventListener('click', escucharMio);
     $('#btn-parar').addEventListener('click', parar);
     const inicial = new URLSearchParams(location.hash.replace(/^#/, ''));
