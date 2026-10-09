@@ -1834,11 +1834,33 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
    alarma: la misma letra pequeña del panel, en la tinta suave. */
 .escucha-tono { margin: .35rem 0 0; font-size: .82rem; color: var(--tinta-suave); }
 
-/* La partitura del pasaje. Se pulsa para abrirla a tamaño completo en otra pestaña, que en
-   el móvil —donde entra a unos 340 px— es la manera de leerla de verdad (9/10/2026). */
-.escucha-partitura {
-  display: block; width: 100%; height: auto; margin: .6rem 0 .2rem; cursor: zoom-in;
+/* LA LÁMINA: la partitura del pasaje y, encima, lo que se dibuja sobre ella (9/10/2026).
+   El borde y el recorte van en la lámina y no en la imagen, para que la capa de dibujo
+   coincida exactamente con la imagen y los porcentajes caigan donde deben. Se pulsa para
+   abrirla a tamaño completo en otra pestaña, que en el móvil —donde entra a unos 340 px— es
+   la manera de leerla de verdad. */
+.escucha-lamina {
+  position: relative; display: block; margin: .6rem 0 .2rem; cursor: zoom-in;
   border: 1px solid var(--linea); border-radius: var(--radio-control); background: #fff;
+  overflow: hidden;
+}
+.escucha-partitura { display: block; width: 100%; height: auto; }
+/* La capa de dibujo cubre la imagen y no estorba al dedo ni al ratón: todo va en tanto por
+   ciento del tamaño de la imagen, así que vale a cualquier ancho sin recalcular nada. */
+.escucha-capa { position: absolute; inset: 0; pointer-events: none; }
+.escucha-capa > i { position: absolute; display: block; }
+/* El recuadro de los compases del ejercicio, con el color de las técnicas armónicas, que es
+   el que Diego ya conoce para «esto es lo que estamos mirando» (9/10/2026). Uno por sistema:
+   un pasaje puede empezar en uno y acabar en el siguiente. */
+.escucha-marco {
+  border: 1.5px solid var(--tecnica, #B84A00); border-radius: 3px;
+  background: rgba(184, 74, 0, .05);
+}
+/* El compás que suena, y la línea que lo recorre */
+.escucha-compas { background: rgba(184, 74, 0, .13); }
+.escucha-linea {
+  width: 2px; margin-left: -1px; background: var(--tecnica, #B84A00);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .7);
 }
 
 .escucha-botones { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 .5rem; }

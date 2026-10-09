@@ -90,6 +90,71 @@ const Escucha = (() => {
     (compases || []).forEach(c => (c || []).forEach(([n, d]) => { if (n !== null) out.push(t); t += d; }));
     return out;
   }
+  /* ===== DÓNDE ESTÁ CADA COMPÁS EN LA IMAGEN (asunto 9 con el chat auditivo, 9/10/2026) =====
+     `compasesEnLaImagen` da, en píxeles de la imagen, el rectángulo de cada compás:
+     `[número, x0, x1, y0, y1]`, con el alto del sistema en que está. Con eso y la rejilla
+     —que dice en qué segundo empieza cada compás— se puede dibujar encima de la partitura el
+     recuadro del pasaje y una línea que avanza con la música. Todo se calcula en TANTO POR
+     CIENTO del tamaño de la imagen: así no hay que medir nada en pantalla ni rehacerlo cuando
+     cambia el ancho. Si un fragmento no trae estas medidas, no se dibuja nada y lo demás
+     sigue igual. */
+  const medidasDe = fr => (fr && fr.compasesEnLaImagen && Array.isArray(fr.compasesEnLaImagen.compases)
+    && fr.compasesEnLaImagen.ancho > 0 && fr.compasesEnLaImagen.alto > 0) ? fr.compasesEnLaImagen : null;
+  const cajaDeCompas = (med, n) => (med.compases || []).find(c => c[0] === n) || null;
+  // La x de un tiempo dentro de un compás: el compás se reparte en partes iguales
+  const xEnCompas = (caja, parte, negras) => caja[1] + Math.max(0, Math.min(1, (parte - 1) / negras)) * (caja[2] - caja[1]);
+  // De píxeles de la imagen a tanto por ciento, que es como se coloca en la pantalla
+  const porciento = (med, x0, x1, y0, y1) => ({
+    left: (100 * x0 / med.ancho) + '%', width: (100 * (x1 - x0) / med.ancho) + '%',
+    top: (100 * y0 / med.alto) + '%', height: (100 * (y1 - y0) / med.alto) + '%'
+  });
+
+  /* El recuadro —o los recuadros— del pasaje: uno por sistema, porque un fragmento puede
+     empezar en un sistema y acabar en el siguiente. El primero empieza donde empieza de
+     verdad el pasaje dentro de su compás (el uso de A-5 arranca en el 2.º tiempo del c. 16),
+     y el último acaba donde acaba. */
+  function marcosDe(fr, desde, hasta) {
+    const med = medidasDe(fr);
+    const d = punto(desde), h = punto(hasta);
+    if (!med || !d || !h) return [];
+    const negras = negrasDe(fr.compas);
+    const ultimo = h.tiempo <= 1 ? h.compas - 1 : h.compas;
+    const cajas = (med.compases || []).filter(c => c[0] >= d.compas && c[0] <= ultimo)
+      .sort((a, b) => a[0] - b[0]);
+    if (!cajas.length) return [];
+    const grupos = [];
+    cajas.forEach(c => {
+      const ult = grupos[grupos.length - 1];
+      if (ult && ult.y0 === c[3] && ult.y1 === c[4]) { ult.x1 = Math.max(ult.x1, c[2]); ult.hasta = c; }
+      else grupos.push({ x0: c[1], x1: c[2], y0: c[3], y1: c[4], desde: c, hasta: c });
+    });
+    // Ajuste fino de los extremos dentro de su compás
+    const primero = grupos[0], fin = grupos[grupos.length - 1];
+    if (primero.desde[0] === d.compas && d.tiempo > 1) primero.x0 = xEnCompas(primero.desde, d.tiempo, negras);
+    if (fin.hasta[0] === h.compas && h.tiempo > 1) fin.x1 = xEnCompas(fin.hasta, h.tiempo, negras);
+    return grupos.map(g => porciento(med, g.x0, g.x1, g.y0, g.y1));
+  }
+
+  /* Dónde está la música en la imagen en el segundo `t`: el compás que suena y la línea
+     dentro de él. Devuelve `null` fuera de los compases medidos. */
+  function puntoEnLaImagen(fr, t) {
+    const med = medidasDe(fr);
+    const rej = fr && fr.rejilla;
+    if (!med || !Array.isArray(rej) || !rej.length || !isFinite(t)) return null;
+    let i = -1;
+    for (let k = 0; k < rej.length; k++) { if (rej[k][1] <= t) i = k; else break; }
+    if (i < 0 || i + 1 >= rej.length) return null;            // antes del primero o después del último
+    const caja = cajaDeCompas(med, rej[i][0]);
+    if (!caja) return null;
+    const largo = rej[i + 1][1] - rej[i][1];
+    const parte = largo > 0 ? Math.max(0, Math.min(1, (t - rej[i][1]) / largo)) : 0;
+    const x = caja[1] + parte * (caja[2] - caja[1]);
+    const alto = porciento(med, caja[1], caja[2], caja[3], caja[4]);
+    // La línea no lleva ancho: se lo pone el estilo, en píxeles, para que no adelgace
+    return { compas: alto,
+      linea: { left: (100 * x / med.ancho) + '%', top: alto.top, height: alto.height } };
+  }
+
   function momentosDe(fr, ej) {
     if (!fr || !ej || !ej.auditivo) return null;
     const p = punto(ej.auditivo.desde);
@@ -185,6 +250,8 @@ const Escucha = (() => {
   // Los datos del pasaje y sus tres tramos, listos desde que se carga el ejercicio: así el
   // botón «Escuchar la grabación» de la barra del alumno suena en el mismo clic que lo pulsa.
   let frActual = null, tramosActuales = null;
+  // Los dos dibujos que se mueven sobre la imagen de la partitura
+  let compasEl = null, lineaEl = null;
 
   /* EL AVISO DEL TONO (Diego, 9/10/2026). La grabación se ofrece también cuando la ficha ha
      transportado el fragmento, y entonces hay que decirlo: el audio suena en la tonalidad en
@@ -214,7 +281,14 @@ const Escucha = (() => {
       /* Los tres botones ENCIMA de la imagen (Diego, 9/10/2026): son lo que se usa, y así se
          tienen a mano sin pasar por delante toda la partitura, que en el móvil es alta. */
       + '<div class="escucha-botones" role="group" aria-label="Qué oír"></div>'
-      + '<img class="escucha-partitura" alt="Partitura del pasaje" hidden>'
+      /* La lámina: la imagen de la partitura y, encima, una capa transparente donde se
+         dibujan el recuadro de los compases del ejercicio, el compás que suena y la línea
+         que avanza. Todo en porcentajes del tamaño de la imagen, así que vale igual en el
+         ordenador y en el teléfono sin recalcular nada al cambiar de tamaño. */
+      + '<span class="escucha-lamina" hidden>'
+      + '<img class="escucha-partitura" alt="Partitura del pasaje">'
+      + '<span class="escucha-capa"></span>'
+      + '</span>'
       + '<audio class="escucha-audio" preload="metadata" controls hidden></audio>'
       + '<p class="escucha-credito"></p>';
     audio = caja.querySelector('.escucha-audio');
@@ -254,8 +328,10 @@ const Escucha = (() => {
      su contexto» o el fragmento completo, la luz entra justo cuando la música llega a los
      compases del ejercicio y se apaga al salir de ellos. */
   function alumbrar() {
-    if (!iluminar || !momentos || !momentos.length || !audio || audio.paused) return;
+    if (!audio || audio.paused) return;
     const t = audio.currentTime;
+    situarEnLaImagen(t);                       // el compás y la línea sobre la partitura real
+    if (!iluminar || !momentos || !momentos.length) return;
     let k = -1;
     if (finDelFragmento == null || t < finDelFragmento) {
       for (let i = 0; i < momentos.length; i++) {
@@ -268,6 +344,7 @@ const Escucha = (() => {
   function apagar() {
     if (iluminar && encendido >= 0) { encendido = -1; iluminar(null); }
     encendido = -1;
+    borrarDeLaImagen();
   }
 
   /* Avisar de si la grabación suena o no. Lo usa la página del alumno para enseñar y
@@ -395,12 +472,50 @@ const Escucha = (() => {
     });
   }
 
+  /* Dibuja sobre la imagen: el recuadro de los compases del ejercicio —fijo, como el de las
+     etiquetas de las técnicas armónicas— y, encima, los dos que se mueven: el compás que
+     suena y la línea. Si el fragmento no trae medidas, la capa se queda vacía. */
+  function dibujarEnLaImagen(fr) {
+    const capa = caja.querySelector('.escucha-capa');
+    capa.textContent = '';
+    compasEl = lineaEl = null;
+    if (!medidasDe(fr) || !actual) return;
+    marcosDe(fr, actual.desde, actual.hasta).forEach(m => {
+      const e = document.createElement('i');
+      e.className = 'escucha-marco';
+      Object.assign(e.style, m);
+      capa.appendChild(e);
+    });
+    compasEl = document.createElement('i');
+    compasEl.className = 'escucha-compas';
+    compasEl.hidden = true;
+    capa.appendChild(compasEl);
+    lineaEl = document.createElement('i');
+    lineaEl.className = 'escucha-linea';
+    lineaEl.hidden = true;
+    capa.appendChild(lineaEl);
+  }
+
+  // Pone el compás que suena y la línea donde toca; los esconde fuera de lo medido
+  function situarEnLaImagen(t) {
+    if (!compasEl || !lineaEl) return;
+    const p = frActual ? puntoEnLaImagen(frActual, t) : null;
+    if (!p) { compasEl.hidden = true; lineaEl.hidden = true; return; }
+    Object.assign(compasEl.style, p.compas); compasEl.hidden = false;
+    Object.assign(lineaEl.style, p.linea); lineaEl.hidden = false;
+  }
+  function borrarDeLaImagen() {
+    if (compasEl) compasEl.hidden = true;
+    if (lineaEl) lineaEl.hidden = true;
+  }
+
   function pintar(fr) {
     aviso('');
     caja.querySelector('.escucha-titulo').textContent = fr.obra || 'La música real';
     const tono = caja.querySelector('.escucha-tono');
     tono.textContent = avisoDeTono(ejercicio);
     tono.hidden = !tono.textContent;
+    const lamina = caja.querySelector('.escucha-lamina');
     const img = caja.querySelector('.escucha-partitura');
     if (fr.partitura) {
       /* Al cargar, el panel crece: hay que volver a mirar si cabe en la pantalla. Y la
@@ -409,8 +524,9 @@ const Escucha = (() => {
       img.onload = () => aLaVista();
       img.src = raiz() + fr.partitura;
       img.title = 'Pulsa para verla a tamaño completo';
-      img.hidden = false;
-    } else { img.hidden = true; }
+      lamina.hidden = false;
+      dibujarEnLaImagen(fr);
+    } else { lamina.hidden = true; compasEl = lineaEl = null; }
     if (fr.audio) { if (!audio.getAttribute('src')) audio.src = raiz() + fr.audio; audio.hidden = false; }
     else { audio.hidden = true; }
 
@@ -441,5 +557,6 @@ const Escucha = (() => {
      alumno—, la grabación se para. `sonido.js` avisa aquí. */
   if (typeof Sonido !== 'undefined' && Sonido.anotarAlSonar) Sonido.anotarAlSonar(() => parar());
 
-  return { montar, alternar, sonarFragmento, parar, cerrar, anotarEstado, tramos, segundo, segundoEnNegra, momentosDe, unidadContexto, punto, rotuloCompases };
+  return { montar, alternar, sonarFragmento, parar, cerrar, anotarEstado, tramos, segundo, segundoEnNegra,
+    momentosDe, marcosDe, puntoEnLaImagen, unidadContexto, punto, rotuloCompases };
 })();

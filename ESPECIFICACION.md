@@ -3955,9 +3955,20 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       suena se ve «■ Parar», que con el panel cerrado es el único sitio desde donde detenerla.
     - **Los tres botones del panel van ENCIMA de la imagen** (Diego, 9/10/2026): son lo que se
       usa, y así están a mano sin pasar por delante toda la partitura, que en el móvil es alta.
-    - **Señalar los compases sobre la IMAGEN de la partitura real** —un recuadro, o una línea
-      que avance— está pedido al chat auditivo y pendiente del dato que falta: la posición de
-      cada compás dentro de la imagen. El tiempo ya lo sabemos; lo que no sabemos es el sitio.
+    - **EL CURSOR SOBRE LA PARTITURA REAL** (Diego, 9/10/2026: «una flecha indicando por dónde
+      va la reproducción… el cursor sería una pasada»). Sobre la imagen se dibujan tres cosas:
+      el **recuadro** de los compases del ejercicio —con el color de las técnicas armónicas,
+      `--tecnica`, que es el que Diego ya conoce para «esto es lo que estamos mirando»—, el
+      **compás que suena**, sombreado, y una **línea que avanza** dentro de él. El dato que
+      faltaba lo entregó el chat auditivo el 9/10 en `auditivo.json`:
+      `compasesEnLaImagen: { ancho, alto, compases: [[nº, x0, x1, y0, y1], …] }`, en píxeles
+      de la imagen, con el alto del sistema. Todo se coloca en **tanto por ciento** de ese
+      tamaño, de modo que vale igual en el ordenador y en el teléfono y no hay que recalcular
+      nada al cambiar el ancho. El recuadro se parte en uno por sistema cuando el pasaje cruza
+      de uno a otro, y sus extremos se ajustan dentro del compás (el uso de A-5 empieza en el
+      2.º tiempo del c. 16). Comprobado contra la medida del chat auditivo: a los 30,76 s la
+      línea cae en x = 861,3 px, y él midió 861. Si un fragmento no trae estas medidas, no se
+      dibuja nada y lo demás sigue igual.
     - **La conexión se le pega a un fragmento que ya estaba en el banco** volviendo a arrastrar
       su archivo, aunque el fragmento esté **cerrado**: está fuera de la huella del sello, como
       la procedencia (198), así que no reescribe nada de lo firmado. Hacía falta porque los
