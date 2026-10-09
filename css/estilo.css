@@ -1813,9 +1813,10 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
    alarma: la misma letra pequeña del panel, en la tinta suave. */
 .escucha-tono { margin: .35rem 0 0; font-size: .82rem; color: var(--tinta-suave); }
 
-/* La partitura del pasaje: ancha y a su aire; si no cabe, se desplaza ella, no la página */
+/* La partitura del pasaje. Se pulsa para abrirla a tamaño completo en otra pestaña, que en
+   el móvil —donde entra a unos 340 px— es la manera de leerla de verdad (9/10/2026). */
 .escucha-partitura {
-  display: block; width: 100%; height: auto; margin: .6rem 0 .2rem;
+  display: block; width: 100%; height: auto; margin: .6rem 0 .2rem; cursor: zoom-in;
   border: 1px solid var(--linea); border-radius: var(--radio-control); background: #fff;
 }
 

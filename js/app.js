@@ -190,7 +190,11 @@
        estuviera abierto— y dice si este trae conexión con el banco auditivo. Si la trae, el
        crédito de la obra es un botón: al pulsarlo se despliega la partitura del pasaje, su
        grabación y los tres botones. */
-    const hayEscucha = typeof Escucha !== 'undefined' && Escucha.montar(ej, $('#escucha-sitio'));
+    /* Y se le da la manera de encender el acorde que suena sobre la partitura del propio
+       ejercicio (Diego, 9/10/2026): es `marcarSonando`, la misma que usa la aplicación cuando
+       toca la realización, así que la luz es la de siempre y no hay dos maneras de encender
+       lo mismo. */
+    const hayEscucha = typeof Escucha !== 'undefined' && Escucha.montar(ej, $('#escucha-sitio'), marcarSonando);
     if (cred) {
       const obra = ej.obra || '';
       const rotulo = obra ? (ej.autor ? ej.autor + ', ' : '') + obra : '';

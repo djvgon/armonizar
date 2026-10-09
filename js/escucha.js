@@ -55,19 +55,50 @@ const Escucha = (() => {
     if (!p) return null;
     return p.compas + (p.tiempo - 1) / negrasDe(fr.compas);
   }
-  /* El segundo en que empieza un punto. La rejilla da el segundo de cada compás; dentro del
-     compás se reparte en partes iguales, que es lo que vale para un tempo estable. */
-  function segundo(fr, txt) {
-    const p = punto(txt);
+  /* El segundo en que cae una posición dada EN NEGRAS desde el principio de la obra. La
+     rejilla da el segundo de cada compás; dentro del compás se reparte en partes iguales,
+     que es lo que vale para un tempo estable. */
+  function segundoEnNegra(fr, negra) {
     const rej = fr && fr.rejilla;
-    if (!p || !Array.isArray(rej) || !rej.length) return null;
-    const i = rej.findIndex(x => x[0] === p.compas);
+    if (!Array.isArray(rej) || !rej.length || !isFinite(negra)) return null;
+    const negras = negrasDe(fr.compas);
+    const compas = Math.floor(negra / negras) + 1;
+    const resto = negra - (compas - 1) * negras;
+    const i = rej.findIndex(x => x[0] === compas);
     if (i < 0) return null;
     const s = rej[i][1];
-    if (p.tiempo <= 1) return s;
+    if (resto <= 0) return s;
     // El largo de este compás: el siguiente menos este; en el último, el del anterior
     const largo = (i + 1 < rej.length) ? rej[i + 1][1] - s : (i > 0 ? s - rej[i - 1][1] : 0);
-    return s + (p.tiempo - 1) * largo / negrasDe(fr.compas);
+    return s + resto * largo / negras;
+  }
+  // El segundo en que empieza un punto «compás.tiempo»
+  function segundo(fr, txt) {
+    const p = punto(txt);
+    if (!p) return null;
+    return segundoEnNegra(fr, (p.compas - 1) * negrasDe(fr.compas) + (p.tiempo - 1));
+  }
+
+  /* CUÁNDO SUENA CADA ACORDE DEL EJERCICIO (Diego, 9/10/2026: «que se vaya iluminando la
+     reducción armónica que trabaja el estudiante a medida que suena el fragmento grabado»).
+     Tres datos que ya existen, encadenados, sin medir nada a ojo: el ejercicio sabe en qué
+     negra —contando desde su primera nota— entra cada acorde (`tiempos`, la rejilla de la
+     decisión 238); el uso dice en qué compás y parte DE LA OBRA empieza el fragmento; y la
+     rejilla del banco auditivo, en qué segundo empieza cada compás de la grabación. */
+  function tiemposDeCompases(compases) {
+    const out = []; let t = 0;
+    (compases || []).forEach(c => (c || []).forEach(([n, d]) => { if (n !== null) out.push(t); t += d; }));
+    return out;
+  }
+  function momentosDe(fr, ej) {
+    if (!fr || !ej || !ej.auditivo) return null;
+    const p = punto(ej.auditivo.desde);
+    if (!p) return null;
+    const negras = negrasDe(fr.compas);
+    const base = (p.compas - 1) * negras + (p.tiempo - 1);
+    const t = (Array.isArray(ej.tiempos) && ej.tiempos.length) ? ej.tiempos : tiemposDeCompases(ej.compases);
+    if (!t.length) return null;
+    return t.map(x => segundoEnNegra(fr, base + x));
   }
 
   // «cc. 15–18» a partir del intervalo medio abierto [desde, hasta)
@@ -147,6 +178,10 @@ const Escucha = (() => {
   /* ---------- El panel ---------- */
 
   let caja = null, audio = null, limite = null, rafId = 0, actual = null, ejercicio = null;
+  /* Para iluminar el acorde que suena sobre la partitura del propio ejercicio: la función que
+     lo enciende (la pone la página del alumno), el segundo en que entra cada acorde, hasta
+     dónde llega el fragmento y cuál está encendido ahora mismo. */
+  let iluminar = null, momentos = null, finDelFragmento = null, encendido = -1;
 
   /* EL AVISO DEL TONO (Diego, 9/10/2026). La grabación se ofrece también cuando la ficha ha
      transportado el fragmento, y entonces hay que decirlo: el audio suena en la tonalidad en
@@ -179,6 +214,12 @@ const Escucha = (() => {
       + '<p class="escucha-credito"></p>';
     audio = caja.querySelector('.escucha-audio');
     caja.querySelector('.escucha-cerrar').addEventListener('click', () => cerrar());
+    /* La partitura, a tamaño completo en otra pestaña: en el móvil entra reducida a unos
+       340 px y así se puede leer de verdad, con el zoom del propio navegador. */
+    caja.querySelector('.escucha-partitura').addEventListener('click', ev => {
+      const s = ev.currentTarget.getAttribute('src');
+      if (s) window.open(s, '_blank', 'noopener');
+    });
     /* Parar donde toca. `timeupdate` es el que vale cuando la pestaña no está delante;
        `requestAnimationFrame` afina mientras sí lo está. */
     audio.addEventListener('timeupdate', comprobarLimite);
@@ -189,8 +230,8 @@ const Escucha = (() => {
       if (typeof Sonido !== 'undefined' && Sonido.parar) Sonido.parar();
       vigilar();
     });
-    audio.addEventListener('pause', () => cancelAnimationFrame(rafId));
-    audio.addEventListener('ended', () => { limite = null; });
+    audio.addEventListener('pause', () => { cancelAnimationFrame(rafId); apagar(); });
+    audio.addEventListener('ended', () => { limite = null; apagar(); });
     /* Si el alumno se mueve por el audio a mano y se sale del tramo, se le deja: el límite
        era del botón que pulsó, no una cárcel. */
     audio.addEventListener('seeked', () => {
@@ -201,6 +242,27 @@ const Escucha = (() => {
 
   function comprobarLimite() {
     if (limite != null && audio.currentTime >= limite - 0.02) { audio.pause(); limite = null; }
+    alumbrar();
+  }
+
+  /* Enciende el acorde por el que va la grabación. Funciona con los tres botones: oyendo «En
+     su contexto» o el fragmento completo, la luz entra justo cuando la música llega a los
+     compases del ejercicio y se apaga al salir de ellos. */
+  function alumbrar() {
+    if (!iluminar || !momentos || !momentos.length || !audio || audio.paused) return;
+    const t = audio.currentTime;
+    let k = -1;
+    if (finDelFragmento == null || t < finDelFragmento) {
+      for (let i = 0; i < momentos.length; i++) {
+        if (momentos[i] == null) continue;
+        if (momentos[i] <= t + 0.03) k = i; else break;
+      }
+    }
+    if (k !== encendido) { encendido = k; iluminar(k < 0 ? null : k); }
+  }
+  function apagar() {
+    if (iluminar && encendido >= 0) { encendido = -1; iluminar(null); }
+    encendido = -1;
   }
   function vigilar() {
     cancelAnimationFrame(rafId);
@@ -212,6 +274,7 @@ const Escucha = (() => {
     if (audio && !audio.paused) audio.pause();
     limite = null;
     cancelAnimationFrame(rafId);
+    apagar();
   }
   function cerrar() { parar(); if (caja) caja.hidden = true; }
 
@@ -229,6 +292,22 @@ const Escucha = (() => {
     if (p && p.catch) p.catch(() => { aviso('El navegador no ha dejado sonar el audio. Vuelve a pulsar el botón.'); });
   }
 
+  /* QUE SE VEA AL ABRIRSE (Diego, 9/10/2026, desde un móvil: «la partitura y el reproductor
+     de la grabación no se muestran si presiono el nombre de Beethoven»). No es que no se
+     mostraran: el panel se abre DEBAJO del ejercicio, y en una pantalla de teléfono eso cae
+     fuera de lo que se ve, de modo que al pulsar no parecía pasar nada. Si no cabe entero en
+     la pantalla, la página se desplaza hasta él —despacio, para que se vea que ha sido eso—.
+     Se llama también cuando acaba de cargar la imagen de la partitura, porque entonces el
+     panel crece de golpe y lo que se había calculado ya no vale. */
+  function aLaVista() {
+    if (!caja || caja.hidden) return;
+    const r = caja.getBoundingClientRect();
+    const alto = window.innerHeight || document.documentElement.clientHeight || 0;
+    if (r.top >= 0 && r.bottom <= alto) return;              // ya se ve entero: no se toca nada
+    try { caja.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    catch (e) { caja.scrollIntoView(true); }
+  }
+
   function aviso(txt) {
     const p = caja.querySelector('.escucha-aviso');
     p.textContent = txt || '';
@@ -237,11 +316,14 @@ const Escucha = (() => {
 
   /* Prepara el panel para el ejercicio que hay en pantalla y lo mete donde se le diga.
      No carga nada todavía: eso pasa cuando el alumno pulsa el rótulo. */
-  function montar(ej, donde) {
+  function montar(ej, donde, alIluminar) {
     const c = construir();
     if (donde && c.parentNode !== donde) donde.appendChild(c);
+    apagar();
     actual = (ej && ej.auditivo && ej.auditivo.fragmento) ? ej.auditivo : null;
     ejercicio = ej || null;
+    iluminar = typeof alIluminar === 'function' ? alIluminar : null;
+    momentos = null; finDelFragmento = null;
     cerrar();
     if (audio) { audio.removeAttribute('src'); audio.hidden = true; audio.load(); }
     return !!actual;
@@ -254,10 +336,12 @@ const Escucha = (() => {
     caja.hidden = false;
     aviso('Cargando la grabación…');
     caja.querySelector('.escucha-botones').textContent = '';
+    aLaVista();
     cargar().then(d => {
       const fr = d && d.fragmentos && d.fragmentos[actual.fragmento];
       if (!fr) throw new Error('el banco auditivo no tiene el fragmento ' + actual.fragmento);
       pintar(fr);
+      aLaVista();
     }).catch(e => {
       aviso('No se ha podido abrir la música real: ' + e.message + '.');
       caja.querySelector('.escucha-partitura').hidden = true;
@@ -272,9 +356,21 @@ const Escucha = (() => {
     tono.textContent = avisoDeTono(ejercicio);
     tono.hidden = !tono.textContent;
     const img = caja.querySelector('.escucha-partitura');
-    if (fr.partitura) { img.src = raiz() + fr.partitura; img.hidden = false; } else { img.hidden = true; }
+    if (fr.partitura) {
+      /* Al cargar, el panel crece: hay que volver a mirar si cabe en la pantalla. Y la
+         imagen se puede abrir a tamaño completo en otra pestaña, que en un teléfono es la
+         manera de leerla de verdad. */
+      img.onload = () => aLaVista();
+      img.src = raiz() + fr.partitura;
+      img.title = 'Pulsa para verla a tamaño completo';
+      img.hidden = false;
+    } else { img.hidden = true; }
     if (fr.audio) { if (!audio.getAttribute('src')) audio.src = raiz() + fr.audio; audio.hidden = false; }
     else { audio.hidden = true; }
+
+    // Cuándo entra cada acorde del ejercicio y hasta dónde llega el fragmento
+    momentos = momentosDe(fr, ejercicio);
+    finDelFragmento = segundo(fr, actual.hasta);
 
     const t = tramos(fr, actual.desde, actual.hasta);
     const botones = caja.querySelector('.escucha-botones');
@@ -303,5 +399,5 @@ const Escucha = (() => {
      alumno—, la grabación se para. `sonido.js` avisa aquí. */
   if (typeof Sonido !== 'undefined' && Sonido.anotarAlSonar) Sonido.anotarAlSonar(() => parar());
 
-  return { montar, alternar, parar, cerrar, tramos, segundo, unidadContexto, punto, rotuloCompases };
+  return { montar, alternar, parar, cerrar, tramos, segundo, segundoEnNegra, momentosDe, unidadContexto, punto, rotuloCompases };
 })();

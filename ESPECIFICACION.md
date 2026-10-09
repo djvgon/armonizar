@@ -3919,6 +3919,21 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       —quizá, ojalá— se anime a leerla y consultarla»). Misma letra y mismo color que tenía;
       cambia el sitio, y en el documento va antes que el lienzo, de modo que también es lo
       primero para quien lee con un lector de pantalla. Revisa la colocación de la decisión 208.
+    - **LA LUZ QUE SIGUE A LA GRABACIÓN** (Diego, 9/10/2026: «que se vaya iluminando la
+      reducción armónica que trabaja el estudiante a medida que suena el fragmento grabado»).
+      Mientras suena, se enciende sobre la partitura DEL EJERCICIO el acorde por el que va la
+      música, con la misma marca que usa la aplicación al tocar la realización
+      (`marcarSonando`): una sola manera de encender lo mismo. El segundo de cada acorde sale
+      de encadenar tres datos que ya existen y no de medir nada a ojo: `tiempos` —en qué negra
+      entra cada acorde, contando desde la primera nota del fragmento—, el `desde` del uso —en
+      qué compás y parte de la obra empieza— y la rejilla del banco auditivo —en qué segundo
+      empieza cada compás—. Funciona con los tres botones: oyendo «En su contexto» o el
+      fragmento completo, la luz entra cuando la música llega a los compases del ejercicio y se
+      apaga al salir de ellos. Comprobado con los seis acordes del uso de A-6 y con la anacrusa
+      del de A-5.
+    - **Señalar los compases sobre la IMAGEN de la partitura real** —un recuadro, o una línea
+      que avance— está pedido al chat auditivo y pendiente del dato que falta: la posición de
+      cada compás dentro de la imagen. El tiempo ya lo sabemos; lo que no sabemos es el sitio.
     - **La conexión se le pega a un fragmento que ya estaba en el banco** volviendo a arrastrar
       su archivo, aunque el fragmento esté **cerrado**: está fuera de la huella del sello, como
       la procedencia (198), así que no reescribe nada de lo firmado. Hacía falta porque los
