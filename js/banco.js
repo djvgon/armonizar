@@ -572,6 +572,13 @@ const Banco = (() => {
       obra: opciones.obra || f.obra || '',
       // Dónde ver la partitura de verdad (decisión 199): una dirección de internet
       enlace: opciones.enlace || f.enlace || '',
+      /* CON QUÉ PASAJE DEL BANCO AUDITIVO SE CORRESPONDE (acuerdo con el chat auditivo,
+         apartados 4 y 6; 9/10/2026): `{fragmento, desde, hasta}`, los compases de la obra.
+         Con esto la pantalla del alumno abre la partitura del pasaje y suena la grabación.
+         Viene escrito en el archivo del ejercicio y lo lee el importador. Como la
+         procedencia, NO entra en la huella del sello: se le puede poner a un fragmento ya
+         cerrado sin reabrirlo. */
+      auditivo: opciones.auditivo || f.auditivo || null,
       tonalidad: { tonica: ton.tonica, modo: ton.modo },
       tonalidadSegura: f.tonalidadSegura !== false && !cambiada,
       // Si la armadura de la partitura no era la del fragmento, se guarda para poder avisar
@@ -804,11 +811,11 @@ const Banco = (() => {
       tonalidad: e.tonalidad,
       tonalidadSegura: e.tonalidadSegura,
       compas: e.compas,
-      autor: e.autor, obra: e.obra, enlace: e.enlace
+      autor: e.autor, obra: e.obra, enlace: e.enlace, auditivo: e.auditivo
     };
     const nuevo = entrada(f, {
       id: e.id, leccion: e.leccion, leccionNombre: e.leccionNombre, fuente: e.fuente,
-      titulo: e.titulo, autor: e.autor, obra: e.obra, enlace: e.enlace, compas: e.compas,
+      titulo: e.titulo, autor: e.autor, obra: e.obra, enlace: e.enlace, auditivo: e.auditivo, compas: e.compas,
       repertorio: e.leccionRepertorio, acordes: e.leccionAcordes,
       // Lo que marcó el profesor. Vacía quiere decir «ninguno», y entonces no hay ejercicio.
       rejilla: (rejilla && rejilla.length) ? rejilla.slice().sort((a, b) => a - b) : null
@@ -1003,6 +1010,11 @@ const Banco = (() => {
     }
     // La armadura escrita en la partitura original ya no describe a esta copia
     delete copia.armaduraEscrita;
+    /* LA GRABACIÓN SE DA TAMBIÉN TRANSPORTADA (Diego, 9/10/2026: «sí, muestra la grabación
+       aunque se trate de un fragmento transportado»). El audio suena en la tonalidad en que
+       lo escribió el compositor, de modo que el panel de escucha lo dice: «suena en la
+       tonalidad original», con los dos tonos delante. `transportadoDe` viaja hasta el
+       ejercicio justamente para poder decirlo. */
     copia.transportadoDe = e.tonalidad.tonica;      // para el pie del ejercicio y la revisión
     try { etiquetar(copia); } catch (err) { /* si algo falla, quedan las etiquetas viejas */ }
     return copia;
@@ -1150,6 +1162,11 @@ const Banco = (() => {
       autor: e.autor || '',
       obra: e.obra || '',
       enlace: e.enlace || '',
+      // Y con qué pasaje del banco auditivo se corresponde, para poder oírlo (9/10/2026)
+      auditivo: e.auditivo || null,
+      /* De qué tónica se ha transportado, cuando se ha transportado: el panel de escucha lo
+         necesita para avisar de que la grabación suena en la tonalidad original (9/10/2026). */
+      transportadoDe: e.transportadoDe || null,
       // Las cuatro voces tal como las escribió el profesor, si las trae (decisión 200)
       voces: (e.voces && e.voces.length) ? e.voces : null,
       tonalidad: e.tonalidad,

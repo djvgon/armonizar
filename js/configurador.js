@@ -1375,7 +1375,9 @@
         + ' · ' + f.compas.join('/') + ' · ' + (f.numCompases || v.compases.length) + ' compases · ' + n + ' notas'
         + (cuatro ? ' · <b>armonización escrita</b>' : (f.tieneBajo && f.tieneSoprano ? ' · dos voces' : ''))
         + (mods.length ? '<br>Modula: ' + mods.join(' · ') : '<br>No modula.')
-        + (f.obra ? '<br>' + (f.autor ? f.autor + ', ' : '') + f.obra : '');
+        + (f.obra ? '<br>' + (f.autor ? f.autor + ', ' : '') + f.obra : '')
+        + (f.auditivo && f.auditivo.fragmento
+          ? '<br>Se puede oír: <b>' + f.auditivo.fragmento + '</b> ' + f.auditivo.desde + '\u2013' + f.auditivo.hasta : '');
       pie.hidden = false;
     }
   }
@@ -1799,11 +1801,20 @@
   // Fragmentos cuya entrada se ha reemplazado entera en la última importación
   let reemplazados = [];
   let intactos = [];        // cerrados que la importación ha dejado como estaban (decisión 166)
+  let conectados = [];      // los que han ganado la conexión con el banco auditivo (9/10/2026)
 
   function fundir(viejo, nuevo) {
     /* Si las dos lecturas no coinciden en la tonalidad, manda la del fragmento que trae
        LAS DOS VOCES: es el que tiene la prueba. Se sustituye entero —también sus
        respuestas, leídas ya en la tonalidad buena—, conservando el identificador. */
+    /* LA CONEXIÓN CON EL BANCO AUDITIVO SE PEGA SIEMPRE, incluso a un fragmento cerrado
+       (9/10/2026). Está FUERA de la huella del sello —como la procedencia, decisión 198—, así
+       que ponerla no reescribe nada de lo que Diego firmó: la huella sigue cuadrando. Y hace
+       falta que sea así, porque los fragmentos de música real entraron en el banco antes de
+       que existiera la conexión: volver a arrastrar el mismo archivo, ahora con ella dentro,
+       es la manera de dársela sin tocar la música ni los cifrados. Va ANTES de la parada por
+       sello cerrado, que es lo que impedía llegar hasta aquí. */
+    if (!viejo.auditivo && nuevo.auditivo) { viejo.auditivo = nuevo.auditivo; conectados.push(viejo.id || '(sin id)'); }
     /* UN FRAGMENTO CERRADO NO SE TOCA (decisión 166). Ni siquiera aquí, que era el único
        sitio donde una entrada se reemplazaba entera. Se anota para decirlo al terminar. */
     if (Banco.estaCerrada(viejo)) { intactos.push(viejo.id || '(sin id)'); return false; }
@@ -1852,7 +1863,7 @@
     const fuente = estado.nombreArchivo || '';
     const op = { leccion, leccionNombre, fuente, repertorio: repertorio(), acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked };
     let nuevos = 0, repetidos = 0, fallidos = 0, conAviso = 0, fundidos = 0;
-    reemplazados = []; intactos = [];
+    reemplazados = []; intactos = []; conectados = [];
     estado.fragmentos.forEach((f, k) => {
       let e;
       try { e = Banco.entrada(f, Object.assign({ compas: f.compas }, op)); } catch (err) { e = null; }
@@ -1874,7 +1885,9 @@
       + (repetidos ? ', ' + repetidos + ' ya estaban' : '')
       + (fallidos ? ', ' + fallidos + ' sin música aprovechable' : '')
       + (conAviso ? ' · ' + conAviso + ' con alguna nota sin propuesta (revísalos)' : '')
-      + (intactos.length ? ' · ' + intactos.length + ' cerrados, que se han dejado intactos' : '') + '.', 7000);
+      + (intactos.length ? ' · ' + intactos.length + ' cerrados, que se han dejado intactos' : '')
+      + (conectados.length ? ' · ' + conectados.length + ' con la grabación del banco auditivo ya conectada ('
+        + conectados.join(', ') + ')' : '') + '.', 7000);
     /* Y, aparte y bien visible, lo único que puede haberse llevado por delante una revisión
        hecha a mano: una entrada reemplazada entera por venir en otra tonalidad. */
     if (reemplazados.length) setTimeout(() => aviso('OJO: ' + reemplazados.length
@@ -2128,6 +2141,12 @@
            para señalar aquellos fragmentos que se corresponden con música real»). La marca
            es tener obra: un fragmento con procedencia viene de una partitura. */
         + (e.obra ? '<span class="marca-obra" title="Música real: ' + ((e.autor ? e.autor + ', ' : '') + e.obra).replace(/"/g, '\u2019') + '">\u266B</span>' : '')
+        /* Y LOS AURICULARES: este fragmento está conectado con el banco auditivo, así que el
+           alumno puede abrir su partitura y oír la grabación (acuerdo con el chat auditivo,
+           apartados 4 y 6; 9/10/2026). La conexión viene escrita en el archivo del ejercicio
+           y la pone el convertidor de originales: aquí solo se ve si ha llegado. */
+        + (e.auditivo && e.auditivo.fragmento
+          ? '<span class="marca-audio" title="Se puede oír: ' + (e.auditivo.fragmento + ' ' + e.auditivo.desde + '\u2013' + e.auditivo.hasta).replace(/"/g, '\u2019') + '">\uD83C\uDFA7</span>' : '')
         + '</td>'
         /* Una nota musical junto al identificador cuando el fragmento viene de una obra
            (decisión 198), con la obra en el globo: de un vistazo se ve cuáles están ya

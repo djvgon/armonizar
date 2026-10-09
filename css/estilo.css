@@ -1680,18 +1680,24 @@ svg.partitura .nota.cambiada { fill: var(--cambio); }
 }
 
 /* DECISIÓN 208 · EL CRÉDITO, DENTRO DEL RECUADRO DE LA PARTITURA (Diego, 30/9/2026)
-   «Que se sienta parte de la partitura»: abajo a la derecha, sobre el mismo blanco, como
-   el crédito al pie de una lámina. El recuadro pasa a ser un MARCO —el que lleva el borde
-   y el fondo— y dentro va el lienzo, que es el que se desplaza cuando el fragmento no
-   cabe: así el crédito no se va de la vista al desplazar la música. */
+   «Que se sienta parte de la partitura»: sobre el mismo blanco, dentro del recuadro. El
+   recuadro pasa a ser un MARCO —el que lleva el borde y el fondo— y dentro va el lienzo,
+   que es el que se desplaza cuando el fragmento no cabe: así el crédito no se va de la
+   vista al desplazar la música.
+
+   REVISADA EL 9/10/2026 (Diego): ya no va abajo a la derecha, sino ARRIBA A LA IZQUIERDA,
+   «para que sea lo primero que lee el estudiante y —quizá, ojalá— se anime a leerla y
+   consultarla». Misma letra y mismo color; cambia el sitio. En el documento va primero que
+   el lienzo, así que también es lo primero para quien lee la página con un lector de
+   pantalla o con el teclado. */
 .partitura-marco { overflow-x: visible; display: flex; flex-direction: column; }
 .partitura-marco > .partitura-lienzo { overflow-x: auto; }
 .partitura-marco > .procedencia-ej {
-  align-self: flex-end; text-align: right; max-width: 100%;
-  margin: 0; padding: .15rem .1rem 0;
+  align-self: flex-start; text-align: left; max-width: 100%;
+  margin: 0; padding: 0 .1rem .25rem;
 }
 @media (max-width: 719px), (max-height: 559px) {
-  .partitura-marco > .procedencia-ej { padding-top: .1rem; }
+  .partitura-marco > .procedencia-ej { padding-bottom: .15rem; }
 }
 
 /* La casilla del configurador: el rótulo delante y la ayuda debajo, como los demás campos */
@@ -1764,3 +1770,79 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
 /* El botón de «Valores por defecto», arriba a la derecha del bloque del filtro (211) */
 .configurador h3.titulo-con-boton { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .configurador h3.titulo-con-boton .boton-pequeno { font-weight: 500; }
+
+/* =======================================================================================
+   LA MÚSICA REAL · el panel de escucha  (acuerdo con el chat auditivo, apartado 6;
+   9/10/2026)
+
+   El crédito de la obra, cuando el fragmento se puede oír, es un botón; al pulsarlo se
+   despliega este panel DEBAJO de la partitura del ejercicio —no en otra ventana—, con la
+   partitura del pasaje, su grabación y los tres botones. Mismo papel y mismo marco que la
+   partitura, para que se lea como su continuación y no como un trasto añadido.
+   ======================================================================================= */
+.procedencia-ej .escuchar-obra {
+  font: inherit; font-style: normal; font-weight: 600;
+  padding: 0; border: none; background: none; cursor: pointer;
+  color: var(--marca-honda, #9412DC);
+  text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px;
+}
+.procedencia-ej .escuchar-obra::after { content: " \25B8"; text-decoration: none; }
+.procedencia-ej .escuchar-obra:hover,
+.procedencia-ej .escuchar-obra:focus-visible { color: var(--marca, #B026FF); }
+
+.escucha {
+  margin: .5rem 0 1rem;
+  padding: .7rem .8rem .8rem;
+  background: var(--papel); border: 1px solid var(--linea);
+  border-radius: var(--radio-caja); box-shadow: var(--sombra);
+  font-family: var(--fuente-ui);
+}
+.escucha-cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: .8rem; }
+.escucha-titulo { font-weight: 600; font-size: .95rem; color: var(--tinta); }
+.escucha-cerrar {
+  font: inherit; font-size: .8rem; padding: 2px 8px; cursor: pointer;
+  color: var(--tinta-suave); background: none;
+  border: 1px solid var(--linea); border-radius: var(--radio-control);
+}
+.escucha-cerrar:hover { color: var(--tinta); border-color: var(--acento); }
+
+.escucha-aviso { margin: .5rem 0 0; font-size: .85rem; color: var(--tinta-suave); }
+
+/* El aviso del tono: la grabación suena en la tonalidad del compositor y el ejercicio puede
+   venir transportado (Diego, 9/10/2026). No es un error, es información, así que se lee sin
+   alarma: la misma letra pequeña del panel, en la tinta suave. */
+.escucha-tono { margin: .35rem 0 0; font-size: .82rem; color: var(--tinta-suave); }
+
+/* La partitura del pasaje: ancha y a su aire; si no cabe, se desplaza ella, no la página */
+.escucha-partitura {
+  display: block; width: 100%; height: auto; margin: .6rem 0 .2rem;
+  border: 1px solid var(--linea); border-radius: var(--radio-control); background: #fff;
+}
+
+.escucha-botones { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 .5rem; }
+.escucha-botones button {
+  font: inherit; font-size: .85rem; padding: .3rem .7rem; cursor: pointer;
+  color: var(--tinta); background: var(--papel);
+  border: 1px solid var(--linea); border-radius: var(--radio-control);
+}
+.escucha-botones button:hover { border-color: var(--acento); }
+.escucha-botones button:first-child { font-weight: 600; }
+
+.escucha-audio { width: 100%; margin: .2rem 0 .4rem; }
+
+/* El crédito de la grabación y de la partitura: obligado, y en letra pequeña, como al pie
+   de una lámina. */
+.escucha-credito {
+  margin: .3rem 0 0; font-size: .72rem; line-height: 1.4;
+  color: var(--tinta-suave); font-style: italic;
+}
+
+@media (max-width: 719px), (max-height: 559px) {
+  .escucha { padding: .5rem .55rem .6rem; }
+  .escucha-titulo { font-size: .85rem; }
+  .escucha-botones button { font-size: .78rem; padding: .25rem .5rem; }
+}
+
+/* Los auriculares de la tabla del banco: fragmento conectado con el banco auditivo, que el
+   alumno puede oír (9/10/2026). Al lado de la doble corchea de «música real». */
+.marca-audio { margin-left: 2px; font-size: .8em; opacity: .85; }

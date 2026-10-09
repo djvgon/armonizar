@@ -40,6 +40,18 @@
        `@W. A. Mozart: Sonata K. 283, III, cc. 1-8`. Se lee antes que los rótulos de
        tonalidad, así que un título con un tono dentro no marca modulaciones falsas. Si la
        marca lleva dentro una dirección `https://…`, se guarda aparte como enlace (199).
+     · LA CONEXIÓN CON EL BANCO AUDITIVO (acuerdo con el chat auditivo, apartados 4 y 6;
+       9/10/2026): qué fragmento del banco auditivo es este pasaje y entre qué compases de
+       la obra va, para que la pantalla del alumno pueda abrir su partitura y oír la
+       grabación. Se escribe de dos maneras, las dos válidas:
+         · en los datos del archivo, que es como la pone el convertidor de originales y
+           no se dibuja en la partitura:
+           `<identification><miscellaneous><miscellaneous-field name="auditivo">`
+         · o como texto de pauta que empieza por «~», para poder marcarla a mano en
+           MuseScore: `~BEE-SYM-C51 15.1-19.1`
+       En las dos, el contenido es el mismo: el identificador del fragmento auditivo y el
+       intervalo medio abierto en compás.tiempo. Sale en `auditivo: {fragmento, desde,
+       hasta}`; el crédito que ve el alumno no va aquí, que ya viaja en la marca @.
      · Un cambio de armadura CIERRA el fragmento: en un archivo de lecciones, cada
        ejercicio va en su tonalidad, y así no hace falta acordarse de la barra doble. Si el
        fragmento ya lleva una etiqueta de tonalidad —es decir, si la modulación está escrita
@@ -90,6 +102,17 @@ const MusicXML = (() => {
     return (obra || enlace) ? { autor, obra, enlace } : null;
   }
 
+  /* ---------- LA CONEXIÓN CON EL BANCO AUDITIVO (9/10/2026) ----------
+     «BEE-SYM-C51 15.1-19.1»: el fragmento auditivo y el intervalo medio abierto, en
+     compás.tiempo y con los compases DE LA OBRA —la aplicación numera cada fragmento desde
+     1 y no sabe en qué compás de la obra empieza, y por eso los compases vienen aquí—. La
+     «~» de delante solo hace falta cuando se escribe como texto de pauta, para distinguirla
+     de un rótulo de tonalidad; en los datos del archivo se puede escribir sin ella. */
+  function conexionDeTexto(txt) {
+    const m = /^~?\s*([A-Za-z0-9][A-Za-z0-9_-]*)\s+(\d+\.\d+)\s*[-–—]\s*(\d+\.\d+)\s*$/.exec(String(txt || '').trim());
+    return m ? { fragmento: m[1], desde: m[2], hasta: m[3] } : null;
+  }
+
   function nombreNota(pitch) {
     const step = texto(pitch, 'step');
     const alter = parseInt(texto(pitch, 'alter') || '0', 10);
@@ -110,7 +133,16 @@ const MusicXML = (() => {
     let armaduraFijada = false;
     const fragmentos = [];
     const VOCES = ['soprano', 'bajo'];
-    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo, procedencia: null, sonando: [] });
+    /* La conexión auditiva escrita en los DATOS del archivo vale para todo el archivo: un
+       archivo trae un solo fragmento (acuerdo, apartado 3), así que es la de ese fragmento.
+       Si además viene un texto de pauta «~…», manda el del fragmento. */
+    const conexionArchivo = (() => {
+      const campo = [...doc.querySelectorAll('identification > miscellaneous > miscellaneous-field')]
+        .find(c => (c.getAttribute('name') || '').trim().toLowerCase() === 'auditivo');
+      return campo ? conexionDeTexto(campo.textContent) : null;
+    })();
+
+    const nuevo = () => ({ voces: { soprano: [], bajo: [] }, tiempo: { soprano: 0, bajo: 0 }, etiquetas: [], cambios: [], fifths, modo, procedencia: null, auditivo: null, sonando: [] });
     let actual = nuevo();
     const hayNotas = frag => VOCES.some(v => frag.voces[v].some(c => c.some(([n]) => n !== null)));
 
@@ -204,6 +236,9 @@ const MusicXML = (() => {
              un fragmento viene de una obra, no de dos. */
           const proc = procedenciaDeTexto(palabras);
           if (proc) { if (!actual.procedencia) actual.procedencia = proc; return; }
+          /* Y la conexión auditiva escrita a mano (9/10/2026): empieza por «~» y aquí se
+             acaba su viaje, igual que la procedencia. La primera que haya. */
+          if (palabras[0] === '~') { const cx = conexionDeTexto(palabras); if (cx && !actual.auditivo) actual.auditivo = cx; return; }
           const t = Teoria.tonalidadDesdeTexto(palabras);
           if (!t) return;
           const voz = VOCES.find(v => pentaDe[v] === st) || vozPedida;
@@ -282,6 +317,8 @@ const MusicXML = (() => {
       const esFinal = estilo === 'light-heavy' || estilo === 'heavy-light' || estilo === 'heavy-heavy'
         || estilo === 'light-light' || mi === measures.length - 1;
       if (esFinal && hayNotas(actual)) {
+        // Si el fragmento no trae conexión propia, la de los datos del archivo
+        if (!actual.auditivo && conexionArchivo) actual.auditivo = conexionArchivo;
         fragmentos.push(cerrar(actual, actual.modo, compas, vozPedida, avisos));
         actual = nuevo();
       }
@@ -508,6 +545,9 @@ const MusicXML = (() => {
       autor: (frag.procedencia && frag.procedencia.autor) || '',
       obra: (frag.procedencia && frag.procedencia.obra) || '',
       enlace: (frag.procedencia && frag.procedencia.enlace) || '',
+      /* Con qué fragmento del banco auditivo se corresponde, para poder oírlo (9/10/2026):
+         {fragmento, desde, hasta}, o `null` cuando el archivo no lo dice. */
+      auditivo: frag.auditivo || null,
       /* LO QUE SUENA ARRIBA SOBRE CADA NOTA DEL BAJO (decisión 200, rehecha por la 206 y
          otra vez por la 218). Dos maneras se han probado y se han caído:
          · por ORDEN —el acorde k con la nota k—, que solo vale si los dos pentagramas van al

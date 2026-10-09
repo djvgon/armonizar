@@ -185,9 +185,27 @@
        29/9/2026). No es lo mismo que la banda de arriba, que dice de qué LECCIÓN viene el
        ejercicio: esto dice de qué MÚSICA se ha tomado el fragmento. */
     const cred = $('#procedencia-ej');
+    /* ¿SE PUEDE OÍR LA MÚSICA DE VERDAD? (acuerdo con el chat auditivo, apartado 6;
+       9/10/2026). El panel se prepara para TODO ejercicio —así se cierra y se calla el que
+       estuviera abierto— y dice si este trae conexión con el banco auditivo. Si la trae, el
+       crédito de la obra es un botón: al pulsarlo se despliega la partitura del pasaje, su
+       grabación y los tres botones. */
+    const hayEscucha = typeof Escucha !== 'undefined' && Escucha.montar(ej, $('#escucha-sitio'));
     if (cred) {
       const obra = ej.obra || '';
-      cred.textContent = obra ? (ej.autor ? ej.autor + ', ' : '') + obra : '';
+      const rotulo = obra ? (ej.autor ? ej.autor + ', ' : '') + obra : '';
+      cred.textContent = '';
+      if (rotulo && hayEscucha) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'escuchar-obra';
+        b.textContent = rotulo;
+        b.title = 'Ver la partitura de la obra y oír la grabación';
+        b.addEventListener('click', () => Escucha.alternar());
+        cred.appendChild(b);
+      } else if (rotulo) {
+        cred.appendChild(document.createTextNode(rotulo));
+      }
       /* Y, si el fragmento trae enlace, dónde ver la partitura de verdad (decisión 199).
          Se abre en otra pestaña y con `noopener`: es una página de fuera. El texto no
          promete nada del otro sitio —«Ver la partitura»— y el globo dice a qué dominio
@@ -1483,7 +1501,11 @@
     } catch (e) { aviso('No se ha podido reproducir el sonido: ' + e.message); }
   }
 
-  function parar() { Sonido.parar(); Voz.parar(); marcarSonando(null); $('#btn-parar').hidden = true; }
+  function parar() {
+    Sonido.parar(); Voz.parar();
+    if (typeof Escucha !== 'undefined') Escucha.parar();      // y la grabación de música real (9/10/2026)
+    marcarSonando(null); $('#btn-parar').hidden = true;
+  }
 
   function responderRomano(r) {
     if (!pideGrado() || !reabrir()) return;
@@ -2219,6 +2241,7 @@
     if (be2) be2.addEventListener('click', () => {
       const r = Registro.resumen();
       if (!r) return;
+      if (typeof Escucha !== 'undefined') Escucha.parar();    // nada suena mientras se envía (9/10/2026)
       const url = Envio.direccion(r);
       if (!url) { aviso('No se ha podido preparar el envío. Copia el informe y pégalo en Classroom.', 8000); return; }
       window.open(url, '_blank', 'noopener');

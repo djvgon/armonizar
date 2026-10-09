@@ -9,6 +9,29 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
+## Estado a 9 de octubre de 2026
+
+- **SIN SUBIR: el `20261009-0619`**, con la decisión **246**: **oír la música de verdad desde
+  el ejercicio**. Archivos: `js/escucha.js` (nuevo), `js/musicxml.js`, `js/banco.js`,
+  `js/app.js`, `js/sonido.js`, `js/configurador.js`, `index.html`, `css/estilo.css` y la marca
+  en las ocho páginas. Comprobado: 21 comprobaciones del panel en un navegador de pruebas
+  (`3 PROYECTO/herramientas-musica-real/prueba-panel.js`), los tres botones contra lo que
+  espera el chat auditivo (`prueba-escucha.js`) y los tres archivos de Beethoven por el
+  importador de verdad (`verificar.js`).
+- **Para verlo funcionando hacen falta dos publicaciones**: primero el código; después,
+  importar en el configurador los tres archivos de Beethoven que hay en
+  `3 PROYECTO/ejemplos/Fragmentos por lecciones/Música real/Beethoven/`, promover a mano el
+  `I6/4` del de A-9, descargar `banco.json` y volver a publicar. **El orden importa**: los
+  auriculares de la tabla y la conexión solo aparecen con el código nuevo publicado; los
+  fragmentos de Beethoven que entraron antes no la tienen, y la ganan volviendo a arrastrar su
+  archivo (aunque estén cerrados: la conexión está fuera de la huella del sello).
+- **El repositorio del banco auditivo ya está en línea**: `djvgon/auditivo`, en
+  `djvgon.github.io/auditivo`. De ahí lee la aplicación la rejilla, el audio y la partitura.
+  **Aviso pendiente del chat auditivo**: `auditivo.json` marca el fonograma de Bernstein (1960)
+  como `difusion: "libre"`, y es de dominio público en España pero protegido en los Estados
+  Unidos; Diego ha decidido (9/10/2026) mantenerlo hasta que haya una grabación libre en todas
+  partes. Está anotado en `claude/Coordinacion-desde-armonia.md`, apartado 8.1.
+
 ## Estado a 7 de octubre de 2026
 
 - **SIN SUBIR: el `20261007-1054`**, con la decisión **245**: el **cuaderno a un toque desde
@@ -919,6 +942,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
+| 20261009-0619 | Oír la música de verdad desde el ejercicio: el crédito de la obra abre un panel con la partitura del pasaje, la grabación y los tres botones «El fragmento» · «En su contexto» · «El fragmento completo» (246). `js/escucha.js`, nuevo. La conexión viaja dentro del archivo del ejercicio y no entra en la huella del sello; auriculares en la tabla del banco. `convertir.js` lee ya el original en MusicXML |
 | 20261007-1054 | El cuaderno, a un toque desde el configurador: casilla «Dirección del cuaderno» en la zona C y dos botones nuevos, en la cabecera y en la zona C, delante de los de la hoja de resultados (245). La dirección no viaja en `envio.json` |
 | 20261006-0845 | La fila «Tonalidad», la primera de todas bajo el pentagrama, encima del cifrado (244) |
 | 20261005-2330 | El 6.º – 4.º – 5.º del bajo pide también el conjunto completo (243); orden de preferencia de la regla de la octava y coste del 6/4 (240, 241); el documento de la regla de la octava se genera desde el motor (242); banco a 151 fragmentos con la Marcha en Re |

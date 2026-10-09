@@ -230,7 +230,17 @@ const Sonido = (() => {
     return cargarInstrumento(actual).catch(() => null);
   }
 
+  /* QUE NO SUENEN DOS COSAS A LA VEZ (9/10/2026). La grabación de música real del panel de
+     escucha y la realización del alumno no deben pisarse: el que empieza para al otro
+     (acuerdo con el chat auditivo, apartado 6). Aquí solo está la mitad que le toca a este
+     módulo: avisar de que va a sonar. Quien quiera enterarse se apunta con
+     `Sonido.anotarAlSonar(fn)`; si nadie se apunta, no pasa nada. */
+  let alSonar = null;
+  function avisarQueSuena() { if (alSonar) { try { alSonar(); } catch (e) { /* no es asunto nuestro */ } } }
+  function anotarAlSonar(fn) { alSonar = typeof fn === 'function' ? fn : null; }
+
   function acorde(notas, segundos = 1.2) {
+    avisarQueSuena();
     parar();
     contexto();
     const gen = ++generacion;
@@ -241,6 +251,7 @@ const Sonido = (() => {
   }
 
   function secuencia(items, alTerminar) {
+    avisarQueSuena();
     parar();
     contexto();
     const gen = ++generacion;
@@ -278,6 +289,6 @@ const Sonido = (() => {
 
   function enCurso() { return sonando; }
 
-  Object.assign(Sonido, { acorde, secuencia, parar, enCurso, desbloquear, estado, registrarInstrumento, cargarInstrumento, elegirInstrumento, instrumentoActual });
+  Object.assign(Sonido, { acorde, secuencia, parar, enCurso, anotarAlSonar, desbloquear, estado, registrarInstrumento, cargarInstrumento, elegirInstrumento, instrumentoActual });
   return Sonido;
 })();

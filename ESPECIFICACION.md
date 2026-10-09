@@ -3880,6 +3880,62 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+246. **Oír la música de verdad desde el ejercicio**
+    (8/10/2026, Diego: «¿Cómo haremos para que los alumnos puedan abrir desde la interfaz de
+    práctica de los fragmentos la partitura de Beethoven y la puedan escuchar en sonido
+    sinfónico? Que esto es lo más emocionante»).
+    Un fragmento de música real puede decir **de qué pasaje del banco auditivo viene**, y
+    entonces el alumno abre su partitura y oye la grabación sin salir del ejercicio. El
+    reparto con el chat del banco auditivo está en el proyecto
+    (`Banco-armonico-y-auditivo-conexion.md`, apartados 4 y 6): él pone la música y los datos;
+    aquí se pone el formato y la pantalla.
+    - **El dato**: `e.auditivo = {fragmento, desde, hasta}`, con los compases **de la obra** en
+      `compás.tiempo` e intervalo medio abierto. Viene escrito en el archivo del ejercicio, en
+      `<miscellaneous-field name="auditivo">BEE-SYM-C51 15.1-19.1</miscellaneous-field>`, que no
+      se dibuja en la partitura; se admite también un texto de pauta que empiece por `~`, para
+      marcarlo a mano. **No entra en la huella del sello**, como la procedencia (166, 198): se
+      le puede poner a un fragmento ya cerrado sin reabrirlo.
+    - **Los datos del pasaje** se leen del repositorio del banco auditivo, que está al lado de
+      este (`../auditivo/auditivo.json`): la **rejilla** —el segundo en que empieza cada
+      compás—, las **unidades formales**, el audio, la imagen de la partitura y los créditos.
+      Nada se copia aquí. Si cambia la grabación, solo se vuelve a medir la rejilla: las
+      referencias en compás.tiempo siguen valiendo.
+    - **La pantalla** (`js/escucha.js`, nuevo): el crédito de la obra, bajo la partitura, es un
+      botón; al pulsarlo se despliega un panel **debajo del ejercicio** —no una ventana aparte—
+      con la partitura del pasaje, el audio, los créditos de la grabación y de la partitura, y
+      tres botones: **«El fragmento»** (los compases del ejercicio), **«En su contexto»** (la
+      unidad formal inmediatamente superior; si el fragmento coincide con una unidad, se sube un
+      nivel) y **«El fragmento completo»**. El del medio se oculta cuando coincidiría con otro
+      o cuando el pasaje cruza dos unidades y no hay ninguna que lo contenga.
+    - **Nada suena por su cuenta**, y la grabación y el sonido de la aplicación **se paran el
+      uno al otro**: el que empieza para al otro (`Sonido.anotarAlSonar`). El panel se cierra y
+      se calla al cambiar de ejercicio y al enviar.
+    - **La grabación se da también en los fragmentos TRANSPORTADOS** (Diego, 9/10/2026: «sí,
+      muestra la grabación aunque se trate de un fragmento transportado»), y el panel lo dice:
+      «La grabación suena en la tonalidad original, la m, y tú lo estás armonizando en re m».
+      `transportadoDe` viaja hasta el ejercicio para poder escribirlo.
+    - **La referencia a la obra va ARRIBA A LA IZQUIERDA del recuadro de la partitura**, no
+      abajo a la derecha (Diego, 9/10/2026: «para que sea lo primero que lee el estudiante y
+      —quizá, ojalá— se anime a leerla y consultarla»). Misma letra y mismo color que tenía;
+      cambia el sitio, y en el documento va antes que el lienzo, de modo que también es lo
+      primero para quien lee con un lector de pantalla. Revisa la colocación de la decisión 208.
+    - **La conexión se le pega a un fragmento que ya estaba en el banco** volviendo a arrastrar
+      su archivo, aunque el fragmento esté **cerrado**: está fuera de la huella del sello, como
+      la procedencia (198), así que no reescribe nada de lo firmado. Hacía falta porque los
+      fragmentos de música real entraron antes de que la conexión existiera. El aviso de la
+      importación dice cuántos la han ganado y con qué identificador.
+    - Tres cosas que imponen los navegadores: saltar a un segundo exige un servidor con
+      peticiones de rango (GitHub Pages las admite); para parar a tiempo no basta
+      `requestAnimationFrame`, que se frena con la pestaña detrás, y se vigila también con
+      `timeupdate`; y `play()` solo vale desde un clic de verdad del alumno.
+    - En el configurador, la fila del banco lleva **unos auriculares** junto a la doble corchea
+      de «música real» (204) y el revisor dice «Se puede oír: …». **No hay editor**: la conexión
+      viene con el archivo.
+    - Los ejercicios de música real los genera `convertir.js` (3 PROYECTO/herramientas-musica-real)
+      a partir del original del banco auditivo y su lista de usos; desde el 9/10/2026 lee el
+      `original.musicxml` **directamente**, y la transcripción intermedia que había se ha
+      retirado. Comprobado: las 80 notas y los tres recortes, idénticos.
+
 245. **El cuaderno, a un toque desde el configurador**
     (7/10/2026, Diego: «quizá el formulario podría contar para llegar a él con un botón antes
     del de resultados en el configurador, de manera que se puedan consultar el formulario y la
