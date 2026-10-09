@@ -3955,10 +3955,16 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       suena se ve «■ Parar», que con el panel cerrado es el único sitio desde donde detenerla.
     - **Los tres botones del panel van ENCIMA de la imagen** (Diego, 9/10/2026): son lo que se
       usa, y así están a mano sin pasar por delante toda la partitura, que en el móvil es alta.
+      **«El fragmento» va en morado lleno**, como «Comprobar»: es la acción principal del
+      panel, y sin ella los ojos se iban al reproductor del sistema, que es lo único con color
+      ahí abajo (Diego, 9/10/2026). Los otros dos se quedan en blanco: si gritan los tres, no
+      grita ninguno.
     - **EL CURSOR SOBRE LA PARTITURA REAL** (Diego, 9/10/2026: «una flecha indicando por dónde
       va la reproducción… el cursor sería una pasada»). Sobre la imagen se dibujan tres cosas:
-      el **recuadro** de los compases del ejercicio —con el color de las técnicas armónicas,
-      `--tecnica`, que es el que Diego ya conoce para «esto es lo que estamos mirando»—, el
+      el **recuadro** de los compases del ejercicio —en el **morado de la casa**, no en el
+      naranja de las técnicas: «naranja sería para las explicaciones y esto es interfaz de
+      usuario» (Diego, 9/10/2026), de modo que el recuadro lleva `--marca-apagada`, el
+      sombreado el morado al 13 % y la línea el `--marca` entero—, el
       **compás que suena**, sombreado, y una **línea que avanza** dentro de él. El dato que
       faltaba lo entregó el chat auditivo el 9/10 en `auditivo.json`:
       `compasesEnLaImagen: { ancho, alto, compases: [[nº, x0, x1, y0, y1], …] }`, en píxeles

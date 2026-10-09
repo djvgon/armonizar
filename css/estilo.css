@@ -1849,17 +1849,21 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
    ciento del tamaño de la imagen, así que vale a cualquier ancho sin recalcular nada. */
 .escucha-capa { position: absolute; inset: 0; pointer-events: none; }
 .escucha-capa > i { position: absolute; display: block; }
-/* El recuadro de los compases del ejercicio, con el color de las técnicas armónicas, que es
-   el que Diego ya conoce para «esto es lo que estamos mirando» (9/10/2026). Uno por sistema:
-   un pasaje puede empezar en uno y acabar en el siguiente. */
+/* EL MORADO DE LA CASA, NO EL NARANJA (Diego, 9/10/2026: «naranja sería para las
+   explicaciones y esto es interfaz de usuario»). El naranja `--tecnica` es el de las
+   etiquetas que EXPLICAN la música —las técnicas armónicas—; el recuadro, el sombreado y la
+   línea no explican nada: son la aplicación diciendo por dónde va, y eso es del color de la
+   franja de arriba. Tres pesos del mismo morado, de menos a más: el sombreado del compás, el
+   recuadro del pasaje y la línea, que es la que ha de verse siempre.
+   Uno por sistema: un pasaje puede empezar en uno y acabar en el siguiente. */
 .escucha-marco {
-  border: 1.5px solid var(--tecnica, #B84A00); border-radius: 3px;
-  background: rgba(184, 74, 0, .05);
+  border: 1.5px solid var(--marca-apagada, #A169C2); border-radius: 3px;
+  background: rgba(176, 38, 255, .05);
 }
 /* El compás que suena, y la línea que lo recorre */
-.escucha-compas { background: rgba(184, 74, 0, .13); }
+.escucha-compas { background: rgba(176, 38, 255, .13); }
 .escucha-linea {
-  width: 2px; margin-left: -1px; background: var(--tecnica, #B84A00);
+  width: 2px; margin-left: -1px; background: var(--marca, #B026FF);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, .7);
 }
 
@@ -1870,7 +1874,19 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
   border: 1px solid var(--linea); border-radius: var(--radio-control);
 }
 .escucha-botones button:hover { border-color: var(--acento); }
-.escucha-botones button:first-child { font-weight: 600; }
+/* «EL FRAGMENTO» ES EL BOTÓN QUE SE PULSA (Diego, 9/10/2026: «ahora se van los ojos al
+   control de reproducción de debajo de la partitura»). Va en morado lleno, como «Comprobar»:
+   es la acción principal del panel. Los otros dos se quedan como están, en blanco, para no
+   saturar: si gritan los tres, no grita ninguno. */
+.escucha-botones button:first-child {
+  font-weight: 600;
+  background: var(--marca); border-color: var(--marca); color: var(--marca-texto);
+}
+.escucha-botones button:first-child:hover,
+.escucha-botones button:first-child:focus-visible {
+  /* El mismo oscurecido que `button.primario`, para que se comporte como los demás */
+  background: var(--marca-honda); border-color: var(--marca-honda);
+}
 
 .escucha-audio { width: 100%; margin: .2rem 0 .4rem; }
 
