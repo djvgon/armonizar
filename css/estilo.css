@@ -1843,6 +1843,8 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
   .escucha-botones button { font-size: .78rem; padding: .25rem .5rem; }
 }
 
-/* Los auriculares de la tabla del banco: fragmento conectado con el banco auditivo, que el
-   alumno puede oír (9/10/2026). Al lado de la doble corchea de «música real». */
-.marca-audio { margin-left: 2px; font-size: .8em; opacity: .85; }
+/* La marca de «se puede oír» en la tabla del banco: fragmento conectado con el banco
+   auditivo (9/10/2026). Al lado de la doble corchea de «música real», del mismo tamaño que
+   ella y que el candado, y en el morado hondo de la casa para que resalte: el emoji de
+   auriculares se veía casi blanco (Diego, 9/10/2026). */
+.marca-audio { margin-left: 3px; color: var(--marca-honda, #9412DC); font-size: .9em; }

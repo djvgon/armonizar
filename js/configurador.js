@@ -375,6 +375,16 @@
     if (escritas && escritas.length === Ejercicios.numNotas({ compases })) {
       ej.voces = escritas.map(a => (Array.isArray(a) ? a.slice() : null));
     }
+    /* Y LA CONEXIÓN CON EL BANCO AUDITIVO, por la misma puerta (Diego, 9/10/2026: «al abrir
+       el fragmento en la interfaz del estudiante, no veo cómo abrir la ventana con la
+       partitura y la grabación»). Es del mismo tipo que la procedencia —de la música, no del
+       ejercicio—, y le pasaba lo mismo que a ella antes de la decisión 214: por la puerta de
+       la ficha llegaba, porque la pone `Banco.ejercicio`, y por la de «Abrir como alumno» no,
+       porque este ejercicio se construye del formulario y no de la entrada del banco. */
+    const deLaMusica = extra.origen || fuenteActual();
+    if (deLaMusica && deLaMusica.auditivo && deLaMusica.auditivo.fragmento) {
+      ej.auditivo = deLaMusica.auditivo;
+    }
     return ej;
   }
 
@@ -2145,8 +2155,12 @@
            alumno puede abrir su partitura y oír la grabación (acuerdo con el chat auditivo,
            apartados 4 y 6; 9/10/2026). La conexión viene escrita en el archivo del ejercicio
            y la pone el convertidor de originales: aquí solo se ve si ha llegado. */
+        /* El triángulo de «se puede oír», no un emoji (Diego, 9/10/2026: el de los
+           auriculares «al ser blanco, se ve poco»). Un carácter de texto se dibuja con la
+           tinta de la página, así que se le puede dar color —el morado hondo de la casa— y
+           queda del mismo tamaño que el candado y la doble corchea. */
         + (e.auditivo && e.auditivo.fragmento
-          ? '<span class="marca-audio" title="Se puede oír: ' + (e.auditivo.fragmento + ' ' + e.auditivo.desde + '\u2013' + e.auditivo.hasta).replace(/"/g, '\u2019') + '">\uD83C\uDFA7</span>' : '')
+          ? '<span class="marca-audio" title="Se puede oír: ' + (e.auditivo.fragmento + ' ' + e.auditivo.desde + '\u2013' + e.auditivo.hasta).replace(/"/g, '\u2019') + '">\u25BA</span>' : '')
         + '</td>'
         /* Una nota musical junto al identificador cuando el fragmento viene de una obra
            (decisión 198), con la obra en el globo: de un vistazo se ve cuáles están ya

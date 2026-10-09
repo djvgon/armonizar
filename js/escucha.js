@@ -215,16 +215,17 @@ const Escucha = (() => {
   }
   function cerrar() { parar(); if (caja) caja.hidden = true; }
 
-  /* `play()` se llama DENTRO del clic, que es lo que el navegador exige; el salto al segundo
-     se hace en cuanto el audio sepa cuánto dura (con `preload="metadata"` normalmente ya lo
-     sabe, y si no, se espera a saberlo). El límite se pone después del salto para que el
-     `seeked` de ese mismo salto no lo borre. */
+  /* PRIMERO EL SALTO Y DESPUÉS `play()`, las dos cosas dentro del mismo clic: así el
+     navegador acepta que suene —lo exige— y no se oye un pellizco del sitio donde estuviera
+     el audio antes de saltar. Si todavía no sabe cuánto dura (no debería, con
+     `preload="metadata"`), se arranca y se salta en cuanto lo sepa. El límite se pone
+     después del salto, para que el `seeked` de ese mismo salto no lo borre. */
   function sonar(tramo) {
     if (!audio || !tramo) return;
     limite = null;
     const ir = () => { try { audio.currentTime = tramo.t0; } catch (e) { /* aún no se puede */ } limite = tramo.t1; };
-    const p = audio.play();
     if (audio.readyState >= 1) ir(); else audio.addEventListener('loadedmetadata', ir, { once: true });
+    const p = audio.play();
     if (p && p.catch) p.catch(() => { aviso('El navegador no ha dejado sonar el audio. Vuelve a pulsar el botón.'); });
   }
 
