@@ -616,10 +616,16 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
      hueco propio de las teclas; el recuadro de la paleta activa queda ceñido a ellas. */
   .paleta-caja { margin-top: 0; padding: 0 3px; border-radius: var(--radio-control); gap: 5px; align-items: center; }
   .tecla { padding: 2px 4px; }
-  .paleta-etiqueta { flex: 0 0 3.4rem; font-size: .58rem; letter-spacing: .02em; line-height: 1.1; text-align: right; }
+  /* EL RÓTULO, MÁS ESTRECHO, Y UN PÍXEL MENOS ENTRE TECLAS (Diego, 9/10/2026: «Fundamental
+     hace que los botones I, II, III no quepan en un renglón, lo que reduce espacio de
+     visibilidad de la partitura»). Medido en un móvil de 375 px: los siete romanos piden 304
+     px y había 298, así que acortar la palabra —«Fundam.»— devolvía 23 px pero aún faltaban
+     6. Con el rótulo en 2,9rem y el hueco en 3 px hay 306 y entran en un renglón: el bloque
+     pasa de 91 a 47 px de alto, 44 px que se lleva la partitura. */
+  .paleta-etiqueta { flex: 0 0 2.9rem; font-size: .58rem; letter-spacing: .02em; line-height: 1.1; text-align: right; }
   .etq-larga { display: none; }
   .etq-corta { display: inline; }
-  .paleta { gap: 4px; }
+  .paleta { gap: 3px; }
   .tecla { min-width: 36px; min-height: 40px; padding: 2px 5px; border-radius: var(--radio-control); box-shadow: none; }
   .tecla-num { display: none; }
   .tecla-cifra svg.icono-cifra { width: 28px; height: 28px; }
