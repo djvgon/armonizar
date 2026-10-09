@@ -195,9 +195,16 @@
        toca la realización, así que la luz es la de siempre y no hay dos maneras de encender
        lo mismo. */
     const hayEscucha = typeof Escucha !== 'undefined' && Escucha.montar(ej, $('#escucha-sitio'), marcarSonando);
-    // El botón «Escuchar la grabación» solo tiene sentido si hay grabación que escuchar
+    /* El botón de la grabación solo tiene sentido si hay grabación que escuchar. Y la
+       columna se marca, porque de ello depende cómo se ven los dos botones en el móvil: con
+       grabación, los dos en iconos (piano y auriculares); sin ella, el de la propuesta solo y
+       con su texto de siempre. */
     const botonOriginal = $('#btn-original');
-    if (botonOriginal) botonOriginal.hidden = !hayEscucha;
+    if (botonOriginal) {
+      botonOriginal.hidden = !hayEscucha;
+      const columna = botonOriginal.parentNode;
+      if (columna && columna.classList) columna.classList.toggle('con-grabacion', !!hayEscucha);
+    }
     if (cred) {
       const obra = ej.obra || '';
       const rotulo = obra ? (ej.autor ? ej.autor + ', ' : '') + obra : '';

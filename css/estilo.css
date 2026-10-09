@@ -129,13 +129,15 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .realizacion-barra input[type="checkbox"] { width: 16px; height: 16px; }
 .realizacion-barra .control-etiqueta { color: var(--tinta-suave); }
 .realizacion-barra .control-sonido { gap: 10px; }
-/* «La grabación» viaja al SEGUNDO renglón de la barra (Diego, 9/10/2026): el de los grados
-   del bajo y la posición melódica, que está pegado a la derecha y tiene libre toda su mitad
-   izquierda. Así el botón no añade ni un renglón ni un píxel de altura antes de la
-   partitura. `order: 2` lo pone después del salto de renglón que fuerza el ::after y, como
-   `#control-grados` lleva `margin-left: auto`, el botón se queda a la izquierda y los otros
-   dos controles siguen a la derecha, donde estaban. */
-#btn-original { order: 2; }
+/* «LA GRABACIÓN», COLGANDO DE «ESCUCHAR PROPUESTA» SIN COSTAR ALTURA (Diego, 9/10/2026).
+   Los dos botones son la misma música en dos versiones, así que van uno debajo del otro y
+   alineados; pero apilarlos de verdad añadía un renglón entero antes de la partitura. La
+   solución: el de abajo sale del flujo (`position: absolute`) y cae en el hueco libre que ya
+   tiene a su izquierda el renglón de «Grados del bajo». `left: 0; right: 0` le da el ancho
+   exacto del botón de arriba, y los 5 px de `top` son la misma distancia pequeña de antes.
+   La barra, por tanto, no crece ni un píxel y nada de lo demás se mueve. */
+.realizacion-barra .control-apilado { position: relative; display: inline-flex; align-items: center; }
+.realizacion-barra #btn-original { position: absolute; top: calc(100% + 5px); left: 0; right: 0; white-space: nowrap; }
 .realizacion-barra .control-vista { flex-wrap: wrap; gap: 8px 18px; }
 /* Los ajustes de CÓMO SE VE Y SE ESCRIBE la música —los grados del bajo y la posición
    melódica inicial— bajan JUNTOS a su propio renglón y pegados al borde derecho, con los
@@ -578,6 +580,18 @@ svg.partitura .numero-acorde[role="button"]:hover text { fill: #fff; }
   .ficha-romano { min-width: 28px; font-size: .8rem; padding: 0 5px; }
   .realizacion-barra { padding: 6px 8px; gap: 6px 10px; font-size: .8rem; margin-bottom: 6px; }
   .realizacion-barra .control-sonido { gap: 6px; }
+  /* EN EL MÓVIL, LOS DOS EN FILA Y EN ICONOS (Diego, 9/10/2026): el piano —lo que toca la
+     aplicación con el instrumento elegido— y los auriculares —la grabación de la obra—. Los
+     dos juntos miden 85 px, menos que los 150 del botón de texto que había, así que la barra
+     no crece. El texto completo sigue ahí para el lector de pantalla, en `aria-label`.
+     SOLO cuando hay grabación (`con-grabacion`, que pone la página del alumno): si el
+     fragmento no la tiene, el botón está solo y se queda con su texto de siempre, que es más
+     claro que un icono suelto. */
+  .realizacion-barra .control-apilado { gap: 5px; }
+  .realizacion-barra #btn-original { position: static; }
+  .realizacion-barra .control-apilado.con-grabacion .boton-pequeno { font-size: 1rem; line-height: 1.1; padding: 3px 9px; }
+  .realizacion-barra .control-apilado:not(.con-grabacion) .etq-larga { display: inline; }
+  .realizacion-barra .control-apilado:not(.con-grabacion) .etq-corta { display: none; }
   .boton-pequeno, .realizacion-barra.audicion #btn-cadencia, .realizacion-barra.audicion #btn-propuesta { font-size: .8rem; padding: 4px 8px; }
   .realizacion-barra .control-etiqueta { display: none; }
   .selector-pequeno { font-size: .8rem; padding: 2px 4px; }
