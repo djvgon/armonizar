@@ -7,8 +7,8 @@
   <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
   <meta property="og:title" content="Práctica armónica">
   <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
-  <link rel="stylesheet" href="css/bravura.css?v=20261009-0719">
-  <link rel="stylesheet" href="css/estilo.css?v=20261009-0719">
+  <link rel="stylesheet" href="css/bravura.css?v=20261009-0726">
+  <link rel="stylesheet" href="css/estilo.css?v=20261009-0726">
 </head>
 <body>
   <nav class="barra-app" aria-label="Secciones">
@@ -73,21 +73,18 @@
     <div id="realizacion-barra" class="realizacion-barra">
       <span class="control control-sonido">
         <button type="button" id="btn-cadencia" class="boton-pequeno" title="Cadencia I–IV–V7–I en la tonalidad inicial del ejercicio, para situar el oído">▶ Escuchar tono</button>
-        <!-- LA MISMA MÚSICA EN LAS DOS VERSIONES (Diego, 9/10/2026): el piano de la
-             aplicación y la grabación de la orquesta, como en HookTheory. El botón de la
-             grabación va DEBAJO del de la propuesta, no a su lado, «para no variar la
-             posición del resto de controles»: los dos forman una columna del ancho del más
-             largo, así que «Escuchar tono», «Escuchar mi cifrado» y el instrumento se quedan
-             donde estaban. Solo aparece cuando el fragmento viene de un pasaje del banco
-             auditivo; cuando no, la columna es solo el botón de siempre. -->
-        <span class="control-apilado">
-          <button type="button" id="btn-propuesta" class="boton-pequeno" title="Escuchar lo que propone el ejercicio: la armonización (Análisis y Audición), el bajo solo (Armonización de bajo) o la melodía sola (Armonización de soprano)">▶ Escuchar propuesta</button>
-          <button type="button" id="btn-original" class="boton-pequeno" hidden title="Escuchar estos mismos compases en la grabación de la obra de la que sale el fragmento">▶ La grabación</button>
-        </span>
+        <button type="button" id="btn-propuesta" class="boton-pequeno" title="Escuchar lo que propone el ejercicio: la armonización (Análisis y Audición), el bajo solo (Armonización de bajo) o la melodía sola (Armonización de soprano)">▶ Escuchar propuesta</button>
         <button type="button" id="btn-mio" class="boton-pequeno" title="Escuchar la realización de lo que has cifrado hasta ahora (las notas sin sonido fundamental y cifrado interválico suenan solo con el bajo)">▶ Escuchar mi cifrado</button>
         <button type="button" id="btn-parar" class="boton-pequeno parar" hidden title="Detener la reproducción (también con Esc)">■ Parar</button>
         <label class="control control-instrumento" title="Con qué instrumento suena todo (muestras reales de piano, clave y órgano)"><span class="control-etiqueta">Instrumento</span><select id="instrumento" class="selector-pequeno"></select><span id="instrumento-estado" class="instrumento-estado" hidden>cargando…</span></label>
       </span>
+      <!-- LA MISMA MÚSICA EN LAS DOS VERSIONES (Diego, 9/10/2026): el piano de la aplicación
+           y la grabación de la orquesta, como en HookTheory. El botón va en el SEGUNDO
+           renglón de la barra, el de «Grados del bajo» y «Posición melódica», que ya existe y
+           tiene vacía toda su mitad izquierda: así no añade altura antes de la partitura
+           (Diego, 9/10/2026). Solo aparece cuando el fragmento viene de un pasaje del banco
+           auditivo. -->
+      <button type="button" id="btn-original" class="boton-pequeno" hidden title="Escuchar estos mismos compases en la grabación de la obra de la que sale el fragmento">▶ La grabación</button>
       <span id="control-grados" class="control control-vista">
         <label class="control" title="Encima de cada nota del bajo, el grado que ocupa en la escala del tono, dentro de un circulito: enlaza el bajo con la regla de la octava"><input id="ver-grados" type="checkbox" checked><span>Grados del bajo</span></label>
       </span>
@@ -175,22 +172,22 @@
        vistazo qué versión está publicada. -->
   <footer class="pie">
     <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
-    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20261009-0719</span></p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20261009-0726</span></p>
   </footer>
   </div>
 
-  <script src="js/teoria.js?v=20261009-0719"></script>
-  <script src="js/reglas.js?v=20261009-0719"></script>
-  <script src="js/ejercicios.js?v=20261009-0719"></script>
-  <script src="js/partitura.js?v=20261009-0719"></script>
-  <script src="js/realizacion.js?v=20261009-0719"></script>
-  <script src="js/tecnicas.js?v=20261009-0719"></script>
-  <script src="js/banco.js?v=20261009-0719"></script>
-  <script src="js/registro.js?v=20261009-0719"></script>
-  <script src="js/envio.js?v=20261009-0719"></script>
-  <script src="js/sonido.js?v=20261009-0719"></script>
-  <script src="js/escucha.js?v=20261009-0719"></script>
-  <script src="js/voz.js?v=20261009-0719"></script>
-  <script src="js/app.js?v=20261009-0719"></script>
+  <script src="js/teoria.js?v=20261009-0726"></script>
+  <script src="js/reglas.js?v=20261009-0726"></script>
+  <script src="js/ejercicios.js?v=20261009-0726"></script>
+  <script src="js/partitura.js?v=20261009-0726"></script>
+  <script src="js/realizacion.js?v=20261009-0726"></script>
+  <script src="js/tecnicas.js?v=20261009-0726"></script>
+  <script src="js/banco.js?v=20261009-0726"></script>
+  <script src="js/registro.js?v=20261009-0726"></script>
+  <script src="js/envio.js?v=20261009-0726"></script>
+  <script src="js/sonido.js?v=20261009-0726"></script>
+  <script src="js/escucha.js?v=20261009-0726"></script>
+  <script src="js/voz.js?v=20261009-0726"></script>
+  <script src="js/app.js?v=20261009-0726"></script>
 </body>
 </html>

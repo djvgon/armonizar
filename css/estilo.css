@@ -129,10 +129,13 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .realizacion-barra input[type="checkbox"] { width: 16px; height: 16px; }
 .realizacion-barra .control-etiqueta { color: var(--tinta-suave); }
 .realizacion-barra .control-sonido { gap: 10px; }
-/* Dos botones en columna, el de abajo del ancho del de arriba (Diego, 9/10/2026): «La
-   grabación» cuelga de «Escuchar propuesta» sin empujar a los demás hacia la derecha. Si el
-   de abajo está oculto, la columna es exactamente el botón de arriba y no se nota. */
-.realizacion-barra .control-apilado { display: inline-flex; flex-direction: column; align-items: stretch; gap: 5px; }
+/* «La grabación» viaja al SEGUNDO renglón de la barra (Diego, 9/10/2026): el de los grados
+   del bajo y la posición melódica, que está pegado a la derecha y tiene libre toda su mitad
+   izquierda. Así el botón no añade ni un renglón ni un píxel de altura antes de la
+   partitura. `order: 2` lo pone después del salto de renglón que fuerza el ::after y, como
+   `#control-grados` lleva `margin-left: auto`, el botón se queda a la izquierda y los otros
+   dos controles siguen a la derecha, donde estaban. */
+#btn-original { order: 2; }
 .realizacion-barra .control-vista { flex-wrap: wrap; gap: 8px 18px; }
 /* Los ajustes de CÓMO SE VE Y SE ESCRIBE la música —los grados del bajo y la posición
    melódica inicial— bajan JUNTOS a su propio renglón y pegados al borde derecho, con los

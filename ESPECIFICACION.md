@@ -3933,10 +3933,14 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       del de A-5.
     - **«▶ La grabación», en la barra del alumno** (Diego, 9/10/2026: «como sucede en
       los fragmentos de HookTheory, escuchar el fragmento en reproducción de piano o en
-      reproducción original»). **Debajo** de «Escuchar propuesta» y no a su lado —«para no
-      variar la posición del resto de controles»—: los dos forman una columna del ancho del
-      más largo, de modo que «Escuchar tono», «Escuchar mi cifrado» y el instrumento se quedan
-      donde estaban. Solo cuando el fragmento trae conexión: suenan los mismos compases que «El fragmento» del panel, sin abrirlo, con la
+      reproducción original»). Va en el **segundo renglón** de la barra, el de «Grados del
+      bajo» y «Posición melódica», pegado a la izquierda: ese renglón ya existe y tiene libre
+      toda su mitad izquierda, así que en pantalla de ordenador el botón **no añade ni un
+      píxel** de altura antes de la partitura (comprobado: la barra sigue midiendo 98 px y la
+      partitura no se mueve). Primero se probó debajo de «Escuchar propuesta», en columna, y
+      eso añadía un renglón entero (Diego, 9/10/2026: «preferiría que no generara un renglón
+      adicional, sino que aprovechara el espacio del renglón ya existente»). En el móvil sí
+      cuesta un renglón: allí ese segundo renglón ya va lleno. Solo cuando el fragmento trae conexión: suenan los mismos compases que «El fragmento» del panel, sin abrirlo, con la
       misma luz sobre la partitura. Los datos del pasaje se piden al montar el ejercicio —unos
       kilobytes— para que suene en el mismo clic, que es lo que el navegador exige. Mientras
       suena se ve «■ Parar», que con el panel cerrado es el único sitio desde donde detenerla.
