@@ -1873,6 +1873,7 @@
     const fuente = estado.nombreArchivo || '';
     const op = { leccion, leccionNombre, fuente, repertorio: repertorio(), acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked };
     let nuevos = 0, repetidos = 0, fallidos = 0, conAviso = 0, fundidos = 0;
+    let porCorcheas = [];       // los que quizá cambian de acorde por corcheas (10/10/2026)
     reemplazados = []; intactos = []; conectados = [];
     estado.fragmentos.forEach((f, k) => {
       let e;
@@ -1885,6 +1886,8 @@
          identificador propio. Se toma el primero libre. */
       e.id = identificadorLibre(leccion || 'X');
       if (e.avisos && e.avisos.length) conAviso++;
+      // ¿Ritmo armónico más rápido que la parte? (10/10/2026). Se anota para decirlo al final
+      if (e.fueraDeParte) porCorcheas.push(e.id);
       banco.push(e);
       nuevos++;
     });
@@ -1900,6 +1903,17 @@
         + conectados.join(', ') + ')' : '') + '.', 7000);
     /* Y, aparte y bien visible, lo único que puede haberse llevado por delante una revisión
        hecha a mano: una entrada reemplazada entera por venir en otra tonalidad. */
+    /* EL RITMO ARMÓNICO PUEDE IR MÁS RÁPIDO QUE LA PARTE (Diego, 10/10/2026: «un 2/4 en
+       tempo lento funciona como un 4/4 en tempo medio… cada corchea puede llevar un
+       acorde»). La rejilla automática solo acepta lo que cae en parte, así que en un
+       fragmento así se queda con la mitad de los acordes y el ejercicio sale mermado. No es
+       un error —las notas de paso se filtran a propósito—, pero conviene mirarlo, y el
+       momento de mirarlo es este. Con la rejilla marcada a mano, el aviso desaparece. */
+    if (porCorcheas.length) setTimeout(() => aviso('Mira la rejilla de '
+      + (porCorcheas.length > 1 ? 'estos ' + porCorcheas.length + ' fragmentos' : 'este fragmento')
+      + ': hay momentos en que las dos voces atacan FUERA DE PARTE y la rejilla los ha descartado. '
+      + 'Si el fragmento cambia de acorde por corcheas, marca la rejilla a mano. '
+      + porCorcheas.join(', ') + '.', 14000), 7100);
     if (reemplazados.length) setTimeout(() => aviso('OJO: ' + reemplazados.length
       + (reemplazados.length > 1 ? ' fragmentos venían' : ' fragmento venía') + ' en otra tonalidad y se '
       + (reemplazados.length > 1 ? 'han reemplazado enteros' : 'ha reemplazado entero') + ', con sus cifras: '
@@ -2166,7 +2180,9 @@
            (decisión 198), con la obra en el globo: de un vistazo se ve cuáles están ya
            documentados y cuáles siguen siendo esquemas sin procedencia. */
         + '<td class="celda-id"><code>' + (e.id || '—') + '</code></td>'
-        + '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '') + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
+        + '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '')
+          + (e.fueraDeParte ? 'Quizá cambia de acorde por corcheas: ' + e.fueraDeParte + ' ataque(s) de las dos voces fuera de parte que la rejilla descartó. Revisa la rejilla. — ' : '')
+          + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
         + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'

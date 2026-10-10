@@ -497,11 +497,24 @@ const Banco = (() => {
        fragmentos de práctica las dos voces se escriben al mismo paso, cada nota lleva su
        acorde y todo sigue exactamente igual que antes. */
     const esReal = !!String(opciones.obra || f.obra || '').trim();
+    const aMano = Array.isArray(opciones.rejilla) && opciones.rejilla.length;
     const rejilla = (esReal && hayB && hayS)
-      ? ((Array.isArray(opciones.rejilla) && opciones.rejilla.length)
+      ? (aMano
         ? opciones.rejilla.slice().sort((a, b) => a - b)      // la que marcó el profesor
         : rejillaAutomatica(f.compasesBajo, f.compasesSoprano, compas))
       : null;
+    /* ¿VA ESTE FRAGMENTO POR CORCHEAS? (Diego, 10/10/2026: «un 2/4 en tempo lento funciona
+       como un 4/4 en tempo medio: las negras del 4/4 suelen ser corcheas en el 2/4 lento, y
+       cada corchea puede llevar un acorde»).
+       La rejilla automática solo acepta los momentos que caen EN PARTE —en 2/4, la negra—,
+       de modo que en un fragmento de ritmo armónico más rápido se quedarían fuera la mitad
+       de los acordes y el ejercicio saldría mermado sin decir nada. Aquí se cuenta cuántos
+       momentos con las dos voces sonando se han descartado por caer fuera de parte: no es un
+       error —en la música de verdad hay notas de paso a punta y pala, y justo por eso se
+       filtran—, pero sí un motivo para mirar la rejilla. Se cuenta solo cuando la rejilla la
+       ha puesto el programa: si el profesor ya la marcó a mano, no hay nada que avisar. */
+    const fueraDeParte = (rejilla && !aMano)
+      ? Math.max(0, candidatas(f.compasesBajo, f.compasesSoprano).length - rejilla.length) : 0;
     // Las dos voces vistas desde la rejilla; sin rejilla, las escritas tal cual
     const vb = rejilla ? enRejilla(f.compasesBajo, rejilla) : f.compasesBajo;
     let vs = rejilla ? enRejilla(f.compasesSoprano, rejilla) : f.compasesSoprano;
@@ -590,11 +603,16 @@ const Banco = (() => {
          armonía es una sola: las dos voces tienen por fuerza los mismos acordes. `null`
          en todo lo que no sea música real a dos voces, y entonces nada cambia. */
       rejilla: rejilla,
+      /* Cuántos acordes posibles ha descartado la rejilla automática por caer fuera de parte
+         (10/10/2026). Solo se guarda cuando los hay, para no ensuciar el banco; es
+         informativo —NO va a `avisos`, que apartan el fragmento de las fichas— y queda fuera
+         de la huella del sello, como la procedencia. */
       bajo: partes.bajo || null,
       soprano: partes.soprano || null,
       nivelManual: null,
       avisos
     };
+    if (fueraDeParte) base.fueraDeParte = fueraDeParte;
     /* LAS CUATRO VOCES ESCRITAS (decisión 200, Diego 30/9/2026: «me interesa que se
        conserven las cuatro voces tal como las he escrito»). Se guardan las TRES de arriba
        —tenor, contralto y soprano, del grave al agudo—, una por nota del bajo; la cuarta es
