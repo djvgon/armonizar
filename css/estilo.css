@@ -1866,6 +1866,37 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
   border: 1.5px solid var(--marca-apagada, #A169C2); border-radius: 3px;
   background: rgba(176, 38, 255, .05);
 }
+/* LAS NOTAS QUE LA REDUCCIÓN QUITA (asunto 10 con el chat auditivo; Diego, 10/10/2026): una
+   nota de paso cromática, un 6/4 de arpegio, una bordadura. No llevan acorde y el alumno no
+   las cifra, pero conviene que las vea. Un asterisco encima de la nota y un globo con la
+   explicación —al pulsarlo, y solo mientras suena esa nota si está sonando la grabación—.
+   Las de fuera del pasaje del ejercicio van más tenues: ahí están, porque el alumno puede oír
+   el fragmento entero, pero no compiten con lo suyo. */
+.escucha-nota {
+  font: inherit; font-size: 1.05rem; line-height: 1; cursor: help;
+  /* El punto que da el chat auditivo es el centro de la marca */
+  transform: translate(-50%, -50%);
+  /* Un blanco de 26 px para el dedo, sin que la marca crezca */
+  min-width: 26px; min-height: 26px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--marca-honda, #9412DC); background: rgba(255, 255, 255, .72);
+  border: none; border-radius: 50%;
+}
+.escucha-nota.fuera { opacity: .45; }
+.escucha-nota:hover, .escucha-nota:focus-visible, .escucha-nota.abierta {
+  opacity: 1; color: var(--marca-texto, #fff); background: var(--marca, #B026FF); outline: none;
+}
+.escucha-globo {
+  position: absolute; z-index: 2; transform: translate(-50%, -115%);
+  max-width: 70%; padding: .3rem .5rem;
+  font-family: var(--fuente-ui); font-size: .78rem; line-height: 1.3; text-align: left;
+  color: var(--tinta); background: var(--papel);
+  border: 1px solid var(--marca-apagada, #A169C2); border-radius: var(--radio-control);
+  box-shadow: var(--sombra); pointer-events: none;
+}
+/* En el primer sistema no cabe por arriba: el globo cae por debajo de la marca */
+.escucha-globo.debajo { transform: translate(-50%, 15%); }
+
 /* El compás que suena, y la línea que lo recorre */
 .escucha-compas { background: rgba(176, 38, 255, .13); }
 .escucha-linea {

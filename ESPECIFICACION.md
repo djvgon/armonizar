@@ -3880,6 +3880,28 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+247. **Aviso: este fragmento quizá cambia de acorde por corcheas**
+    (10/10/2026, Diego: «un 2/4 en tempo lento funciona como un 4/4 en tempo medio: las negras
+    del 4/4, que pueden llevar cada una un acorde, suelen ser corcheas en el 2/4 lento»).
+    La rejilla automática (238) solo acepta los momentos que caen **en parte** —`pulso()`: la
+    negra en 2/4 y 4/4, la negra con puntillo en 6/8, la blanca en 2/2—, de modo que un
+    fragmento de ritmo armónico más rápido entraría con la mitad de los acordes y sin decir
+    nada. Ahora la entrada guarda **`fueraDeParte`**: cuántos momentos con las dos voces
+    sonando ha descartado la rejilla por caer fuera de parte.
+    - **No es un error y no va a `avisos`.** Los avisos apartan el fragmento de las fichas
+      (ver `cumple`), y aquí no hay nada malo: en la música de verdad las notas de paso se
+      filtran a propósito, que es para lo que está el filtro. Es una señal para mirar.
+    - **Se cuenta solo cuando la rejilla la pone el programa.** Si el profesor ya la marcó a
+      mano, no hay nada que avisar y el campo desaparece.
+    - **Dónde se ve**: al importar, un aviso aparte y bien visible con los identificadores —que
+      es el momento de arreglarlo—, y en el globo de la fila de la tabla del banco.
+    - Fuera de la huella del sello, como la procedencia: comprobado.
+    - El ritmo armónico **no afecta a `compás.tiempo`**, que es una regla de medir y no una
+      afirmación sobre la armonía; dónde cambian los acordes es la rejilla. Lo que sí decide
+      el tempo es que la regla no puede seguir al pulso *sentido* —un 2/4 lento se siente en
+      cuatro—, sino a la notación: el tiempo es el que da `pulso()` a partir de la cifra de
+      compás.
+
 246. **Oír la música de verdad desde el ejercicio**
     (8/10/2026, Diego: «¿Cómo haremos para que los alumnos puedan abrir desde la interfaz de
     práctica de los fragmentos la partitura de Beethoven y la puedan escuchar en sonido
@@ -3975,6 +3997,19 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       2.º tiempo del c. 16). Comprobado contra la medida del chat auditivo: a los 30,76 s la
       línea cae en x = 861,3 px, y él midió 861. Si un fragmento no trae estas medidas, no se
       dibuja nada y lo demás sigue igual.
+    - **LAS NOTAS QUE LA REDUCCIÓN QUITA** (asunto 10 con el chat auditivo; Diego, 10/10/2026).
+      Una nota de paso cromática, un 6/4 que es solo arpegio, una bordadura: salen de la
+      reducción —criterios 2 y 3 del acuerdo— y el alumno no las cifra, pero conviene que las
+      vea. En la partitura real se marcan con un **asterisco** sobre la nota y un **globo** con
+      la explicación. El dato es un campo opcional de `auditivo.json`:
+      `notasEnLaImagen: [{ compas, tiempo, x, y, texto }, …]`, en píxeles de la imagen como
+      `compasesEnLaImagen`; los textos los escribe el chat auditivo y los aprueba Diego.
+      El globo se abre de dos maneras: **solo**, cuando la grabación llega a esa nota, y se
+      queda tres segundos o hasta la marca siguiente; y **a mano**, pulsando la marca (se
+      cierra al volver a pulsarla o al tocar la partitura). La marca es un **botón** con el
+      texto como nombre accesible, con un blanco de 26 px para el dedo. Se dibujan **todas**
+      las del fragmento, porque el alumno puede oír el fragmento entero, pero las de fuera
+      del pasaje del ejercicio van más tenues. Sin el campo, no se dibuja nada.
     - **La conexión se le pega a un fragmento que ya estaba en el banco** volviendo a arrastrar
       su archivo, aunque el fragmento esté **cerrado**: está fuera de la huella del sello, como
       la procedencia (198), así que no reescribe nada de lo firmado. Hacía falta porque los

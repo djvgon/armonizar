@@ -252,6 +252,13 @@ const Escucha = (() => {
   let frActual = null, tramosActuales = null;
   // Los dos dibujos que se mueven sobre la imagen de la partitura
   let compasEl = null, lineaEl = null;
+  /* LAS NOTAS QUE LA REDUCCIÓN QUITA (asunto 10 con el chat auditivo; Diego, 10/10/2026).
+     Una nota de paso cromática, un 6/4 de arpegio, una bordadura: no llevan acorde y el
+     alumno no las cifra, pero conviene que las vea. Van marcadas con un asterisco sobre la
+     partitura real y un globo con la explicación. `marcas` son los botones; `globo`, el
+     cartelito; `marcaAbierta`, cuál se está leyendo, y `globoHasta`, hasta qué segundo lo
+     deja puesto la grabación cuando lo ha abierto ella. */
+  let marcas = [], globo = null, marcaAbierta = -1, globoHasta = null;
 
   /* EL AVISO DEL TONO (Diego, 9/10/2026). La grabación se ofrece también cuando la ficha ha
      transportado el fragmento, y entonces hay que decirlo: el audio suena en la tonalidad en
@@ -296,6 +303,8 @@ const Escucha = (() => {
     /* La partitura, a tamaño completo en otra pestaña: en el móvil entra reducida a unos
        340 px y así se puede leer de verdad, con el zoom del propio navegador. */
     caja.querySelector('.escucha-partitura').addEventListener('click', ev => {
+      // Con un globo abierto, el primer toque en la partitura lo cierra y no abre nada más
+      if (marcaAbierta >= 0) { cerrarGlobo(); return; }
       const s = ev.currentTarget.getAttribute('src');
       if (s) window.open(s, '_blank', 'noopener');
     });
@@ -331,6 +340,7 @@ const Escucha = (() => {
     if (!audio || audio.paused) return;
     const t = audio.currentTime;
     situarEnLaImagen(t);                       // el compás y la línea sobre la partitura real
+    globoQueSuena(t);                          // y la explicación de la nota por la que pasa
     if (!iluminar || !momentos || !momentos.length) return;
     let k = -1;
     if (finDelFragmento == null || t < finDelFragmento) {
@@ -447,6 +457,7 @@ const Escucha = (() => {
     ejercicio = ej || null;
     iluminar = typeof alIluminar === 'function' ? alIluminar : null;
     momentos = null; finDelFragmento = null; frActual = null; tramosActuales = null;
+    marcas = []; globo = null; marcaAbierta = -1; globoHasta = null;
     cerrar();
     if (audio) { audio.removeAttribute('src'); audio.hidden = true; audio.load(); }
     if (actual) preparar();          // en segundo plano, para que los botones suenen al pulsarlos
@@ -494,6 +505,84 @@ const Escucha = (() => {
     lineaEl.className = 'escucha-linea';
     lineaEl.hidden = true;
     capa.appendChild(lineaEl);
+    dibujarMarcas(fr, capa);
+  }
+
+  /* Las marcas de las notas que la reducción quita (asunto 10). Cada una es un BOTÓN —se
+     puede tocar con el dedo y llegar con el teclado—, con el texto como su nombre accesible;
+     el globo es solo la manera de verlo. Las que caen fuera del pasaje del ejercicio se
+     dibujan más tenues: ahí están, porque el alumno puede oír el fragmento entero, pero no
+     compiten con lo suyo. */
+  function dibujarMarcas(fr, capa) {
+    marcas = []; globo = null; marcaAbierta = -1; globoHasta = null;
+    const med = medidasDe(fr);
+    const lista = Array.isArray(fr.notasEnLaImagen) ? fr.notasEnLaImagen : [];
+    if (!med || !lista.length) return;
+    const d = actual ? punto(actual.desde) : null, h = actual ? punto(actual.hasta) : null;
+    const negras = negrasDe(fr.compas);
+    const enNegras = m => ((Number(m.compas) || 0) - 1) * negras + (parseFloat(m.tiempo) || 1) - 1;
+    const desde = d ? (d.compas - 1) * negras + (d.tiempo - 1) : -Infinity;
+    const hasta = h ? (h.compas - 1) * negras + (h.tiempo - 1) : Infinity;
+
+    lista.forEach((m, i) => {
+      if (!(m && isFinite(m.x) && isFinite(m.y))) return;
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'escucha-nota';
+      const n = enNegras(m);
+      if (n < desde || n >= hasta) b.classList.add('fuera');
+      b.textContent = '∗';
+      b.setAttribute('aria-label', m.texto || 'Nota que no lleva acorde');
+      b.title = m.texto || '';
+      b.style.left = (100 * m.x / med.ancho) + '%';
+      b.style.top = (100 * m.y / med.alto) + '%';
+      b.addEventListener('click', ev => { ev.stopPropagation(); abrirGlobo(i, true); });
+      capa.appendChild(b);
+      marcas.push({ el: b, texto: m.texto || '', segundo: segundoEnNegra(fr, n), arriba: (m.y / med.alto) > 0.4 });
+    });
+    if (!marcas.length) return;
+    /* La capa no recibe pulsaciones —así se puede pulsar la imagen para verla entera—, pero
+       las marcas y el globo sí: son lo único de la capa con lo que se interactúa. */
+    capa.style.pointerEvents = 'none';
+    marcas.forEach(m => { m.el.style.pointerEvents = 'auto'; });
+    globo = document.createElement('span');
+    globo.className = 'escucha-globo';
+    globo.hidden = true;
+    capa.appendChild(globo);
+  }
+
+  function abrirGlobo(i, aMano) {
+    if (!globo || !marcas[i]) return;
+    if (aMano && marcaAbierta === i) { cerrarGlobo(); return; }     // pulsar otra vez, cerrar
+    marcas.forEach((m, k) => m.el.classList.toggle('abierta', k === i));
+    globo.textContent = marcas[i].texto;
+    globo.style.left = marcas[i].el.style.left;
+    globo.style.top = marcas[i].el.style.top;
+    globo.classList.toggle('debajo', !marcas[i].arriba);
+    globo.hidden = false;
+    marcaAbierta = i;
+    globoHasta = aMano ? null : null;                               // lo pone quien lo abre
+  }
+  function cerrarGlobo() {
+    if (globo) globo.hidden = true;
+    marcas.forEach(m => m.el.classList.remove('abierta'));
+    marcaAbierta = -1; globoHasta = null;
+  }
+
+  /* Mientras suena: se abre el globo de la marca por la que pasa la música y se queda tres
+     segundos —o hasta la marca siguiente—, que es lo que se tarda en leer una línea. */
+  const SEG_GLOBO = 3;
+  function globoQueSuena(t) {
+    if (!marcas.length) return;
+    let k = -1;
+    for (let i = 0; i < marcas.length; i++) {
+      const s = marcas[i].segundo;
+      if (s == null) continue;
+      if (s <= t + 0.05 && t - s < SEG_GLOBO) { if (k < 0 || s > marcas[k].segundo) k = i; }
+    }
+    if (k < 0) { if (globoHasta != null) cerrarGlobo(); return; }
+    if (k !== marcaAbierta) { abrirGlobo(k, false); }
+    globoHasta = marcas[k].segundo + SEG_GLOBO;
   }
 
   // Pone el compás que suena y la línea donde toca; los esconde fuera de lo medido
@@ -507,6 +596,8 @@ const Escucha = (() => {
   function borrarDeLaImagen() {
     if (compasEl) compasEl.hidden = true;
     if (lineaEl) lineaEl.hidden = true;
+    // El globo que había abierto la grabación se cierra; el que abrió el alumno, se queda
+    if (globoHasta != null) cerrarGlobo();
   }
 
   function pintar(fr) {
