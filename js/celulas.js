@@ -197,7 +197,8 @@ const Celulas = (() => {
     segundaAumentada: 'Hay una segunda aumentada en la melodía.',
     tritono: 'La voz salta un tritono ({a} → {b}).',
     consonancia: 'El intervalo de {d} no es una consonancia.',
-    calidad: 'Esa {d} no es mayor ni menor: con esa alteración sale aumentada o disminuida.'
+    calidad: 'Esa {d} no es mayor ni menor: con esa alteración sale aumentada o disminuida.',
+    tonica: 'Sobre la tónica, a dos voces, solo caben la tónica o su tercera: con otra nota no suena la tónica.'
   };
   const rellenar = (plantilla, datos) => String(plantilla)
     .replace(/\{(\w+)\}/g, (_, k) => (datos && datos[k] !== undefined ? datos[k] : '{' + k + '}'));
@@ -292,6 +293,30 @@ const Celulas = (() => {
     [0, 2].forEach(k => {
       if (!CONSONANTES.includes(celula.intervalos[k])) fallos.push({ regla: 'consonancia', momento: k, mensaje: texto('consonancia', { d: celula.intervalos[k] + '.ª' }) });
     });
+    /* LA SONORIDAD DE TÓNICA (Diego, 15/10/2026: «sobre la tónica solo se ha de poner tónica
+       (octava) o tercera (a dos voces) para que se haga sonar la sonoridad de tónica»).
+
+       Rige **en las consonancias** —la preparación y la resolución— y no en la percusión: ahí
+       la disonancia es el ejercicio, y aplicarla también allí prohibiría la propia cadencia
+       compuesta, cuya percusión es tónica contra 2.º grado (Diego, 15/10, con las cuentas
+       delante). Y rige **en las dos voces**: da igual que la tónica esté arriba o abajo, de
+       modo que valen el unísono y la octava, la 3.ª sobre la tónica y la 6.ª cuando la que
+       está abajo es la mediante. */
+    const claseDe = n => ((Teoria.midi(n) % 12) + 12) % 12;
+    const CLASE_TONICA = claseDe(Teoria.nota(celula.tonalidad.tonica + '4'));
+    const terceraDe = Teoria.escalaNatural(celula.tonalidad)
+      .find(x => Teoria.textoGrado({ letra: x.letra, alt: x.alt, octava: 4 }, celula.tonalidad) === '3');
+    const CLASE_MEDIANTE = terceraDe ? claseDe({ letra: terceraDe.letra, alt: terceraDe.alt, octava: 4 }) : -1;
+    [0, 2].forEach(k => {
+      const x = m[k];
+      if (!x || !x.alta || !x.baja) return;
+      const a = claseDe(x.alta), b = claseDe(x.baja);
+      if (a !== CLASE_TONICA && b !== CLASE_TONICA) return;
+      const otra = a === CLASE_TONICA ? b : a;
+      if (otra !== CLASE_TONICA && otra !== CLASE_MEDIANTE)
+        fallos.push({ regla: 'tonica', momento: k, mensaje: texto('tonica') });
+    });
+
     /* La CALIDAD de los tres intervalos: con la sensible del menor en juego, una 6.ª por
        grados puede ser una 6.ª aumentada, y eso no es una consonancia. */
     m.forEach((x, k) => {

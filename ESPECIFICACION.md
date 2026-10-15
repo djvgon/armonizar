@@ -3880,6 +3880,49 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+260. **La cadena de retardos y la cadencia compuesta; y la sonoridad de tónica**
+    (15/10/2026, Diego: «pongamos también una cadena de retardos. Recuerda que sobre la
+    tónica solo se ha de poner tónica (octava) o tercera (a dos voces) para que se haga sonar
+    la sonoridad de tónica. La cadencia compuesta (a dos voces) es cuando la nota retardada
+    cae sobre sensible y luego esta, en el siguiente tiempo fuerte, va a tónica (las dos voces
+    finalizan en tónica es cadencia compuesta perfecta; si una voz a tónica y otra a tercera
+    es cadencia compuesta imperfecta)».)
+    - **`js/cadenas.js`, nuevo.** Una cadena es varias células 6–7–6 encadenadas: la
+      resolución de una es la preparación de la siguiente, de modo que la voz de arriba baja
+      por grados ligada sobre cada barra y la de abajo baja por grados también. Los intervalos
+      van 6 · 7 · 6 · 7 · 6 … Un ejemplo de tres retardos en Do mayor:
+      `mi4/sol3 · mi4/fa3 · re4/fa3 · re4/mi3 · do4/mi3 · do4/re3 · si3/re3 · do4/do3`.
+    - **La cadencia la hace el último retardo, que es el de la TÓNICA**: la tónica retardada
+      resuelve en la sensible y la sensible sube a la tónica en el tiempo fuerte siguiente.
+      Abajo, la tónica (**perfecta**) o la mediante (**imperfecta**). En la menor la sensible
+      se escribe elevada, como en la célula suelta: `sol♯3/si2 → la3/la2`.
+    - **De dos a cuatro retardos, al azar** (Diego, 15/10), y siempre con cadencia. Salen
+      **114** cadenas en las diez tonalidades del curso (40 de dos, 38 de tres y 36 de cuatro),
+      y en ninguna choca una regla con el modelo.
+    - **Lo que escribe el alumno** (Diego, 15/10): se le da **el bajo entero**, con sus
+      ligaduras, y escribe **la voz superior** —las notas, sus ligaduras y todas las barras—.
+      Es, en pequeño, el ejercicio de partimento al que lleva el apartado 3.
+    - **La sonoridad de tónica, en `celulas.js` y para TODO**: si una de las dos voces está en
+      la tónica, la otra ha de estar en la tónica o en la mediante. **Rige en las
+      consonancias** —la preparación y la resolución— y no en la percusión. Esto último lo
+      decidió Diego con las cuentas delante, y la cuenta era que al pie de la letra la regla
+      **prohíbe su propia cadencia**: la percusión del último retardo es tónica contra 2.º
+      grado. Las células que puede sacar una ficha pasan de **460 a 328**.
+    - **La reja aguanta las dos cosas**: `barras` es ahora una lista —una en la célula, una
+      por compás en la cadena—, el ancho de columna se estrecha cuando hay muchos momentos, y
+      a partir de cierto largo la caja se desplaza en vez de encoger las notas hasta no verse.
+      Las alteraciones se siguen escribiendo con memoria de compás, y ahora el compás lo
+      parten todas las barras.
+    - **La pantalla sirve para los dos ejercicios** con un solo juego de mandos: lo único que
+      cambia entre la célula y la cadena está en una tabla de ocho funciones
+      (`MODELOS` en `contrapunto.js`), de modo que escribir, dibujar, corregir y oír se
+      escriben una sola vez. Es también lo que hará falta cuando lleguen los esquemas.
+    - Comprobado: `probar-cadenas.js` (30 comprobaciones, sin navegador) y
+      `probar-pagina-contrapunto.js`, que sube a **97** y escribe una cadena entera pulsando
+      los mandos de verdad.
+    - **Pendiente de Diego**: el enunciado de la cadena es propuesta mía —«Sobre este bajo,
+      escribe la voz superior: una cadena de N retardos 7–6 que acabe en cadencia compuesta»—.
+
 259. **La reja de escritura y la corrección: el ejercicio ya se hace**
     (15/10/2026. Puntos 2 y 3 del piloto, los que convierten la pantalla del 258 en un
     ejercicio de verdad.)

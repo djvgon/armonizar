@@ -2,10 +2,16 @@
    contrapunto.js — La pantalla del tipo de ejercicio «Contrapunto»:
    el retardo a dos voces (lección Co-1).
 
-   El alumno recibe UNA nota —la retardada o la real, según la dirección
-   del ejercicio— y escribe la célula entera: las otras cinco notas, las
-   ligaduras y la barra de compás. Después pulsa «Comprobar» y se le
-   dice, regla por regla, qué no cumple.
+   Dos ejercicios, los dos con la misma reja de escritura:
+
+     · **La célula suelta**: el alumno recibe UNA nota —la retardada o la
+       real, según la dirección— y escribe la célula entera.
+     · **La cadena de retardos** (`cadenas.js`): se le da **el bajo
+       entero** y escribe **la voz superior**, con sus ligaduras y sus
+       barras, acabando en cadencia compuesta (Diego, 15/10/2026).
+
+   Después pulsa «Comprobar» y se le dice, regla por regla, qué no
+   cumple.
 
    Cómo se escribe (2.6 del documento de contrapunto):
 
@@ -47,8 +53,9 @@
   const VOCES = ['alta', 'baja'];
 
   const estado = {
-    celula: null,
-    escrito: null,         // { momentos:[{alta,baja}], ligaduras:[{voz,desde}], barra }
+    tipo: 'celula',        // 'celula' | 'cadena'
+    celula: null,          // la célula o la cadena en curso (el modelo)
+    escrito: null,         // { momentos:[{alta,baja}], ligaduras:[{voz,desde}], barras:[k] }
     activa: null,          // { momento, voz }
     mal: [],               // casillas en rojo tras corregir
     fallos: [],            // los mensajes de la última corrección
@@ -59,6 +66,72 @@
     k: 0,
     filtro: null
   };
+
+  /* ---------- Los dos ejercicios, detrás de la misma puerta ----------
+     Todo lo que sigue —escribir, dibujar, corregir, oír— es igual para la célula y para la
+     cadena; lo único que cambia es esto. Así la reja y la corrección se escriben una sola
+     vez, que es también lo que hará falta cuando lleguen los esquemas del apartado 3. */
+  const MODELOS = {
+    celula: {
+      enunciado: c => Celulas.enunciado(c),
+      subtitulo: c => (Celulas.nivelDe(c) === 'dificil' ? ''
+        : 'Retardo ' + (Celulas.CIFRA_TIPO[c.tipo] || c.tipo) + ' · ') + Teoria.nombreTonalidad(c.tonalidad),
+      dadas: c => { const d = Celulas.dato(c); return [{ momento: d.momento, voz: d.voz }]; },
+      ligadurasDadas: () => [],
+      enBlanco: c => {
+        const d = Celulas.dato(c);
+        return {
+          momentos: c.momentos.map((m, k) => ({
+            alta: k === d.momento && d.voz === 'alta' ? m.alta : null,
+            baja: k === d.momento && d.voz === 'baja' ? m.baja : null
+          })),
+          ligaduras: [], barras: []
+        };
+      },
+      /* La nota de la que arranca una casilla vacía: la que se le da, que ya tiene delante. */
+      arranque: c => Celulas.dato(c).nota,
+      comprobar: (c, r) => Celulas.comprobar(c, {
+        momentos: r.momentos, ligaduras: r.ligaduras, barra: r.barras.length ? r.barras[0] : null
+      }),
+      aSonido: (c, s) => Celulas.aSonido(c, s),
+      explica: c => {
+        const voz = v => (v === 'alta' ? 'la voz superior' : 'la voz inferior');
+        let t = 'Preparación ' + c.intervalos[0] + '.ª · percusión ' + c.intervalos[1]
+          + '.ª · resolución ' + c.intervalos[2] + '.ª. Se liga ' + voz(c.vozRetardada)
+          + ' y resuelve bajando un grado; la nota real está en ' + voz(c.vozReal) + '.';
+        if (c.sensible) t += ' La resolución lleva la sensible (' + Teoria.nombreEs(Teoria.nota(c.sensible), true) + ').';
+        if (Celulas.nivelDe(c) === 'dificil') {
+          const d = Celulas.dato(c);
+          const otras = Celulas.posibles({ tonalidad: c.tonalidad, dada: c.dada, nota: d.nota, voz: d.voz });
+          if (otras.length > 1) t += ' Sin decir el tipo valen ' + otras.length
+            + ' retardos con esta misma nota: ' + otras.map(x => Celulas.CIFRA_TIPO[x.tipo] || x.tipo).join(', ') + '.';
+        }
+        return t;
+      }
+    },
+    cadena: {
+      enunciado: c => Cadenas.enunciado(c),
+      subtitulo: c => Teoria.nombreTonalidad(c.tonalidad) + ' · cadencia compuesta ' + c.cadencia,
+      dadas: c => Cadenas.dadas(c),
+      ligadurasDadas: c => Cadenas.ligadurasDadas(c),
+      enBlanco: c => ({
+        momentos: c.momentos.map(m => ({ alta: null, baja: m.baja })),
+        ligaduras: Cadenas.ligadurasDadas(c).map(l => ({ voz: l.voz, desde: l.desde })),
+        barras: []
+      }),
+      /* En la cadena no se da ninguna nota de la voz que escribe, así que se arranca del bajo
+         que tiene debajo: tampoco adelanta nada, porque lo está viendo. */
+      arranque: c => c.momentos[0].baja,
+      comprobar: (c, r) => Cadenas.comprobar(c, r),
+      aSonido: (c, s) => Cadenas.aSonido(c, s),
+      explica: c => 'Cadena de ' + c.n + ' retardos 7–6: cada resolución es la preparación de la '
+        + 'siguiente. El último retardo es el de la tónica, que resuelve en la sensible, y la '
+        + 'sensible sube a la tónica: cadencia compuesta ' + c.cadencia
+        + (c.cadencia === 'perfecta' ? ' —las dos voces en tónica—.' : ' —una voz en tónica y otra en su tercera—.')
+        + (c.sensible ? ' La sensible se escribe ' + Teoria.nombreEs(Teoria.nota(c.sensible), true) + '.' : '')
+    }
+  };
+  const M = () => MODELOS[estado.tipo] || MODELOS.celula;
 
   /* ---------- Avisos ---------- */
   function aviso(txt, ms = 5000) {
@@ -95,6 +168,15 @@
     selInst.addEventListener('change', () => { Sonido.parar(); Sonido.elegirInstrumento(selInst.value); });
 
     [selTipo, selTon, $('#dada'), $('#nivel')].forEach(s => s.addEventListener('change', otra));
+    $('#ejercicio').addEventListener('change', () => { estado.tipo = $('#ejercicio').value; mandosDelTipo(); otra(); });
+    mandosDelTipo();
+  }
+
+  /* En la cadena no hay tipo de retardo que elegir —son todas 7–6—, ni nota dada que escoger
+     —se da el bajo entero—, ni niveles. Se esconden en vez de dejarlos sin efecto. */
+  function mandosDelTipo() {
+    const cadena = estado.tipo === 'cadena';
+    ['#caja-tipo', '#caja-dada', '#caja-nivel'].forEach(id => { $(id).hidden = cadena; });
   }
 
   function opcionesLibres() {
@@ -108,24 +190,19 @@
       nivel: $('#nivel').value
     };
   }
-
-  /* ---------- La hoja en blanco: solo la nota que se da ---------- */
-  function enBlanco(c) {
-    const d = Celulas.dato(c);
-    return {
-      momentos: c.momentos.map((m, k) => ({
-        alta: k === d.momento && d.voz === 'alta' ? m.alta : null,
-        baja: k === d.momento && d.voz === 'baja' ? m.baja : null
-      })),
-      ligaduras: [],
-      barra: null
-    };
+  // Uno nuevo del tipo que toque, con lo que digan los mandos
+  function sorteaUno() {
+    const o = opcionesLibres();
+    if (estado.tipo === 'cadena') return Cadenas.elegir({ n: 1, tonalidades: o.tonalidades })[0];
+    return Celulas.elegir(o)[0];
   }
-  const dadaDe = c => { const d = Celulas.dato(c); return [{ momento: d.momento, voz: d.voz }]; };
-  const esDada = (k, voz) => {
-    const d = Celulas.dato(estado.celula);
-    return d.momento === k && d.voz === voz;
-  };
+
+  /* ---------- La hoja en blanco ---------- */
+  const dadaDe = c => M().dadas(c);
+  const esDada = (k, voz) => M().dadas(estado.celula).some(d => d.momento === k && d.voz === voz);
+  // Una ligadura DADA tampoco se toca: es la del bajo de la cadena
+  const esLigaduraDada = (voz, desde) =>
+    M().ligadurasDadas(estado.celula).some(l => l.voz === voz && l.desde === desde);
 
   /* ---------- Escribir ---------- */
 
@@ -163,7 +240,7 @@
     /* En una casilla vacía la primera flecha escribe la nota un grado por encima o por debajo
        de LA QUE SE DA. Es un punto de partida neutro —la nota dada la conoce el alumno— y no
        le adelanta nada de la solución. */
-    const base = actual || Celulas.dato(estado.celula).nota;
+    const base = actual || M().arranque(estado.celula);
     ponNota(a.momento, a.voz, mueve(base, pasos, ton));
     tras();
   }
@@ -193,6 +270,7 @@
     if (a.momento >= estado.escrito.momentos.length - 1) {
       aviso('La última nota no se liga con nada: no hay nota detrás.'); return;
     }
+    if (esLigaduraDada(a.voz, a.momento)) { aviso('Esa ligadura viene dada: es la del bajo.'); return; }
     const ls = estado.escrito.ligaduras;
     const i = ls.findIndex(l => l.voz === a.voz && l.desde === a.momento);
     if (i >= 0) ls.splice(i, 1);
@@ -213,8 +291,13 @@
     tras();
   }
 
+  /* Las barras son varias: en la célula una, en la cadena una por compás. Pulsar un hueco
+     la pone o la quita, sin límite: donde van es cosa del alumno. */
   function barra(k) {
-    estado.escrito.barra = estado.escrito.barra === k ? null : k;
+    const b = estado.escrito.barras;
+    const i = b.indexOf(k);
+    if (i >= 0) b.splice(i, 1); else b.push(k);
+    b.sort((x, y) => x - y);
     tras();
   }
 
@@ -245,22 +328,28 @@
     estado.escrito.momentos.forEach((m, k) => VOCES.forEach(v => { if (!m[v]) faltan.push({ momento: k, voz: v }); }));
     if (faltan.length) {
       estado.mal = faltan;
-      estado.fallos = [{ regla: 'incompleta', mensaje: 'Falta alguna nota: la célula tiene seis, tres en cada voz.' }];
+      estado.fallos = [{ regla: 'incompleta', mensaje: estado.tipo === 'cadena'
+        ? 'Falta alguna nota de la voz superior: una por momento.'
+        : 'Falta alguna nota: la célula tiene seis, tres en cada voz.' }];
       estado.acertada = false;
       pintar();
       return;
     }
     estado.intentos++;
-    /* En el nivel DIFÍCIL el enunciado no dice el tipo, de modo que valen todos los retardos
-       que caben sobre la nota dada: se prueba con cada uno y se queda el que mejor le salga al
-       alumno. Así no se le corrige contra un modelo que él no tenía por qué adivinar. */
-    const d = Celulas.dato(c);
-    const modelos = Celulas.nivelDe(c) === 'dificil'
-      ? Celulas.posibles({ tonalidad: c.tonalidad, dada: c.dada, nota: d.nota, voz: d.voz })
-      : [c];
+    /* En el nivel DIFÍCIL de la célula el enunciado no dice el tipo, de modo que valen todos
+       los retardos que caben sobre la nota dada EN SU VOZ: se prueba con cada uno y se queda
+       el que mejor le salga al alumno. Así no se le corrige contra un modelo que él no tenía
+       por qué adivinar. En la cadena el bajo viene dado entero, de modo que la respuesta es
+       una. */
+    let modelos = [c];
+    if (estado.tipo === 'celula' && Celulas.nivelDe(c) === 'dificil') {
+      const d = Celulas.dato(c);
+      const otras = Celulas.posibles({ tonalidad: c.tonalidad, dada: c.dada, nota: d.nota, voz: d.voz });
+      if (otras.length) modelos = otras;
+    }
     let mejor = null;
-    (modelos.length ? modelos : [c]).forEach(m => {
-      const r = Celulas.comprobar(m, estado.escrito);
+    modelos.forEach(m => {
+      const r = M().comprobar(m, estado.escrito);
       const peso = (r.fallos ? r.fallos.length : 9) + (r.diferencias ? r.diferencias.length : 9);
       if (!mejor || r.bien || peso < mejor.peso) mejor = { r, m, peso };
       if (r.bien) mejor = { r, m, peso: -1 };
@@ -293,16 +382,12 @@
   function pintar() {
     const c = estado.celula;
     if (!c) return;
-    const d = Celulas.dato(c);
-    const dificil = Celulas.nivelDe(c) === 'dificil';
-    $('#enunciado').textContent = Celulas.enunciado(c);
+    $('#enunciado').textContent = M().enunciado(c);
     /* EL TIPO SOLO EN EL NIVEL FÁCIL (Diego, 15/10): «en el más fácil se dice el tipo en el
        enunciado. En el más difícil … no se indica —con lo que no se le da ninguna pista al
        alumno». En el difícil, pues, no se escribe en ninguna parte de la pantalla. */
-    $('#tipo-pedido').textContent =
-      (dificil ? '' : 'Retardo ' + (Celulas.CIFRA_TIPO[c.tipo] || c.tipo) + ' · ')
-      + Teoria.nombreTonalidad(c.tonalidad)
-      + (estado.lista ? ' · célula ' + (estado.k + 1) + ' de ' + estado.lista.length : '');
+    $('#tipo-pedido').textContent = M().subtitulo(c)
+      + (estado.lista ? ' · ' + (estado.k + 1) + ' de ' + estado.lista.length : '');
 
     const mio = estado.escrito;
     Reja.dibujar($('#reja'), {
@@ -310,13 +395,13 @@
       modelo: c.momentos,
       momentos: estado.visto ? c.momentos : mio.momentos,
       ligaduras: estado.visto ? c.ligaduras : mio.ligaduras,
-      barra: estado.visto ? c.barra : mio.barra,
+      barras: estado.visto ? (c.barras || (c.barra !== undefined ? [c.barra] : [])) : mio.barras,
       dadas: dadaDe(c),
       activa: estado.visto ? null : estado.activa,
       mal: estado.visto ? [] : estado.mal,
       intervalos: true,
       soloLectura: estado.visto,
-      titulo: Celulas.enunciado(c),
+      titulo: M().enunciado(c),
       alSonar: momento => sonarMomento(momento),
       sonando: estado.sonando
     }, (k, que) => {
@@ -330,22 +415,12 @@
 
     const m = $('#momentos');
     m.hidden = !estado.visto;
-    if (estado.visto) {
-      const voz = v => (v === 'alta' ? 'la voz superior' : 'la voz inferior');
-      m.textContent = 'Preparación ' + c.intervalos[0] + '.ª · percusión ' + c.intervalos[1]
-        + '.ª · resolución ' + c.intervalos[2] + '.ª. Se liga ' + voz(c.vozRetardada)
-        + ' y resuelve bajando un grado; la nota real está en ' + voz(c.vozReal) + '.'
-        + (c.sensible ? ' La resolución lleva la sensible (' + Teoria.nombreEs(Teoria.nota(c.sensible), true) + ').' : '');
-      if (dificil) {
-        const otras = Celulas.posibles({ tonalidad: c.tonalidad, dada: c.dada, nota: d.nota, voz: d.voz });
-        if (otras.length > 1) m.textContent += ' Sin decir el tipo valen ' + otras.length
-          + ' retardos con esta misma nota: ' + otras.map(x => Celulas.CIFRA_TIPO[x.tipo] || x.tipo).join(', ') + '.';
-      }
-    }
+    if (estado.visto) m.textContent = M().explica(c);
     $('#ver').textContent = estado.visto ? 'Volver a lo mío' : 'Ver la solución';
     $('#comprobar').disabled = estado.visto;
     $('#paso').textContent = estado.lista && estado.k + 1 < estado.lista.length
-      ? 'Al terminar esta, «Otra célula» pasa a la siguiente de la ficha.' : '';
+      ? 'Al terminar, «Otro» pasa al siguiente de la ficha.' : '';
+    $('#otra').textContent = estado.tipo === 'cadena' ? 'Otra cadena' : 'Otra célula';
   }
 
   function pintarMandos() {
@@ -358,7 +433,9 @@
         + (dada ? ' (la nota dada)' : '');
     dice.classList.toggle('puesta', hay && !dada);
     ['subir', 'bajar', 'alterar', 'borrar'].forEach(id => { $('#' + id).disabled = !hay || dada; });
-    const puedeLigar = hay && a.momento < estado.escrito.momentos.length - 1;
+    /* La ligadura del bajo de una cadena viene dada, como sus notas: tampoco se toca. */
+    const puedeLigar = hay && !dada && a.momento < estado.escrito.momentos.length - 1
+      && !esLigaduraDada(a.voz, a.momento);
     $('#ligar').disabled = !puedeLigar;
     $('#ligar').classList.toggle('activo', !!(puedeLigar
       && estado.escrito.ligaduras.some(l => l.voz === a.voz && l.desde === a.momento)));
@@ -373,7 +450,8 @@
     if (estado.acertada) {
       ul.hidden = false;
       const li = document.createElement('li');
-      li.textContent = 'Bien: la célula cumple las reglas y coincide con la realización.'
+      li.textContent = 'Bien: ' + (estado.tipo === 'cadena' ? 'la cadena' : 'la célula')
+        + ' cumple las reglas y coincide con la realización.'
         + (estado.intentos > 1 ? ' (en ' + estado.intentos + ' intentos)' : '');
       ul.appendChild(li);
       return;
@@ -405,6 +483,11 @@
   }
   function oir() {
     if (!estado.celula) return;
+    if (estado.visto) {
+      Sonido.parar(); sonando(true);
+      Sonido.secuencia(M().aSonido(estado.celula, 0.9), () => sonando(false));
+      return;
+    }
     const items = loQueSuena();
     if (!items.length) { aviso('Todavía no hay nada escrito que oír.'); return; }
     Sonido.parar();
@@ -424,7 +507,7 @@
   /* ---------- Pasar de célula ---------- */
   function empezar(c) {
     estado.celula = c;
-    estado.escrito = enBlanco(c);
+    estado.escrito = M().enBlanco(c);
     estado.activa = null;
     estado.mal = []; estado.fallos = []; estado.intentos = 0;
     estado.acertada = false; estado.visto = false;
@@ -437,8 +520,8 @@
       empezar(estado.lista[estado.k]);
       return;
     }
-    const c = Celulas.elegir(opcionesLibres())[0];
-    if (!c) { aviso('Con lo que has pedido no sale ninguna célula. Prueba con otro tipo o otra tonalidad.'); return; }
+    const c = sorteaUno();
+    if (!c) { aviso('Con lo que has pedido no sale nada. Prueba con otro tipo o con otra tonalidad.'); return; }
     empezar(c);
   }
 
@@ -454,18 +537,21 @@
       aviso('Esa ficha no es de contrapunto.'); return null;
     }
     const op = filtro.celulas || {};
+    const tipo = filtro.ejercicio === 'cadena' ? 'cadena' : 'celula';
     const tons = (op.tonalidades || []).map(t => {
       try { return typeof t === 'string' ? Teoria.tonalidadDesdeTexto(t) : t; } catch (e) { return null; }
     }).filter(Boolean);
-    const lista = Celulas.elegir({
-      n: filtro.n || 8,
-      tipos: op.tipos && op.tipos.length ? op.tipos : null,
-      tonalidades: tons.length ? tons : null,
-      dada: op.dada,
-      nivel: op.nivel
-    });
-    if (!lista.length) { aviso('La ficha no ha podido sacar ninguna célula.'); return null; }
-    return { filtro, lista };
+    const lista = tipo === 'cadena'
+      ? Cadenas.elegir({ n: filtro.n || 6, tonalidades: tons.length ? tons : null, largos: op.largos })
+      : Celulas.elegir({
+        n: filtro.n || 8,
+        tipos: op.tipos && op.tipos.length ? op.tipos : null,
+        tonalidades: tons.length ? tons : null,
+        dada: op.dada,
+        nivel: op.nivel
+      });
+    if (!lista.length) { aviso('La ficha no ha podido sacar ningún ejercicio.'); return null; }
+    return { filtro, lista, tipo };
   }
 
   /* ---------- El teclado ---------- */
@@ -491,15 +577,18 @@
     let primera;
     if (f) {
       estado.filtro = f.filtro;
+      estado.tipo = f.tipo;
       estado.lista = f.lista;
       estado.k = 0;
       primera = f.lista[0];
       $('#mandos').hidden = true;                 // en una ficha no se elige: lo elige la ficha
+      $('#ejercicio').value = estado.tipo;
+      mandosDelTipo();
       const lec = f.filtro.leccion || 'Co-1';
       $('#leccion').textContent = f.filtro.titulo || Banco.rotuloLeccion(lec, Banco.LECCIONES[lec] || '');
     } else {
       $('#leccion').textContent = Banco.rotuloLeccion('Co-1', Banco.LECCIONES['Co-1'] || '') + ' · práctica libre';
-      primera = Celulas.elegir(opcionesLibres())[0];
+      primera = sorteaUno();
     }
     $('#subir').addEventListener('click', () => mover(+1));
     $('#bajar').addEventListener('click', () => mover(-1));

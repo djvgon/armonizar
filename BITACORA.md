@@ -11,6 +11,21 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 15 de octubre de 2026
 
+- **SIN SUBIR: la cadena de retardos y la cadencia compuesta**, decisión **260**. Archivo
+  nuevo: `js/cadenas.js`; tocados: `js/celulas.js` (la regla de la tónica), `js/reja.js`
+  (varias barras y sistemas largos), `js/contrapunto.js` y `contrapunto.html`.
+  - En la pantalla hay ahora un selector **«Ejercicio»**: célula suelta o cadena de retardos.
+    En la cadena se da **el bajo entero** y el alumno escribe la voz superior, con sus
+    ligaduras y todas las barras, acabando en cadencia compuesta (perfecta o imperfecta).
+  - **La regla de la tónica rige también en las células sueltas**, en las consonancias: de 460
+    pasan a **328** las que puede sacar una ficha. Era la consecuencia de tu regla y la dejo
+    anotada porque cambia lo ya aprobado.
+  - 30 + 97 comprobaciones (`probar-cadenas.js` y `probar-pagina-contrapunto.js`).
+  - **Pendiente de ti**: el enunciado de la cadena es mío —«Sobre este bajo, escribe la voz
+    superior: una cadena de N retardos 7–6 que acabe en cadencia compuesta»—, y si quieres que
+    la cadena tenga también sus dos niveles de dificultad (ahora no los tiene: con el bajo
+    dado la respuesta es una sola).
+
 - **SIN SUBIR: la reja de escritura y la corrección**, decisión **259**. Archivos:
   `js/contrapunto.js` (rehecho), `js/reja.js`, `contrapunto.html` y `css/estilo.css`.
   **El ejercicio ya se hace entero**: el alumno escribe la célula —flechas por grados, ♯/♮,
@@ -20,6 +35,14 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
     3–7–3; el 3–2–3 la pondría abajo y no es respuesta posible. Lo encontró la comprobación.
   - 78 comprobaciones en `probar-pagina-contrapunto.js`, una de ellas escribiendo la célula
     entera pulsando los mandos de verdad. Probado a 390 px: no desborda.
+  - **Cómo llegar a ella**: hay un enlace **«Contrapunto» en la barra de arriba** de
+    `index.html` y del configurador. Y, sin subir nada, se puede abrir con doble clic el
+    archivo `contrapunto.html` de «1 WEB»: la pantalla no necesita servidor —las células se
+    generan y las muestras de sonido se cargan como `<script>`—, de modo que escribir, corregir
+    y oír funcionan desde el disco. Comprobado.
+  - En el **configurador no sale nada todavía**, y es a propósito: su desplegable de tipos es
+    el del BANCO, y el contrapunto no sale del banco. Su ficha se monta aparte y es lo
+    siguiente.
   - **Del piloto quedan dos cosas**: la ficha desde el configurador (elegir tipos, tonos,
     dirección, nivel y cuántas, y sacar el enlace) y el **envío al cuaderno**, que pide una
     línea en la tabla `MODOS` del `.gs` y volver a implementar el cuaderno.
@@ -150,7 +173,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 9 de octubre de 2026
 
-- **SIN SUBIR: el `20261015-1838`**, con las decisiones **246** (**oír la música de verdad
+- **SIN SUBIR: el `20261015-1922`**, con las decisiones **246** (**oír la música de verdad
   desde el ejercicio**), **247** (el aviso de `fueraDeParte`) y **248** (**los botones del
   cuaderno y de los resultados, siempre a la vista en la cabecera**). Archivos:
   `js/escucha.js` (nuevo), `js/musicxml.js`, `js/banco.js`, `js/app.js`, `js/sonido.js`,
@@ -1083,7 +1106,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
-| 20261015-1838 | **La reja de escritura y la corrección** (259): el alumno escribe la célula —flechas por grados de la escala, ♯/♮, ligar, la barra que pone él— y la corrección le dice regla por regla qué no cumple; en el nivel difícil valen todos los retardos que caben sobre la nota dada en su voz. **El modo «Contrapunto» y la lección `Co-1`** (258): quinto tipo de ejercicio, que no sale del banco porque sus ejercicios se generan; `contrapunto.html` es la pantalla del alumno, con los dos enunciados de Diego, la ficha de células mezcladas por tipos y separadas unas de otras, los dos niveles de dificultad y `js/reja.js`, el pentagrama de la célula —dos voces en uno o dos pentagramas según quepan, ligaduras, barra, armadura e intervalos—. Todavía no se escribe en ella. El «tiempo» del banco auditivo es el del compás también en los compuestos (257). Lo que suena se ciñe a las voces que se muestran: los refuerzos de octava solo con las cuatro voces (256), y arreglada la octava paralela de A-8-17. Las voces escritas del banco también se miran: detector de quintas y octavas paralelas en la armonización que el alumno ve como modelo (255). La célula del retardo con las decisiones de Diego: tres tipos, registro fa1–do5, sin distancia máxima y la sensible del menor (254). El ⓘ que dice qué instrumentos suenan y qué voz lleva cada uno, generado de las propias capas del sonido (253). El ▶ del acorde se enciende cuando el acorde se oye (251) y las tonalidades que se ofrecen al alumno van por el círculo de quintas, no la suya primero (252). El motor de la célula del retardo y su página de revisión, primer paso del piloto de Schemata dentro de `armonizar` (250). La instrumentación nueva: el desplegable pasa a «Instrumentación», con trece agrupadas en teclados, voces, orquesta y conjuntos, con ritmo y sin descarga (249); `sonido.js` entero y 34 bancos de muestras nuevos, preparados por el chat «Schemata app». Nada se descarga hasta que hace falta. Los botones «Ver el cuaderno» y «Ver los resultados» de la cabecera del configurador ya no se esconden cuando este navegador no tiene la dirección guardada: salen atenuados y llevan a la casilla donde se pega (248). Oír la música de verdad desde el ejercicio: el crédito de la obra abre un panel con la partitura del pasaje, la grabación y los tres botones «El fragmento» · «En su contexto» · «El fragmento completo» (246). `js/escucha.js`, nuevo. La conexión viaja dentro del archivo del ejercicio y no entra en la huella del sello; auriculares en la tabla del banco. `convertir.js` lee ya el original en MusicXML |
+| 20261015-1922 | **La cadena de retardos y la cadencia compuesta** (260): varias células encadenadas sobre un bajo dado, que el alumno completa escribiendo la voz superior; la sonoridad de tónica, como regla general en las consonancias. **La reja de escritura y la corrección** (259): el alumno escribe la célula —flechas por grados de la escala, ♯/♮, ligar, la barra que pone él— y la corrección le dice regla por regla qué no cumple; en el nivel difícil valen todos los retardos que caben sobre la nota dada en su voz. **El modo «Contrapunto» y la lección `Co-1`** (258): quinto tipo de ejercicio, que no sale del banco porque sus ejercicios se generan; `contrapunto.html` es la pantalla del alumno, con los dos enunciados de Diego, la ficha de células mezcladas por tipos y separadas unas de otras, los dos niveles de dificultad y `js/reja.js`, el pentagrama de la célula —dos voces en uno o dos pentagramas según quepan, ligaduras, barra, armadura e intervalos—. Todavía no se escribe en ella. El «tiempo» del banco auditivo es el del compás también en los compuestos (257). Lo que suena se ciñe a las voces que se muestran: los refuerzos de octava solo con las cuatro voces (256), y arreglada la octava paralela de A-8-17. Las voces escritas del banco también se miran: detector de quintas y octavas paralelas en la armonización que el alumno ve como modelo (255). La célula del retardo con las decisiones de Diego: tres tipos, registro fa1–do5, sin distancia máxima y la sensible del menor (254). El ⓘ que dice qué instrumentos suenan y qué voz lleva cada uno, generado de las propias capas del sonido (253). El ▶ del acorde se enciende cuando el acorde se oye (251) y las tonalidades que se ofrecen al alumno van por el círculo de quintas, no la suya primero (252). El motor de la célula del retardo y su página de revisión, primer paso del piloto de Schemata dentro de `armonizar` (250). La instrumentación nueva: el desplegable pasa a «Instrumentación», con trece agrupadas en teclados, voces, orquesta y conjuntos, con ritmo y sin descarga (249); `sonido.js` entero y 34 bancos de muestras nuevos, preparados por el chat «Schemata app». Nada se descarga hasta que hace falta. Los botones «Ver el cuaderno» y «Ver los resultados» de la cabecera del configurador ya no se esconden cuando este navegador no tiene la dirección guardada: salen atenuados y llevan a la casilla donde se pega (248). Oír la música de verdad desde el ejercicio: el crédito de la obra abre un panel con la partitura del pasaje, la grabación y los tres botones «El fragmento» · «En su contexto» · «El fragmento completo» (246). `js/escucha.js`, nuevo. La conexión viaja dentro del archivo del ejercicio y no entra en la huella del sello; auriculares en la tabla del banco. `convertir.js` lee ya el original en MusicXML |
 | 20261007-1054 | El cuaderno, a un toque desde el configurador: casilla «Dirección del cuaderno» en la zona C y dos botones nuevos, en la cabecera y en la zona C, delante de los de la hoja de resultados (245). La dirección no viaja en `envio.json` |
 | 20261006-0845 | La fila «Tonalidad», la primera de todas bajo el pentagrama, encima del cifrado (244) |
 | 20261005-2330 | El 6.º – 4.º – 5.º del bajo pide también el conjunto completo (243); orden de preferencia de la regla de la octava y coste del 6/4 (240, 241); el documento de la regla de la octava se genera desde el motor (242); banco a 151 fragmentos con la Marcha en Re |

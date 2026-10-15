@@ -32,6 +32,8 @@
          ligaduras   : [{voz:'alta'|'baja', desde: 0|1}]
          barra       : 1 | 2 | null — índice del momento DELANTE del cual
                        va la barra (la de la célula es 1)
+         barras      : [1, 3, 5…] — varias, para las CADENAS de retardos.
+                       Si se pasan las dos, manda `barras`
          dadas       : [{momento, voz}] casillas que vienen escritas y no
                        se pueden mover: se dibujan en color
          activa      : {momento, voz} | null — donde está el alumno
@@ -91,7 +93,11 @@ const Reja = (() => {
     el('text', Object.assign({ x, y, 'font-family': 'Bravura', 'font-size': tam }, extra), txt);
 
   /* ---- Geometría ---- */
-  const ANCHO_COL = 13 * SP;          // una columna por momento
+  /* El ancho de columna se estrecha cuando hay muchos momentos: una cadena de cuatro
+     retardos son diez columnas, y con las de la célula suelta el sistema se iría a 1.400 px.
+     Aun así, a partir de cierto largo no cabe en un teléfono sin empequeñecer las notas hasta
+     no verse, y entonces vale más que la caja se desplace: de eso se encarga `minWidth`. */
+  const anchoColumna = n => (n <= 4 ? 13 * SP : n <= 7 ? 11 * SP : 9.5 * SP);
   const X_IZQ = 1.2 * SP;             // margen antes de la clave
   const ALTO_PENTA = 4 * SP;
   const HUECO = 6.5 * SP;             // entre dos pentagramas: cabe una línea adicional
@@ -99,6 +105,10 @@ const Reja = (() => {
 
   // Paso diatónico de una nota en un pentagrama: medio espacio por paso
   const pasoEn = (n, clave) => Teoria.indice(n) - Teoria.indice(Teoria.nota(BASE_CLAVE[clave]));
+  /* Las barras del estado, siempre como lista: la célula trae una (`barra`) y la cadena
+     varias (`barras`). */
+  const barrasDe = estado => (estado.barras && estado.barras.length ? estado.barras.slice()
+    : (estado.barra !== null && estado.barra !== undefined ? [estado.barra] : []));
   const CLAVES = ['fa', 'sol'];
   // Lo lejos que queda una lista de notas del centro del pentagrama, en esa clave
   const descentrado = (notas, clave) =>
@@ -142,10 +152,11 @@ const Reja = (() => {
   function alteracionesEscritas(momentos, ton, barra) {
     const escala = Teoria.escalaNatural(ton);
     const deArmadura = letra => { const e = escala.find(x => x.letra === letra); return e ? e.alt : 0; };
+    const cortes = Array.isArray(barra) ? barra : (barra !== null && barra !== undefined ? [barra] : []);
     const pide = [];
     let vigente = {};
     (momentos || []).forEach((m, k) => {
-      if (barra !== null && barra !== undefined && k === barra) vigente = {};   // compás nuevo
+      if (cortes.includes(k)) vigente = {};                                     // compás nuevo
       const fila = {};
       ['alta', 'baja'].forEach(voz => {
         const n = m && m[voz];
@@ -169,6 +180,7 @@ const Reja = (() => {
     const claves = disp.claves;
     const nArm = Teoria.armadura(ton);
     const anchoArm = Math.abs(nArm) * 1.15 * SP;
+    const ANCHO_COL = anchoColumna(n);
     const X0 = X_IZQ + 3.6 * SP + anchoArm + 1.4 * SP;      // donde empieza la primera columna
     const ancho = X0 + n * ANCHO_COL + 1.2 * SP;
 
@@ -213,6 +225,9 @@ const Reja = (() => {
     });
     svg.style.maxWidth = '100%';
     svg.style.height = 'auto';
+    /* Que no se encoja por debajo de lo legible: si el sistema es largo, la caja se desplaza
+       en lugar de reducir las cabezas de nota a cuatro píxeles. */
+    if (ancho > 560) svg.style.minWidth = Math.min(ancho, 560) + 'px';
 
     /* ---- Pentagramas, claves y armadura ---- */
     const pentagramas = unico ? [{ clave: disp.clave, y: yBase.alta }]
@@ -233,17 +248,18 @@ const Reja = (() => {
     // La llave del sistema: solo cuando hay dos pentagramas que unir
     if (!unico) svg.appendChild(el('line', { x1: X_IZQ, x2: X_IZQ, y1: yAlto, y2: yBajo, class: 'barra' }));
 
-    /* ---- La barra de compás, en el hueco que le toca ---- */
+    /* ---- Las barras de compás, en los huecos que les tocan ----
+       Una en la célula suelta y varias en una cadena; el dibujo no distingue. */
     const xHueco = k => X0 + k * ANCHO_COL - 0.5 * SP;      // delante del momento k
-    if (estado.barra !== null && estado.barra !== undefined && estado.barra > 0) {
-      svg.appendChild(el('line', { x1: xHueco(estado.barra), x2: xHueco(estado.barra), y1: yAlto, y2: yBajo, class: 'barra' }));
-    }
+    barrasDe(estado).forEach(k => {
+      if (k > 0 && k < n) svg.appendChild(el('line', { x1: xHueco(k), x2: xHueco(k), y1: yAlto, y2: yBajo, class: 'barra' }));
+    });
     // El doble barra del final, que cierra la célula
     svg.appendChild(el('line', { x1: ancho - 1.9 * SP, x2: ancho - 1.9 * SP, y1: yAlto, y2: yBajo, class: 'barra' }));
     svg.appendChild(el('line', { x1: ancho - 1.3 * SP, x2: ancho - 1.3 * SP, y1: yAlto, y2: yBajo, class: 'barra gruesa' }));
 
     /* ---- Las notas ---- */
-    const alts = alteracionesEscritas(momentos, ton, estado.barra);
+    const alts = alteracionesEscritas(momentos, ton, barrasDe(estado));
     const esta = (lista, k, voz) => (lista || []).some(x => x.momento === k && x.voz === voz);
     const xDe = k => X0 + k * ANCHO_COL + 2.2 * SP;
     const cabezas = { alta: [], baja: [] };
