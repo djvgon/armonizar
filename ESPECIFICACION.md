@@ -3880,6 +3880,52 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+259. **La reja de escritura y la corrección: el ejercicio ya se hace**
+    (15/10/2026. Puntos 2 y 3 del piloto, los que convierten la pantalla del 258 en un
+    ejercicio de verdad.)
+    - **El alumno escribe.** Recibe una nota —la retardada o la real, según la dirección— y
+      pone las otras cinco, las dos ligaduras y la barra. Pulsa una casilla del pentagrama (o
+      llega a ella con ← →) y entonces: **↑ y ↓ mueven UN GRADO DE LA ESCALA**, no un
+      semitono, que es como se piensa en estos ejercicios (2.6); **♯/♮** eleva o devuelve a
+      natural el 6.º y el 7.º del menor, y solo ahí, porque es donde la escala cambia al subir
+      y al bajar, y es cosa del alumno; **Ligar** une la nota con la siguiente de su voz; y la
+      **barra** se pone pulsando el hueco entre dos notas (2.5). Todo va también por teclado.
+    - **Una nota ligada es LA MISMA nota**: al mover una se mueve la otra. No es un adorno del
+      dibujo: es lo que hace que un retardo sea un retardo, y si se pudieran mover por
+      separado el alumno escribiría dos notas distintas unidas por un arco.
+    - **La casilla vacía arranca en la nota que se da**, un grado por encima o por debajo según
+      la flecha que se pulse. Es un punto de partida neutro —esa nota la tiene delante— y no
+      le adelanta nada de la solución.
+    - **La nota dada no se toca**: sus mandos se apagan y lo dice.
+    - **La corrección es la del 2.7**: deciden las reglas **y** la realización modelo.
+      `Celulas.comprobar` da las dos cosas —qué regla se incumple y en qué se diferencia del
+      modelo— y la pantalla escribe **un mensaje por regla rota**, sin repetir, y marca en rojo
+      las casillas implicadas. Si no hay ninguna regla rota pero no es la célula que se pide,
+      se dice en qué momento y en qué voz está la diferencia. Reintentos, los que quiera; al
+      acertar, la célula suena.
+    - **El nivel difícil acepta más de una respuesta**, que es lo que arrastraba la decisión de
+      Diego: se prueba contra **todos** los retardos que caben sobre la nota dada
+      (`Celulas.posibles`) y se le corrige contra el que mejor le salga.
+    - **Y esos «posibles» se limitan a la voz en la que se ve la nota.** Lo encontró la
+      comprobación: con la retardada dada en la voz de arriba, el 3–2–3 la pondría abajo, de
+      modo que no es una respuesta posible por mucho que el enunciado no diga el tipo. Saber en
+      qué voz va no es una pista sobre el tipo: es lo que el alumno está viendo. Quedan dos
+      respuestas en vez de tres.
+    - **La casilla elegida se marca con un fondo que va DEBAJO de la música.** Dicho de otro
+      modo: las zonas pulsables, que van por encima de todo, son transparentes. Y con una
+      razón de peso, que costó un rato encontrar: `fill: none` **deja de recibir el ratón**, de
+      modo que pintar la casilla al pasar por encima la volvía imposible de pulsar. Al pasar
+      por encima cambia el contorno, no el relleno.
+    - **La nota dada va en `--voz-dada`**, el morado de la partitura para lo que no escribe el
+      alumno, y no en `--acento`, que es casi negro y no se distinguía de su propia tinta.
+    - Comprobado: `probar-pagina-contrapunto.js` sube a **78 comprobaciones**, y entre ellas
+      una que escribe la célula entera **pulsando los mandos de verdad** —la casilla, las
+      flechas, ♯/♮, Ligar y el hueco de la barra— y comprueba que la corrección la da por
+      buena; otra que quita la ligadura y otra que mueve la barra, para ver que lo dicen; y una
+      que escribe, en el nivel difícil, un retardo distinto del que sorteó la aplicación.
+      Probado también a 390 px de ancho: no desborda.
+    - **Lo que falta del piloto**: la ficha desde el configurador y el envío al cuaderno.
+
 258. **El modo «Contrapunto» y la lección `Co-1`: el piloto ya tiene sitio**
     (15/10/2026, Diego: «el piloto va dentro de armonizar, como modo nuevo, con `Co-1` y su
     pestaña en el mismo cuaderno»; y «Se queda contrapunto» como nombre del modo.)
@@ -3945,8 +3991,16 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       la regla que toca en cada caso: con dos pentagramas, del lado contrario a la plica, como
       manda la notación; con uno, la voz de arriba por encima y la de abajo por debajo, que es
       lo que separa las voces.
-    - El **alto del dibujo se mide**, no se fija: con un alto fijo, una voz que baja a fa1 se
-      salía del recuadro y no se veía. Las casillas pulsables y la casilla activa ya están,
+    - El **alto del dibujo se mide, y se mide sobre la TINTA**, no sobre el pentagrama
+      (Diego, 15/10: «el símbolo de play se superpone y tapa las notas»). Dos cosas se
+      arreglan con lo mismo: con un alto fijo, una voz que baja a fa1 se salía del recuadro
+      y no se veía; y el ▶, que se colgaba de la línea superior del pentagrama, caía encima
+      de las notas en cuanto la célula subía hasta ahí. Una cabeza no acaba en sí misma —la
+      plica sube o baja 3,5 espacios y la ligadura se aparta casi uno—, de modo que ahora se
+      calcula primero cuánto OCUPA el sistema, arriba y abajo, y después dónde empieza,
+      reservando por encima la banda del ▶. Comprobado en las 460 células de una ficha: el
+      botón no toca ni una nota, ni una ligadura, ni el pentagrama, y nada se sale del
+      recuadro. Las casillas pulsables y la casilla activa ya están,
       sin usar todavía: son las de la reja de escritura, que es el paso siguiente. Con un solo
       pentagrama, la columna se parte por la mitad entre las dos notas: se pulsa arriba para la
       voz superior y abajo para la inferior.
@@ -3963,7 +4017,7 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       verdad cuando Diego fijó fa1–do5: ahora nombra el registro y sale **una vez por
       célula**, no una por nota fuera.
     - Comprobado: `3 PROYECTO/herramientas-contrapunto/probar-modo-contrapunto.js` (68
-      comprobaciones, sin navegador) y `probar-pagina-contrapunto.js` (57, en un navegador de
+      comprobaciones, sin navegador) y `probar-pagina-contrapunto.js` (59, en un navegador de
       verdad sirviendo la carpeta tal como se publica).
 
 257. **Un «tiempo» es el del compás, también en los compuestos**

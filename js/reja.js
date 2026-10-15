@@ -172,28 +172,37 @@ const Reja = (() => {
     const X0 = X_IZQ + 3.6 * SP + anchoArm + 1.4 * SP;      // donde empieza la primera columna
     const ancho = X0 + n * ANCHO_COL + 1.2 * SP;
 
-    /* EL ALTO SE MIDE, no se fija: una voz que baja a fa1 se dibujaba fuera del recuadro. */
+    /* EL ALTO SE MIDE, Y SE MIDE SOBRE LA TINTA, no sobre el pentagrama (Diego, 15/10: «el
+       símbolo de play se superpone y tapa las notas»). Una cabeza no acaba en sí misma: la
+       plica sube o baja 3,5 espacios y la ligadura se aparta casi uno, de modo que lo más
+       alto del dibujo puede estar bastante por encima de la línea superior del pentagrama.
+       Se calcula primero CUÁNTO OCUPA el sistema —hacia arriba y hacia abajo de la línea
+       base— y después dónde empieza, dejando por encima el sitio del ▶; así no hay manera de
+       que el botón caiga sobre una nota ni de que una nota se salga del recuadro. */
+    const AIRE = 3.9 * SP;             // lo que añaden por fuera de la cabeza la plica y la ligadura
     const pasosDe = voz => modelo.concat(momentos).map(m => m && m[voz]).filter(Boolean)
       .map(x => pasoEn(x, claves[voz]));
     const limites = ps => ({ max: Math.max(8, ...(ps.length ? ps : [8])), min: Math.min(0, ...(ps.length ? ps : [0])) });
-    const sitioPlay = typeof estado.alSonar === 'function' ? Y_ARRIBA : 1.4 * SP;
+    const hayPlay = typeof estado.alSonar === 'function';
+    const sitioPlay = hayPlay ? 3.6 * SP : 0.8 * SP;   // el ▶ mide 2,3 y el resto es aire
 
-    let yBase, alto, sobra;
+    let yBase, alto, sobra, cima;
     if (unico) {
       const lim = limites(pasosDe('alta').concat(pasosDe('baja')));
-      const yTop = Math.max(sitioPlay, (lim.max - 8) * SP / 2 + 1.8 * SP);
-      const y = yTop + ALTO_PENTA;
-      sobra = (-lim.min) * SP / 2;
+      cima = ALTO_PENTA + (lim.max - 8) * SP / 2 + AIRE;     // tinta por encima de la línea base
+      sobra = (-lim.min) * SP / 2 + AIRE;                    // y por debajo
+      const y = cima + sitioPlay;
       yBase = { alta: y, baja: y };
-      alto = y + sobra + (estado.intervalos ? 3.6 * SP : 1.8 * SP);
+      alto = y + sobra + (estado.intervalos ? 2.6 * SP : 0.6 * SP);
     } else {
       const la = limites(pasosDe('alta')), lb = limites(pasosDe('baja'));
-      const yTop = Math.max(sitioPlay, (la.max - 8) * SP / 2 + 1.8 * SP);
+      cima = ALTO_PENTA + (la.max - 8) * SP / 2 + AIRE;
       const choque = (lb.max - 8) * SP / 2 + (-la.min) * SP / 2;
-      const hueco = Math.max(HUECO, choque + 3 * SP);
-      sobra = (-lb.min) * SP / 2;
-      yBase = { alta: yTop + ALTO_PENTA, baja: yTop + ALTO_PENTA + hueco + ALTO_PENTA };
-      alto = yBase.baja + sobra + (estado.intervalos ? 3.6 * SP : 1.8 * SP);
+      const hueco = Math.max(HUECO, choque + 2 * AIRE);
+      sobra = (-lb.min) * SP / 2 + AIRE;
+      const y = cima + sitioPlay;
+      yBase = { alta: y, baja: y + hueco + ALTO_PENTA };
+      alto = yBase.baja + sobra + (estado.intervalos ? 2.6 * SP : 0.6 * SP);
     }
 
     const svg = el('svg', {
@@ -239,6 +248,26 @@ const Reja = (() => {
     const xDe = k => X0 + k * ANCHO_COL + 2.2 * SP;
     const cabezas = { alta: [], baja: [] };
 
+    /* LA CASILLA EN LA QUE ESTÁ EL ALUMNO se marca con un fondo, y el fondo va DEBAJO de la
+       música: pintarlo encima —que es donde están las zonas pulsables— taparía la nota, que
+       es justo lo que no puede pasar. */
+    if (estado.activa) {
+      const a = estado.activa;
+      const alto1 = unico
+        ? { y: yBase.alta - cima + 0.4 * SP, h: (yBase.baja + sobra) - (yBase.alta - cima) - 0.8 * SP }
+        : { y: yBase[a.voz] - 4.8 * SP, h: 5.6 * SP };
+      let y = alto1.y, h = alto1.h;
+      if (unico) {
+        const medio = (yBase.alta - 2 * SP);
+        if (a.voz === 'alta') h = medio - y;
+        else { h = (y + h) - medio; y = medio; }
+      }
+      svg.appendChild(el('rect', {
+        x: X0 + a.momento * ANCHO_COL, y, width: ANCHO_COL - 0.6 * SP, height: Math.max(h, 2 * SP),
+        rx: 0.5 * SP, class: 'casilla-fondo'
+      }));
+    }
+
     momentos.forEach((m, k) => {
       /* Con las dos voces en el mismo pentagrama, una SEGUNDA no cabe en la misma columna: la
          de arriba se corre a la derecha, que es como se escribe. */
@@ -255,8 +284,13 @@ const Reja = (() => {
              cuál es cuál; con dos, cada una en el centro del suyo. */
           const p = unico ? (voz === 'alta' ? 6 : 2) : 4;
           const y = yBase[voz] - p * SP / 2;
+          /* El hueco también se marca: si no, el alumno no ve en qué casilla vacía está, ni
+             cuál le falta cuando la corrección se lo dice. */
           svg.appendChild(el('line', {
-            x1: xN - 0.1 * SP, x2: xN + ANCHO.blanca * SP + 0.1 * SP, y1: y, y2: y, class: 'hueco'
+            x1: xN - 0.1 * SP, x2: xN + ANCHO.blanca * SP + 0.1 * SP, y1: y, y2: y,
+            class: 'hueco'
+              + (esta(estado.mal, k, voz) ? ' mal' : '')
+              + (estado.activa && estado.activa.momento === k && estado.activa.voz === voz ? ' activa' : '')
           }));
           cabezas[voz].push(null);
           return;
@@ -318,7 +352,7 @@ const Reja = (() => {
     if (estado.intervalos) momentos.forEach((m, k) => {
       if (!m || !m.alta || !m.baja) return;
       svg.appendChild(el('text', {
-        x: xDe(k) + ANCHO.blanca * SP / 2, y: yBajo + sobra + 2.6 * SP,
+        x: xDe(k) + ANCHO.blanca * SP / 2, y: yBajo + sobra + 1.9 * SP,
         class: 'reja-intervalo', 'text-anchor': 'middle'
       }, String(Celulas.gradosEntre(m.alta, m.baja))));
     });
@@ -326,7 +360,7 @@ const Reja = (() => {
     /* ---- El ▶ de cada momento ---- */
     if (typeof estado.alSonar === 'function') momentos.forEach((m, k) => {
       const x = xDe(k) + ANCHO.blanca * SP / 2;
-      const yPlay = yAlto - 1.7 * SP;
+      const yPlay = sitioPlay / 2;          // la banda libre va de 0 a `sitioPlay`
       const g = el('g', { class: 'reja-play' + (estado.sonando === k ? ' suena' : ''), role: 'button', tabindex: '0' });
       g.appendChild(el('circle', { cx: x, cy: yPlay, r: 1.15 * SP, class: 'reja-play-fondo' }));
       g.appendChild(el('path', {
@@ -363,8 +397,8 @@ const Reja = (() => {
         const x = X0 + k * ANCHO_COL, w = ANCHO_COL - 0.6 * SP;
         if (unico) {
           const ca = cabezas.alta[k], cb = cabezas.baja[k];
-          const arriba = yAlto - 1.2 * SP;
-          const abajo = yBajo + sobra + 1.2 * SP;
+          const arriba = yBase.alta - cima;
+          const abajo = yBajo + sobra;
           const corte = (ca && cb) ? (ca.y + cb.y) / 2 : (arriba + abajo) / 2;
           zona(x, arriba, w, corte - arriba, 'alta', k, nombre(k, 'alta'));
           zona(x, corte, w, abajo - corte, 'baja', k, nombre(k, 'baja'));

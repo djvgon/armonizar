@@ -453,24 +453,32 @@ const Celulas = (() => {
 
   /* TODAS las células que valen con la misma nota dada. Es lo que hace falta para corregir el
      nivel difícil, donde el enunciado no dice el tipo: la respuesta del alumno vale si coincide
-     con CUALQUIERA de estos modelos y cumple las reglas. */
+     con CUALQUIERA de estos modelos y cumple las reglas.
+
+     `voz` ('alta' | 'baja') limita la búsqueda a los retardos que ponen la nota dada EN ESA
+     VOZ, y hace falta: en la pantalla la nota se le da al alumno ya escrita en su pentagrama,
+     y esa no se mueve. Con la retardada dada en la voz de arriba valen el 6–7–6 y el 3–7–3;
+     el 3–2–3 la pondría abajo, de modo que no es una respuesta posible por mucho que el
+     enunciado no diga el tipo. Saber en qué voz va no es una pista sobre el tipo: es lo que
+     el alumno está viendo. */
   function posibles(op) {
     const ton = op.tonalidad;
     const dada = op.dada === 'real' ? 'real' : 'retardada';
     const nota = Teoria.nota(op.nota);
     const tipos = (op.tipos && op.tipos.length ? op.tipos : Object.keys(TIPOS)).filter(t => TIPOS[t]);
     const igual = (a, b) => a && b && ix(a) === ix(b) && a.alt === b.alt;
+    const enSuVoz = c => !op.voz || dato(c).voz === op.voz;
     const salen = [];
     tipos.forEach(tipo => {
       if (dada === 'retardada') {
         const c = generar({ tonalidad: ton, tipo, retardada: nota, dada, nivel: op.nivel });
-        if (!c.nula && !revisar(c, op).length) salen.push(c);
+        if (!c.nula && enSuVoz(c) && !revisar(c, op).length) salen.push(c);
         return;
       }
       // con la nota REAL dada hay que buscar qué retardadas la producen
       escalera(ton).forEach(r => {
         const c = generar({ tonalidad: ton, tipo, retardada: r, dada, nivel: op.nivel });
-        if (!c.nula && igual(c.real, nota) && !revisar(c, op).length) salen.push(c);
+        if (!c.nula && igual(c.real, nota) && enSuVoz(c) && !revisar(c, op).length) salen.push(c);
       });
     });
     return salen;

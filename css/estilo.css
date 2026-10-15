@@ -2003,19 +2003,28 @@ svg.reja text { fill: var(--tinta); }
 svg.reja .ligadura { fill: none; stroke: var(--tinta); stroke-width: 1.5; }
 /* El hueco de una casilla sin escribir: una raya tenue a la altura de la línea central */
 svg.reja .hueco { stroke: var(--linea); stroke-width: 2.4; stroke-linecap: round; }
-/* La nota que viene DADA va en color, como en la partitura: el alumno ha de ver de un
-   golpe qué le han puesto y qué tiene que poner él. */
-svg.reja .nota-reja.dada text, svg.reja .nota-reja.dada .plica { fill: var(--acento); stroke: var(--acento); }
-svg.reja .nota-reja.dada .plica { fill: none; }
+/* La nota que viene DADA va en color —el mismo `--voz-dada` de la partitura, que es la tinta
+   de lo que NO escribe el alumno—: ha de verse de un golpe qué le han puesto y qué pone él. */
+svg.reja .nota-reja.dada text, svg.reja .nota-reja.dada .plica,
+svg.reja .nota-reja.dada .linea { fill: var(--voz-dada); stroke: var(--voz-dada); }
+svg.reja .nota-reja.dada .plica, svg.reja .nota-reja.dada .linea { fill: none; }
 svg.reja .nota-reja.mal text { fill: var(--mal); }
 svg.reja .nota-reja.mal .plica, svg.reja .nota-reja.mal .linea { stroke: var(--mal); }
-svg.reja .nota-reja.activa text { fill: var(--acento); }
 svg.reja .reja-intervalo { font-size: 15px; font-weight: 600; fill: var(--tinta-suave); }
-svg.reja .casilla-reja { fill: transparent; cursor: pointer; }
-svg.reja .casilla-reja:hover { fill: var(--acento-suave); fill-opacity: .55; }
-svg.reja .casilla-reja:focus { outline: none; fill: var(--acento-suave); fill-opacity: .75; }
+/* LA CASILLA EN LA QUE ESTÁ EL ALUMNO: un fondo por DEBAJO de la música. La nota que él
+   escribe sigue siendo tinta negra, como en el papel, y nada la tapa. */
+svg.reja .casilla-fondo { fill: var(--acento-suave); }
+/* Las zonas pulsables van por encima de todo y por eso son transparentes: al pasar por
+   encima o al llegar con el tabulador se dibuja un contorno, que no oculta nada. */
+/* OJO con el relleno: `fill: none` deja de recibir el ratón, de modo que ponerlo al pasar
+   por encima hace que la casilla **no se pueda pulsar**. Se queda siempre en `transparent`
+   —que sí lo recibe— y lo que cambia al pasar por encima es el contorno. */
+svg.reja .casilla-reja { fill: transparent; stroke: none; cursor: pointer; pointer-events: all; }
+svg.reja .casilla-reja:hover, svg.reja .casilla-reja:focus {
+  outline: none; stroke: var(--marca); stroke-width: 1.4; stroke-dasharray: 5 4;
+}
 svg.reja .casilla-reja.fija { cursor: default; }
-svg.reja .casilla-reja.fija:hover, svg.reja .casilla-reja.fija:focus { fill: transparent; }
+svg.reja .casilla-reja.fija:hover, svg.reja .casilla-reja.fija:focus { stroke: var(--linea); }
 svg.reja .reja-play { cursor: pointer; }
 svg.reja .reja-play-fondo { fill: var(--papel); stroke: var(--linea); stroke-width: 1.2; transition: fill .12s, stroke .12s; }
 svg.reja .reja-play-triangulo { fill: var(--tinta-suave); }
@@ -2023,3 +2032,27 @@ svg.reja .reja-play:hover .reja-play-fondo, svg.reja .reja-play:focus .reja-play
 svg.reja .reja-play:focus { outline: none; }
 svg.reja .reja-play.suena .reja-play-fondo { fill: var(--acento); stroke: var(--acento); }
 svg.reja .reja-play.suena .reja-play-triangulo { fill: #fff; }
+
+/* ---- Los mandos de la reja de escritura (contrapunto) ---- */
+.mandos-nota {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin: 12px 0 6px;
+}
+.mandos-nota .casilla-dice { font-size: .9rem; color: var(--tinta-suave); min-width: 13em; }
+.mandos-nota .casilla-dice.puesta { color: var(--acento); font-weight: 600; }
+.mandos-nota .grupo-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+.mandos-nota button {
+  font: inherit; font-size: .95rem; padding: 8px 14px; min-width: 48px;
+  color: var(--tinta); background: var(--papel);
+  border: 1px solid var(--linea); border-radius: var(--radio-control); cursor: pointer;
+}
+.mandos-nota button:hover:not(:disabled) { border-color: var(--acento); }
+.mandos-nota button:disabled { opacity: .45; cursor: default; }
+.mandos-nota button.activo { background: var(--acento); color: #fff; border-color: var(--acento); }
+#pista-barra { font-size: .88rem; margin: 2px 0 0; }
+.mensajes-cp { margin: 14px 0 0; padding-left: 20px; }
+.mensajes-cp li { margin-bottom: 5px; }
+.mensajes-cp.bien { list-style: none; padding-left: 0; color: var(--bien); font-weight: 600; }
+.mensajes-cp.bien li::before { content: '✓ '; }
+svg.reja .hueco.activa { stroke: var(--acento); stroke-width: 3.4; }
+svg.reja .hueco.mal { stroke: var(--mal); stroke-width: 3.4; }

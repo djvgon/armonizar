@@ -13,8 +13,8 @@
   <meta property="og:title" content="Práctica armónica · Contrapunto">
   <meta property="og:description" content="Escribe retardos a dos voces: la preparación, la disonancia en parte fuerte y su resolución.">
   <meta property="og:type" content="website">
-  <link rel="stylesheet" href="css/bravura.css?v=20261015-1327">
-  <link rel="stylesheet" href="css/estilo.css?v=20261015-1327">
+  <link rel="stylesheet" href="css/bravura.css?v=20261015-1838">
+  <link rel="stylesheet" href="css/estilo.css?v=20261015-1838">
   <style>
     .mandos-cp { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; margin: 10px 0 16px; }
     .mandos-cp label { font-size: .85rem; }
@@ -22,7 +22,6 @@
     .enunciado { font-size: 1.15rem; margin: 0 0 4px; }
     .tipo-pedido { font-size: .9rem; opacity: .8; margin: 0 0 12px; }
     .obra { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0 4px; }
-    .en-obras { background: var(--acento-suave); border-radius: var(--radio-caja); padding: 10px 14px; margin: 16px 0; font-size: .92rem; }
     .momentos-cp { font-size: .9rem; margin: 10px 0 0; }
     .momentos-cp b { font-weight: 600; }
   </style>
@@ -46,11 +45,6 @@
   </header>
 
   <div class="envoltorio">
-    <p class="en-obras" id="en-obras">
-      <b>En obras.</b> Esta pantalla ya <b>enseña</b> la célula —el enunciado, la nota que se
-      da, la realización y el sonido—, pero todavía <b>no se escribe en ella</b>: la reja de
-      escritura (mover la nota por grados, ligar y poner la barra) es el paso siguiente.
-    </p>
 
     <div class="mandos-cp" id="mandos">
       <label>
@@ -86,10 +80,29 @@
     <p class="tipo-pedido" id="tipo-pedido"></p>
 
     <div class="reja-caja" id="reja" aria-live="polite"></div>
+
+    <!-- La reja de escritura (2.6): el ritmo lo da el ejercicio, el alumno pone alturas,
+         ligaduras y la barra. Las flechas mueven la nota UN GRADO DE LA ESCALA, que es
+         pensar en melódico y no en semitonos. -->
+    <div class="mandos-nota" id="mandos-nota" role="group" aria-label="Escribir la célula">
+      <span class="casilla-dice" id="casilla-dice">Pulsa una casilla del pentagrama</span>
+      <span class="grupo-botones">
+        <button type="button" id="subir" title="Subir un grado de la escala (flecha arriba)" aria-label="Subir un grado">↑</button>
+        <button type="button" id="bajar" title="Bajar un grado de la escala (flecha abajo)" aria-label="Bajar un grado">↓</button>
+        <button type="button" id="alterar" title="Elevar o volver natural el 6.º o el 7.º grado del menor (tecla S)">♯ / ♮</button>
+        <button type="button" id="ligar" title="Ligar esta nota con la siguiente de su voz (tecla L)">Ligar</button>
+        <button type="button" id="borrar" title="Quitar esta nota (Retroceso)">Borrar</button>
+      </span>
+    </div>
+    <p class="instruccion" id="pista-barra">La <b>barra de compás</b> la pones tú: pulsa el hueco
+      entre dos notas para ponerla o quitarla.</p>
+
+    <ul class="mensajes-cp" id="mensajes" hidden aria-live="polite"></ul>
     <p class="momentos-cp" id="momentos" hidden></p>
 
     <div class="botonera obra">
-      <button type="button" id="oir" class="primario">▶ Oír la célula</button>
+      <button type="button" id="comprobar" class="primario">Comprobar</button>
+      <button type="button" id="oir">▶ Oír</button>
       <button type="button" id="parar" hidden>■ Parar</button>
       <button type="button" id="ver">Ver la solución</button>
       <button type="button" id="otra" class="secundario">Otra célula</button>
@@ -100,15 +113,15 @@
 
   <div id="aviso" class="aviso" hidden></div>
 
-  <script src="js/teoria.js?v=20261015-1327"></script>
-  <script src="js/sonido.js?v=20261015-1327"></script>
+  <script src="js/teoria.js?v=20261015-1838"></script>
+  <script src="js/sonido.js?v=20261015-1838"></script>
   <!-- `banco.js` se carga por tres cosas: leer la ficha de la dirección (`#f=`), el título de
        la lección y su rótulo. Y pide `ejercicios.js` delante, que es de quien lee el orden de
        las cifras al cargarse. -->
-  <script src="js/ejercicios.js?v=20261015-1327"></script>
-  <script src="js/banco.js?v=20261015-1327"></script>
-  <script src="js/celulas.js?v=20261015-1327"></script>
-  <script src="js/reja.js?v=20261015-1327"></script>
-  <script src="js/contrapunto.js?v=20261015-1327"></script>
+  <script src="js/ejercicios.js?v=20261015-1838"></script>
+  <script src="js/banco.js?v=20261015-1838"></script>
+  <script src="js/celulas.js?v=20261015-1838"></script>
+  <script src="js/reja.js?v=20261015-1838"></script>
+  <script src="js/contrapunto.js?v=20261015-1838"></script>
 </body>
 </html>
