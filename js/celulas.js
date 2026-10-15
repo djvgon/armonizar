@@ -29,7 +29,7 @@
    respuesta, que es lo que pide el 2.7.
 
    LOS INTERVALOS SE CUENTAN POR GRADOS, NO POR SEMITONOS: la 6.ª de resolución es menor en
-   la célula de sol3 y mayor en la de do3, y la 3.ª del 2–3 es mayor al preparar y menor al
+   la célula de sol2 y mayor en la de do2 (su 'G3' y su 'C3'), y la 3.ª del 2–3 es mayor al preparar y menor al
    resolver. Una regla escrita en semitonos daría por malas la mitad de las células buenas.
 
    Uso:
@@ -80,23 +80,32 @@ const Celulas = (() => {
   ];
 
   /* EL REGISTRO LO FIJÓ DIEGO (15/10/2026): «por encima de fa1 y por debajo de do5». Son los
-     dos extremos, tomados como límites inclusivos: fa1–do5, algo más de tres octavas. No es el
-     pentagrama de la clave de fa —el del ejemplo del 2.1— sino el ámbito entero de las cuatro
-     voces, porque el retardo vale entre cualquier par de ellas. */
-  const REGISTRO = ['F1', 'C5'];
+     dos extremos, tomados como límites inclusivos, y es el ámbito entero de las cuatro voces
+     —no el pentagrama de la clave de fa del ejemplo del 2.1—, porque el retardo vale entre
+     cualquier par de ellas.
+
+     CORREGIDO EL 15/10 AL FIJAR EL ÍNDICE DE OCTAVAS (decisión 261). Diego nombra las octavas
+     al modo español (do central = do3), así que su «fa1» es el fa grave del bajo y su «do5»
+     el do agudo de la soprano: por dentro, F2 y C6. Antes estaban escritos F1 y C5, una
+     octava por debajo, que es de donde venía lo de «resultan demasiado graves». */
+  const REGISTRO = ['F2', 'C6'];
 
   /* EL REGISTRO DE LAS FICHAS, que no es el mismo que el de la REGLA.
      `REGISTRO` es el ámbito que fijó Diego —«por encima de fa1 y por debajo de do5», el de
      las cuatro voces— y como regla está bien: dice qué célula es posible. Pero la célula
-     hay que ESCRIBIRLA en un pentagrama, y con fa1 la voz inferior se va cuatro líneas
-     adicionales por debajo: de las 568 células, 108 piden tres o cuatro líneas adicionales,
-     que un alumno no lee de un vistazo. Con do2 —una línea adicional por debajo de la clave
-     de fa— quedan 460 células y ninguna pasa de dos líneas adicionales.
+     hay que ESCRIBIRLA, y en los extremos la voz se va varias líneas adicionales fuera del
+     pentagrama, que un alumno no lee de un vistazo.
 
-     De modo que la regla se queda como está y lo que se estrecha es lo que SALE EN UNA
-     FICHA. Es una decisión de Diego y está en un solo sitio: si quiere las 568, basta
-     borrar esta constante de la llamada. */
-  const REGISTRO_FICHA = ['C2', 'C5'];
+     El suelo lo ha ido subiendo Diego mirando la pantalla. El último, el 15/10 al ver las
+     cadenas: «resultan demasiado graves… mejor que no desciendan de do2 (es la nota en el
+     segundo espacio empezando por abajo en clave de fa)». Ese do2 suyo es 'C3' por dentro
+     (decisión 261), y es la que manda: lo que describe es una posición en el pentagrama.
+     Con ella quedan 193 células y 54 cadenas, de sobra para cualquier ficha, y ninguna nota
+     pasa de dos líneas adicionales.
+
+     La regla se queda como está y lo que se estrecha es lo que SALE EN UNA FICHA: está en
+     esta sola constante. */
+  const REGISTRO_FICHA = ['C3', 'C5'];
   /* LA DISTANCIA MÁXIMA: ninguna (Diego, 15/10: «aquí no rige lo de la octava como máximo entre
      soprano y tenor»). Lo que limita es el registro. El parámetro se queda para poder ponerle
      un límite desde la página de revisión si al verlas alguna canta demasiado. */
@@ -431,7 +440,7 @@ const Celulas = (() => {
   /* ---------- EL ENUNCIADO, en palabras de Diego ----------
      Uno por dirección (su 2.4, y los asuntos 11.8 y 18 de la coordinación):
 
-       A · se da la nota RETARDADA → «Haz descender sol3 con un retardo 6–7–6.»
+       A · se da la nota RETARDADA → «Haz descender sol2 con un retardo 6–7–6.»
        B · se da la nota REAL      → «Siendo esta la nota real, ¿cómo haces un retardo
                                         con ella?»
 
@@ -613,7 +622,7 @@ const Celulas = (() => {
     }));
   }
 
-  // «sol3/si2 → sol3/la2 → fa3/la2», para leerla de un vistazo
+  // «G3/B2 → G3/A2 → F3/A2» (forma interna), para leerla de un vistazo
   const comoTexto = celula => celula.momentos
     .map(m => Teoria.texto(m.alta) + '/' + Teoria.texto(m.baja))
     .join(' → ');

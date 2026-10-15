@@ -11,9 +11,16 @@
      · Teoria.canonizar('6/3')       → '6'
 
    Convenciones:
-     · Las notas se escriben al estilo anglosajón con octava científica:
-       'C3' = do3 (el do de la clave de fa, segundo espacio), 'F#2', 'Bb3'.
-       El do central es C4.
+     · DOS ÍNDICES DE OCTAVA (decisión 261). Por DENTRO, al estilo anglosajón
+       con octava científica: 'C3', 'F#2', 'Bb3'; el do central es C4. Es la
+       forma que viaja en los datos (banco, códigos de ejercicio, MusicXML) y
+       la que se escribe en estos comentarios.
+       Al ESCRIBIR PARA EL ALUMNO, el índice español que usa Diego: el do
+       central es do3, y el do del segundo espacio de la clave de fa —'C3'
+       por dentro— se llama do2. La octava escrita = la interna − 1.
+       El desfase vive en dos sitios y en ninguno más: `nombreEs` al escribir
+       y `bajoDesdeTexto` al leer lo que se teclea. Todo lo demás —`nota`,
+       `texto`, `midi`, `indice`— es científico y no se toca.
      · La tonalidad es {tonica: 'C', modo: 'mayor'} o {tonica: 'A', modo: 'menor'}.
      · En modo menor, el grado del bajo se mide respecto a la escala
        NATURAL (sol♯ es «7̂ elevado»); las voces superiores se construyen
@@ -46,7 +53,9 @@ const Teoria = (() => {
     return { letra, alt, octava: parseInt(m[3], 10) };
   }
 
-  // 'sol♯2', 'Sib3', 'do3', 'fa#' (octava 3 por defecto) → 'G#2', 'Bb3', 'C3', 'F#3'
+  /* 'sol♯2', 'Sib3', 'do3', 'fa#' (octava 3 por defecto) → 'G#2', 'Bb3', 'C3', 'F#3'.
+     Devuelve la octava TAL COMO SE ESCRIBIÓ: no desplaza nada. Quien lea texto
+     del alumno (`bajoDesdeTexto`) hace la conversión al índice interno. */
   const ES_A_LETRA = { do: 'C', re: 'D', mi: 'E', fa: 'F', sol: 'G', la: 'A', si: 'B' };
   function notaEs(txt, octavaDefecto = 3) {
     const m = /^(do|re|mi|fa|sol|la|si|[a-g])\s*(♯♯|##|♯|#|♭♭|bb|♭|b)?\s*(-?\d)?$/i.exec(txt.trim());
@@ -65,8 +74,11 @@ const Teoria = (() => {
   // compases por «|»; un guion bajo «_» es un silencio (con los mismos sufijos de
   // duración: «_», «_n», «_c», «_r»). Duración con sufijo: nada = blanca, «r» = redonda,
   // «n» = negra, «c» = corchea; un punto añade el puntillo
-  // (do3 re3 | mi3 do3 | sol3r | do3. | la3n si3n do4n). Sin octava se toma la
-  // 3 (bajo) o la que se indique (4 para una melodía de soprano).
+  // (do2 re2 | mi2 do2 | sol2r | do2. | la2n si2n do3n). Sin octava se toma la
+  // del bajo, o la que se indique (una más alta para una melodía de soprano).
+  // OJO: lo que se teclea va en ÍNDICE ESPAÑOL (do central = do3), igual que lo
+  // que la aplicación escribe; `octavaDefecto` llega en índice interno y aquí se
+  // convierte. Así la vuelta (textoDesdeBajo → bajoDesdeTexto) cae en la misma nota.
   const DURACION_SUFIJO = { r: 4, '': 2, n: 1, c: 0.5 };
   function bajoDesdeTexto(txt, octavaDefecto = 3) {
     const compases = [];
@@ -78,7 +90,7 @@ const Teoria = (() => {
         let dur = DURACION_SUFIJO[(m[2] || '').toLowerCase()];
         if (m[3]) dur *= 1.5;
         if (m[1] === '_') { notas.push([null, dur]); return; }      // silencio
-        try { notas.push([notaEs(m[1], octavaDefecto), dur]); }
+        try { notas.push([aInterno(notaEs(m[1], octavaDefecto + DESFASE_OCTAVA)), dur]); }
         catch (e) { errores.push('Compás ' + (ci + 1) + ': ' + e.message); }
       });
       if (notas.length) compases.push(notas);
@@ -210,13 +222,23 @@ const Teoria = (() => {
     return out;
   }
 
+  /* El desfase entre las dos maneras de numerar las octavas (ver la cabecera):
+     octava escrita = octava interna + DESFASE_OCTAVA. Decisión 261 (Diego, 15/10/2026:
+     «el español: do central = do3»). */
+  const DESFASE_OCTAVA = -1;
+  // Texto de nota escrito por una persona (índice español) → texto interno (científico)
+  function aInterno(txt) {
+    const n = nota(txt);
+    return texto({ letra: n.letra, alt: n.alt, octava: n.octava - DESFASE_OCTAVA });
+  }
+
   function texto(n) {                       // {C,1,3} → 'C#3'
     const a = n.alt === 1 ? '#' : n.alt === 2 ? '##' : n.alt === -1 ? 'b' : n.alt === -2 ? 'bb' : '';
     return n.letra + a + n.octava;
   }
 
-  function nombreEs(n, conOctava = false) { // {C,1,3} → 'do♯' (o 'do♯3')
-    return NOMBRE_ES[n.letra] + ALT_TEXTO[String(n.alt)] + (conOctava ? n.octava : '');
+  function nombreEs(n, conOctava = false) { // {C,1,3} → 'do♯' (o 'do♯2': índice español)
+    return NOMBRE_ES[n.letra] + ALT_TEXTO[String(n.alt)] + (conOctava ? (n.octava + DESFASE_OCTAVA) : '');
   }
 
   function midi(n) { return 12 * (n.octava + 1) + SEMITONOS[n.letra] + n.alt; }
@@ -1026,7 +1048,7 @@ const Teoria = (() => {
   }
 
   return {
-    LETRAS, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
+    LETRAS, DESFASE_OCTAVA, nota, notaEs, bajoDesdeTexto, textoDesdeBajo, sufijoDuracion, esSilencio, eventos, notasDeCompases, numeroDeNotas, cortes, texto, nombreEs, midi, clase, indice, transportar,
     CIRCULO_TONICAS: CIRCULO, tonicasPorAlteraciones, intervaloEntreTonicas, transportarTonalidad,
     escalaNatural, escalaVoces, armadura, grado, textoGrado, ordenGrado, relievePorNota, relieveDeTonica, cabeEnTonalidad, tonalidadesCandidatas, nombreTonalidad, nombreCorto, mismaTonalidad, fuerzasMetricas, pideCambio, cabeSeisCuatro, divideElTiempo,
     tonalidadDesdeTexto, tonalidadPorArmadura, tonalidadesVecinas, tonalidadesPorNota, clasesPropias, acordeComun, acordeAjeno,

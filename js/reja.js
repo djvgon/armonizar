@@ -16,7 +16,7 @@
    célula, donde están a una 3.ª o a una 6.ª—, se escriben juntas, con
    las plicas contrarias, como se escribe el contrapunto a dos voces: así
    el intervalo se VE. Cuando se separan —el registro de la célula llega
-   de fa1 a do5—, cada voz coge su pentagrama y su clave.
+   de fa1 a do5, 'F2' a 'C6' por dentro—, cada voz coge su pentagrama y su clave.
 
    Uso:
      Reja.dibujar(contenedor, estado, alPulsar)
@@ -80,7 +80,7 @@ const Reja = (() => {
     sol: { sost: ['F5', 'C5', 'G5', 'D5', 'A4', 'E5', 'B4'], bem: ['B4', 'E5', 'A4', 'D5', 'G4', 'C5', 'F4'] },
     fa: { sost: ['F3', 'C3', 'G3', 'D3', 'A2', 'E3', 'B2'], bem: ['B2', 'E3', 'A2', 'D3', 'G2', 'C3', 'F2'] }
   };
-  // La línea inferior de cada pentagrama: sol2 en la clave de fa, mi4 en la de sol
+  // La línea inferior de cada pentagrama: 'G2' en la clave de fa, 'E4' en la de sol
   const BASE_CLAVE = { fa: 'G2', sol: 'E4' };
 
   const el = (tag, atrs = {}, txt) => {
@@ -115,8 +115,8 @@ const Reja = (() => {
     notas.reduce((s, n) => s + Math.abs(pasoEn(n, clave) - 4), 0) / (notas.length || 1);
 
   /* La clave de una voz sale de SUS notas, no de un reparto fijo: el registro de la célula va
-     de fa1 a do5 (Diego, 15/10), de modo que la voz de arriba de una célula grave puede estar
-     entera en la clave de fa. */
+     de fa1 a do5 (Diego, 15/10) —'F2' a 'C6' por dentro—, de modo que la voz de arriba de una
+     célula grave puede estar entera en la clave de fa. */
   function claveDe(notas) {
     const ns = (notas || []).filter(Boolean);
     if (!ns.length) return 'fa';
@@ -229,6 +229,28 @@ const Reja = (() => {
        en lugar de reducir las cabezas de nota a cuatro píxeles. */
     if (ancho > 560) svg.style.minWidth = Math.min(ancho, 560) + 'px';
 
+    /* LA CASILLA EN LA QUE ESTÁ EL ALUMNO se marca con un fondo, y el fondo es LO PRIMERO que
+       se dibuja: así las líneas del pentagrama, las notas y todo lo demás quedan por encima y
+       se siguen viendo (Diego, 15/10: «no se ven las líneas del pentagrama… no queda fino»).
+       Antes iba después de las líneas y las borraba dentro del recuadro. */
+    if (estado.activa) {
+      const a = estado.activa;
+      let y, h;
+      if (unico) {
+        y = yBase.alta - cima + 0.4 * SP;
+        h = (yBase.baja + sobra) - y - 0.4 * SP;
+        const medio = yBase.alta - 2 * SP;
+        if (a.voz === 'alta') h = medio - y; else { h = (y + h) - medio; y = medio; }
+      } else {
+        y = yBase[a.voz] - 4.8 * SP;
+        h = 5.6 * SP;
+      }
+      svg.appendChild(el('rect', {
+        x: X0 + a.momento * ANCHO_COL, y, width: ANCHO_COL - 0.6 * SP, height: Math.max(h, 2 * SP),
+        rx: 0.5 * SP, class: 'casilla-fondo'
+      }));
+    }
+
     /* ---- Pentagramas, claves y armadura ---- */
     const pentagramas = unico ? [{ clave: disp.clave, y: yBase.alta }]
       : [{ clave: claves.alta, y: yBase.alta }, { clave: claves.baja, y: yBase.baja }];
@@ -263,26 +285,6 @@ const Reja = (() => {
     const esta = (lista, k, voz) => (lista || []).some(x => x.momento === k && x.voz === voz);
     const xDe = k => X0 + k * ANCHO_COL + 2.2 * SP;
     const cabezas = { alta: [], baja: [] };
-
-    /* LA CASILLA EN LA QUE ESTÁ EL ALUMNO se marca con un fondo, y el fondo va DEBAJO de la
-       música: pintarlo encima —que es donde están las zonas pulsables— taparía la nota, que
-       es justo lo que no puede pasar. */
-    if (estado.activa) {
-      const a = estado.activa;
-      const alto1 = unico
-        ? { y: yBase.alta - cima + 0.4 * SP, h: (yBase.baja + sobra) - (yBase.alta - cima) - 0.8 * SP }
-        : { y: yBase[a.voz] - 4.8 * SP, h: 5.6 * SP };
-      let y = alto1.y, h = alto1.h;
-      if (unico) {
-        const medio = (yBase.alta - 2 * SP);
-        if (a.voz === 'alta') h = medio - y;
-        else { h = (y + h) - medio; y = medio; }
-      }
-      svg.appendChild(el('rect', {
-        x: X0 + a.momento * ANCHO_COL, y, width: ANCHO_COL - 0.6 * SP, height: Math.max(h, 2 * SP),
-        rx: 0.5 * SP, class: 'casilla-fondo'
-      }));
-    }
 
     momentos.forEach((m, k) => {
       /* Con las dos voces en el mismo pentagrama, una SEGUNDA no cabe en la misma columna: la

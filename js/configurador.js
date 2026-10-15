@@ -194,7 +194,7 @@
     const sop = esSoprano();
     $('#titulo-voz').textContent = 'El fragmento en curso · ' + (sop ? 'la melodía' : 'el bajo');
     $('#etiqueta-voz').textContent = sop ? 'Escribe la melodía (soprano)' : 'Escribe el bajo';
-    $('#texto-bajo').placeholder = sop ? 'mi4 fa4n mi4n | re4 si3 | do4r' : 'do3 re3 | mi3 do3 | sol3r | do3r';
+    $('#texto-bajo').placeholder = sop ? 'mi3 fa3n mi3n | re3 si2 | do3r' : 'do2 re2 | mi2 do2 | sol2r | do2r';
     $('#ayuda-octava-soprano').hidden = !sop;
     /* CON LAS CUATRO VOCES ESCRITAS, NO SE ANALIZA NADA: SE REVISA (decisión 205, Diego
        30/9/2026: «debería llamarse algo así como Revisar el fragmento»). El botón dice lo
@@ -1612,7 +1612,7 @@
 
     // Ejemplo por defecto si no hay borrador
     if (!cargarBorrador()) {
-      $('#texto-bajo').value = 'do3 re3 | mi3 do3 | sol3r | do3r';
+      $('#texto-bajo').value = 'do2 re2 | mi2 do2 | sol2r | do2r';
       $('#titulo').value = 'Ejercicio 1';
       leerBajo();
     }

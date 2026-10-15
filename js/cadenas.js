@@ -231,7 +231,7 @@ const Cadenas = (() => {
 
   /* ---------- El enunciado ----------
      Propuesta mía, a falta del visto bueno de Diego: el suyo para la célula es «Haz descender
-     sol3 con un retardo 6–7–6», y este sigue el mismo tono. */
+     sol2 con un retardo 6–7–6», y este sigue el mismo tono. */
   const ENUNCIADO = 'Sobre este bajo, escribe la voz superior: una cadena de {n} retardos 7–6 que acabe en cadencia compuesta.';
   const enunciado = cadena => Celulas.rellenar(ENUNCIADO, { n: cadena.n });
 

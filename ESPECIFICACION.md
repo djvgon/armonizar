@@ -3880,6 +3880,41 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+261. **El índice de octavas: el español, el que usa Diego (do central = do3)**
+    (15/10/2026. Pregunta mía —la aplicación numeraba las octavas al modo científico y él
+    había dicho «la nota más grave del chelo la denomina do1»— y respuesta suya: «**El
+    español: do central = do3**».)
+    - **Por dentro no cambia nada, y ninguna nota se mueve.** La aplicación sigue guardando
+      las notas en índice científico —`'C4'` es el do central y `'C3'` el do del segundo
+      espacio de la clave de fa—, que es la forma que viaja en el banco, en los códigos de
+      ejercicio (`#e=`), en el MusicXML y en los comentarios del código. Cambia el nombre,
+      no la música.
+    - **Lo que se ESCRIBE para una persona lleva un número menos**: el do central se escribe
+      do3; el do del segundo espacio de la clave de fa, do2; el la del diapasón, la3. El
+      desfase vive en dos sitios y en ninguno más: `Teoria.nombreEs(n, true)` al escribir y
+      `Teoria.bajoDesdeTexto` al leer lo que se teclea. Son inversos, y se comprueba: lo que
+      la aplicación vuelca en el editor del bajo del configurador, pegado otra vez, cae en la
+      misma nota. `Teoria.DESFASE_OCTAVA` es la única constante.
+    - **El editor del bajo del configurador también escribe y lee así**: el ejemplo pasa a
+      `do2 re2 | mi2 do2 | sol2r | do2r` y, sin octava, se toma la del bajo. **Aviso**: un
+      bajo escrito a mano con la numeración anterior se lee ahora una octava más alta; hay
+      que restarle 1 a cada número, o quitarlos y dejar que la aplicación ponga la octava.
+    - **El registro de la célula, corregido de paso**: lo que Diego fijó —«por encima de fa1
+      y por debajo de do5», el ámbito de las cuatro voces— es, en su índice, `'F2'`–`'C6'`,
+      el fa grave del bajo y el do agudo de la soprano. Estaba escrito `'F1'`–`'C5'`, una
+      octava por debajo, y de ahí venía que las cadenas salieran graves. Con el registro en
+      su sitio las células que valen pasan de 460 a **404** y **ninguna pide más de dos
+      líneas adicionales** (antes, 108 pedían tres o cuatro). **El registro de la ficha no
+      cambia**: sigue siendo `'C3'`–`'C5'` —el do2 que pidió Diego y el do4 de arriba—, con
+      sus 193 células y sus 54 cadenas.
+    - La voz hablada no dice nunca el número de octava, así que no la toca esto.
+    - **Para el chat «Schemata app»**: su ejemplo del 2.1, «si tengo un sol3», hay que
+      releerlo como **sol2** —la misma nota, el cuarto espacio de la clave de fa— y
+      corregirlo en su documento. Va en el asunto 22 de la coordinación.
+    - Comprobado: nueve comprobaciones nuevas en `probar-modo-contrapunto.js` (el do central,
+      el registro, la ida y la vuelta del editor) y las 140 de los tres probadores sin
+      navegador, más las 97 de la pantalla en un navegador de verdad.
+
 260. **La cadena de retardos y la cadencia compuesta; y la sonoridad de tónica**
     (15/10/2026, Diego: «pongamos también una cadena de retardos. Recuerda que sobre la
     tónica solo se ha de poner tónica (octava) o tercera (a dos voces) para que se haga sonar
@@ -3920,6 +3955,14 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - Comprobado: `probar-cadenas.js` (30 comprobaciones, sin navegador) y
       `probar-pagina-contrapunto.js`, que sube a **97** y escribe una cadena entera pulsando
       los mandos de verdad.
+    - **El suelo del registro sube a do3** (Diego, 15/10, al ver las cadenas: «resultan
+      demasiado graves… mejor que no desciendan de do2 (es la nota en el segundo espacio
+      empezando por abajo en clave de fa)»). **La nota que describe es `'C3'`**: el segundo
+      espacio de la clave de fa, MIDI 48. Mandaba la posición en el pentagrama, no el nombre.
+      La duda que quedaba —si él lee las octavas una más baja que la aplicación— se la
+      pregunté y la contestó: sí, y de ahí la **decisión 261**. Con ese suelo quedan **193
+      células** y **54 cadenas** (20 de dos retardos, 18 de tres y 16 de cuatro), y la nota
+      más grave de las 54 es exactamente esa, la que ahora se escribe do2.
     - **Pendiente de Diego**: el enunciado de la cadena es propuesta mía —«Sobre este bajo,
       escribe la voz superior: una cadena de N retardos 7–6 que acabe en cadencia compuesta»—.
 
@@ -3954,7 +3997,9 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       modo que no es una respuesta posible por mucho que el enunciado no diga el tipo. Saber en
       qué voz va no es una pista sobre el tipo: es lo que el alumno está viendo. Quedan dos
       respuestas en vez de tres.
-    - **La casilla elegida se marca con un fondo que va DEBAJO de la música.** Dicho de otro
+    - **La casilla elegida se marca con un fondo que va DEBAJO de la música**, y desde el
+      15/10 es **lo primero que se dibuja** (Diego: «no se ven las líneas del pentagrama… no
+      queda fino»): iba detrás de las líneas y las borraba dentro del recuadro. Dicho de otro
       modo: las zonas pulsables, que van por encima de todo, son transparentes. Y con una
       razón de peso, que costó un rato encontrar: `fill: none` **deja de recibir el ratón**, de
       modo que pintar la casilla al pasar por encima la volvía imposible de pulsar. Al pasar
@@ -4050,8 +4095,9 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - **El registro de la FICHA no es el de la REGLA.** `REGISTRO` es el ámbito que fijó
       Diego —fa1–do5, el de las cuatro voces— y como regla está bien: dice qué célula es
       posible. Pero de las 568 células, **108 piden tres o cuatro líneas adicionales**, que no
-      se leen de un vistazo. `REGISTRO_FICHA` (do2–do5) deja **460** y ninguna pasa de dos.
-      **Diego lo decidió así** el 15/10, con las cuentas delante; está en una sola constante.
+      se leen de un vistazo. `REGISTRO_FICHA` deja fuera las que no se leen: **Diego lo
+      decidió así** el 15/10, con las cuentas delante, y el suelo lo ha ido subiendo al mirar
+      la pantalla —primero do2 y después **do3** (decisión 260)—. Está en una sola constante.
     - **Lo que esta pantalla todavía NO hace**: escribir. Hoy enseña el enunciado, la nota
       que se da, la realización modelo y el sonido, y lo dice en la propia página. Detrás van
       la reja de escritura, la corrección con los mensajes, la ficha desde el configurador y
