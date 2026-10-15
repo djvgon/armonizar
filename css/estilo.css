@@ -1213,6 +1213,11 @@ body { padding: 0; max-width: none; }
 /* El enlace-botón que vive dentro de la banda (el del configurador) */
 .cabecera .enlace-boton { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.45); color: var(--marca-texto); }
 .cabecera .enlace-boton:hover { background: var(--marca-texto); color: var(--marca); border-color: var(--marca-texto); }
+/* El botón de la cabecera cuando todavía no tiene dirección (Diego, 13/10/2026): sigue a la
+   vista —para que el camino no desaparezca—, pero apagado, porque lo que hace es llevar a la
+   casilla donde se pega y no abrir nada. */
+.cabecera .enlace-boton.sin-direccion { opacity: .55; }
+.cabecera .enlace-boton.sin-direccion:hover { opacity: 1; }
 .cabecera .quees { font-size: .84rem; opacity: .82; }
 
 /* El comentario hablado: el botón que lo pide y la casilla que lo pone automático viven

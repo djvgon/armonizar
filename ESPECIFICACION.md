@@ -3880,6 +3880,23 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+248. **El camino al cuaderno y a la hoja de respuestas no desaparece nunca**
+    (13/10/2026, Diego: «¿puedes asegurarte que hay un botón en el Configurador que lleve a
+    ella en todo momento?»). Los dos botones de la cabecera —«Ver el cuaderno →» y «Ver los
+    resultados →»— **están siempre a la vista**. Hasta ahora se escondían cuando este
+    navegador no tenía guardada la dirección (234, 245), y entonces no quedaba ni rastro de
+    por dónde se llegaba al cuaderno: al limpiar la caché de Safari, o al abrir el
+    configurador en otro ordenador, el camino se borraba.
+    - **Con la dirección puesta**: el botón abre el cuaderno (o la hoja) en otra pestaña,
+      como antes.
+    - **Sin la dirección**: el botón sale **atenuado** y lleva a «Recogida de resultados»,
+      justo a la casilla donde se pega; el globo lo dice con palabras.
+    - **La dirección sigue sin viajar en `envio.json`** (234, 245): vive en el
+      almacenamiento de ese navegador, porque `envio.json` se publica en GitHub y la del
+      cuaderno es de acceso «Solo yo».
+    - La dirección del cuaderno **no cambia** al volver a implementar la misma
+      implementación de Apps Script; solo una implementación *nueva* daría otra.
+
 247. **Aviso: este fragmento quizá cambia de acorde por corcheas**
     (10/10/2026, Diego: «un 2/4 en tempo lento funciona como un 4/4 en tempo medio: las negras
     del 4/4, que pueden llevar cada una un acorde, suelen ser corcheas en el 2/4 lento»).

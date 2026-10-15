@@ -3273,8 +3273,17 @@
     const revisar = () => {
       const t = campo.value.trim();
       const ok = cfg.valida(t);
-      boton.hidden = !ok;
-      if (ok) boton.href = t;
+      /* EL BOTÓN DE LA CABECERA, SIEMPRE A LA VISTA (Diego, 13/10/2026). Antes se escondía
+         cuando no había dirección guardada, y entonces no quedaba ni rastro de por dónde se
+         llegaba al cuaderno: al limpiar la caché del navegador, o al abrir el configurador
+         en otro ordenador, el camino desaparecía. Ahora el botón está siempre; lo que cambia
+         es a dónde lleva: con la dirección puesta, al cuaderno, en otra pestaña; sin ella, a
+         la casilla donde se pega. La dirección sigue sin viajar en `envio.json` (234, 245):
+         es suya y no se publica en GitHub. */
+      boton.href = ok ? t : '#paso-envio';
+      boton.title = ok ? cfg.bien : cfg.faltaCabecera;
+      boton.classList.toggle('sin-direccion', !ok);
+      if (ok) boton.setAttribute('target', '_blank'); else boton.removeAttribute('target');
       if (botonC) {
         botonC.setAttribute('aria-disabled', ok ? 'false' : 'true');
         botonC.href = ok ? t : '#';
@@ -3294,14 +3303,16 @@
       clave: CLAVE_RESPUESTAS, valida: hojaValida,
       bien: 'Abre la hoja de respuestas en otra pestaña',
       mal: 'Esa dirección no parece una hoja de cálculo de Google',
-      falta: 'Pega aquí arriba la dirección de la hoja de respuestas'
+      falta: 'Pega aquí arriba la dirección de la hoja de respuestas',
+      faltaCabecera: 'Todavía no has puesto la dirección de la hoja de respuestas: pulsa para ir a la casilla, en «Recogida de resultados»'
     });
     conectarEnlaceGuardado({
       campo: '#envio-cuaderno', boton: '#btn-cuaderno', botonC: '#btn-cuaderno-c',
       clave: CLAVE_CUADERNO, valida: cuadernoValido,
       bien: 'Abre el cuaderno en otra pestaña',
       mal: 'Esa dirección no parece la de una aplicación web de Apps Script (ha de acabar en /exec)',
-      falta: 'Pega aquí arriba la dirección del cuaderno'
+      falta: 'Pega aquí arriba la dirección del cuaderno',
+      faltaCabecera: 'Todavía no has puesto la dirección del cuaderno: pulsa para ir a la casilla, en «Recogida de resultados»'
     });
   }
 

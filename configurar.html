@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261010-0808">
-  <link rel="stylesheet" href="css/estilo.css?v=20261010-0808">
+  <link rel="stylesheet" href="css/bravura.css?v=20261013-1048">
+  <link rel="stylesheet" href="css/estilo.css?v=20261013-1048">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -23,13 +23,17 @@
     <span class="accesos-cabecera">
       <!-- El cuaderno, DELANTE de los resultados (Diego, 7/10/2026): el panel que enseña una
            clase de un vistazo. Va primero porque es lo que se mira a diario; la hoja de
-           respuestas es para comprobar entregas sueltas. Igual que el de al lado, aparece
-           solo cuando su dirección está puesta, abajo en «Recogida de resultados». -->
-      <a id="btn-cuaderno" class="enlace-boton" href="#" target="_blank" rel="noopener" hidden>Ver el cuaderno →</a>
+           respuestas es para comprobar entregas sueltas.
+           SIEMPRE A LA VISTA (Diego, 13/10/2026: «asegúrate de que hay un botón en el
+           configurador que lleve a ella en todo momento»). Antes desaparecía cuando su
+           dirección no estaba guardada en ese navegador, de modo que al limpiar la caché o
+           al abrir el configurador en otro ordenador no quedaba ni rastro de por dónde se
+           llegaba. Ahora el botón está siempre: con la dirección puesta abre el cuaderno en
+           otra pestaña; sin ella, baja a la casilla donde se pega, y el globo lo dice. -->
+      <a id="btn-cuaderno" class="enlace-boton" href="#paso-envio" rel="noopener">Ver el cuaderno →</a>
       <!-- Los resultados que envían los alumnos, a un toque (Diego, 28/9/2026): la hoja de
-           respuestas del formulario. Aparece solo cuando su dirección está puesta, abajo en
-           «Recogida de resultados». -->
-      <a id="btn-resultados" class="enlace-boton" href="#" target="_blank" rel="noopener" hidden>Ver los resultados →</a>
+           respuestas del formulario. Mismo comportamiento que el de al lado. -->
+      <a id="btn-resultados" class="enlace-boton" href="#paso-envio" rel="noopener">Ver los resultados →</a>
       <a class="enlace-boton" href="index.html">Ir a la página del alumno →</a>
     </span>
   </header>
@@ -736,20 +740,20 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261010-0808</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261013-1048</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261010-0808"></script>
-  <script src="js/teoria.js?v=20261010-0808"></script>
-  <script src="js/reglas.js?v=20261010-0808"></script>
-  <script src="js/ejercicios.js?v=20261010-0808"></script>
-  <script src="js/partitura.js?v=20261010-0808"></script>
-  <script src="js/musicxml.js?v=20261010-0808"></script>
-  <script src="js/musescore.js?v=20261010-0808"></script>
-  <script src="js/banco.js?v=20261010-0808"></script>
-  <script src="js/realizacion.js?v=20261010-0808"></script>
-  <script src="js/tecnicas.js?v=20261010-0808"></script>
-  <script src="js/configurador.js?v=20261010-0808"></script>
+  <script src="js/qr.js?v=20261013-1048"></script>
+  <script src="js/teoria.js?v=20261013-1048"></script>
+  <script src="js/reglas.js?v=20261013-1048"></script>
+  <script src="js/ejercicios.js?v=20261013-1048"></script>
+  <script src="js/partitura.js?v=20261013-1048"></script>
+  <script src="js/musicxml.js?v=20261013-1048"></script>
+  <script src="js/musescore.js?v=20261013-1048"></script>
+  <script src="js/banco.js?v=20261013-1048"></script>
+  <script src="js/realizacion.js?v=20261013-1048"></script>
+  <script src="js/tecnicas.js?v=20261013-1048"></script>
+  <script src="js/configurador.js?v=20261013-1048"></script>
 </body>
 </html>
