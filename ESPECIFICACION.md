@@ -3880,6 +3880,29 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+256. **Lo que suena se ciñe a las voces que se muestran**
+    (15/10/2026, Diego: «si lo que se muestra tiene bajo y soprano, la instrumentación que se
+    oye debería ceñirse a esas voces, porque de otra manera queda extraño, como algo distinto,
+    como un error»).
+    - **Qué pasaba.** Varias instrumentaciones refuerzan las voces a la octava: la flauta
+      dobla la soprano arriba, el contrabajo el bajo abajo, el órgano pleno dobla soprano y
+      contralto como un 4 pies. Con las cuatro voces escritas eso es la plenitud aprobada;
+      pero con **bajo y soprano** a la vista, la «Orquesta clásica» sonaba en **seis líneas y
+      cuatro octavas** —flauta 8.ª alta, oboe y violines al unísono, violonchelos y fagot,
+      contrabajo 8.ª baja—, y hasta una melodía sola sonaba doblada por la flauta.
+    - **Ahora los refuerzos de octava (S8, A8, T8, B8) suenan solo cuando el fragmento trae
+      las cuatro voces.** Cada voz escrita sigue sonando con sus instrumentos **a su altura**:
+      con bajo y soprano, la orquesta toca violines y oboe arriba, violonchelos y fagot abajo.
+    - **Se mira la pieza entera, no acorde a acorde**: un fragmento que adelgaza a tres voces
+      en un sitio —la sonata de Beethoven— no debe perder la flauta en ese acorde y
+      recuperarla en el siguiente.
+    - **Efecto colateral que Diego ha de confirmar**: con el **bajo solo** (Armonización de
+      bajo) desaparece también su doblado a la octava grave, que estaba ahí para que el bajo
+      destacara y se oyeran las inversiones. Es coherente con lo que ha pedido —se oye lo que
+      se ve—, pero es un cambio que no pidió: devolverlo es una línea.
+    - Comprobado en el navegador: la orquesta pasa de 10 notas con cuatro voces a 4 con bajo y
+      soprano y 2 con la melodía sola; la cuerda, de 5 a 2 y a 1.
+
 255. **Las voces escritas también se miran: paralelas en la armonización del banco**
     (15/10/2026, Diego, al ver el A-8-17 en la pantalla del alumno: «en este fragmento se te
     ha colado una octava paralela flagrante. Se ha de corregir y que no aparezca más»).
@@ -3909,7 +3932,13 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       nota en cada uno**:
       - **A-8-17**, acorde 3: el tenor, **si3** en vez de re4 (el acorde queda si3–fa♯4–si4
         sobre el bajo re3). Quita las dos paralelas de una vez, y el tenor repite el si3 que ya
-        tiene el acorde 4.
+        tiene el acorde 4. **HECHO el 15/10, a petición de Diego** («he abierto el fragmento
+        A-8-17, ¿le arreglas las octavas seguidas?»): cambiada esa nota en `banco.json` y
+        **vuelta a firmar la entrada**, porque las voces escritas entran en la huella del sello
+        (`71a1d55c65cdb9bf` → `9a8130e1adf5805e`). Es el único cambio en todo el archivo. Lo
+        normal sería hacerlo en el configurador, pero **el configurador lee las voces escritas
+        y no las edita**: vienen del archivo de MuseScore, y el fragmento está cerrado, así que
+        una reimportación se rechazaría.
       - **A-14-09**, acorde 18: el tenor, **si♭3** en vez de do4 (si♭3–mi♭4–si♭4 sobre do3).
         Probadas las demás notas del acorde: mi♭3 cambia las octavas por quintas tenor–soprano.
 

@@ -596,8 +596,36 @@ const Sonido = (() => {
 
   /* ---------- Reproducción ---------- */
 
+  /* CEÑIRSE A LAS VOCES QUE SE MUESTRAN (decisión 256, Diego 15/10/2026: «si lo que se
+     muestra tiene bajo y soprano, la instrumentación que se oye debería ceñirse a esas
+     voces, porque de otra manera queda extraño, como algo distinto, como un error»).
+
+     Varias instrumentaciones refuerzan las voces a la octava —la flauta dobla la soprano
+     arriba, el contrabajo el bajo abajo, el órgano pleno dobla soprano y contralto como un 4
+     pies—. Con las cuatro voces escritas eso es la plenitud que Diego aprobó; pero con dos
+     voces a la vista, la orquesta clásica sonaba en SEIS líneas y cuatro octavas, y lo que se
+     oía no era lo que se veía.
+
+     Así que los refuerzos de octava (las partes con un 8: S8, A8, T8, B8) suenan **solo
+     cuando el fragmento trae las cuatro voces**. Se mira la pieza entera y no acorde a
+     acorde: un fragmento que adelgaza a tres voces en un sitio —la sonata de Beethoven— no
+     debe perder la flauta en ese acorde y recuperarla en el siguiente. Cada voz escrita sigue
+     sonando con sus instrumentos a su altura. */
+  function soloLoEscrito(def) {
+    const quita = capas => (capas || [])
+      .map(c => Object.assign({}, c, { partes: c.partes.filter(x => x.length === 1) }))
+      .filter(c => c.partes.length);
+    if (!def.capas && !def.pizz) return def;
+    const out = Object.assign({}, def);
+    if (def.capas) out.capas = quita(def.capas);
+    if (def.pizz) out.pizz = quita(def.pizz);
+    return out;
+  }
   function tocarPieza(items, t0, aislado) {
-    const def = DEF[actual] || DEF.piano, p = pieza(items);
+    let def = DEF[actual] || DEF.piano;
+    const p = pieza(items);
+    const cuatroVoces = p.acordes.some(ac => ac && ac.filter(x => x != null).length >= 4);
+    if (!cuatroVoces) def = soloLoEscrito(def);
     const listo = bancosDe(def).every(b => bancos[b] && bancos[b].buffers);
     if (def.estilo === 'sintetico' || !listo) return tocarSintetico(p, t0);       // si no se ha podido cargar, suena con osciladores
     if (def.estilo === 'coro') return tocarCoro(def, p, t0);
