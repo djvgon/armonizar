@@ -2473,7 +2473,21 @@
     document.querySelectorAll('#posicion-control .segmentos button').forEach(b => b.addEventListener('click', () => { estado.rotacion = Number(b.dataset.pos); pintar(); }));
     // Instrumento: lista, elección guardada y aviso de carga
     const selInst = $('#instrumento');
-    Sonido.INSTRUMENTOS.forEach(x => { const o = document.createElement('option'); o.value = x.id; o.textContent = x.nombre; selInst.appendChild(o); });
+    /* EL MENÚ, AGRUPADO (Diego, 15/10/2026). Con trece instrumentaciones, la lista plana no
+       decía de qué familia era cada una. Los grupos los da `Sonido.GRUPOS` y cada instrumento
+       dice el suyo; si alguno viniera sin grupo, va al final, suelto, para que no desaparezca
+       del menú por un dato que falte. */
+    const porGrupo = gr => Sonido.INSTRUMENTOS.filter(x => x.grupo === gr);
+    const opcion = x => { const o = document.createElement('option'); o.value = x.id; o.textContent = x.nombre; return o; };
+    (Sonido.GRUPOS || []).forEach(gr => {
+      const dentro = porGrupo(gr);
+      if (!dentro.length) return;
+      const og = document.createElement('optgroup');
+      og.label = gr;
+      dentro.forEach(x => og.appendChild(opcion(x)));
+      selInst.appendChild(og);
+    });
+    Sonido.INSTRUMENTOS.filter(x => !(Sonido.GRUPOS || []).includes(x.grupo)).forEach(x => selInst.appendChild(opcion(x)));
     try { const g = localStorage.getItem('armonizar.instrumento'); if (g && Sonido.INSTRUMENTOS.some(x => x.id === g)) Sonido.elegirInstrumento(g); } catch (e) { /* sin almacenamiento */ }
     selInst.value = Sonido.instrumentoActual();
     selInst.addEventListener('change', () => {

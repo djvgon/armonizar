@@ -1,16 +1,37 @@
-Muestras de instrumentos (sonidos/piano.js, sonidos/clave.js, sonidos/organo.js,
-sonidos/coro.js)
+Muestras de instrumentos (carpeta sonidos/)
 
-Proceden del banco de sonidos FluidR3_GM (Frank Wen), en la versión renderizada
-a mp3 nota a nota por el proyecto MIDI.js Soundfonts de Benjamin Gleitzman
-(https://github.com/gleitz/midi-js-soundfonts):
-  · piano  → acoustic_grand_piano
-  · clave  → harpsichord
-  · órgano → church_organ
-  · coro   → choir_aahs
+1. FluidR3_GM (Frank Wen), en la versión renderizada a mp3 nota a nota por el proyecto
+   MIDI.js Soundfonts de Benjamin Gleitzman (https://github.com/gleitz/midi-js-soundfonts).
+   Licencia: Creative Commons Attribution 3.0 (CC BY 3.0),
+   https://creativecommons.org/licenses/by/3.0/us/
+     · sonidos/organo.js → church_organ   (Órgano pleno)
+     · sonidos/coro.js   → choir_aahs     (Coro)
+   (sonidos/piano.js y sonidos/clave.js, también de FluidR3_GM, ya no los usa la aplicación
+   desde la instrumentación nueva del 15/10/2026.)
 
-Licencia: Creative Commons Attribution 3.0 (CC BY 3.0),
-https://creativecommons.org/licenses/by/3.0/us/
-Se incluyen aquí incrustadas en base64 (una muestra cada tercera menor, do1–do6;
-el coro, una cada tono, porque la voz cantada no aguanta bien el transporte)
-para que la aplicación funcione también abierta desde el disco, sin conexión.
+2. Salamander Grand Piano, de Alexander Holm, en la selección de Tone.js
+   (https://github.com/Tonejs/audio). Licencia: Creative Commons Attribution 3.0 (CC BY 3.0).
+     · sonidos/piano-salamander.js   (Piano)
+
+3. VSCO 2 Community Edition, de Versilian Studios (https://github.com/sgossner/VSCO-2-CE).
+   Licencia: CC0 1.0 (dominio público).
+     · violines, violas, violonchelos, contrabajo (sostenido y pizzicato)
+     · flauta, oboe, clarinete, fagot (sostenido y picado)
+     · trompa, trompeta, trombón (sostenido y picado), tuba
+     · marimba-fuerte
+
+4. Versilian Community Sample Library (VCSL), de Versilian Studios
+   (https://github.com/michaelwillis/VCSL). Licencia: CC0 1.0 (dominio público).
+     · clave-frances                              (Clave)
+     · organo-tubos-manual, organo-tubos-pedal    (Órgano suave; el pedal refuerza también el pleno)
+     · marimba                                    (Marimba)
+     · cajon-grave, cajon-agudo, cajon-suave, palmas-claras, palmas-sordas
+                                                  (percusión de bulerías, inactiva de momento)
+
+Cada archivo sonidos/<banco>.js lleva las muestras en mp3 incrustadas en base64, para que la
+aplicación funcione también abierta desde el disco, sin conexión, y se carga solo cuando un
+instrumento lo necesita. Los bancos nuevos (2, 3 y 4) se generan con preparar_muestras.py: una
+muestra cada pocos semitonos en el registro que usa cada instrumento, recortada, con su
+afinación medida.
+
+La sala (la reverberación) se calcula en la propia página y no usa ninguna grabación.

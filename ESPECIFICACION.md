@@ -3880,6 +3880,45 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+249. **La instrumentación: trece maneras de oír lo mismo**
+    (15/10/2026, Diego: «desde ahora, la instrumentación es tuya»). El desplegable
+    «Instrumento» pasa a llamarse **«Instrumentación»** y ofrece **trece**, agrupadas en el
+    menú: *Teclados* —Piano (cola Salamander), Clave (francés), Órgano pleno, Órgano suave,
+    Marimba—; *Voces* —Coro, ahora **cantado**: cada voz una línea, legato, sin doblar el
+    bajo—; *Orquesta y conjuntos* —Orquesta de cuerda, Orquesta clásica, Quinteto de viento—;
+    *Con ritmo* —Quinteto «a la italiana», Metales por bulerías, Marimbas «a lo Zimmer»—; y
+    *Sin descarga* —Sintético—.
+    - **Las muestras y el diseño de cada instrumentación los preparó y los oyó con Diego el
+      chat «Schemata app»** (sus decisiones, en
+      `claude/App-armonizacion-contrapunto-y-esquemas.md`, 2.9 y 2.10). Lo de aquí es la
+      integración en la aplicación, que **desde el 15/10 es de este chat**: cualquier cambio
+      futuro de la instrumentación se hace aquí.
+    - **El mismo trato que antes para quien llama**: `sonido.js` conserva la interfaz entera
+      (`acorde`, `secuencia`, `parar`, `enCurso`, `anotarAlSonar`, `alCargar`,
+      `alCambiarEstado`, `desbloquear`, `estado`, `elegirInstrumento`…) y añade `GRUPOS`,
+      `negra`, `ajustes` y `registrarBanco`. `app.js` y `escucha.js` lo llaman igual, y el
+      instrumento guardado en el navegador (`armonizar.instrumento`) sigue valiendo: los
+      identificadores `piano`, `clave`, `organo`, `coro` y `sintetico` no cambian.
+    - **Nada se descarga hasta que hace falta.** Abrir un ejercicio no baja ninguna muestra;
+      al pedir sonido por primera vez baja solo el banco de esa instrumentación (entre 0,3 y
+      5,1 MB), y los bancos se comparten —la cuerda de la orquesta de cuerda es la de la
+      clásica—. Comprobado en el navegador. Si un banco no carga, esa instrumentación suena
+      con osciladores en vez de fallar.
+    - **Las tres «con ritmo» cambian la duración**: cada negra del ejercicio se convierte en
+      su compás. Los avisos `alEmpezar`/`alTerminar` siguen el tiempo real, de modo que la
+      marca del acorde y el botón «Parar» van bien; comprobado en los trece.
+    - **`Sonido.negra` (0,6) y `SEG_POR_NEGRA` de `app.js` han de valer lo mismo**: si una
+      cambia, la otra también.
+    - **El cajón y las palmas por bulerías quedan, apagados** (Diego: «queda bien, pero no se
+      parece en nada al ritmo del flamenco; mejor no ponerlo de momento»). Se encienden con
+      `Sonido.ajustes.percusionBulerias = true`, y esperan a que Diego fije las fórmulas
+      rítmicas.
+    - `sonidos/piano.js` y `sonidos/clave.js` (FluidR3) **ya no se usan y se quedan**: no se
+      borra nada del disco de Diego sin su permiso.
+    - Comprobado con `3 PROYECTO/herramientas-musica-real/probar-instrumentacion.js`: **97
+      comprobaciones** en un navegador de verdad, con el `app.js` de verdad, sobre la carpeta
+      tal como se publica. **Falta el teléfono**, Safari incluido.
+
 248. **El camino al cuaderno y a la hoja de respuestas no desaparece nunca**
     (13/10/2026, Diego: «¿puedes asegurarte que hay un botón en el Configurador que lleve a
     ella en todo momento?»). Los dos botones de la cabecera —«Ver el cuaderno →» y «Ver los

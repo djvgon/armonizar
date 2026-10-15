@@ -9,9 +9,28 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ---
 
+## Estado a 15 de octubre de 2026
+
+- **SIN SUBIR: la instrumentación nueva**, decisión **249**: el desplegable pasa a
+  **«Instrumentación»** y ofrece **trece**, agrupadas. Archivos: `js/sonido.js` (sustituido
+  entero), **34 bancos de muestras nuevos** en `sonidos/` (17 MB en total la carpeta),
+  `sonidos/LICENCIA-muestras.txt`, `index.html` (la etiqueta), `js/app.js` (el menú agrupado) y
+  `prueba-instrumentacion.html` (página nueva, sin enlazar desde ninguna parte).
+  - **Las muestras las preparó el chat «Schemata app»** y Diego las oyó y aprobó una por una;
+    el paquete entró por `3 PROYECTO/Instrumentación 2026-10-15/` (su `LEEME.md` lo explica
+    todo). **Desde el 15/10 la instrumentación es de este chat.**
+  - Comprobado: **97 comprobaciones** en un navegador de verdad con el `app.js` de verdad
+    (`3 PROYECTO/herramientas-musica-real/probar-instrumentacion.js`): el menú agrupado, las
+    trece sonando con «Escuchar propuesta» sin un solo error de consola, la marca del acorde,
+    «Parar», el ▶ de un acorde suelto, el aviso a la escucha de música real, el cajón
+    apagado y encendido, y que **abrir un ejercicio no descarga ninguna muestra**.
+  - **Falta probarlo en el teléfono**, Safari incluido: es lo único que no se puede hacer sin
+    publicar.
+  - `sonidos/piano.js` y `sonidos/clave.js` (FluidR3) ya no se usan; **no los he borrado**.
+
 ## Estado a 9 de octubre de 2026
 
-- **SIN SUBIR: el `20261013-1048`**, con las decisiones **246** (**oír la música de verdad
+- **SIN SUBIR: el `20261015-0925`**, con las decisiones **246** (**oír la música de verdad
   desde el ejercicio**), **247** (el aviso de `fueraDeParte`) y **248** (**los botones del
   cuaderno y de los resultados, siempre a la vista en la cabecera**). Archivos:
   `js/escucha.js` (nuevo), `js/musicxml.js`, `js/banco.js`, `js/app.js`, `js/sonido.js`,
@@ -944,7 +963,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
-| 20261013-1048 | Los botones «Ver el cuaderno» y «Ver los resultados» de la cabecera del configurador ya no se esconden cuando este navegador no tiene la dirección guardada: salen atenuados y llevan a la casilla donde se pega (248). Oír la música de verdad desde el ejercicio: el crédito de la obra abre un panel con la partitura del pasaje, la grabación y los tres botones «El fragmento» · «En su contexto» · «El fragmento completo» (246). `js/escucha.js`, nuevo. La conexión viaja dentro del archivo del ejercicio y no entra en la huella del sello; auriculares en la tabla del banco. `convertir.js` lee ya el original en MusicXML |
+| 20261015-0925 | La instrumentación nueva: el desplegable pasa a «Instrumentación», con trece agrupadas en teclados, voces, orquesta y conjuntos, con ritmo y sin descarga (249); `sonido.js` entero y 34 bancos de muestras nuevos, preparados por el chat «Schemata app». Nada se descarga hasta que hace falta. Los botones «Ver el cuaderno» y «Ver los resultados» de la cabecera del configurador ya no se esconden cuando este navegador no tiene la dirección guardada: salen atenuados y llevan a la casilla donde se pega (248). Oír la música de verdad desde el ejercicio: el crédito de la obra abre un panel con la partitura del pasaje, la grabación y los tres botones «El fragmento» · «En su contexto» · «El fragmento completo» (246). `js/escucha.js`, nuevo. La conexión viaja dentro del archivo del ejercicio y no entra en la huella del sello; auriculares en la tabla del banco. `convertir.js` lee ya el original en MusicXML |
 | 20261007-1054 | El cuaderno, a un toque desde el configurador: casilla «Dirección del cuaderno» en la zona C y dos botones nuevos, en la cabecera y en la zona C, delante de los de la hoja de resultados (245). La dirección no viaja en `envio.json` |
 | 20261006-0845 | La fila «Tonalidad», la primera de todas bajo el pentagrama, encima del cifrado (244) |
 | 20261005-2330 | El 6.º – 4.º – 5.º del bajo pide también el conjunto completo (243); orden de preferencia de la regla de la octava y coste del 6/4 (240, 241); el documento de la regla de la octava se genera desde el motor (242); banco a 151 fragmentos con la Marcha en Re |
