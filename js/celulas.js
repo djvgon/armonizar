@@ -84,6 +84,19 @@ const Celulas = (() => {
      pentagrama de la clave de fa —el del ejemplo del 2.1— sino el ámbito entero de las cuatro
      voces, porque el retardo vale entre cualquier par de ellas. */
   const REGISTRO = ['F1', 'C5'];
+
+  /* EL REGISTRO DE LAS FICHAS, que no es el mismo que el de la REGLA.
+     `REGISTRO` es el ámbito que fijó Diego —«por encima de fa1 y por debajo de do5», el de
+     las cuatro voces— y como regla está bien: dice qué célula es posible. Pero la célula
+     hay que ESCRIBIRLA en un pentagrama, y con fa1 la voz inferior se va cuatro líneas
+     adicionales por debajo: de las 568 células, 108 piden tres o cuatro líneas adicionales,
+     que un alumno no lee de un vistazo. Con do2 —una línea adicional por debajo de la clave
+     de fa— quedan 460 células y ninguna pasa de dos líneas adicionales.
+
+     De modo que la regla se queda como está y lo que se estrecha es lo que SALE EN UNA
+     FICHA. Es una decisión de Diego y está en un solo sitio: si quiere las 568, basta
+     borrar esta constante de la llamada. */
+  const REGISTRO_FICHA = ['C2', 'C5'];
   /* LA DISTANCIA MÁXIMA: ninguna (Diego, 15/10: «aquí no rige lo de la octava como máximo entre
      soprano y tenor»). Lo que limita es el registro. El parámetro se queda para poder ponerle
      un límite desde la página de revisión si al verlas alguna canta demasiado. */
@@ -141,6 +154,7 @@ const Celulas = (() => {
       vozRetardada: t.voz,
       vozReal: arriba ? 'baja' : 'alta',
       dada: op.dada === 'real' ? 'real' : 'retardada',    // A: se da la retardada · B: la real
+      nivel: op.nivel === 'dificil' ? 'dificil' : 'facil', // si el enunciado dice el tipo o no
       momentos,
       /* Las ligaduras, como voz y momento de partida: la retardada se liga de la preparación
          a la percusión siempre; la nota real, de la percusión a la resolución solo cuando se
@@ -165,7 +179,7 @@ const Celulas = (() => {
      son provisionales: los escribe Diego (7.4 del documento de Schemata). Cada uno lleva
      delante su etiqueta para que se puedan sustituir uno a uno sin tocar el código. */
   const MENSAJES = {
-    registro: 'La célula se sale del pentagrama de la clave de fa.',
+    registro: 'La célula se sale del registro: ha de caber entre {bajo} y {alto}.',
     cruce: 'Las dos voces se cruzan: la de arriba tiene que estar por encima de la de abajo.',
     unisono: 'Las dos voces caen en la misma nota.',
     distancia: 'Las dos voces quedan a más de {n} grados una de otra.',
@@ -185,8 +199,9 @@ const Celulas = (() => {
     consonancia: 'El intervalo de {d} no es una consonancia.',
     calidad: 'Esa {d} no es mayor ni menor: con esa alteración sale aumentada o disminuida.'
   };
-  const texto = (clave, datos) => String(MENSAJES[clave] || clave)
+  const rellenar = (plantilla, datos) => String(plantilla)
     .replace(/\{(\w+)\}/g, (_, k) => (datos && datos[k] !== undefined ? datos[k] : '{' + k + '}'));
+  const texto = (clave, datos) => rellenar(MENSAJES[clave] || clave, datos);
 
   const CONSONANTES = [3, 6];                 // en el piloto, 3.ª y 6.ª (y sus octavas no entran)
 
@@ -255,10 +270,16 @@ const Celulas = (() => {
     const dmax = (op && op.distanciaMaxima !== undefined) ? op.distanciaMaxima : DISTANCIA_MAXIMA;
     const bajo = Teoria.midi(Teoria.nota(registro[0])), alto = Teoria.midi(Teoria.nota(registro[1]));
 
+    /* El registro, UNA VEZ: una célula que se sale lo hace en varias notas a la vez —seis,
+       cuando se sale entera— y el alumno no tiene que leer seis veces el mismo aviso. */
+    const fuera = [];
+    m.forEach((x, k) => [x.alta, x.baja].forEach(n => {
+      if (mi(n) < bajo || mi(n) > alto) fuera.push({ momento: k, nota: n });
+    }));
+    if (fuera.length) fallos.push({ regla: 'registro', momento: fuera[0].momento, notas: fuera,
+      mensaje: texto('registro', { bajo: Teoria.nombreEs(Teoria.nota(registro[0]), true), alto: Teoria.nombreEs(Teoria.nota(registro[1]), true) }) });
+
     m.forEach((x, k) => {
-      [x.alta, x.baja].forEach(n => {
-        if (mi(n) < bajo || mi(n) > alto) fallos.push({ regla: 'registro', momento: k, mensaje: texto('registro') });
-      });
       if (mi(x.alta) === mi(x.baja)) fallos.push({ regla: 'unisono', momento: k, mensaje: texto('unisono') });
       else if (mi(x.alta) < mi(x.baja)) fallos.push({ regla: 'cruce', momento: k, mensaje: texto('cruce') });
       if (dmax && gradosEntre(x.alta, x.baja) > dmax) fallos.push({ regla: 'distancia', momento: k, mensaje: texto('distancia', { n: dmax }) });
@@ -382,11 +403,190 @@ const Celulas = (() => {
     return celula.momentos.map((m, k) => ({ notas: [m.baja, m.alta], segundos: k === 2 ? s * 2 : s, momento: k }));
   }
 
+  /* ---------- EL ENUNCIADO, en palabras de Diego ----------
+     Uno por dirección (su 2.4, y los asuntos 11.8 y 18 de la coordinación):
+
+       A · se da la nota RETARDADA → «Haz descender sol3 con un retardo 6–7–6.»
+       B · se da la nota REAL      → «Siendo esta la nota real, ¿cómo haces un retardo
+                                        con ella?»
+
+     El de la B es literalmente suyo, y el «con ella» es su corrección del 15/10: dijo
+     primero «sobre ella» y la retiró él mismo —«cómo hago un retardo "sobre" ella si la
+     nota retardada será más aguda»—. «Sobre» daría a entender que la nota dada es la que
+     se retarda, que es justo la que no se retarda, y solo valdría para el 7–6: en el
+     3–2–3 la nota ligada va DEBAJO de la dada.
+
+     Y el de la A nombra el tipo con sus TRES cifras —«un retardo 6–7–6», como su 2.4— y no
+     con dos. Con el 3–7–3 en juego, «7–6» se ha vuelto ambiguo: los dos retardos tienen la
+     misma disonancia y resuelven en intervalos distintos, de modo que «un retardo 7–6» ya
+     no dice cuál de los dos se pide. Queda anotado para que Diego lo confirme. */
+  const CIFRA_TIPO = { '6-7-6': '6–7–6', '3-7-3': '3–7–3', '3-2-3': '3–2–3' };
+  /* DOS NIVELES (Diego, 15/10): «en el más fácil se dice el tipo en el enunciado. En el más
+     difícil (realmente solo un poco más difícil) no se indica en el enunciado —con lo que no se
+     le da ninguna pista al alumno».
+
+     No es solo la frase: **cambia cuántas respuestas valen**. Sin decir el tipo, la misma nota
+     admite todos los retardos que caben sobre ella —con la retardada dada, el 6–7–6 y el 3–7–3
+     la ponen arriba y el 3–2–3 abajo—, así que la corrección del nivel difícil ha de aceptar
+     cualquiera de los modelos de `posibles()`, no solo el de la célula sorteada. El nivel fácil
+     sigue teniendo una sola respuesta, que es lo que pide el 2.7. */
+  const ENUNCIADOS = {
+    retardada: {
+      facil: 'Haz descender {nota} con un retardo {tipo}.',
+      dificil: 'Haz descender {nota} con un retardo.'
+    },
+    real: {
+      facil: 'Siendo esta la nota real, ¿cómo haces un retardo {tipo} con ella?',
+      dificil: 'Siendo esta la nota real, ¿cómo haces un retardo con ella?'
+    }
+  };
+  const direccionDe = celula => (celula && celula.dada === 'real' ? 'real' : 'retardada');
+  const nivelDe = celula => (celula && celula.nivel === 'dificil' ? 'dificil' : 'facil');
+  function enunciado(celula) {
+    const d = direccionDe(celula);
+    const n = d === 'real' ? celula.real : celula.retardada;
+    return rellenar(ENUNCIADOS[d][nivelDe(celula)], {
+      nota: Teoria.nombreEs(n, true),
+      tipo: CIFRA_TIPO[celula.tipo] || celula.tipo
+    });
+  }
+
+  /* TODAS las células que valen con la misma nota dada. Es lo que hace falta para corregir el
+     nivel difícil, donde el enunciado no dice el tipo: la respuesta del alumno vale si coincide
+     con CUALQUIERA de estos modelos y cumple las reglas. */
+  function posibles(op) {
+    const ton = op.tonalidad;
+    const dada = op.dada === 'real' ? 'real' : 'retardada';
+    const nota = Teoria.nota(op.nota);
+    const tipos = (op.tipos && op.tipos.length ? op.tipos : Object.keys(TIPOS)).filter(t => TIPOS[t]);
+    const igual = (a, b) => a && b && ix(a) === ix(b) && a.alt === b.alt;
+    const salen = [];
+    tipos.forEach(tipo => {
+      if (dada === 'retardada') {
+        const c = generar({ tonalidad: ton, tipo, retardada: nota, dada, nivel: op.nivel });
+        if (!c.nula && !revisar(c, op).length) salen.push(c);
+        return;
+      }
+      // con la nota REAL dada hay que buscar qué retardadas la producen
+      escalera(ton).forEach(r => {
+        const c = generar({ tonalidad: ton, tipo, retardada: r, dada, nivel: op.nivel });
+        if (!c.nula && igual(c.real, nota) && !revisar(c, op).length) salen.push(c);
+      });
+    });
+    return salen;
+  }
+
+  /* La casilla que viene ESCRITA. En las dos direcciones es la del momento del medio —la
+     PERCUSIÓN—: ahí está la nota real «siempre en parte fuerte» (Diego, 15/10), y ahí está
+     también la retardada, que es la misma nota de la preparación ligada. Así las dos
+     direcciones se presentan igual y lo único que cambia es qué voz se da. */
+  function dato(celula) {
+    const d = direccionDe(celula);
+    return d === 'real'
+      ? { momento: 1, voz: celula.vozReal, nota: celula.real, papel: 'real' }
+      : { momento: 1, voz: celula.vozRetardada, nota: celula.retardada, papel: 'retardada' };
+  }
+
+  /* ---------- Una célula por su identificador ----------
+     El identificador —`6-7-6·DoM·G3`— lleva dentro todo lo que hace falta para volver a
+     generarla, de modo que una ficha de células no necesita guardar ninguna: le basta la
+     lista de identificadores. De ahí que se pueda reanudar sin banco y sin servidor. */
+  function porId(id, dada) {
+    const p = String(id || '').split('·');
+    if (p.length < 3 || !TIPOS[p[0]]) return null;
+    let ton = null;
+    try { ton = Teoria.tonalidadDesdeTexto(p[1]); } catch (e) { return null; }
+    if (!ton || !ton.tonica) return null;
+    const c = generar({ tonalidad: ton, tipo: p[0], retardada: p[2], dada: dada || p[3] });
+    return c && !c.nula ? c : null;
+  }
+
+  /* ---------- La ficha: N células al azar, con los tipos MEZCLADOS ----------
+     Diego, 14/10: «en una ficha salen mezclados al azar, cada célula por su cuenta». No
+     vale sortear sin más de un montón común: los tipos no tienen el mismo número de
+     células, y en una ficha de ocho el azar puro deja fuera un tipo entero demasiadas
+     veces. Se reparte por tipos a vueltas —una de cada, y otra vez— y luego se baraja el
+     orden, que es lo que «despista», que es para lo que lo quiere.
+
+     `alAzar` se puede sustituir para que una comprobación sea repetible. */
+  function barajar(lista, al) {
+    const a = lista.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(al() * (i + 1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  /* La distancia entre dos células seguidas, por la nota que el alumno ve escrita, reducida a
+     la octava: 2 = lejos (4.ª o 5.ª), 1 = pasable (3.ª o 6.ª), 0 = cerca (unísono, 8.ª, 2.ª o
+     7.ª), que es lo que permite transportar la solución anterior. */
+  function separacion(a, b) {
+    const na = a.dada === 'real' ? a.real : a.retardada;
+    const nb = b.dada === 'real' ? b.real : b.retardada;
+    return (Math.abs(ix(na) - ix(nb)) % 7) + 1;      // 1 = unísono u octava … 7 = séptima
+  }
+  function lejania(a, b) {
+    const d = separacion(a, b);
+    return (d === 4 || d === 5) ? 2 : (d === 3 || d === 6) ? 1 : 0;
+  }
+
+  function elegir(op) {
+    const o = op || {};
+    const cuantas = Math.max(1, o.n || 8);
+    const al = o.alAzar || Math.random;
+    const tipos = (o.tipos && o.tipos.length ? o.tipos : Object.keys(TIPOS)).filter(t => TIPOS[t]);
+    const tons = (o.tonalidades && o.tonalidades.length ? o.tonalidades : TONALIDADES);
+    const monton = tipos.map(tipo => {
+      const suyas = [];
+      tons.forEach(ton => todas({
+        tonalidad: ton, tipos: [tipo], registro: o.registro || REGISTRO_FICHA, distanciaMaxima: o.distanciaMaxima
+      }).celulas.forEach(c => suyas.push(c)));
+      return barajar(suyas, al);
+    });
+    /* UNA CÉLULA NO PUEDE ESTAR CERCA DE LA ANTERIOR (Diego, 15/10): «que no esté la siguiente
+       propuesta a una distancia cercana —para que no puedan simplemente transportar la solución
+       anterior— sino que esté lejos, por ejemplo a una cuarta o una quinta o, menos deseable
+       pero también posible, a una tercera».
+
+       Se mide entre las notas que el alumno ve —la nota dada de una y la de la siguiente— y
+       **reducida a la octava**: el unísono y la octava son el mismo caso, y la 2.ª y la 7.ª
+       también (una es la inversión de la otra), que es lo que hay que evitar. Se escoge por
+       orden: primero una que esté a 4.ª o 5.ª; si no hay, a 3.ª o 6.ª; y solo si no queda otra,
+       la que toque. El reparto por tipos manda igual: de cada tipo a vueltas, y dentro del tipo
+       se elige la que más se aleja. */
+    const salen = [];
+    let i = 0;
+    while (salen.length < cuantas && monton.some(g => g.length)) {
+      const g = monton[i % monton.length];
+      i++;
+      if (!g.length) continue;
+      const antes = salen.length ? salen[salen.length - 1] : null;
+      let k = 0;
+      if (antes) {
+        const mejor = g.findIndex(c => lejania(antes, c) === 2);
+        const vale = g.findIndex(c => lejania(antes, c) === 1);
+        k = mejor >= 0 ? mejor : (vale >= 0 ? vale : 0);
+      }
+      salen.push(g.splice(k, 1)[0]);
+    }
+    /* La dirección y el nivel: los pedidos, o uno por célula si se piden los dos («ambas» /
+       «ambos»). El orden NO se vuelve a barajar: lo fija el reparto de arriba, que es el que
+       cuida la distancia entre una célula y la siguiente. */
+    const quiere = o.dada === 'real' || o.dada === 'retardada' ? o.dada : 'ambas';
+    const nivel = o.nivel === 'facil' || o.nivel === 'dificil' ? o.nivel : null;
+    return salen.map(c => Object.assign({}, c, {
+      dada: quiere === 'ambas' ? (al() < 0.5 ? 'retardada' : 'real') : quiere,
+      nivel: nivel || c.nivel || 'facil'
+    }));
+  }
+
   // «sol3/si2 → sol3/la2 → fa3/la2», para leerla de un vistazo
   const comoTexto = celula => celula.momentos
     .map(m => Teoria.texto(m.alta) + '/' + Teoria.texto(m.baja))
     .join(' → ');
 
-  return { TIPOS, TONALIDADES, REGISTRO, DISTANCIA_MAXIMA, MENSAJES,
-    escalera, generar, revisar, todas, comprobar, aSonido, comoTexto, gradosEntre };
+  return { TIPOS, TONALIDADES, REGISTRO, REGISTRO_FICHA, DISTANCIA_MAXIMA, MENSAJES, ENUNCIADOS, CIFRA_TIPO,
+    escalera, generar, revisar, todas, comprobar, aSonido, comoTexto, gradosEntre,
+    rellenar, texto, enunciado, direccionDe, nivelDe, dato, posibles, porId, elegir, barajar,
+    separacion, lejania };
 })();

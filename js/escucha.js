@@ -46,37 +46,71 @@ const Escucha = (() => {
     const m = /^(\d+)\.(\d+)$/.exec(String(txt || '').trim());
     return m ? { compas: parseInt(m[1], 10), tiempo: parseInt(m[2], 10) } : null;
   }
-  // Las negras que tiene un compás: 2/4 → 2, 6/8 → 3
+  /* DOS EJES DE MEDIDA QUE NO SON EL MISMO, y que hasta hoy compartían función (10.1 de la
+     coordinación; Diego, 15/10/2026: «en 3/8 el tiempo es una corchea. En un compás
+     compuesto, por ejemplo 6/8, el tiempo es negra con puntillo»):
+
+     · las NEGRAS, que es como el ejercicio mide la duración de sus notas (`compases`,
+       `tiempos`): la unidad de la aplicación;
+     · los TIEMPOS DEL COMPÁS, que es lo que dice el `compás.tiempo` del banco auditivo
+       —«16.2» es el c. 16 más un tiempo— y lo que contaría un músico.
+
+     Coinciden en 2/4, 3/4 y 4/4 —de ahí que los tres usos de Beethoven cuadren al
+     milisegundo— y NO coinciden en 2/2 ni en ningún compás de corchea: en 3/8 el tiempo es la
+     corchea (tres por compás) y en 6/8 la negra con puntillo (dos). Mezclarlos ponía el
+     `14.3` de un 3/8 fuera de su compás. Acordado con el chat auditivo (su 10.1) y aprobado
+     por Diego el 10/10. */
+  // Las negras que dura un compás: 2/4 → 2, 6/8 → 3, 2/2 → 4
   const negrasDe = compas => (compas && compas.length === 2) ? compas[0] * 4 / compas[1] : 4;
+  /* Cuántos TIEMPOS tiene el compás: el numerador en los simples, y el numerador entre 3 en
+     los compuestos (numerador múltiplo de 3 y mayor que 3). Así 3/8 tiene tres tiempos
+     —corcheas— y 6/8 dos —negras con puntillo—. */
+  const tiemposDe = compas => {
+    if (!compas || compas.length !== 2) return 4;
+    const n = compas[0];
+    return (n > 3 && n % 3 === 0) ? n / 3 : n;
+  };
+  // Qué parte del compás lleva recorrida un punto «compás.tiempo», entre 0 y 1
+  const fraccionDe = (fr, p) => (p.tiempo - 1) / tiemposDe(fr && fr.compas);
   /* Un punto como número, para poder comparar intervalos: el compás más la parte del compás
      ya recorrida. «16.2» en 2/4 es 16,5. Así «contiene» y «coincide» son dos comparaciones. */
   function posicion(fr, txt) {
     const p = punto(txt);
     if (!p) return null;
-    return p.compas + (p.tiempo - 1) / negrasDe(fr.compas);
+    return p.compas + fraccionDe(fr, p);
   }
   /* El segundo en que cae una posición dada EN NEGRAS desde el principio de la obra. La
      rejilla da el segundo de cada compás; dentro del compás se reparte en partes iguales,
      que es lo que vale para un tempo estable. */
-  function segundoEnNegra(fr, negra) {
+  /* El segundo en que cae el compás `compas` más la fracción `frac` de ese compás. La
+     fracción puede pasar de 1: se lleva a los compases siguientes, que es lo que hace falta
+     para recorrer un ejercicio entero. Dentro del compás se reparte en partes iguales, que es
+     lo que vale para un tempo estable. */
+  function segundoEnCompas(fr, compas, frac) {
     const rej = fr && fr.rejilla;
-    if (!Array.isArray(rej) || !rej.length || !isFinite(negra)) return null;
-    const negras = negrasDe(fr.compas);
-    const compas = Math.floor(negra / negras) + 1;
-    const resto = negra - (compas - 1) * negras;
-    const i = rej.findIndex(x => x[0] === compas);
+    if (!Array.isArray(rej) || !rej.length || !isFinite(frac) || !isFinite(compas)) return null;
+    const c = compas + Math.floor(frac);
+    const resto = frac - Math.floor(frac);
+    const i = rej.findIndex(x => x[0] === c);
     if (i < 0) return null;
     const s = rej[i][1];
     if (resto <= 0) return s;
     // El largo de este compás: el siguiente menos este; en el último, el del anterior
     const largo = (i + 1 < rej.length) ? rej[i + 1][1] - s : (i > 0 ? s - rej[i - 1][1] : 0);
-    return s + resto * largo / negras;
+    return s + resto * largo;
   }
-  // El segundo en que empieza un punto «compás.tiempo»
+  /* El segundo de una posición dada EN NEGRAS desde el principio de la obra. Se conserva
+     porque es la unidad del ejercicio y porque la usan las pruebas. */
+  function segundoEnNegra(fr, negra) {
+    if (!isFinite(negra)) return null;
+    const negras = negrasDe(fr && fr.compas);
+    return segundoEnCompas(fr, 1, negra / negras);
+  }
+  // El segundo en que empieza un punto «compás.tiempo» del banco auditivo
   function segundo(fr, txt) {
     const p = punto(txt);
     if (!p) return null;
-    return segundoEnNegra(fr, (p.compas - 1) * negrasDe(fr.compas) + (p.tiempo - 1));
+    return segundoEnCompas(fr, p.compas, fraccionDe(fr, p));
   }
 
   /* CUÁNDO SUENA CADA ACORDE DEL EJERCICIO (Diego, 9/10/2026: «que se vaya iluminando la
@@ -102,7 +136,7 @@ const Escucha = (() => {
     && fr.compasesEnLaImagen.ancho > 0 && fr.compasesEnLaImagen.alto > 0) ? fr.compasesEnLaImagen : null;
   const cajaDeCompas = (med, n) => (med.compases || []).find(c => c[0] === n) || null;
   // La x de un tiempo dentro de un compás: el compás se reparte en partes iguales
-  const xEnCompas = (caja, parte, negras) => caja[1] + Math.max(0, Math.min(1, (parte - 1) / negras)) * (caja[2] - caja[1]);
+  const xEnCompas = (caja, parte, tiempos) => caja[1] + Math.max(0, Math.min(1, (parte - 1) / tiempos)) * (caja[2] - caja[1]);
   // De píxeles de la imagen a tanto por ciento, que es como se coloca en la pantalla
   const porciento = (med, x0, x1, y0, y1) => ({
     left: (100 * x0 / med.ancho) + '%', width: (100 * (x1 - x0) / med.ancho) + '%',
@@ -117,7 +151,7 @@ const Escucha = (() => {
     const med = medidasDe(fr);
     const d = punto(desde), h = punto(hasta);
     if (!med || !d || !h) return [];
-    const negras = negrasDe(fr.compas);
+    const tiempos = tiemposDe(fr.compas);
     const ultimo = h.tiempo <= 1 ? h.compas - 1 : h.compas;
     const cajas = (med.compases || []).filter(c => c[0] >= d.compas && c[0] <= ultimo)
       .sort((a, b) => a[0] - b[0]);
@@ -130,8 +164,8 @@ const Escucha = (() => {
     });
     // Ajuste fino de los extremos dentro de su compás
     const primero = grupos[0], fin = grupos[grupos.length - 1];
-    if (primero.desde[0] === d.compas && d.tiempo > 1) primero.x0 = xEnCompas(primero.desde, d.tiempo, negras);
-    if (fin.hasta[0] === h.compas && h.tiempo > 1) fin.x1 = xEnCompas(fin.hasta, h.tiempo, negras);
+    if (primero.desde[0] === d.compas && d.tiempo > 1) primero.x0 = xEnCompas(primero.desde, d.tiempo, tiempos);
+    if (fin.hasta[0] === h.compas && h.tiempo > 1) fin.x1 = xEnCompas(fin.hasta, h.tiempo, tiempos);
     return grupos.map(g => porciento(med, g.x0, g.x1, g.y0, g.y1));
   }
 
@@ -159,11 +193,14 @@ const Escucha = (() => {
     if (!fr || !ej || !ej.auditivo) return null;
     const p = punto(ej.auditivo.desde);
     if (!p) return null;
+    /* Aquí se encuentran los dos ejes: el uso dice dónde empieza el fragmento en TIEMPOS del
+       compás, y el ejercicio dice en qué NEGRA entra cada acorde desde su primera nota. Los
+       dos se pasan a fracción de compás, que es lo que la rejilla sabe interpolar. */
     const negras = negrasDe(fr.compas);
-    const base = (p.compas - 1) * negras + (p.tiempo - 1);
+    const base = fraccionDe(fr, p);
     const t = (Array.isArray(ej.tiempos) && ej.tiempos.length) ? ej.tiempos : tiemposDeCompases(ej.compases);
     if (!t.length) return null;
-    return t.map(x => segundoEnNegra(fr, base + x));
+    return t.map(x => segundoEnCompas(fr, p.compas, base + x / negras));
   }
 
   // «cc. 15–18» a partir del intervalo medio abierto [desde, hasta)
@@ -519,17 +556,19 @@ const Escucha = (() => {
     const lista = Array.isArray(fr.notasEnLaImagen) ? fr.notasEnLaImagen : [];
     if (!med || !lista.length) return;
     const d = actual ? punto(actual.desde) : null, h = actual ? punto(actual.hasta) : null;
-    const negras = negrasDe(fr.compas);
-    const enNegras = m => ((Number(m.compas) || 0) - 1) * negras + (parseFloat(m.tiempo) || 1) - 1;
-    const desde = d ? (d.compas - 1) * negras + (d.tiempo - 1) : -Infinity;
-    const hasta = h ? (h.compas - 1) * negras + (h.tiempo - 1) : Infinity;
+    /* Las marcas vienen en `compás.tiempo`, como el resto del banco auditivo */
+    const tiempos = tiemposDe(fr.compas);
+    const enCompases = (c, t) => (Number(c) || 0) + ((parseFloat(t) || 1) - 1) / tiempos;
+    const enPosicion = m => enCompases(m.compas, m.tiempo);
+    const desde = d ? enCompases(d.compas, d.tiempo) : -Infinity;
+    const hasta = h ? enCompases(h.compas, h.tiempo) : Infinity;
 
     lista.forEach((m, i) => {
       if (!(m && isFinite(m.x) && isFinite(m.y))) return;
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'escucha-nota';
-      const n = enNegras(m);
+      const n = enPosicion(m);
       if (n < desde || n >= hasta) b.classList.add('fuera');
       b.textContent = '∗';
       b.setAttribute('aria-label', m.texto || 'Nota que no lleva acorde');
@@ -538,7 +577,8 @@ const Escucha = (() => {
       b.style.top = (100 * m.y / med.alto) + '%';
       b.addEventListener('click', ev => { ev.stopPropagation(); abrirGlobo(i, true); });
       capa.appendChild(b);
-      marcas.push({ el: b, texto: m.texto || '', segundo: segundoEnNegra(fr, n), arriba: (m.y / med.alto) > 0.4 });
+      marcas.push({ el: b, texto: m.texto || '',
+        segundo: segundoEnCompas(fr, Math.floor(n), n - Math.floor(n)), arriba: (m.y / med.alto) > 0.4 });
     });
     if (!marcas.length) return;
     /* La capa no recibe pulsaciones —así se puede pulsar la imagen para verla entera—, pero
@@ -648,6 +688,6 @@ const Escucha = (() => {
      alumno—, la grabación se para. `sonido.js` avisa aquí. */
   if (typeof Sonido !== 'undefined' && Sonido.anotarAlSonar) Sonido.anotarAlSonar(() => parar());
 
-  return { montar, alternar, sonarFragmento, parar, cerrar, anotarEstado, tramos, segundo, segundoEnNegra,
+  return { montar, alternar, sonarFragmento, parar, cerrar, anotarEstado, tramos, segundo, segundoEnNegra, segundoEnCompas, tiemposDe,
     momentosDe, marcosDe, puntoEnLaImagen, unidadContexto, punto, rotuloCompases };
 })();

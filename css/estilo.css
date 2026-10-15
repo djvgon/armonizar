@@ -1984,3 +1984,42 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
    auriculares se veía casi blanco (Diego, 9/10/2026). */
 .marca-paralelas { color: var(--mal); font-weight: 700; }
 .marca-audio { margin-left: 3px; color: var(--marca-honda, #9412DC); font-size: .9em; }
+
+/* ---- La reja de escritura del contrapunto (reja.js) ----
+   Mismos convenios que la partitura, pero en su propio ámbito: aquí no hay casillas de
+   cifrado y sí ligaduras, barra puesta por el alumno e intervalos escritos debajo. */
+.reja-caja {
+  background: var(--papel); border: 1px solid var(--linea); border-radius: var(--radio-caja);
+  padding: 10px 12px; overflow-x: auto;
+}
+svg.reja { display: block; }
+/* La lección al lado del título, dentro de la banda morada */
+.cabecera .leccion-cabecera { color: var(--marca-texto); opacity: .85; font-size: .9rem; }
+svg.reja .linea { stroke: var(--tinta); stroke-width: 1.1; }
+svg.reja .barra { stroke: var(--tinta); stroke-width: 1.4; }
+svg.reja .barra.gruesa { stroke-width: 4.5; }
+svg.reja .plica { stroke: var(--tinta); stroke-width: 1.2; }
+svg.reja text { fill: var(--tinta); }
+svg.reja .ligadura { fill: none; stroke: var(--tinta); stroke-width: 1.5; }
+/* El hueco de una casilla sin escribir: una raya tenue a la altura de la línea central */
+svg.reja .hueco { stroke: var(--linea); stroke-width: 2.4; stroke-linecap: round; }
+/* La nota que viene DADA va en color, como en la partitura: el alumno ha de ver de un
+   golpe qué le han puesto y qué tiene que poner él. */
+svg.reja .nota-reja.dada text, svg.reja .nota-reja.dada .plica { fill: var(--acento); stroke: var(--acento); }
+svg.reja .nota-reja.dada .plica { fill: none; }
+svg.reja .nota-reja.mal text { fill: var(--mal); }
+svg.reja .nota-reja.mal .plica, svg.reja .nota-reja.mal .linea { stroke: var(--mal); }
+svg.reja .nota-reja.activa text { fill: var(--acento); }
+svg.reja .reja-intervalo { font-size: 15px; font-weight: 600; fill: var(--tinta-suave); }
+svg.reja .casilla-reja { fill: transparent; cursor: pointer; }
+svg.reja .casilla-reja:hover { fill: var(--acento-suave); fill-opacity: .55; }
+svg.reja .casilla-reja:focus { outline: none; fill: var(--acento-suave); fill-opacity: .75; }
+svg.reja .casilla-reja.fija { cursor: default; }
+svg.reja .casilla-reja.fija:hover, svg.reja .casilla-reja.fija:focus { fill: transparent; }
+svg.reja .reja-play { cursor: pointer; }
+svg.reja .reja-play-fondo { fill: var(--papel); stroke: var(--linea); stroke-width: 1.2; transition: fill .12s, stroke .12s; }
+svg.reja .reja-play-triangulo { fill: var(--tinta-suave); }
+svg.reja .reja-play:hover .reja-play-fondo, svg.reja .reja-play:focus .reja-play-fondo { stroke: var(--acento); fill: var(--acento-suave); }
+svg.reja .reja-play:focus { outline: none; }
+svg.reja .reja-play.suena .reja-play-fondo { fill: var(--acento); stroke: var(--acento); }
+svg.reja .reja-play.suena .reja-play-triangulo { fill: #fff; }

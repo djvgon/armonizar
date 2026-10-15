@@ -37,7 +37,24 @@ const Banco = (() => {
     { id: 'cifrar', nombre: 'Análisis', ajuste: -1, voz: 'bajo', pagina: 'analisis.html', etiqueta: 'Análisis armónico' },
     { id: 'armonizar', nombre: 'Armonización de bajo', ajuste: 0, voz: 'bajo', pagina: 'armonizacion-bajo.html', etiqueta: 'Armonización de melodía de bajo' },
     { id: 'audicion', nombre: 'Audición', ajuste: 1, voz: 'bajo', pagina: 'audicion.html', etiqueta: 'Reconocimiento auditivo' },
-    { id: 'soprano', nombre: 'Armonización de soprano', ajuste: 1, voz: 'soprano', pagina: 'armonizacion-soprano.html', etiqueta: 'Armonización de melodía de soprano' }
+    { id: 'soprano', nombre: 'Armonización de soprano', ajuste: 1, voz: 'soprano', pagina: 'armonizacion-soprano.html', etiqueta: 'Armonización de melodía de soprano' },
+    /* CONTRAPUNTO (Diego, 15/10/2026: «el piloto va dentro de armonizar, como modo nuevo»;
+       el rótulo es el suyo: «Se queda contrapunto»). Es el tipo de los retardos a dos voces
+       y, más adelante, de las cadenas y los esquemas: UN solo tipo para los tres, para que
+       el cuaderno de resultados gane una columna y no tres.
+
+       Dos cosas lo separan de los otros cuatro, y las dos están dichas aquí:
+
+         `banco: false` — NO sale de banco.json. Sus ejercicios se GENERAN (`Celulas`), de
+             modo que no es un filtro de fragmentos y no tiene que aparecer en el
+             desplegable de tipos del configurador, que es el del banco.
+         `voz: null` — no es un ejercicio de una voz dada. Deja adrede en nada los caminos
+             del banco que preguntan `e[vozDeModo(modo)]`: ningún fragmento del banco es un
+             ejercicio de contrapunto, y así el filtro no puede colar uno por descuido.
+
+       Su página es la del alumno, no una portada que reenvíe a index.html: la reja de
+       escritura no tiene nada que ver con las casillas de cifrado. */
+    { id: 'contrapunto', nombre: 'Contrapunto', ajuste: 0, voz: null, banco: false, pagina: 'contrapunto.html', etiqueta: 'Contrapunto: retardos a dos voces' }
   ];
   const modoDe = id => MODOS.find(m => m.id === id) || MODOS[1];
   const vozDeModo = id => modoDe(id).voz;
@@ -1354,7 +1371,11 @@ const Banco = (() => {
     'A-20': 'La séptima disminuida (dominante)',
     'A-21': 'La séptima disminuida (dominante secundaria)',
     'A-22': 'Marchas progresivas (I)',
-    'A-23': 'Marchas progresivas (II)'
+    'A-23': 'Marchas progresivas (II)',
+    /* La primera `Co-` (Diego, 15/10/2026: «el piloto va dentro de armonizar, como modo
+       nuevo, con `Co-1` y su pestaña en el mismo cuaderno»). El TÍTULO lo propongo yo y
+       está a falta de su visto bueno: es lo que verán los alumnos. */
+    'Co-1': 'El retardo a dos voces'
   };
 
   /* Los códigos internos de antes del 8/10/2026 (`A3-1`…`A4-11`). Están escritos en los

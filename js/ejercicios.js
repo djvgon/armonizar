@@ -437,7 +437,7 @@ const Ejercicios = (() => {
   function pideRomano(ej) { return ej.pedirRomano !== false; }
 
   // Nombres de los tipos, fijados por Diego el 20/9/2026 (las claves no cambian por compatibilidad con los enlaces ya repartidos)
-  const MODOS = { cifrar: 'Análisis', armonizar: 'Armonización de bajo', audicion: 'Audición', soprano: 'Armonización de soprano' };
+  const MODOS = { cifrar: 'Análisis', armonizar: 'Armonización de bajo', audicion: 'Audición', soprano: 'Armonización de soprano', contrapunto: 'Contrapunto' };
   function modo(ej) { return MODOS[ej.modo] ? ej.modo : 'armonizar'; }
   // Melodía de soprano: las notas de ej.compases son la melodía; el alumno da fundamental y
   // cifra y el bajo se deduce. Las respuestas se guardan como parejas 'V|65d'.

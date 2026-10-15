@@ -3397,7 +3397,10 @@
 
   function arranqueBanco() {
     const sel = $('#ficha-modo');
-    Banco.MODOS.forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.nombre; sel.appendChild(o); });
+    /* Solo los tipos que salen DEL BANCO: «Contrapunto» genera sus ejercicios y no es un
+       filtro de fragmentos, de modo que aquí no tiene nada que hacer (su ficha se monta
+       aparte). */
+    Banco.MODOS.filter(m => m.banco !== false).forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.nombre; sel.appendChild(o); });
     sel.value = 'armonizar';
     leerBanco();
     leerSellos();          // la foto anterior, para fechar lo que cambie (decisión 227)

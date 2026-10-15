@@ -3880,6 +3880,111 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+258. **El modo «Contrapunto» y la lección `Co-1`: el piloto ya tiene sitio**
+    (15/10/2026, Diego: «el piloto va dentro de armonizar, como modo nuevo, con `Co-1` y su
+    pestaña en el mismo cuaderno»; y «Se queda contrapunto» como nombre del modo.)
+    - **Un quinto tipo de ejercicio**, `contrapunto`, en `Banco.MODOS` y en
+      `Ejercicios.MODOS`. Es el tipo de los retardos a dos voces y, más adelante, de las
+      cadenas y los esquemas: **uno solo para los tres**, para que el cuaderno de resultados
+      gane una columna y no tres.
+    - Dos cosas lo separan de los otros cuatro y están escritas en su propia línea:
+      `banco: false` —no sale de `banco.json`, sus ejercicios se **generan**, de modo que no
+      aparece en el desplegable de tipos del configurador, que es el del banco— y
+      `voz: null`, que deja en nada los caminos del banco que preguntan por la voz del modo:
+      ningún fragmento puede colarse como ejercicio de contrapunto.
+    - **Su página es la del alumno**, `contrapunto.html`, no una portada que reenvíe a
+      `index.html` como las otras cuatro: la reja de escritura no tiene nada que ver con las
+      casillas de cifrado, y la razón de la 58 —que Classroom etiquete el enlace— se cumple
+      igual. `index.html` y `app.js` no se tocan.
+    - **Lección `Co-1`, «El retardo a dos voces»**, en la tabla `LECCIONES`. El título lo
+      propongo yo y está a falta del visto bueno de Diego: es lo que ven los alumnos. El
+      prefijo `Co-` ya estaba previsto desde la 117 y se ordena detrás de las de armonía.
+    - **Los dos enunciados**, en `celulas.js` y en palabras de Diego: «Haz descender sol3 con
+      un retardo 6–7–6» (se da la nota retardada) y «Siendo esta la nota real, ¿cómo haces un
+      retardo con ella?» (se da la nota real). En las **dos** direcciones la nota que se da
+      está en el momento del medio —la percusión, «siempre en parte fuerte»—, y lo único que
+      cambia es la voz.
+    - **El tipo se nombra con sus tres cifras** («un retardo 6–7–6»), no con dos. Con el
+      3–7–3 en juego, «7–6» se ha vuelto ambiguo: los dos retardos tienen la misma disonancia
+      y resuelven en intervalos distintos.
+    - **Dos niveles de dificultad** (Diego, 15/10: «en el más fácil se dice el tipo en el
+      enunciado. En el más difícil (realmente solo un poco más difícil) no se indica en el
+      enunciado —con lo que no se le da ninguna pista al alumno»). No es solo la frase: en el
+      nivel difícil el tipo **no se escribe en ninguna parte de la pantalla**, y, sobre todo,
+      **cambia cuántas respuestas valen**. Sin decir el tipo, la misma nota admite todos los
+      retardos que caben sobre ella —con sol3 como retardada, los tres: el 6–7–6 y el 3–7–3 la
+      ponen en la voz de arriba y el 3–2–3 en la de abajo—. De ahí `Celulas.posibles()`, que
+      los da todos: la corrección del nivel difícil tendrá que aceptar cualquiera de ellos, y
+      la del fácil conserva la respuesta única que pide el 2.7.
+    - **La ficha** (`Celulas.elegir`): N células al azar **repartidas por tipos a vueltas** y
+      luego barajadas, que es lo que pidió Diego —«en una ficha salen mezclados al azar»— sin
+      que el azar deje fuera un tipo entero. Comprobado en cien fichas de ocho: no falta
+      ninguno ni una sola vez. No toca `banco.json`, ni la huella, ni el importador.
+    - **Una célula no puede estar cerca de la anterior** (Diego, 15/10: «que no esté la
+      siguiente propuesta a una distancia cercana —para que no puedan simplemente transportar
+      la solución anterior— sino que esté lejos, por ejemplo a una cuarta o una quinta o,
+      menos deseable pero también posible, a una tercera»). Se mide entre las notas que el
+      alumno ve escritas y **reducida a la octava**, porque el unísono y la octava son el mismo
+      caso y la 2.ª y la 7.ª también. Se escoge por orden: 4.ª o 5.ª; si no las hay, 3.ª o 6.ª;
+      y solo si no queda otra, la que toque. Medido en 200 fichas de ocho (1.400 células
+      seguidas): **ninguna** a distancia corta, y el 76 % a 4.ª o 5.ª.
+    - **Una célula se recupera de su identificador** (`6-7-6·DoM·G3`), así que una ficha no
+      guarda células: le basta la lista de identificadores, y se puede reanudar sin banco y
+      sin servidor. Comprobadas las 568, nota por nota.
+    - **`js/reja.js`, el pentagrama de la célula**: dos voces, tres momentos, claves y
+      armadura, ligaduras, la barra de compás, las alteraciones escritas con memoria de
+      compás y el intervalo debajo de cada columna (2.6).
+    - **Uno o dos pentagramas, según quepa** (Diego, 15/10). Si las dos voces entran en una
+      misma clave con dos líneas adicionales a lo sumo, se escriben **juntas en un
+      pentagrama**, con las plicas contrarias —arriba la voz superior, abajo la inferior— y la
+      segunda corrida a la derecha, como se escribe el contrapunto a dos voces: así el
+      intervalo se VE. Cuando no caben, cada voz coge su pentagrama y **su clave**, que sale de
+      sus propias notas (el registro va de fa1 a do5, y la voz de arriba de una célula grave
+      puede estar entera en la clave de fa). De las 460 células de una ficha, **442 van en
+      uno** y 18 —las que quedan a caballo entre las dos claves— en dos. Las ligaduras siguen
+      la regla que toca en cada caso: con dos pentagramas, del lado contrario a la plica, como
+      manda la notación; con uno, la voz de arriba por encima y la de abajo por debajo, que es
+      lo que separa las voces.
+    - El **alto del dibujo se mide**, no se fija: con un alto fijo, una voz que baja a fa1 se
+      salía del recuadro y no se veía. Las casillas pulsables y la casilla activa ya están,
+      sin usar todavía: son las de la reja de escritura, que es el paso siguiente. Con un solo
+      pentagrama, la columna se parte por la mitad entre las dos notas: se pulsa arriba para la
+      voz superior y abajo para la inferior.
+    - **El registro de la FICHA no es el de la REGLA.** `REGISTRO` es el ámbito que fijó
+      Diego —fa1–do5, el de las cuatro voces— y como regla está bien: dice qué célula es
+      posible. Pero de las 568 células, **108 piden tres o cuatro líneas adicionales**, que no
+      se leen de un vistazo. `REGISTRO_FICHA` (do2–do5) deja **460** y ninguna pasa de dos.
+      **Diego lo decidió así** el 15/10, con las cuentas delante; está en una sola constante.
+    - **Lo que esta pantalla todavía NO hace**: escribir. Hoy enseña el enunciado, la nota
+      que se da, la realización modelo y el sonido, y lo dice en la propia página. Detrás van
+      la reja de escritura, la corrección con los mensajes, la ficha desde el configurador y
+      el envío al cuaderno.
+    - El mensaje `registro` decía «se sale del pentagrama de la clave de fa», que dejó de ser
+      verdad cuando Diego fijó fa1–do5: ahora nombra el registro y sale **una vez por
+      célula**, no una por nota fuera.
+    - Comprobado: `3 PROYECTO/herramientas-contrapunto/probar-modo-contrapunto.js` (68
+      comprobaciones, sin navegador) y `probar-pagina-contrapunto.js` (57, en un navegador de
+      verdad sirviendo la carpeta tal como se publica).
+
+257. **Un «tiempo» es el del compás, también en los compuestos**
+    (15/10/2026, Diego: «en 3/8 el tiempo es una corchea. En un compás compuesto, por ejemplo
+    6/8, el tiempo es negra con puntillo». Acordado con el chat auditivo el 10/10 —su 10.1— y
+    aprobado entonces; esto es la parte de `armonizar`, que faltaba.)
+    - **El agujero.** `escucha.js` medía el `compás.tiempo` del banco auditivo en **negras**,
+      que es la unidad del ejercicio y no la del banco. Coinciden en 2/4, 3/4 y 4/4 —de ahí
+      que los tres usos de Beethoven cuadraran al milisegundo— y **no coinciden** en 2/2 ni en
+      ningún compás de corchea: en un 3/8, el `14.3` caía fuera de su compás.
+    - **Ahora son dos ejes distintos y se dicen así en el código**: las **negras**, que es como
+      el ejercicio mide la duración de sus notas, y los **tiempos del compás**, que es lo que
+      dice el banco auditivo. Los dos se pasan a **fracción de compás**, que es lo que la
+      rejilla sabe interpolar. Tiempos por compás: el numerador en los simples, el numerador
+      entre 3 en los compuestos (múltiplo de 3 y mayor que 3).
+    - Alcanza a todo lo que lee `compás.tiempo`: el `desde`/`hasta` de los usos, las unidades
+      formales, el recuadro sobre la partitura real y las marcas de `notasEnLaImagen`.
+    - Comprobado con `3 PROYECTO/herramientas-musica-real/probar-tiempo-compuesto.js` (20
+      comprobaciones): los tres usos de Beethoven **no se han movido**, y en `BEE-SYM-C52`
+      —el primero en 3/8— el `14.3` cae en 36,87 s, dentro de su compás, que acaba en 37,75.
+
 256. **Lo que suena se ciñe a las voces que se muestran**
     (15/10/2026, Diego: «si lo que se muestra tiene bajo y soprano, la instrumentación que se
     oye debería ceñirse a esas voces, porque de otra manera queda extraño, como algo distinto,
@@ -6348,7 +6453,8 @@ corrección inmediata nota a nota como opción.
   —en el del alumno, junto al crédito de los sonidos, en letra pequeña— y
   cargan sus `.js` y `.css` con `?v=` esa misma marca. En
   cada entrega se actualiza la marca en `index.html`, `configurar.html` y las
-  cuatro portadas de tipo de ejercicio (las siete páginas de `1 WEB`)
+  portadas de tipo de ejercicio —`contrapunto.html` entre ellas, que además es la
+  pantalla del alumno de ese modo—
   (así el navegador vuelve a pedir los archivos cambiados y Diego puede
   comprobar qué versión tiene delante). Si tras subir a GitHub sigue viéndose
   la anterior, es la caché del navegador: recargar sin caché (Chrome
