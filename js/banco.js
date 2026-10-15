@@ -637,6 +637,16 @@ const Banco = (() => {
          Rellenarlo con el motor sería cambiarle la música. */
       if (aTres) {
         base.voces = arriba.map(a => (Array.isArray(a) && a.length ? a.slice() : null));
+        /* Y SE MIRAN: las voces escritas entraban sin que nadie buscara paralelas, y al alumno
+           se le enseñan como modelo (decisión 255, Diego 15/10/2026: «se te ha colado una
+           octava paralela flagrante… que no aparezca más»). Como `fueraDeParte`, es
+           informativo y queda FUERA de la huella del sello: no cambia la música, avisa de
+           ella. No va a `avisos`, que apartarían el fragmento de las fichas: lo que se hace
+           con un fragmento así lo decide Diego. */
+        try {
+          const malas = Realizacion.paralelasEnVoces(Teoria.notasDeCompases(f.compasesBajo || []), base.voces);
+          if (malas.length) base.paralelas = malas.map(x => x.texto);
+        } catch (e) { /* si no se pueden mirar, no se inventa nada */ }
       }
     }
     /* Y, con la armonización del compositor delante, el modelo de cada nota sale de ella

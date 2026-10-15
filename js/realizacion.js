@@ -190,6 +190,36 @@ const Realizacion = (() => {
 
   const NOMBRES_VOZ = ['bajo', 'tenor', 'contralto', 'soprano'];
 
+  /* ---- Paralelas en unas voces YA ESCRITAS (decisión 255, Diego 15/10/2026: «en este
+     fragmento se te ha colado una octava paralela flagrante. Se ha de corregir y que no
+     aparezca más») ----
+     El motor veta las paralelas en lo que ÉL realiza, pero los fragmentos que traen las
+     cuatro voces escritas (decisión 200) entraban sin que nadie las mirara, y al alumno se le
+     enseñaban como modelo. Esto las busca: `notas` son las del bajo y `voces` las tres de
+     arriba por acorde, tal como las guarda el banco. Los acordes incompletos —donde el
+     compositor escribió menos voces— se saltan: ahí no hay cuatro voces que comparar. */
+  function paralelasEnVoces(notas, voces) {
+    const out = [];
+    if (!Array.isArray(notas) || !Array.isArray(voces)) return out;
+    const completo = v2 => Array.isArray(v2) && v2.length === 3 && v2.every(Boolean);
+    for (let i = 1; i < voces.length && i < notas.length; i++) {
+      if (!completo(voces[i]) || !completo(voces[i - 1]) || !notas[i] || !notas[i - 1]) continue;
+      let a, b;
+      try {
+        a = [Teoria.nota(notas[i - 1])].concat(voces[i - 1].map(x => Teoria.nota(x)));
+        b = [Teoria.nota(notas[i])].concat(voces[i].map(x => Teoria.nota(x)));
+      } catch (e) { continue; }
+      paralelasEntre(a, b).forEach(p => out.push({
+        acorde: i,                                   // del acorde i al i+1, contando desde 0
+        tipo: p.tipo, voces: p.voces,
+        texto: (p.tipo === '8' ? 'octavas' : 'quintas') + ' paralelas entre ' +
+          NOMBRES_VOZ[p.voces[0]] + ' y ' + NOMBRES_VOZ[p.voces[1]] +
+          ' (acordes ' + i + ' y ' + (i + 1) + ')'
+      }));
+    }
+    return out;
+  }
+
   /* ---- Disposiciones candidatas de un acorde ----
      Devuelve [{voces:[t,a,s], incompleta, doblaBajo, unisono}] con las voces de grave a agudo. */
   function candidatas(d, sopranoFija = null) {
@@ -876,5 +906,5 @@ const Realizacion = (() => {
              novena: novena ? clase(novena) : null };
   }
 
-  return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, disposicionForzada, paralelasEntre, auditar, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
+  return { trio, rotar, colocar, posicion, realizar, acordeConSoprano, disposicionForzada, paralelasEntre, paralelasEnVoces, auditar, cadencia, describir, candidatas, costeLocal, costeTransicion, NOMBRES_VOZ };
 })();

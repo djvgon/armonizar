@@ -1873,6 +1873,7 @@
     const fuente = estado.nombreArchivo || '';
     const op = { leccion, leccionNombre, fuente, repertorio: repertorio(), acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked };
     let nuevos = 0, repetidos = 0, fallidos = 0, conAviso = 0, fundidos = 0;
+    const conParalelas = [];
     let porCorcheas = [];       // los que quizá cambian de acorde por corcheas (10/10/2026)
     reemplazados = []; intactos = []; conectados = [];
     estado.fragmentos.forEach((f, k) => {
@@ -1888,6 +1889,8 @@
       if (e.avisos && e.avisos.length) conAviso++;
       // ¿Ritmo armónico más rápido que la parte? (10/10/2026). Se anota para decirlo al final
       if (e.fueraDeParte) porCorcheas.push(e.id);
+      // ¿Paralelas en las cuatro voces escritas? (decisión 255). Se dice aparte y fuerte.
+      if (e.paralelas && e.paralelas.length) conParalelas.push(e.id + ' (' + e.paralelas.join('; ') + ')');
       banco.push(e);
       nuevos++;
     });
@@ -1898,6 +1901,7 @@
       + (repetidos ? ', ' + repetidos + ' ya estaban' : '')
       + (fallidos ? ', ' + fallidos + ' sin música aprovechable' : '')
       + (conAviso ? ' · ' + conAviso + ' con alguna nota sin propuesta (revísalos)' : '')
+      + (conParalelas.length ? ' · ⚠ ' + conParalelas.length + ' CON PARALELAS en las voces escritas' : '')
       + (intactos.length ? ' · ' + intactos.length + ' cerrados, que se han dejado intactos' : '')
       + (conectados.length ? ' · ' + conectados.length + ' con la grabación del banco auditivo ya conectada ('
         + conectados.join(', ') + ')' : '') + '.', 7000);
@@ -2182,7 +2186,8 @@
         + '<td class="celda-id"><code>' + (e.id || '—') + '</code></td>'
         + '<td title="' + ((mal ? e.avisos.join('; ') + ' — ' : '')
           + (e.fueraDeParte ? 'Quizá cambia de acorde por corcheas: ' + e.fueraDeParte + ' ataque(s) de las dos voces fuera de parte que la rejilla descartó. Revisa la rejilla. — ' : '')
-          + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + etiqueta(e.leccion || '—') + '</td>'
+          + (e.paralelas && e.paralelas.length ? 'PARALELAS en las voces escritas: ' + e.paralelas.join('; ') + '. Es la armonización que ve el alumno como modelo. — ' : '')
+          + (nombres[e.leccion] || '')).replace(/"/g, '') + '">' + (mal ? '⚠ ' : '') + (e.paralelas && e.paralelas.length ? '<b class="marca-paralelas" title="Paralelas en las voces escritas">∥</b> ' : '') + etiqueta(e.leccion || '—') + '</td>'
         + '<td>' + Teoria.nombreCorto(e.tonalidad) + (e.tonalidadSegura === false ? ' (?)' : '') + '</td>'
         + '<td>' + (e.compas || [4, 4]).join('/') + '</td>'
         + '<td>' + (et.notas || 0) + (et.modula ? ' · modula' : '') + '</td>'

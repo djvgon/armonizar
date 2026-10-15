@@ -52,7 +52,7 @@ const Sonido = (() => {
     { id: 'cuerda',       nombre: 'Orquesta de cuerda',                  grupo: 'Orquesta y conjuntos' },
     { id: 'orquesta',     nombre: 'Orquesta clásica',                    grupo: 'Orquesta y conjuntos' },
     { id: 'quinteto',     nombre: 'Quinteto de viento',                  grupo: 'Orquesta y conjuntos' },
-    { id: 'italiana',     nombre: 'Quinteto de viento «a la italiana»',  grupo: 'Con ritmo' },
+    { id: 'italiana',     nombre: 'Maderas «a la italiana»',               grupo: 'Con ritmo' },
     { id: 'metales',      nombre: 'Metales por bulerías',                grupo: 'Con ritmo' },
     { id: 'marimbas',     nombre: 'Marimbas «a lo Zimmer»',              grupo: 'Con ritmo' },
     { id: 'sintetico',    nombre: 'Sintético',                           grupo: 'Sin descarga' }
@@ -360,7 +360,12 @@ const Sonido = (() => {
         else { const s = fuente(mu.buf, mu.semitonos); s.connect(g); s.start(ta); s.stop(tf + def.final * 2.5 + 0.1); activos.push({ s, g }); }
       });
     }));
-    return { ini, total: t + 0.3 };
+    /* `aviso`: cuánto tarda el acorde en estar AHÍ desde que se programa. La nota entra con
+       una rampa de `ataque` mientras la anterior sigue sonando (`solape`), así que el oído
+       registra el cambio al final de esa rampa, no al principio: con la orquesta de cuerda,
+       0,2 s. Es lo que hay que esperar antes de encender el ▶ del acorde (Diego, 15/10: «no
+       va sincronizada con el desplazamiento del cursor»). */
+    return { ini, total: t + 0.3, aviso: def.ataque || 0 };
   }
 
   /* ---------- Coro cantado ----------
@@ -407,7 +412,9 @@ const Sonido = (() => {
         });
       });
     });
-    return { ini, total: total + 0.4 };
+    /* En el coro la nota ligada entra media cruzada antes (X/2) y se cruza con la anterior
+       en X: el cambio se oye a mitad del cruce. */
+    return { ini, total: total + 0.4, aviso: X / 2 };
   }
 
   /* ---------- Golpe corto de un acorde entero (estilos con ritmo) ---------- */
@@ -480,7 +487,7 @@ const Sonido = (() => {
       c += len;
     });
     if (Sonido.ajustes.percusionBulerias && !aislado) compasPercusion(t0, CUENTA, golpeFinal);
-    return { ini, total: c * CUENTA + 1.2 };
+    return { ini, total: c * CUENTA + 1.2, aviso: 0 };      // picado: se oye al instante
   }
 
   /* ---------- Quinteto de viento «a la italiana» ---------- */
@@ -503,7 +510,7 @@ const Sonido = (() => {
         golpeAcorde(def, def.pizz, vp, bus, ac, t0 + t, 0.35, 0.6, 0.15);
       }
     });
-    return { ini, total: t + 3 * corchea + 0.3 };
+    return { ini, total: t + 3 * corchea + 0.3, aviso: 0 };   // picado: se oye al instante
   }
 
   /* ---------- Cuatro marimbas ---------- */
@@ -564,7 +571,7 @@ const Sonido = (() => {
       }
     });
     if (ultimo != null) final(p.acordes[ultimo], t0 + k * sc, 1.6);
-    return { ini, total: k * sc + 2.2 };
+    return { ini, total: k * sc + 2.2, aviso: 0 };            // golpe de marimba: al instante
   }
 
   /* ---------- Sintético (osciladores, sin descarga) ---------- */
@@ -584,7 +591,7 @@ const Sonido = (() => {
       }
       t += dur;
     });
-    return { ini, total: t };
+    return { ini, total: t, aviso: 0.02 };
   }
 
   /* ---------- Reproducción ---------- */
@@ -628,9 +635,16 @@ const Sonido = (() => {
     preparar().then(() => {
       if (gen !== generacion) return;
       const t0 = contexto().currentTime + 0.08;
-      const { ini, total } = tocarPieza(items, t0, false);
+      const { ini, total, aviso } = tocarPieza(items, t0, false);
       const espera = t => Math.max(0, (t0 + t - ctx.currentTime) * 1000);
-      items.forEach((it, i) => { if (typeof it.alEmpezar === 'function') temporizadores.push(setTimeout(it.alEmpezar, espera(ini[i] || 0))); });
+      /* EL ▶ DEL ACORDE SE ENCIENDE CUANDO EL ACORDE SE OYE, no cuando se programa (Diego,
+         15/10/2026: la instrumentación nueva «no va sincronizada con el desplazamiento del
+         cursor sobre la partitura»). Los instrumentos de ataque lento —la orquesta de cuerda
+         entra en 0,2 s— llegan tarde respecto de su propio comienzo, y la luz se adelantaba
+         ese tanto. Cada estilo dice su `aviso`; aquí se espera, sin pasar nunca del 40 % del
+         acorde, para que la luz no llegue cuando el acorde ya se ha ido. */
+      const tarda = i => Math.min(aviso || 0, 0.4 * Math.max(0.05, items[i].segundos || 0));
+      items.forEach((it, i) => { if (typeof it.alEmpezar === 'function') temporizadores.push(setTimeout(it.alEmpezar, espera((ini[i] || 0) + tarda(i)))); });
       temporizadores.push(setTimeout(terminar, espera(total) + 60));
     });
   }
@@ -657,7 +671,65 @@ const Sonido = (() => {
 
   function enCurso() { return sonando; }
 
+  /* ---------- QUÉ INSTRUMENTOS SUENAN, PARA DECÍRSELO AL ALUMNO ----------
+     (Diego, 15/10/2026: «¿cómo se podría hacer explícito al estudiante qué instrumentos están
+     sonando?».) Se saca de las PROPIAS CAPAS con las que suena cada instrumentación, no de una
+     lista escrita a mano: así el cuadro no puede decir una cosa y sonar otra. Si algún día se
+     cambia qué voz lleva el oboe, el texto cambia solo. */
+  const NOMBRE_BANCO = {
+    'piano-salamander': 'piano', 'clave-frances': 'clave',
+    'organo': 'órgano', 'organo-tubos-manual': 'órgano de tubos', 'organo-tubos-pedal': 'pedal de tubos',
+    'marimba': 'marimba', 'marimba-fuerte': 'marimba', 'coro': 'coro',
+    'violines': 'violines', 'violas': 'violas', 'violonchelos': 'violonchelos', 'contrabajo': 'contrabajos',
+    'flauta': 'flauta', 'oboe': 'oboe', 'clarinete': 'clarinete', 'trompa': 'trompa', 'fagot': 'fagot',
+    'trompeta': 'trompetas', 'trombon': 'trombón', 'tuba': 'tuba',
+    'cajon-grave': 'cajón', 'cajon-agudo': 'cajón', 'cajon-suave': 'cajón',
+    'palmas-claras': 'palmas', 'palmas-sordas': 'palmas'
+  };
+  const NOMBRE_PARTE = { S: 'soprano', A: 'contralto', T: 'tenor', B: 'bajo' };
+  const NOTA_ESTILO = {
+    coro: 'Cada voz, una línea cantada, ligada de nota a nota, con un segundo cantor por cuerda. El bajo no se dobla.',
+    marimbas: 'Cuatro marimbas: dos arpegian el acorde en semicorcheas —una por el centro, otra más grave—, la tercera da el acorde y la cuarta el bajo.',
+    bulerias: 'Compás de doce tiempos: el acorde se pica en los acentos y el último se sostiene.',
+    italiana: 'Acordes picados en corcheas repetidas, tres por negra, con la cuerda pellizcando al empezar cada acorde.'
+  };
+  const limpia = b => String(b).replace(/-(picado|pizzicato|fuerte)$/, '');
+  const comoSuena = b => (/-picado$/.test(b) ? ' (picado)' : /-pizzicato$/.test(b) ? ' (pizzicato)' : '');
+  const nombreBanco = b => (NOMBRE_BANCO[limpia(b)] || limpia(b)) + comoSuena(b);
+  const CUATRO = ['S', 'A', 'T', 'B'];
+  const conOctava = p => (NOMBRE_PARTE[p[0]] || p) + (p.length > 1 ? (p[0] === 'S' || p[0] === 'A' ? ', a la octava aguda' : ', a la octava grave') : '');
+  function vocesDeTexto(partes) {
+    const hay = p => partes.includes(p);
+    if (!CUATRO.every(hay)) return partes.map(conOctava).join(' y ');
+    let t = 'las cuatro voces' + (hay('B8') ? ', con el bajo doblado a la octava grave' : '');
+    // los dobles de octava que añade el órgano pleno (la soprano y la contralto, como un 4 pies)
+    const dobles = partes.filter(p => p.length > 1 && p !== 'B8').map(p => NOMBRE_PARTE[p[0]] || p);
+    if (dobles.length) t += ', y la ' + dobles.join(' y la ') + ' también a la octava aguda';
+    return t;
+  }
+  /* `describir(id)` → { nombre, grupo, lineas:[{instrumento, voces}], nota } */
+  function describir(id) {
+    const ins = INSTRUMENTOS.find(x => x.id === id);
+    const def = DEF[id];
+    if (!ins || !def) return null;
+    const capas = (def.capas || []).concat(def.pizz || []);
+    const juntas = [];
+    capas.forEach(c => {
+      const nom = nombreBanco(c.banco);
+      const ya = juntas.find(x => x.instrumento === nom);
+      if (ya) c.partes.forEach(p => { if (!ya.partes.includes(p)) ya.partes.push(p); });
+      else juntas.push({ instrumento: nom, partes: c.partes.slice() });
+    });
+    if (!juntas.length && def.banco) juntas.push({ instrumento: nombreBanco(def.banco), partes: CUATRO.slice() });
+    // las marimbas no se describen por voces: cada una hace lo suyo, y eso lo cuenta la nota
+    return {
+      nombre: ins.nombre, grupo: ins.grupo,
+      lineas: juntas.map(x => ({ instrumento: x.instrumento, voces: vocesDeTexto(x.partes) })),
+      nota: NOTA_ESTILO[def.estilo] || (def.estilo === 'sintetico' ? 'Sin muestras: osciladores, para cuando no se puede descargar nada.' : '')
+    };
+  }
+
   Sonido.contextoAudio = () => ctx;          // para las pruebas (pruebas.html)
-  Object.assign(Sonido, { acorde, secuencia, parar, enCurso, anotarAlSonar, desbloquear, estado, registrarInstrumento, registrarBanco, cargarInstrumento, elegirInstrumento, instrumentoActual });
+  Object.assign(Sonido, { acorde, secuencia, parar, enCurso, anotarAlSonar, desbloquear, estado, registrarInstrumento, registrarBanco, cargarInstrumento, elegirInstrumento, instrumentoActual, describir });
   return Sonido;
 })();

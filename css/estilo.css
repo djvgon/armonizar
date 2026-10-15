@@ -151,7 +151,40 @@ h1 { margin: 2px 0 4px; font-size: 1.5rem; font-weight: normal; }
 .boton-pequeno.parar { color: var(--mal); border-color: var(--mal); }
 .selector-pequeno { font: inherit; font-size: .88rem; padding: 3px 6px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta); }
 /* El indicador de carga no ocupa sitio (absoluto), para que no desplace nada mientras el alumno pulsa */
-.control-instrumento { position: relative; }
+.control-instrumento { position: relative; display: inline-flex; align-items: flex-end; gap: 4px; }
+
+/* El ⓘ de la instrumentación y su cuadro (decisión 253). El cuadro cuelga por debajo del
+   control, por fuera del flujo, para no mover nada de la barra al abrirse; en pantalla
+   pequeña se estira de lado a lado. */
+.boton-info {
+  border: 1px solid var(--linea); background: var(--papel); color: var(--texto);
+  border-radius: 50%; width: 1.5rem; height: 1.5rem; line-height: 1; font-size: .95rem;
+  cursor: pointer; padding: 0; flex: 0 0 auto;
+}
+.boton-info:hover { background: var(--acento-suave); }
+.boton-info[aria-expanded="true"] { background: var(--acento-suave); border-color: var(--acento); }
+.caja-instrumentos {
+  position: absolute; left: 0; top: calc(100% + 6px); z-index: 30;
+  min-width: 17rem; max-width: 26rem; padding: 10px 12px;
+  background: var(--papel); border: 1px solid var(--linea); border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .18); font-size: .82rem; line-height: 1.45;
+  text-align: left; white-space: normal;
+}
+.caja-instrumentos h3 { margin: 0 0 6px; font-size: .9rem; }
+.caja-instrumentos ul { margin: 0; padding-left: 1.1em; }
+.caja-instrumentos li { margin-bottom: 2px; }
+.caja-instrumentos .voz { opacity: .78; }
+.caja-instrumentos .nota-estilo { margin: 7px 0 0; font-style: italic; opacity: .85; }
+.caja-instrumentos .todas { margin: 8px 0 0; }
+.caja-instrumentos .todas button {
+  background: none; border: 0; padding: 0; color: var(--acento);
+  text-decoration: underline; cursor: pointer; font-size: .8rem;
+}
+.caja-instrumentos .lista-todas { margin: 8px 0 0; border-top: 1px solid var(--linea); padding-top: 7px; }
+.caja-instrumentos .lista-todas strong { font-weight: 600; }
+@media (max-width: 640px) {
+  .caja-instrumentos { position: fixed; left: 8px; right: 8px; top: auto; bottom: 8px; max-width: none; min-width: 0; max-height: 60vh; overflow-y: auto; }
+}
 .instrumento-estado { position: absolute; left: 0; top: 100%; font-size: .7rem; color: var(--acento); font-style: italic; white-space: nowrap; pointer-events: none; }
 .instruccion .ref-mal { color: var(--mal); font-weight: bold; }
 .ref-boton { display: inline-block; font-size: .82em; padding: 0 6px; border: 1px solid var(--linea); border-radius: var(--radio-control); background: var(--papel); color: var(--tinta); white-space: nowrap; }
@@ -1949,4 +1982,5 @@ svg.partitura .globo-licencia .globo-guia { stroke: var(--licencia, #6B7A2F); }
    auditivo (9/10/2026). Al lado de la doble corchea de «música real», del mismo tamaño que
    ella y que el candado, y en el morado hondo de la casa para que resalte: el emoji de
    auriculares se veía casi blanco (Diego, 9/10/2026). */
+.marca-paralelas { color: var(--mal); font-weight: 700; }
 .marca-audio { margin-left: 3px; color: var(--marca-honda, #9412DC); font-size: .9em; }

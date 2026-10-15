@@ -3880,6 +3880,177 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+255. **Las voces escritas también se miran: paralelas en la armonización del banco**
+    (15/10/2026, Diego, al ver el A-8-17 en la pantalla del alumno: «en este fragmento se te
+    ha colado una octava paralela flagrante. Se ha de corregir y que no aparezca más»).
+    - **Dónde estaba el agujero.** El motor veta las paralelas en la realización que ÉL
+      calcula, pero los fragmentos que traen **las cuatro voces escritas** (decisión 200)
+      entraban sin que nadie las mirara —y son justo las que el alumno ve como MODELO en
+      Análisis—. De 153 fragmentos solo 3 traen las cuatro voces, y **dos de los tres llevan
+      octavas paralelas** entre el bajo y el tenor:
+      - **A-8-17** (Mendelssohn, *Lieder ohne Worte* op. 62 n.º 6), **dos**: acordes 2→3
+        (do♯3/do♯4 → re3/re4) y 3→4 (re3/re4 → si2/si3). El tenor dobla al bajo a la octava
+        y se mueve con él.
+      - **A-14-09** (*Schindler's List*), **una**: acordes 17→18 (re3/re4 → do3/do4).
+    - **Lo que se ha programado**, que es la parte de «que no aparezca más»:
+      - `Realizacion.paralelasEnVoces(notas, voces)`: barre unas voces ya escritas y dice
+        dónde y entre qué voces. Los acordes en los que el compositor escribió menos de
+        cuatro voces se saltan: ahí no hay cuatro que comparar.
+      - `banco.js` las guarda en la entrada como **`paralelas`** cuando las hay. Como
+        `fueraDeParte`, es **informativo y queda fuera de la huella del sello**, y **no** va a
+        `avisos`: apartar el fragmento de las fichas es una decisión de Diego, no mía.
+      - El **configurador** lo dice al importar —«⚠ n CON PARALELAS en las voces escritas»— y
+        marca la fila con un ‖ rojo, con el detalle en el globo.
+      - `3 PROYECTO/herramientas-interfaz/probar-banco-paralelas.js` barre el banco entero y
+        **falla a propósito** si encuentra alguna: se pasa antes de cada entrega.
+    - **Lo que NO he hecho: tocar el banco.** Los dos fragmentos están **cerrados** y las voces
+      van dentro de la huella del sello; además son la armonización que Diego escribió. La
+      corrección la hace él en el configurador. Comprobadas con el motor, **basta cambiar una
+      nota en cada uno**:
+      - **A-8-17**, acorde 3: el tenor, **si3** en vez de re4 (el acorde queda si3–fa♯4–si4
+        sobre el bajo re3). Quita las dos paralelas de una vez, y el tenor repite el si3 que ya
+        tiene el acorde 4.
+      - **A-14-09**, acorde 18: el tenor, **si♭3** en vez de do4 (si♭3–mi♭4–si♭4 sobre do3).
+        Probadas las demás notas del acorde: mi♭3 cambia las octavas por quintas tenor–soprano.
+
+254. **La célula del retardo, con las decisiones de Diego: tres tipos, el ámbito de las
+    cuatro voces y la sensible del menor** (15/10/2026). Contesta a los seis puntos que la
+    página de revisión le planteaba.
+    - **Tres tipos**: **6–7–6** y **3–7–3** con la retardada en la voz superior, y **3–2–3**
+      con la retardada en la inferior. **Fuera el 6–2–6** («no tiene mucho sentido»): era la
+      inversión del 3–7–3, y al invertirla el salto de 5.ª descendente y la 4.ª ascendente —el
+      camino por cuartas y quintas, que es de bajo— le tocaban a la voz de arriba. Y el 2–3 no
+      es «del bajo»: vale entre cualquier par de voces (Diego: «y en cualquier voz»); en una
+      célula a dos voces, la ligada es la inferior de las dos.
+    - **Registro fa1–do5** («por encima de fa1 y por debajo de do5»), tomados como límites
+      inclusivos: no es el pentagrama de la clave de fa del ejemplo del 2.1, sino el ámbito
+      entero de las cuatro voces, porque el retardo vale entre cualquier par de ellas. Con él,
+      **568 células** en las diez tonalidades del curso.
+    - **Sin distancia máxima** entre las voces: «aquí no rige lo de la octava como máximo entre
+      soprano y tenor». Lo que limita es el registro. El parámetro se queda en la página por si
+      al oírlas alguna canta demasiado.
+    - **LA SENSIBLE DEL MENOR** («en menor la célula debe llevar sensible… en la menor será
+      la–do / la–si / sol♯–si / la–la. En do Mayor no llevaría sostenido el mismo pasaje»).
+      Su ejemplo es el 6–7–6 sobre la tónica: la retardada **resuelve en el 7.º grado**, y ese
+      7.º es la sensible, porque la línea vuelve a la tónica. Es el único sitio de la célula
+      cerrada donde el menor melódico se pronuncia. El motor lo hace: en la menor,
+      `A3/C3 → A3/B2 → G#3/B2`; en Do mayor, el mismo pasaje sin sostenido.
+      - **Los grados se cuentan en la escala natural y la alteración se pone al final**: sol♯
+        sigue siendo el 7.º grado, los intervalos siguen siendo 6·7·6 por grados, y «bajar un
+        grado» se mide por el índice diatónico, que no se entera de la alteración.
+      - **Hace falta comprobar la CALIDAD de los intervalos**, que mientras todo era diatónico
+        sobraba: con la sensible, una 6.ª por grados puede salir aumentada (fa–re♯) y una 7.ª
+        disminuida (sol♯–fa). Añadida la tabla de calidades.
+      - **Lo que NO se altera**, y está a la vista en la página para que Diego lo mire: un 7.º
+        grado que **desciende** (se queda natural, como manda la escala descendente) y el 6.º,
+        que solo se eleva al subir hacia la sensible —un movimiento que en la célula de tres
+        momentos no ocurre: llega con la ampliada (2.4)—.
+    - **El modo se llamará «Contrapunto»**, salvo que Diego diga otra cosa. Se planteó
+      «Partimento»: nombra algo más estrecho —un bajo que se realiza al teclado— y el modo
+      llevará también las células y los ejercicios a dos voces, que no son partimenti; las
+      lecciones sí pueden llamarse así.
+    - Comprobado: **47** comprobaciones del motor y **21** de la página, en
+      `3 PROYECTO/herramientas-contrapunto/`.
+
+253. **El ⓘ: qué instrumentos suenan y qué voz lleva cada uno**
+    (15/10/2026, Diego: «¿cómo se podría hacer explícito al estudiante qué instrumentos están
+    sonando?»; eligió el botón ⓘ entre tres maneras). Junto al selector de
+    «Instrumentación» hay un **ⓘ** que abre un cuadro con la instrumentación elegida —cada
+    instrumento y la voz que lleva— y un enlace para ver las trece de un vistazo.
+    - **El texto se genera de las propias capas con las que suena** cada instrumentación
+      (`Sonido.describir`), no de una lista escrita a mano: el cuadro no puede decir una cosa y
+      sonar otra, y si algún día cambia qué voz lleva el oboe, el texto cambia solo. Las dos
+      instrumentaciones que no se reparten por voces —el coro y las cuatro marimbas— llevan
+      una frase propia, escrita al lado del código que las toca.
+    - «Piano — las cuatro voces, con el bajo doblado a la octava grave»; «flauta — soprano,
+      a la octava aguda · oboe — soprano · clarinete — contralto — · trompa — tenor, a la
+      octava grave · fagot — bajo»…
+    - **Por qué un botón y no una línea fija**: lo eligió Diego. No ocupa sitio en la barra,
+      que ya va llena, y el cuadro cuelga por fuera del flujo, así que al abrirse no mueve
+      nada. En el globo del selector no valía: en el móvil no hay globos.
+    - Se cierra al pulsar fuera, con Esc y al cambiar de instrumentación. En una pantalla de
+      390 px se estira de lado a lado por abajo y ocupa 114 px.
+    - Comprobado con `3 PROYECTO/herramientas-interfaz/probar-info-instrumentos.js`: **22
+      comprobaciones**, en pantalla grande y en móvil.
+
+252. **Las tonalidades que se le ofrecen al alumno van por el círculo de quintas**
+    (15/10/2026, Diego: «la tonalidad del fragmento siempre aparece la primera. Esto hace que
+    resulte irrelevante decidir el tono del fragmento»). En la fila «Tonalidad» con las
+    tonalidades a «pedir» (194), la paleta ponía el tono del propio fragmento **delante de
+    todos**, de modo que la respuesta era siempre la tecla 1. Ahora las teclas se ordenan por
+    **armadura** —de los bemoles a los sostenidos— y, dentro de cada armadura, el mayor antes
+    que su relativo menor: **Fa M · re m · Do M · la m · Sol M · mi m**.
+    - El mismo orden se aplica a las demás notas, donde se ofrecen las modulaciones vecinas:
+      ahí no había nada que arreglar, pero se lee mejor.
+    - **Lo que queda por decidir**: el CONJUNTO de teclas sigue centrado en el tono del
+      fragmento —se ofrecen su armadura y las dos vecinas—, así que la respuesta es siempre la
+      3.ª tecla si el fragmento está en mayor y la 4.ª si está en menor. Comprobado en seis
+      tonos. Para que no se pueda adivinar habría que mover la ventana de armaduras, y eso
+      cambia qué tonos se ofrecen: lo decide Diego.
+    - Comprobado con `3 PROYECTO/herramientas-interfaz/probar-tonalidades.js`.
+
+251. **El ▶ del acorde se enciende cuando el acorde se oye**
+    (15/10/2026, Diego: «la nueva instrumentación no va sincronizada con el desplazamiento del
+    cursor sobre la partitura del fragmento»). Las instrumentaciones nuevas de ataque lento
+    entran con una rampa —la orquesta de cuerda, 0,2 s, mientras el acorde anterior sigue
+    sonando 0,18 s más—, así que el acorde **se oye después** del instante en que se programa, y
+    la marca del ▶ se encendía ese tanto antes. Con el piano de antes, de ataque instantáneo,
+    el problema no existía.
+    - Cada estilo de `sonido.js` dice ahora **cuánto tarda en oírse** (`aviso`): el ataque en
+      los instrumentos de línea, la mitad del cruce en el coro, cero en los picados y en los
+      rítmicos. `secuencia` espera ese tanto antes de llamar a `alEmpezar`.
+    - **Nunca pasa del 40 % del acorde**, para que en un acorde corto la luz no llegue cuando
+      el acorde ya se ha ido.
+    - Medido en el navegador: la cuerda espera 199 ms; la orquesta y el coro, unos 70; el
+      quinteto, 48; los órganos, 19 y 30; el piano, el clave, la marimba y los tres rítmicos,
+      por debajo de 25. Son los números del ataque de cada una, y **están para que Diego los
+      juzgue de oído**: viven en un solo sitio por instrumentación.
+    - Lo que **no** se ha tocado: el sonido. Diego lo aprobó como está.
+    - Comprobado con `3 PROYECTO/herramientas-musica-real/probar-instrumentacion.js`, que mide
+      el desfase de cada instrumentación con un acorde largo y con uno corto.
+
+250. **La célula del retardo: el motor y la página de revisión**
+    (15/10/2026, Diego: «el piloto va dentro de armonizar, como modo nuevo, con `Co-1` y su
+    pestaña en el mismo cuaderno; lo programas tú»). Primer paso del piloto de Schemata
+    **dentro de `armonizar`**: no hay repositorio `schemata`. El diseño y las reglas los fija
+    el chat «Schemata app» en `claude/App-armonizacion-contrapunto-y-esquemas.md`, apartado 2;
+    aquí está el motor. **De momento no hay nada para el alumno**: ningún modo nuevo, ninguna
+    ficha, ninguna pestaña en el cuaderno. Solo `js/celulas.js` y `celulas.html`.
+    - **Una célula son tres momentos en dos voces**: preparación (parte débil) · percusión
+      (parte fuerte) · resolución. La **nota retardada** se liga de la preparación a la
+      percusión; la **nota real** la vuelve disonante al moverse; en la resolución la
+      retardada baja un grado. Los nombres son de Diego (15/10).
+    - **Todo sale de la nota retardada.** Fijados el tipo y la tonalidad, el resto se cuenta en
+      grados de la escala, de modo que **la variante cerrada tiene una sola respuesta**, que es
+      lo que pide el 2.7 del documento de Schemata.
+    - **Cuatro tipos**: **6–7–6** y **3–7–3** con la retardada en la voz superior (los de
+      IJzerman), y en el bajo sus inversiones **3–2–3** y **6–2–6**, que Diego todavía tiene
+      que confirmar. Ni 4–3 ni 9–8.
+    - **Los intervalos se cuentan por grados, no por semitonos**: la 6.ª de resolución es menor
+      en la célula de sol3 y mayor en la de do3.
+    - **Hace falta un filtro contra el tritono melódico** que no estaba en la lista de reglas:
+      en el 3–7–3 y el 6–2–6 la otra voz llega a la nota real por salto de 5.ª, y en la escala
+      diatónica ese salto cae a veces en si–fa. Descarta 72 células de las 504 posibles.
+    - **En el menor, la célula cerrada es toda natural**: como todo desciende, el 6.º y el 7.º
+      no se elevan nunca y la sensible no aparece. El menor melódico entra con la célula
+      ampliada (2.4). Es una consecuencia, no una decisión tomada: pendiente de Diego.
+    - **El registro es un parámetro, y su valor por defecto es una propuesta mía**: el
+      pentagrama de la clave de fa más una línea adicional a cada lado (mi2–do4). El
+      pentagrama pelado dejaría fuera el propio ejemplo del 2.3. En `celulas.html` se cambia y
+      se ve cuántas células deja cada uno: 13, 27 o 37 en Do mayor.
+    - **`celulas.html`, la página de revisión**: todas las células con su realización modelo,
+      su esquema con la barra y las ligaduras, sus intervalos y sus grados, un ▶ para **oírlas
+      con la orquesta de cuerda** —con un sonido sostenido se oye nacer la disonancia—, las
+      descartadas con su motivo, la lista de lo que falta por decidir **con el número de
+      células que deja cada opción**, y todos los textos de los mensajes en un solo sitio para
+      que Diego los reescriba (punto 7.4). No la enlaza nada y no la ve ningún alumno.
+    - **La comprobación que pide el 2.7 está montada**: `revisar()` pasa las reglas por la
+      realización modelo, y si alguna chocara saldría en rojo. **No choca ninguna** en las 256
+      células de las diez tonalidades del curso.
+    - Comprobado con `3 PROYECTO/herramientas-contrapunto/probar-celulas.js` (44
+      comprobaciones, se ejecuta con solo `node`) y `probar-pagina.js` (18 en un navegador de
+      verdad).
+
 249. **La instrumentación: trece maneras de oír lo mismo**
     (15/10/2026, Diego: «desde ahora, la instrumentación es tuya»). El desplegable
     «Instrumento» pasa a llamarse **«Instrumentación»** y ofrece **trece**, agrupadas en el
@@ -3909,6 +4080,9 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       marca del acorde y el botón «Parar» van bien; comprobado en los trece.
     - **`Sonido.negra` (0,6) y `SEG_POR_NEGRA` de `app.js` han de valer lo mismo**: si una
       cambia, la otra también.
+    - **Renombrada** (Diego, 15/10): «Quinteto de viento «a la italiana»» pasa a llamarse
+      **«Maderas «a la italiana»»** en el menú. (Nota: ese conjunto lleva también la trompa,
+      que no es madera, y el pizzicato de la cuerda al empezar cada acorde.)
     - **El cajón y las palmas por bulerías quedan, apagados** (Diego: «queda bien, pero no se
       parece en nada al ritmo del flamenco; mejor no ponerlo de momento»). Se encienden con
       `Sonido.ajustes.percusionBulerias = true`, y esperan a que Diego fije las fórmulas

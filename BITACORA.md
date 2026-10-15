@@ -11,6 +11,56 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 15 de octubre de 2026
 
+- **SIN SUBIR: el detector de paralelas en las voces escritas**, decisión **255**. Archivos:
+  `js/realizacion.js`, `js/banco.js`, `js/configurador.js`, `css/estilo.css` y la herramienta
+  `3 PROYECTO/herramientas-interfaz/probar-banco-paralelas.js`.
+  - **TE TOCA A TI, DIEGO**: dos fragmentos del banco llevan octavas paralelas entre el bajo y
+    el tenor en la armonización escrita, que es la que el alumno ve como modelo. **A-8-17**
+    (Mendelssohn), acordes 2→3 y 3→4: el tenor del acorde 3, **si3** en vez de re4. **A-14-09**
+    (Schindler's List), acordes 17→18: el tenor del acorde 18, **si♭3** en vez de do4. Los dos
+    están cerrados y las voces van dentro de la huella: hay que corregirlos en el
+    configurador, yo no toco el banco.
+
+- **SIN SUBIR: la célula del retardo con las decisiones de Diego**, decisión **254**: tres
+  tipos (fuera el 6–2–6), registro fa1–do5, sin distancia máxima y **la sensible del menor**.
+  Archivos: `js/celulas.js` y `celulas.html`. 568 células en las diez tonalidades, y en
+  ninguna choca una regla con el modelo. 47 + 21 comprobaciones.
+  - **Esperan a Diego**: oír las células con sensible y decir si alguno de los 6.º o 7.º que
+    se quedan naturales ha de elevarse; y confirmar «Contrapunto» como nombre del modo.
+
+- **SIN SUBIR: el ⓘ de la instrumentación**, decisión **253**: dice qué instrumentos suenan y
+  qué voz lleva cada uno, con el texto generado de las propias capas. Archivos: `js/sonido.js`
+  (`describir`), `index.html`, `js/app.js` y `css/estilo.css`. 22 comprobaciones en
+  `3 PROYECTO/herramientas-interfaz/probar-info-instrumentos.js`, en pantalla grande y en
+  móvil.
+
+- **SIN SUBIR: dos arreglos de la instrumentación y de la fila de tonalidades**, decisiones
+  **251** y **252**, más el renombrado de «Maderas «a la italiana»». Archivos: `js/sonido.js`
+  y `js/app.js`.
+  - **251**: el ▶ del acorde se encendía antes de oírse el acorde con las instrumentaciones de
+    ataque lento (la cuerda entra en 0,2 s). Ahora cada estilo dice cuánto tarda en oírse y el
+    aviso espera, sin pasar del 40 % del acorde. **El sonido no se ha tocado.**
+  - **252**: en la fila «Tonalidad», el tono del fragmento salía siempre en la tecla 1. Ahora
+    las teclas van por el círculo de quintas. **Ojo**: el conjunto de teclas sigue centrado en
+    el tono del fragmento, así que la respuesta es siempre la 3.ª (mayor) o la 4.ª (menor).
+    Mover la ventana cambia qué tonos se ofrecen: lo decide Diego.
+  - Comprobaciones nuevas: la sincronía del ▶ en `probar-instrumentacion.js` y el orden de
+    las tonalidades en `herramientas-interfaz/probar-tonalidades.js` (carpeta nueva).
+
+- **SIN SUBIR: el motor de la célula del retardo**, decisión **250**. Archivos nuevos:
+  `js/celulas.js` y `celulas.html`. **Diego decidió el 15/10 que el piloto de Schemata va
+  dentro de `armonizar`**, como modo nuevo con `Co-1` y su pestaña en el mismo cuaderno, y que
+  lo programo yo; **no habrá repositorio `schemata`**. Esto es el primer paso: el generador y
+  las reglas, con la página de revisión. **Todavía no hay nada para el alumno.**
+  - 256 células en las diez tonalidades del curso, y **en ninguna choca una regla con la
+    realización modelo**, que es la comprobación que pide el 2.7.
+  - 62 comprobaciones entre `probar-celulas.js` (44, con solo `node`) y `probar-pagina.js` (18,
+    en un navegador), en `3 PROYECTO/herramientas-contrapunto/`.
+  - **Esperan a Diego**: si valen en el bajo el 3–2–3 y el 6–2–6; el registro; la distancia
+    máxima; los textos de los mensajes; el nombre del modo nuevo; y si en el menor la célula
+    cerrada ha de poder llevar la sensible. Todo eso está en `celulas.html`, con el número de
+    células que deja cada opción.
+
 - **SIN SUBIR: la instrumentación nueva**, decisión **249**: el desplegable pasa a
   **«Instrumentación»** y ofrece **trece**, agrupadas. Archivos: `js/sonido.js` (sustituido
   entero), **34 bancos de muestras nuevos** en `sonidos/` (17 MB en total la carpeta),
@@ -30,7 +80,7 @@ todavía no hemos hecho, y lo que no puedo hacer yo porque depende de ti.
 
 ## Estado a 9 de octubre de 2026
 
-- **SIN SUBIR: el `20261015-0925`**, con las decisiones **246** (**oír la música de verdad
+- **SIN SUBIR: el `20261015-1046`**, con las decisiones **246** (**oír la música de verdad
   desde el ejercicio**), **247** (el aviso de `fueraDeParte`) y **248** (**los botones del
   cuaderno y de los resultados, siempre a la vista en la cabecera**). Archivos:
   `js/escucha.js` (nuevo), `js/musicxml.js`, `js/banco.js`, `js/app.js`, `js/sonido.js`,
@@ -963,7 +1013,7 @@ sesión nueva lo lea antes de empezar.
 
 | Versión | Qué llevaba |
 |---|---|
-| 20261015-0925 | La instrumentación nueva: el desplegable pasa a «Instrumentación», con trece agrupadas en teclados, voces, orquesta y conjuntos, con ritmo y sin descarga (249); `sonido.js` entero y 34 bancos de muestras nuevos, preparados por el chat «Schemata app». Nada se descarga hasta que hace falta. Los botones «Ver el cuaderno» y «Ver los resultados» de la cabecera del configurador ya no se esconden cuando este navegador no tiene la dirección guardada: salen atenuados y llevan a la casilla donde se pega (248). Oír la música de verdad desde el ejercicio: el crédito de la obra abre un panel con la partitura del pasaje, la grabación y los tres botones «El fragmento» · «En su contexto» · «El fragmento completo» (246). `js/escucha.js`, nuevo. La conexión viaja dentro del archivo del ejercicio y no entra en la huella del sello; auriculares en la tabla del banco. `convertir.js` lee ya el original en MusicXML |
+| 20261015-1046 | Las voces escritas del banco también se miran: detector de quintas y octavas paralelas en la armonización que el alumno ve como modelo (255). La célula del retardo con las decisiones de Diego: tres tipos, registro fa1–do5, sin distancia máxima y la sensible del menor (254). El ⓘ que dice qué instrumentos suenan y qué voz lleva cada uno, generado de las propias capas del sonido (253). El ▶ del acorde se enciende cuando el acorde se oye (251) y las tonalidades que se ofrecen al alumno van por el círculo de quintas, no la suya primero (252). El motor de la célula del retardo y su página de revisión, primer paso del piloto de Schemata dentro de `armonizar` (250). La instrumentación nueva: el desplegable pasa a «Instrumentación», con trece agrupadas en teclados, voces, orquesta y conjuntos, con ritmo y sin descarga (249); `sonido.js` entero y 34 bancos de muestras nuevos, preparados por el chat «Schemata app». Nada se descarga hasta que hace falta. Los botones «Ver el cuaderno» y «Ver los resultados» de la cabecera del configurador ya no se esconden cuando este navegador no tiene la dirección guardada: salen atenuados y llevan a la casilla donde se pega (248). Oír la música de verdad desde el ejercicio: el crédito de la obra abre un panel con la partitura del pasaje, la grabación y los tres botones «El fragmento» · «En su contexto» · «El fragmento completo» (246). `js/escucha.js`, nuevo. La conexión viaja dentro del archivo del ejercicio y no entra en la huella del sello; auriculares en la tabla del banco. `convertir.js` lee ya el original en MusicXML |
 | 20261007-1054 | El cuaderno, a un toque desde el configurador: casilla «Dirección del cuaderno» en la zona C y dos botones nuevos, en la cabecera y en la zona C, delante de los de la hoja de resultados (245). La dirección no viaja en `envio.json` |
 | 20261006-0845 | La fila «Tonalidad», la primera de todas bajo el pentagrama, encima del cifrado (244) |
 | 20261005-2330 | El 6.º – 4.º – 5.º del bajo pide también el conjunto completo (243); orden de preferencia de la regla de la octava y coste del 6/4 (240, 241); el documento de la regla de la octava se genera desde el motor (242); banco a 151 fragmentos con la Marcha en Re |

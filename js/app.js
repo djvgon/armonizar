@@ -579,9 +579,20 @@
     const sinEsta = Object.assign({}, estado.marcas); delete sinEsta[i];
     const antes = lecturaCon(sinEsta)[i].ton;
     /* En la PRIMERA nota, lo que se pregunta es en qué tono empieza el fragmento, así que
-       su propio tono ha de estar en la paleta —y el primero— además de los vecinos, por si
-       el primer acorde es ya el pivote de una modulación (decisión 194). */
-    const destinos = i === 0 ? [antes].concat(Teoria.tonalidadesVecinas(antes)) : Teoria.tonalidadesVecinas(antes);
+       su propio tono ha de estar en la paleta, además de los vecinos, por si el primer
+       acorde es ya el pivote de una modulación (decisión 194).
+
+       Y EL ORDEN ES EL DEL CÍRCULO DE QUINTAS, NO «EL SUYO PRIMERO» (decisión 252, Diego
+       15/10/2026: «la tonalidad del fragmento siempre aparece la primera. Esto hace que
+       resulte irrelevante decidir el tono del fragmento»). Se ordenan por armadura —de los
+       bemoles a los sostenidos— y, dentro de cada armadura, el mayor antes que su relativo
+       menor: Fa M · re m · Do M · la m · Sol M · mi m. El mismo orden sirve para las
+       modulaciones de las demás notas, donde además se lee mejor. */
+    const porCirculo = (a, b) => Teoria.armadura(a) - Teoria.armadura(b)
+      || (a.modo === 'mayor' ? 0 : 1) - (b.modo === 'mayor' ? 0 : 1);
+    const destinos = (i === 0 ? [antes].concat(Teoria.tonalidadesVecinas(antes)) : Teoria.tonalidadesVecinas(antes))
+      .filter((t, k, lista) => lista.findIndex(x => Teoria.mismaTonalidad(x, t)) === k)
+      .sort(porCirculo);
     destinos.forEach((t, k) => {
       const cont = document.createDocumentFragment();
       const txt = document.createElement('span'); txt.className = 'tecla-romano-texto'; txt.textContent = Teoria.nombreCorto(t); cont.appendChild(txt);
@@ -2495,6 +2506,72 @@
       Sonido.elegirInstrumento(selInst.value);
       try { localStorage.setItem('armonizar.instrumento', selInst.value); } catch (e) { /* nada */ }
     });
+    /* EL ⓘ: QUÉ INSTRUMENTOS SUENAN (decisión 253, Diego 15/10/2026: «¿cómo se podría hacer
+       explícito al estudiante qué instrumentos están sonando?»). El texto lo escribe
+       `Sonido.describir`, que lo saca de las capas con las que suena de verdad cada
+       instrumentación; aquí solo se dibuja. Se cierra al pulsar fuera, con Esc y al cambiar
+       de instrumentación. */
+    const btnInst = $('#btn-instrumentos'), cajaInst = $('#caja-instrumentos');
+    let verTodas = false;
+    function pintarInstrumentos() {
+      if (!cajaInst) return;
+      const d = Sonido.describir(Sonido.instrumentoActual());
+      cajaInst.textContent = '';
+      if (!d) { cajaInst.textContent = 'No hay datos de esta instrumentación.'; return; }
+      const h = document.createElement('h3'); h.textContent = d.nombre; cajaInst.appendChild(h);
+      if (d.lineas.length) {
+        const ul = document.createElement('ul');
+        d.lineas.forEach(l => {
+          const li = document.createElement('li');
+          const b = document.createElement('strong'); b.textContent = l.instrumento; li.appendChild(b);
+          const v = document.createElement('span'); v.className = 'voz'; v.textContent = ' — ' + l.voces; li.appendChild(v);
+          ul.appendChild(li);
+        });
+        cajaInst.appendChild(ul);
+      }
+      if (d.nota) { const p = document.createElement('p'); p.className = 'nota-estilo'; p.textContent = d.nota; cajaInst.appendChild(p); }
+      const pie = document.createElement('p'); pie.className = 'todas';
+      const enlace = document.createElement('button');
+      enlace.type = 'button';
+      enlace.textContent = verTodas ? 'Ocultar las demás' : 'Ver todas las instrumentaciones';
+      enlace.addEventListener('click', () => { verTodas = !verTodas; pintarInstrumentos(); });
+      pie.appendChild(enlace); cajaInst.appendChild(pie);
+      if (verTodas) {
+        const caja = document.createElement('div'); caja.className = 'lista-todas';
+        (Sonido.GRUPOS || []).forEach(gr => {
+          const dentro = Sonido.INSTRUMENTOS.filter(x => x.grupo === gr);
+          if (!dentro.length) return;
+          const t = document.createElement('p'); t.style.margin = '6px 0 2px';
+          const st = document.createElement('strong'); st.textContent = gr; t.appendChild(st); caja.appendChild(t);
+          const ul = document.createElement('ul');
+          dentro.forEach(x => {
+            const o = Sonido.describir(x.id);
+            const li = document.createElement('li');
+            li.textContent = x.nombre + (o && o.lineas.length ? ': ' + o.lineas.map(l => l.instrumento).join(', ') : '');
+            ul.appendChild(li);
+          });
+          caja.appendChild(ul);
+        });
+        cajaInst.appendChild(caja);
+      }
+    }
+    function abrirInstrumentos(abrir) {
+      if (!btnInst || !cajaInst) return;
+      const v = abrir === undefined ? cajaInst.hidden : abrir;
+      if (v) pintarInstrumentos();
+      cajaInst.hidden = !v;
+      btnInst.setAttribute('aria-expanded', v ? 'true' : 'false');
+    }
+    if (btnInst) {
+      btnInst.addEventListener('click', ev => { ev.preventDefault(); ev.stopPropagation(); abrirInstrumentos(); });
+      document.addEventListener('click', ev => {
+        if (cajaInst.hidden) return;
+        if (!cajaInst.contains(ev.target) && ev.target !== btnInst) abrirInstrumentos(false);
+      });
+      document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !cajaInst.hidden) abrirInstrumentos(false); });
+      selInst.addEventListener('change', () => { verTodas = false; if (!cajaInst.hidden) pintarInstrumentos(); });
+    }
+
     // Indicador de carga del instrumento: solo si tarda más de medio segundo, y sin desplazar nada
     let avisoCarga = null;
     Sonido.alCargar = (id, listo) => {
