@@ -115,17 +115,22 @@
       subtitulo: c => Teoria.nombreTonalidad(c.tonalidad) + ' · cadencia compuesta ' + c.cadencia,
       dadas: c => Cadenas.dadas(c),
       ligadurasDadas: c => Cadenas.ligadurasDadas(c),
-      enBlanco: c => ({
-        momentos: c.momentos.map(m => ({ alta: null, baja: m.baja })),
-        ligaduras: Cadenas.ligadurasDadas(c).map(l => ({ voz: l.voz, desde: l.desde })),
-        barras: []
-      }),
-      /* En la cadena no se da ninguna nota de la voz que escribe, así que se arranca del bajo
-         que tiene debajo: tampoco adelanta nada, porque lo está viendo. */
-      arranque: c => c.momentos[0].baja,
+      /* La voz DADA se enseña entera; la otra, en blanco (266). */
+      enBlanco: c => {
+        const dada = Cadenas.vozDada(c);
+        return {
+          momentos: c.momentos.map(m => (dada === 'alta'
+            ? { alta: m.alta, baja: null } : { alta: null, baja: m.baja })),
+          ligaduras: Cadenas.ligadurasDadas(c).map(l => ({ voz: l.voz, desde: l.desde })),
+          barras: []
+        };
+      },
+      /* En la cadena no se da ninguna nota de la voz que escribe, así que se arranca de la
+         que tiene al lado: tampoco adelanta nada, porque la está viendo. */
+      arranque: c => c.momentos[0][Cadenas.vozDada(c)],
       comprobar: (c, r) => Cadenas.comprobar(c, r),
       aSonido: (c, s) => Cadenas.aSonido(c, s),
-      explica: c => 'Cadena de ' + c.n + ' retardos 7–6: cada resolución es la preparación de la '
+      explica: c => 'Cadena de ' + c.n + ' retardos 7–6 (se da ' + (Cadenas.vozDada(c) === 'alta' ? 'la voz superior' : 'el bajo') + '): cada resolución es la preparación de la '
         + 'siguiente. El último retardo es el de la tónica, que resuelve en la sensible, y la '
         + 'sensible sube a la tónica: cadencia compuesta ' + c.cadencia
         + (c.cadencia === 'perfecta' ? ' —las dos voces en tónica—.' : ' —una voz en tónica y otra en su tercera—.')
@@ -133,6 +138,19 @@
     }
   };
   const M = () => MODELOS[estado.tipo] || MODELOS.celula;
+
+  /* LA FRANJA DE ARRIBA (decisión 266, Diego 16/10/2026): «indicar que se está trabajando
+     la Unidad 2. Retardos, y entre paréntesis el nombre del cuadernillo». El rótulo lo da
+     `Banco.rotuloLeccion`, que para `Co-1` escribe «Unidad 2» y no «Tema 1» porque esta
+     lección sale de otro cuaderno; el nombre del cuaderno va detrás, entre paréntesis, y
+     entero en el título emergente por si la pantalla lo recorta. */
+  function ponLeccion(lec, titulo, cola) {
+    const el = $('#leccion');
+    const cu = Banco.cuadernoDe(lec);
+    const base = titulo || Banco.rotuloLeccion(lec, Banco.LECCIONES[lec] || '');
+    el.textContent = base + (cu && !titulo ? ' (' + cu.obra + ')' : '') + (cola || '');
+    el.title = cu ? cu.obra : '';
+  }
 
   /* ---------- Avisos ---------- */
   function aviso(txt, ms = 5000) {
@@ -470,7 +488,8 @@
     if (!m) return null;
     return [{ momento: 0, voz: m.vozRetardada, texto: 'preparación' },
       { momento: PERCUSION, voz: m.vozRetardada, texto: 'nota retardada',
-        apunte: '(se vuelve disonante con respecto a la nota real)' },
+        // En dos renglones, debajo del rótulo y centrado con él (decisión 267)
+        apunte: ['(se vuelve disonante', 'con respecto a la nota real)'] },
       { momento: m.momentos.length - 1, voz: m.vozRetardada, texto: 'resolución' },
       { momento: PERCUSION, voz: m.vozReal, texto: 'nota real' }];
   }
@@ -729,7 +748,7 @@
       try { return typeof t === 'string' ? Teoria.tonalidadDesdeTexto(t) : t; } catch (e) { return null; }
     }).filter(Boolean);
     const lista = tipo === 'cadena'
-      ? Cadenas.elegir({ n: filtro.n || 6, tonalidades: tons.length ? tons : null, largos: op.largos })
+      ? Cadenas.elegir({ n: filtro.n || 6, tonalidades: tons.length ? tons : null, largos: op.largos, voz: op.voz })
       : Celulas.elegir({
         n: filtro.n || 8,
         tipos: op.tipos && op.tipos.length ? op.tipos : null,
@@ -883,7 +902,7 @@
       $('#ejercicio').value = estado.tipo;
       mandosDelTipo();
       const lec = f.filtro.leccion || 'Co-1';
-      $('#leccion').textContent = f.filtro.titulo || Banco.rotuloLeccion(lec, Banco.LECCIONES[lec] || '');
+      ponLeccion(lec, f.filtro.titulo || '');
       /* LA FICHA SE REGISTRA Y SE PUEDE ENVIAR (decisión 264). Es el mismo registro y el
          mismo formulario que la práctica armónica, de modo que la fila llega al cuaderno de
          siempre con su columna de modo, «Contrapunto». La práctica libre no se registra: no
@@ -894,7 +913,7 @@
       });
       Envio.preparar();            // lee envio.json en segundo plano; si no está, no pasa nada
     } else {
-      $('#leccion').textContent = Banco.rotuloLeccion('Co-1', Banco.LECCIONES['Co-1'] || '') + ' · práctica libre';
+      ponLeccion('Co-1', '', ' · práctica libre');
       primera = sorteaUno();
     }
     $('#subir').addEventListener('click', () => mover(+1));

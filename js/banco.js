@@ -1390,8 +1390,24 @@ const Banco = (() => {
     /* La primera `Co-` (Diego, 15/10/2026: «el piloto va dentro de armonizar, como modo
        nuevo, con `Co-1` y su pestaña en el mismo cuaderno»). El TÍTULO lo propongo yo y
        está a falta de su visto bueno: es lo que verán los alumnos. */
-    'Co-1': 'El retardo a dos voces'
+    'Co-1': 'Retardos (a 2 voces)'
   };
+
+  /* ---------- DE QUÉ CUADERNO SALE UNA LECCIÓN (decisión 266, Diego 16/10/2026) ----------
+
+     Las lecciones `A-` son los temas de su libro de Armonía, y por eso `rotuloLeccion` las
+     escribe «Tema 5 · …». La `Co-1` no: sale de otro cuaderno suyo, «Esquemas a dos y tres
+     voces para elaborar un preludio barroco», donde los retardos son la **Unidad 2**.
+     Llamarla «Tema 1» sería mentirle al alumno, que tiene el cuaderno delante.
+
+     De ahí esta tabla: dice con qué palabra se numera la lección y de qué cuaderno viene.
+     Diego, 16/10: «indicar en la franja de color superior, de manera similar a como se
+     indica en las tareas de práctica armónica el tema del libro, que se está trabajando la
+     Unidad 2. Retardos, y entre paréntesis el nombre del cuadernillo». */
+  const CUADERNOS = {
+    'Co-1': { rotulo: 'Unidad 2', obra: 'Esquemas a dos y tres voces para elaborar un preludio barroco' }
+  };
+  const cuadernoDe = lec => (lec ? (CUADERNOS[leccionCanonica(lec)] || null) : null);
 
   /* ---------- VARIANTES DE UNA LECCIÓN (decisión 265, Diego 16/10/2026) ----------
 
@@ -1496,7 +1512,9 @@ const Banco = (() => {
      asignado todavía, se enseña su código, que es mejor que nada. */
   function rotuloLeccion(lec, nombre) {
     const t = temaDeLeccion(lec);
-    const cabeza = t ? 'Tema ' + t : (lec || '');
+    // Una lección que sale de otro cuaderno se numera con la palabra de ese cuaderno (266)
+    const cu = cuadernoDe(lec);
+    const cabeza = cu ? cu.rotulo : (t ? 'Tema ' + t : (lec || ''));
     return cabeza + (nombre ? ' · ' + nombre : '');
   }
   /* El título lo manda la tabla, no lo que quedó guardado en el fragmento: así cambiar
@@ -1592,5 +1610,5 @@ const Banco = (() => {
     huellaDe, estaCerrada, cerrar, abrir, huellaRota, rotas, cuentaCerradas,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, rotuloLeccion, temaDeLeccion,
     nombresDeLecciones, repertorioDeLeccion, LECCIONES, CODIGO_ANTIGUO, leccionCanonica,
-    VARIANTES, varianteDe, modeloCabe };
+    VARIANTES, varianteDe, modeloCabe, CUADERNOS, cuadernoDe };
 })();

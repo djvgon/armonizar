@@ -1489,7 +1489,7 @@
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
           '#ficha-modula', '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
           '#ficha-armadura', '#ficha-armadura-pct',
-          '#cp-ejercicio', '#cp-n', '#cp-dada', '#cp-nivel'].reduce((o, id) => { o[id] = $(id) ? $(id).value : ''; return o; }, {}),
+          '#cp-ejercicio', '#cp-n', '#cp-dada', '#cp-nivel', '#cp-voz'].reduce((o, id) => { o[id] = $(id) ? $(id).value : ''; return o; }, {}),
         /* Las casillas de contrapunto van aparte: el reponedor de arriba escribe `.value`, y
            esto son listas de marcas. Si todavía no están pintadas, se conserva lo que había
            en lugar de guardar tres listas vacías encima (decisión 262). */
@@ -2145,6 +2145,10 @@
     if (ej === 'cadena') {
       const largos = cpMarcados('#cp-largos').map(Number);
       if (largos.length && largos.length < 3) op.largos = largos;
+      /* La voz que se da (266). «baja» es lo que hace el generador sin que se lo digan, así
+         que solo viaja cuando se pide otra cosa: el enlace no envejece. */
+      const voz = $('#cp-voz') ? $('#cp-voz').value : 'azar';
+      if (voz === 'alta' || voz === 'azar') op.voz = voz;
     } else {
       const tipos = cpMarcados('#cp-tipos');
       if (tipos.length && tipos.length < Object.keys(Celulas.TIPOS).length) op.tipos = tipos;
@@ -3710,7 +3714,7 @@
     });
     /* Los mandos de la ficha de contrapunto (262). No tocan el banco: lo que cambian es qué
        se sortea, de modo que basta con invalidar la dirección y volver a contar. */
-    ['#cp-ejercicio', '#cp-dada', '#cp-nivel', '#cp-n'].forEach(id => {
+    ['#cp-ejercicio', '#cp-dada', '#cp-nivel', '#cp-n', '#cp-voz'].forEach(id => {
       const el = $(id); if (!el) return;
       const al = () => { limpiarFicha(); mandosContrapunto(); cuentaContrapunto(); guardarBorrador(); };
       el.addEventListener('change', al);

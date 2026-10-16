@@ -198,8 +198,13 @@ const Reja = (() => {
        falta sitio por fuera de la plica: dos espacios más a cada lado bastan, y el alto se
        mide igual, sobre la tinta. */
     const etiquetas = (estado.etiquetas || []).filter(e => e && e.texto);
-    const hayApunte = etiquetas.some(e => e.apunte);
-    const AIRE = (hayApunte ? 7.6 : etiquetas.length ? 5.9 : 3.9) * SP;   // lo que añaden por fuera de la cabeza la plica, la ligadura y el rótulo
+    /* El apunte puede venir en VARIOS RENGLONES (decisión 267): una lista de líneas, o un
+       texto suelto, que es un renglón. Cada renglón pide su altura, y por eso se cuentan
+       antes de medir el dibujo. */
+    const lineasDe = e => (Array.isArray(e.apunte) ? e.apunte.filter(Boolean)
+      : (e.apunte ? [e.apunte] : []));
+    const nApunte = etiquetas.reduce((n, e) => Math.max(n, lineasDe(e).length), 0);
+    const AIRE = (nApunte ? 7.6 + 1.25 * (nApunte - 1) : etiquetas.length ? 5.9 : 3.9) * SP;   // lo que añaden por fuera de la cabeza la plica, la ligadura y el rótulo
     const pasosDe = voz => modelo.concat(momentos).map(m => m && m[voz]).filter(Boolean)
       .map(x => pasoEn(x, claves[voz]));
     const limites = ps => ({ max: Math.max(8, ...(ps.length ? ps : [8])), min: Math.min(0, ...(ps.length ? ps : [0])) });
@@ -439,19 +444,25 @@ const Reja = (() => {
       const c = cabezas[e.voz] && cabezas[e.voz][e.momento];
       if (!c) return;
       const x = c.x + ANCHO.blanca * SP / 2;
-      const fuera = c.arriba ? -1 : 1;                       // hacia dónde se aparta de la cabeza
       const base = renglon[c.arriba ? 'arriba' : 'abajo'];
-      /* Con apunte son dos renglones: los NOMBRES de todos los rótulos se van al renglón de
-         fuera y la explicación se queda sola en el de dentro, entre ellos y las notas. Si no
-         se movieran todos, la explicación —que es larga— se cruzaría con el rótulo de al
-         lado, que es lo que pasaba al principio (Diego, 16/10). */
+      /* EL APUNTE VA SIEMPRE DEBAJO DE SU RÓTULO Y CENTRADO CON ÉL (decisión 267, Diego
+         16/10/2026), vaya la nota en la voz de arriba o en la de abajo, y en tantos
+         renglones como líneas traiga.
+
+         «Debajo» es debajo en la pantalla, no «hacia fuera»: arriba del pentagrama eso deja
+         el apunte entre el rótulo y las notas —y por eso los NOMBRES de ese lado se van
+         tantos renglones afuera como líneas tenga—; debajo del pentagrama lo deja por fuera
+         del rótulo, que se queda donde estaba. Antes el apunte se ponía siempre en el
+         renglón de dentro, de modo que bajo el pentagrama salía ENCIMA de su rótulo. */
+      const sube = c.arriba ? nApunte * SEGUNDO : 0;
       svg.appendChild(el('text', {
-        x, y: base + (hayApunte ? fuera * SEGUNDO : 0),
+        x, y: base - sube,
         class: 'reja-etiqueta', 'text-anchor': 'middle'
       }, e.texto));
-      if (e.apunte) svg.appendChild(el('text', {
-        x, y: base, class: 'reja-etiqueta reja-apunte', 'text-anchor': 'middle'
-      }, e.apunte));
+      lineasDe(e).forEach((linea, i) => svg.appendChild(el('text', {
+        x, y: base - sube + (i + 1) * SEGUNDO,
+        class: 'reja-etiqueta reja-apunte', 'text-anchor': 'middle'
+      }, linea)));
     });
 
     /* ---- El intervalo debajo de cada columna (2.6) ---- */

@@ -24,10 +24,18 @@
    tercera (a dos voces) para que se haga sonar la sonoridad de
    tónica»— y que `celulas.js` aplica en las consonancias.
 
-   QUÉ ESCRIBE EL ALUMNO (Diego, 15/10): se le da **el bajo entero**, con
-   sus ligaduras, y él escribe **la voz superior** —las notas, sus
-   ligaduras y las barras de compás—. Es, en pequeño, el ejercicio de
-   partimento al que lleva todo esto.
+   QUÉ ESCRIBE EL ALUMNO (Diego, 15/10): se le da **una voz entera**, con
+   sus ligaduras, y él escribe **la otra** —las notas, sus ligaduras y las
+   barras de compás—. Es, en pequeño, el ejercicio de partimento al que
+   lleva todo esto.
+
+   CUÁL SE LE DA (Diego, 16/10/2026): «me gustaría que la melodía propuesta
+   no fuera solo la inferior —a la manera que lo plantea también IJzerman en
+   su Workbook—, que pueda ser tanto la inferior como la superior». De ahí
+   `cadena.voz`: la voz que viene DADA, `'baja'` o `'alta'`. Sin decir nada
+   es `'baja'`, que es como nació. La cadena generada es la misma: lo único
+   que cambia es qué mitad se le enseña, qué mitad escribe y, con ella, el
+   enunciado y qué ligaduras se le piden.
 
    Depende de `teoria.js` y de `celulas.js`.
    ===================================================================== */
@@ -52,7 +60,8 @@ const Cadenas = (() => {
     cadenciaTonica: 'La sensible sube a la tónica en el tiempo fuerte siguiente: eso es la cadencia compuesta.',
     cadenciaSonoridad: 'Para que suene la tónica, las dos voces han de acabar en tónica (cadencia perfecta) o una en tónica y otra en su tercera (imperfecta).',
     barras: 'Las barras de compás van delante de cada percusión y delante del acorde final: el retardo cae siempre en parte fuerte.',
-    ligadurasAlta: 'En una cadena, cada nota de la voz superior se liga de su preparación a su percusión: por eso es un retardo y no una nota repetida.'
+    ligadurasAlta: 'En una cadena, cada nota de la voz superior se liga de su preparación a su percusión: por eso es un retardo y no una nota repetida.',
+    ligadurasBaja: 'En una cadena, cada nota de la voz inferior se liga de su preparación a su percusión: la nota real se queda mientras la de arriba se mueve.'
   };
   const texto = (clave, datos) => Celulas.rellenar(MENSAJES[clave] || clave, datos);
 
@@ -213,6 +222,11 @@ const Cadenas = (() => {
     const monton = [];
     tons.forEach(ton => todas({ tonalidad: ton, largos: o.largos, registro: o.registro })
       .cadenas.forEach(c => monton.push(c)));
+    /* QUÉ VOZ SE LE DA (266): la inferior, la superior o al azar una de las dos. Se marca
+       aquí, al repartir, y no al generar: la cadena es la misma; lo que cambia es qué mitad
+       ve escrita el alumno. */
+    const comoVoz = () => (o.voz === 'alta' ? 'alta'
+      : o.voz === 'azar' ? (al() < 0.5 ? 'alta' : 'baja') : 'baja');
     const libres = Celulas.barajar(monton, al);
     const sep = (a, b) => (Math.abs(ix(Teoria.nota(a.tonica)) - ix(Teoria.nota(b.tonica))) % 7) + 1;
     const salen = [];
@@ -226,18 +240,25 @@ const Cadenas = (() => {
       }
       salen.push(libres.splice(k, 1)[0]);
     }
+    salen.forEach(c => { c.voz = comoVoz(); });
     return salen;
   }
 
   /* ---------- El enunciado ----------
      Propuesta mía, a falta del visto bueno de Diego: el suyo para la célula es «Haz descender
      sol2 con un retardo 6–7–6», y este sigue el mismo tono. */
-  const ENUNCIADO = 'Sobre este bajo, escribe la voz superior: una cadena de {n} retardos 7–6 que acabe en cadencia compuesta.';
-  const enunciado = cadena => Celulas.rellenar(ENUNCIADO, { n: cadena.n });
+  const ENUNCIADO = 'Realiza la voz superior sobre este bajo: {n} retardos 7–6 encadenados y una cadencia compuesta al final.';
+  const ENUNCIADO_ALTA = 'Realiza la voz inferior bajo esta melodía: {n} retardos 7–6 encadenados y una cadencia compuesta al final.';
+  const enunciado = cadena =>
+    Celulas.rellenar(vozDada(cadena) === 'alta' ? ENUNCIADO_ALTA : ENUNCIADO, { n: cadena.n });
 
-  /* Lo que viene escrito: TODO el bajo, con sus ligaduras (Diego, 15/10). */
-  const dadas = cadena => cadena.momentos.map((m, k) => ({ momento: k, voz: 'baja' }));
-  const ligadurasDadas = cadena => cadena.ligaduras.filter(l => l.voz === 'baja');
+  /* Qué voz viene DADA (266). Sin decir nada, la inferior, que es como nació. */
+  const vozDada = cadena => ((cadena && cadena.voz) === 'alta' ? 'alta' : 'baja');
+  const vozEscrita = cadena => (vozDada(cadena) === 'alta' ? 'baja' : 'alta');
+
+  /* Lo que viene escrito: esa voz entera, con sus ligaduras (Diego, 15/10 y 16/10). */
+  const dadas = cadena => cadena.momentos.map((m, k) => ({ momento: k, voz: vozDada(cadena) }));
+  const ligadurasDadas = cadena => cadena.ligaduras.filter(l => l.voz === vozDada(cadena));
 
   /* ---------- Corregir ---------- */
   function comprobar(cadena, respuesta, op) {
@@ -258,12 +279,14 @@ const Cadenas = (() => {
     });
     const fallos = revisar(suya, op);
 
-    /* Las ligaduras de la voz superior: una por retardo, de la preparación a la percusión.
-       Las del bajo vienen dadas, así que no se le piden. */
+    /* Las ligaduras DE LA VOZ QUE ESCRIBE: una por retardo, de la preparación a la
+       percusión. Las de la voz dada ya están puestas, así que no se le piden (266). */
+    const esc = vozEscrita(cadena);
+    const regla = esc === 'alta' ? 'ligadurasAlta' : 'ligadurasBaja';
     const ls = respuesta.ligaduras || [];
-    const faltan = cadena.ligaduras.filter(l => l.voz === 'alta')
-      .filter(l => !ls.some(x => x.voz === 'alta' && x.desde === l.desde));
-    if (faltan.length) fallos.push({ regla: 'ligadurasAlta', momento: faltan[0].desde, mensaje: texto('ligadurasAlta') });
+    const faltan = cadena.ligaduras.filter(l => l.voz === esc)
+      .filter(l => !ls.some(x => x.voz === esc && x.desde === l.desde));
+    if (faltan.length) fallos.push({ regla: regla, momento: faltan[0].desde, mensaje: texto(regla) });
 
     // Las barras: delante de cada percusión y delante del acorde final
     const suyas = (respuesta.barras || []).slice().sort((a, b) => a - b);
@@ -293,7 +316,7 @@ const Cadenas = (() => {
   const comoTexto = cadena => cadena.momentos
     .map(m => Teoria.texto(m.alta) + '/' + Teoria.texto(m.baja)).join(' → ');
 
-  return { LARGOS, CADENCIAS, TONALIDADES, MENSAJES, ENUNCIADO,
+  return { LARGOS, CADENCIAS, TONALIDADES, MENSAJES, ENUNCIADO, ENUNCIADO_ALTA,
     generar, revisar, todas, porId, elegir, comprobar, enunciado, dadas, ligadurasDadas,
-    aSonido, comoTexto, esTonica, esMediante, mediante };
+    vozDada, vozEscrita, aSonido, comoTexto, esTonica, esMediante, mediante };
 })();

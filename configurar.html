@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261016-1541">
-  <link rel="stylesheet" href="css/estilo.css?v=20261016-1541">
+  <link rel="stylesheet" href="css/bravura.css?v=20261016-2031">
+  <link rel="stylesheet" href="css/estilo.css?v=20261016-2031">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -216,6 +216,16 @@
               <div id="cp-largos" class="repertorio-opciones"></div>
               <span class="ayuda">Sin marcar ninguno salen de dos a cuatro, al azar. Todas acaban en cadencia compuesta, perfecta o imperfecta.</span>
             </div>
+            <!-- QUÉ VOZ SE LE DA (decisión 266, Diego 16/10/2026): «que la melodía
+                 propuesta pueda ser tanto la inferior como la superior». -->
+            <label class="campo cp-cadena">
+              <span>Qué voz se da</span>
+              <select id="cp-voz">
+                <option value="azar" selected>Una de las dos, al azar</option>
+                <option value="baja">La inferior (escribe la superior)</option>
+                <option value="alta">La superior (escribe la inferior)</option>
+              </select>
+            </label>
           </div>
           <div class="fila-campos fila-apretada">
             <div class="campo campo-ancho">
@@ -810,22 +820,22 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261016-1541</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261016-2031</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261016-1541"></script>
-  <script src="js/teoria.js?v=20261016-1541"></script>
-  <script src="js/reglas.js?v=20261016-1541"></script>
-  <script src="js/ejercicios.js?v=20261016-1541"></script>
-  <script src="js/partitura.js?v=20261016-1541"></script>
-  <script src="js/musicxml.js?v=20261016-1541"></script>
-  <script src="js/musescore.js?v=20261016-1541"></script>
-  <script src="js/banco.js?v=20261016-1541"></script>
-  <script src="js/celulas.js?v=20261016-1541"></script>
-  <script src="js/cadenas.js?v=20261016-1541"></script>
-  <script src="js/realizacion.js?v=20261016-1541"></script>
-  <script src="js/tecnicas.js?v=20261016-1541"></script>
-  <script src="js/configurador.js?v=20261016-1541"></script>
+  <script src="js/qr.js?v=20261016-2031"></script>
+  <script src="js/teoria.js?v=20261016-2031"></script>
+  <script src="js/reglas.js?v=20261016-2031"></script>
+  <script src="js/ejercicios.js?v=20261016-2031"></script>
+  <script src="js/partitura.js?v=20261016-2031"></script>
+  <script src="js/musicxml.js?v=20261016-2031"></script>
+  <script src="js/musescore.js?v=20261016-2031"></script>
+  <script src="js/banco.js?v=20261016-2031"></script>
+  <script src="js/celulas.js?v=20261016-2031"></script>
+  <script src="js/cadenas.js?v=20261016-2031"></script>
+  <script src="js/realizacion.js?v=20261016-2031"></script>
+  <script src="js/tecnicas.js?v=20261016-2031"></script>
+  <script src="js/configurador.js?v=20261016-2031"></script>
 </body>
 </html>

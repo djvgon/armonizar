@@ -3880,6 +3880,74 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+267. **El apunte del retardo: dos renglones, debajo de su rótulo y centrado con él**
+    (16/10/2026, Diego, mejorando lo que enseña «Ver la solución»: «el texto *se vuelve
+    disonante con respecto a la nota real* ha de estar en dos renglones y centrado con
+    “nota retardada”, y debajo de “nota retardada”, tanto si esta va en la voz superior
+    como si va en la inferior».)
+    - **«Debajo» es debajo en la pantalla, no «hacia fuera»**, y ahí estaba el fallo. El
+      apunte se ponía siempre en el renglón de dentro —el más cercano a las notas—, de modo
+      que con la retardada en la voz de arriba quedaba debajo de su rótulo, como debe, pero
+      con la retardada en la voz de abajo quedaba **encima**. Ahora se mira el lado: arriba
+      del pentagrama son los NOMBRES los que se apartan hacia fuera y el apunte ocupa los
+      renglones de en medio; debajo del pentagrama el rótulo se queda donde estaba y el
+      apunte crece hacia abajo.
+    - **El apunte puede traer varias líneas**: `etiquetas[].apunte` admite ahora una lista
+      además de un texto suelto, y cada línea es un renglón. El del retardo va en dos,
+      «(se vuelve disonante» · «con respecto a la nota real)», y las dos van centradas en la
+      misma vertical que el rótulo.
+    - El alto del dibujo se mide con las líneas que haya (`AIRE` crece un renglón por cada
+      una de más), así que el apunte nunca se sale del recuadro ni pisa el ▶ de arriba.
+    - Comprobado en los dos sentidos —retardada en la voz alta (6–7–6) y en la baja
+      (3–2–3)—: `probar-pagina-contrapunto.js` sube a **154** comprobaciones, con tres
+      nuevas que miran que el apunte esté debajo, centrado y en orden.
+
+266. **El título de la `Co-1`, el enunciado de la cadena y qué voz se le da**
+    (16/10/2026, Diego, al ir a repartir los ejercicios a Co5, con su cuaderno delante.)
+    - **La lección se llama «Retardos (a 2 voces)»**, y se numera **«Unidad 2»**, no
+      «Tema 1». Sale de otro cuaderno suyo —*Esquemas a dos y tres voces para elaborar un
+      preludio barroco*—, donde los retardos son la Unidad 2; llamarla «Tema 1» sería
+      mentirle al alumno, que tiene ese cuaderno delante. De ahí la tabla `CUADERNOS` de
+      `js/banco.js`, que dice con qué palabra se numera una lección y de qué cuaderno viene,
+      y que `rotuloLeccion` consulta antes de escribir «Tema». Las lecciones `A-` no se
+      enteran: siguen diciendo «Tema 5 · I, V y V7».
+    - **El nombre del cuaderno, entre paréntesis en la franja de arriba** (Diego: «de manera
+      similar a cómo se indica en las tareas de práctica armónica el tema del libro»). Va
+      también en el título emergente, por si la pantalla lo recorta.
+    - **El «(a 2 voces)» no es un adorno**: esa Unidad 2 tiene cuatro apartados y la
+      aplicación hace hoy solo los dos de dos voces —el 7–6 (nuestros 6–7–6 y 3–7–3) y el
+      bajo ligado (3–2–3)—. El Fabordón 7–6 y el bajo ligado a tres voces, no. El título lo
+      dice para no prometer de más; cuando entren, se quita.
+    - **El enunciado de la cadena**, en el registro del Workbook de IJzerman —imperativo,
+      corto, con la cuenta delante— y con palabras propias: de ese Workbook no se copian ni
+      enunciados ni realizaciones. Queda: «Realiza la voz superior sobre este bajo: {n}
+      retardos 7–6 encadenados y una cadencia compuesta al final.»
+    - **Y LA VOZ QUE SE DA PUEDE SER CUALQUIERA DE LAS DOS** (Diego: «me gustaría que la
+      melodía propuesta no fuera solo la inferior —a la manera que lo plantea también
+      IJzerman en su Workbook—, que pueda ser tanto la inferior como la superior»). Con la
+      superior dada, el enunciado pasa a «Realiza la voz inferior bajo esta melodía: …».
+      - La cadena generada **es exactamente la misma**: lo único que cambia es qué mitad ve
+        escrita el alumno, qué mitad escribe y, con ella, qué ligaduras se le piden. Vive en
+        `cadena.voz` —la voz DADA—, que se marca al repartir (`Cadenas.elegir`) y no al
+        generar; sin decir nada es `'baja'`, que es como nació, de modo que los enlaces de
+        ficha repartidos antes siguen valiendo.
+      - La corrección pide las ligaduras **de la voz que escribe**, sea cual sea: mensaje
+        nuevo `ligadurasBaja` junto al `ligadurasAlta` de siempre.
+      - **Mando en el configurador**, solo con «Cadena de retardos» elegida: «Qué voz se da»
+        — una de las dos al azar (por defecto), la inferior, o la superior—. En el enlace
+        viaja solo cuando no es la inferior.
+    - **Lo que NO cambia, por decisión suya del mismo día**: el nivel difícil **no dice en
+      qué voz va la nota dada** —y la barra divisoria tampoco la delata, como él mismo se
+      corrigió: una nota en parte fuerte puede ser la retardada si viene ligada—; **la
+      cadena no lleva niveles de dificultad**, porque con una voz entera dada la respuesta
+      es única; y en contrapunto **las dos voces suenan sin doblar**, que ya era así. En
+      armonización, en cambio, **el bajo se sigue doblando a la octava grave** (Diego: «ayuda
+      en los ejercicios de audición y en subrayar la importancia del bajo»), con lo que
+      queda cerrada la pregunta que dejó abierta la decisión 256.
+    - Comprobado: `herramientas-contrapunto/probar-cadena-voz.js`, nuevo, **28
+      comprobaciones** en un navegador; y al día `probar-pagina-contrapunto.js` y
+      `probar-modo-contrapunto.js`.
+
 265. **La variante «5a» del tema 5: primeros pasos con I y V**
     (16/10/2026, Diego: «necesito una lección 5a, previa a la que hay, en la que solo
     aparezcan fragmentos con acordes I o V, pero no V7, para los alumnos que acaban de
