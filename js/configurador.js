@@ -2318,7 +2318,9 @@
     $('#btn-ficha').disabled = !lista.length;
 
     /* Repertorio de la lección elegida: es lo que verá el alumno y lo que hace posible
-       mezclar lecciones en una ficha. Se puede rehacer con el del paso 3. */
+       mezclar lecciones en una ficha. Se puede rehacer con el que esté marcado justo
+       encima, en «Repertorio de la lección». (Ese bloque vivía en el antiguo paso 3, y así
+       lo nombraban estos textos hasta el 17/10/2026; ya no hay pasos numerados.) */
     const pRep = $('#leccion-repertorio'), bRep = $('#btn-leccion-repertorio');
     if (filtro.leccion) {
       const r = Banco.repertorioDeLeccion(banco, filtro.leccion);
@@ -2331,11 +2333,11 @@
         + (filtro.sinSeptima ? ' <b>Con la variante marcada se le quita la séptima de dominante en esta ficha</b>: solo I y V.' : '');
       bRep.disabled = false;
       const tRep = Banco.temaDeLeccion(filtro.leccion);
-      bRep.textContent = 'Dar al ' + (tRep ? 'tema ' + tRep : filtro.leccion) + ' el repertorio del paso 3';
+      bRep.textContent = 'Dar al ' + (tRep ? 'tema ' + tRep : filtro.leccion) + ' el repertorio de arriba';
     } else {
-      pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —los cifrados interválicos y los acordes marcados en el paso 3 cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección arriba para verlo o rehacerlo.';
+      pRep.textContent = 'Cada fragmento guarda el repertorio de su lección —los cifrados interválicos y los acordes que estuvieran marcados aquí arriba, en «Repertorio de la lección», cuando se añadió— y es el que se le muestra al alumno. Es lo que permite mezclar lecciones en una ficha. Elige una lección en «Qué fragmentos entran» para verlo o rehacerlo.';
       bRep.disabled = true;
-      bRep.textContent = 'Dar a esta lección el repertorio del paso 3';
+      bRep.textContent = 'Dar a esta lección el repertorio de arriba';
     }
 
     const cuerpo = $('#tabla-banco').querySelector('tbody');

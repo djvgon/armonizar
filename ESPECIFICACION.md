@@ -590,7 +590,8 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     **«Lección»** con su nombre («A3-5 · El 6/4 cadencial») y otra con **los
     acordes de esa lección** (grado y cifra, no solo las cifras). El panel del
     banco enseña el repertorio de la lección elegida y tiene un botón para
-    rehacerlo con el del paso 3, sin volver a importar el archivo.
+    rehacerlo con el que esté marcado en **«Repertorio de la lección»**, sin volver a
+    importar el archivo.
     Un fragmento con avisos (alguna nota sin cifra posible) se marca con ⚠ en la
     tabla y **no entra en las fichas**.
 
@@ -1167,6 +1168,12 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
     - El **paso 2** decide bajo o soprano, y eso cambia el análisis entero al importar.
     - El **paso 3** guarda el repertorio **con cada fragmento** (`leccionRepertorio`), que
       es la paleta que ve el alumno. Quitarlo dejaría sin paleta a todo lo nuevo.
+
+    **Sobre el nombre «paso 3».** Desde esta reforma los apartados son A, B y C, y lo que
+    era el paso 3 es el bloque **«Repertorio de la lección»**, dentro de B. El nombre viejo
+    sobrevive en este documento y en los comentarios del código como abreviatura cómoda;
+    **en la pantalla no debe aparecer**. El 17/10/2026 se quitaron los tres últimos textos
+    que aún lo decían (decisión 268).
 
     Lo que sí estaba mal era **el orden y un reparto a medias**: el configurador hace dos
     trabajos —mantener el banco (ocasional) y preparar una ficha (semanal)— y los
@@ -3970,10 +3977,11 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       tipos de ejercicio.
     - **Se impone el repertorio, no se resta el V7.** El repertorio está guardado fragmento
       a fragmento, y en el tema 5 hay uno —**A-5-33**, la Séptima de Beethoven— que entró
-      con el repertorio del paso 3 de otra lección: todas las inversiones, el II7, el VII6,
+      con el repertorio de otra lección: todas las inversiones, el II7, el VII6,
       el V/V. Quitarle el 7+ a esa lista lo dejaría casi entero; imponerle la de la variante
-      lo deja donde debe. (Ese fragmento sigue dando esa paleta entera en el tema 5 normal:
-      se arregla con el botón «Dar al tema 5 el repertorio del paso 3». Pendiente de Diego.)
+      lo deja donde debe. (**Resuelto el 17/10/2026**: A-5-33 lleva ya el repertorio de su
+      tema —`53`, `7+`, y los acordes `I|53`, `V|53`, `V|7+`—, como los otros 32. Ninguno de
+      esos dos campos entra en la huella, así que el sello del fragmento no se movió.)
     - **Lo que ve el alumno**: la cabecera y la banda dicen **«Tema 5 · primeros pasos:
       I y V»**, la paleta de cifrados trae solo la tríada y el inventario de la ficha, solo
       **I** y **V**. El V7 no aparece en ninguna parte de la pantalla. El inventario se
