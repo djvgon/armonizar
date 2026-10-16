@@ -1497,7 +1497,9 @@
           ? { '#cp-tipos': cpMarcados('#cp-tipos'), '#cp-largos': cpMarcados('#cp-largos'), '#cp-tonos': cpMarcados('#cp-tonos') }
           : (estado.cpMarcas || null),
         funcionesNotas: estado.funciones,
-        acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
+        acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked,
+        // La variante (265) es una casilla: va aparte del reponedor de arriba, que escribe `.value`
+        fichaSinSeptima: !!($('#ficha-sin-septima') && $('#ficha-sin-septima').checked)
       }));
     } catch (e) { /* sin almacenamiento: no pasa nada */ }
   }
@@ -1524,6 +1526,7 @@
          borrador anterior, que no guardaba esta opción, hereda el nuevo defecto. */
       $('#ficha-estructuras-ton').value = b.fichaEstructurasTon === '' ? '' : 'fragmento';
       estado.fichaGuardada = b.ficha && typeof b.ficha === 'object' ? b.ficha : null;
+      estado.fichaSinSeptima = !!b.fichaSinSeptima;
       estado.cpMarcas = b.cpMarcas && typeof b.cpMarcas === 'object' ? b.cpMarcas : null;
       elegirModo(tipo);
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
@@ -2000,6 +2003,11 @@
     const cmax = parseInt($('#ficha-compases-max').value, 10) || 0;
     if (cmin > 0 && cmax >= cmin) f.compases = [cmin, cmax];
     if ($('#ficha-leccion').value) f.leccion = $('#ficha-leccion').value;
+    /* La variante de la lección (265). Solo cuenta si su mando está a la vista, que es
+       tanto como decir que la lección elegida tiene variante y que la ficha sale del
+       banco: así una ficha de contrapunto, o de otra lección, no la arrastra sin querer. */
+    const campoVar = $('#ficha-variante-campo');
+    if (campoVar && !campoVar.hidden && $('#ficha-sin-septima') && $('#ficha-sin-septima').checked) f.sinSeptima = true;
     if ($('#ficha-modotonal').value) f.modoTonal = $('#ficha-modotonal').value;
     if (mod === 'si') f.modula = true; else if (mod === 'no') f.modula = false;
     // Música real o fragmento de práctica (decisión 210)
@@ -2103,6 +2111,19 @@
 
   /* Qué mitad del formulario se ve. El tipo de ejercicio manda: con contrapunto, lo del
      banco —lecciones, compases, transporte, lo que ve el alumno— no pinta nada. */
+  /* EL MANDO DE LA VARIANTE (265) depende de dos cosas: que la lección elegida tenga
+     variante y que la ficha salga del banco. Vive en una función propia porque lo tocan
+     los dos sitios que mueven los mandos de la ficha, `pintarBanco` y `ajustarFicha`. */
+  function mandoVariante() {
+    const campo = $('#ficha-variante-campo');
+    if (!campo) return;
+    const sel = $('#ficha-leccion');
+    const vr = esFichaContrapunto() ? null : Banco.varianteDe(sel ? sel.value : '');
+    campo.hidden = !vr;
+    if (vr) $('#ficha-variante-texto').textContent = vr.mando;
+    else if ($('#ficha-sin-septima')) $('#ficha-sin-septima').checked = false;
+  }
+
   function ajustarFicha() {
     const cp = esFichaContrapunto();
     document.querySelectorAll('.solo-banco').forEach(el => { el.hidden = cp; });
@@ -2111,6 +2132,7 @@
     // Con contrapunto no hay compases que medir: ahí abajo solo queda el título
     if ($('#rotulo-tamano')) $('#rotulo-tamano').textContent = cp ? 'Título de la ficha' : 'Tamaño y título de la ficha';
     if (cp) mandosContrapunto();
+    mandoVariante();
     cuentaContrapunto();
   }
 
@@ -2259,6 +2281,7 @@
     selLec.innerHTML = '<option value="">Todas las lecciones</option>';
     lecs.forEach(l => { const o = document.createElement('option'); o.value = l; o.textContent = etiqueta(l); selLec.appendChild(o); });
     selLec.value = lecs.includes(antes) ? antes : '';
+    mandoVariante();                      // la variante de la lección elegida (265)
 
     const filtro = filtroFicha();
     /* Con «Contrapunto» elegido, el filtro de la ficha no habla del banco: la tabla se pinta
@@ -2300,7 +2323,8 @@
       pRep.innerHTML = '<b>Repertorio de ' + etiqueta(filtro.leccion) + '</b> — cifrados: '
         + (cifras.length ? cifras.join(', ') : '(todos)')
         + (acs.length ? '. Acordes para la armonización de soprano: ' + acs.join(', ') : '')
-        + '. Es lo que se le muestra al alumno en cada fragmento de esta lección.';
+        + '. Es lo que se le muestra al alumno en cada fragmento de esta lección.'
+        + (filtro.sinSeptima ? ' <b>Con la variante marcada se le quita la séptima de dominante en esta ficha</b>: solo I y V.' : '');
       bRep.disabled = false;
       const tRep = Banco.temaDeLeccion(filtro.leccion);
       bRep.textContent = 'Dar al ' + (tRep ? 'tema ' + tRep : filtro.leccion) + ' el repertorio del paso 3';
@@ -3586,6 +3610,8 @@
         if (e.tagName === 'SELECT' && ![...e.options].some(o => o.value === g[id])) return;
         e.value = g[id];
       });
+      // La casilla de la variante (265) se repone antes de pintar: `pintarBanco` la enseña o la esconde
+      if ($('#ficha-sin-septima')) $('#ficha-sin-septima').checked = !!estado.fichaSinSeptima;
       pintarBanco();
       ajustarCampoAudicion();
     }
@@ -3678,7 +3704,8 @@
     ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel', '#ficha-modula',
      '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max',
      '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades', '#ficha-estructuras-ton',
-     '#ficha-armadura', '#ficha-armadura-pct'].forEach(id => {
+     '#ficha-armadura', '#ficha-armadura-pct', '#ficha-sin-septima'].forEach(id => {
+      if (!$(id)) return;
       $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); ajustarFicha(); guardarBorrador(); });
     });
     /* Los mandos de la ficha de contrapunto (262). No tocan el banco: lo que cambian es qué

@@ -39,7 +39,8 @@
          activa      : {momento, voz} | null — donde está el alumno
          mal         : [{momento, voz}] casillas en rojo (al corregir)
          intervalos  : true para escribir el intervalo bajo cada columna
-         etiquetas   : [{momento, voz, texto}] rótulos sobre notas concretas («nota real»)
+         etiquetas   : [{momento, voz, texto, apunte}] rótulos sobre notas concretas («nota
+                       real»), con un segundo renglón pequeño opcional
          flechas     : [{voz, desde, hasta}] flecha de una nota a otra de la misma voz
          alSonar     : función(momento) — con ella, un ▶ encima de cada
                        columna
@@ -197,7 +198,8 @@ const Reja = (() => {
        falta sitio por fuera de la plica: dos espacios más a cada lado bastan, y el alto se
        mide igual, sobre la tinta. */
     const etiquetas = (estado.etiquetas || []).filter(e => e && e.texto);
-    const AIRE = (etiquetas.length ? 5.9 : 3.9) * SP;   // lo que añaden por fuera de la cabeza la plica, la ligadura y el rótulo
+    const hayApunte = etiquetas.some(e => e.apunte);
+    const AIRE = (hayApunte ? 7.6 : etiquetas.length ? 5.9 : 3.9) * SP;   // lo que añaden por fuera de la cabeza la plica, la ligadura y el rótulo
     const pasosDe = voz => modelo.concat(momentos).map(m => m && m[voz]).filter(Boolean)
       .map(x => pasoEn(x, claves[voz]));
     const limites = ps => ({ max: Math.max(8, ...(ps.length ? ps : [8])), min: Math.min(0, ...(ps.length ? ps : [0])) });
@@ -378,25 +380,37 @@ const Reja = (() => {
 
     /* ---- La flecha del movimiento (Diego, 16/10/2026) ----
        «Una flechita que muestre visualmente el movimiento desde la nota retardada hasta la
-       resolución»: un arco fino con punta, de cabeza a cabeza, en tinta suave para que se
-       lea como una anotación y no como una ligadura. Si no cabe entre las dos, no se
-       dibuja: más vale sin flecha que con una flecha encima de una nota. */
+       resolución». La primera salió demasiado parecida a una ligadura —«apenas se distingue;
+       hazla más corta y dinámica, quizá un poco más de giro, y en morado para que
+       destaque»—, así que ahora: **en morado de la marca**, más corta, y con el vértice del
+       arco casi al final, de modo que sale suave y **cae en picado** sobre la nota de
+       llegada; la punta entra con mucho ángulo y ninguna ligadura hace eso.
+
+       Va del MISMO LADO que las ligaduras de esa voz (arriba la voz superior, abajo la
+       inferior cuando comparten pentagrama), que es el lado donde no está la otra voz. Si
+       no cabe entre las dos cabezas, no se dibuja: más vale sin flecha que encima de una
+       nota. */
     (estado.flechas || []).forEach(f => {
       const a = cabezas[f.voz] && cabezas[f.voz][f.desde];
       const b = cabezas[f.voz] && cabezas[f.voz][f.hasta];
       if (!a || !b) return;
-      const x0 = a.x + ANCHO.blanca * SP + 0.45 * SP;
-      const x1 = b.izq - 0.5 * SP;
-      if (x1 - x0 < 1.2 * SP) return;
-      const y0 = a.y, y1 = b.y;
-      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - 0.95 * SP;     // un arco suave por encima
+      const x0 = a.x + ANCHO.blanca * SP + 0.95 * SP;
+      const x1 = b.izq - 0.4 * SP;
+      const dx = x1 - x0;
+      if (dx < 1.2 * SP) return;
+      const abajo = unico ? f.voz === 'baja' : a.arriba;
+      const s = abajo ? 1 : -1;
+      const y0 = a.y + s * 0.35 * SP;
+      const y1 = b.y + s * 1.05 * SP;                 // termina FUERA de la cabeza, no encima
+      const cx = x0 + dx * 0.78;                      // el vértice, casi al final: de ahí el picado
+      const cy = (abajo ? Math.max(y0, y1) : Math.min(y0, y1)) + s * 2.1 * SP;
       const g = el('g', { class: 'reja-flecha' });
       g.appendChild(el('path', {
         d: 'M ' + x0 + ' ' + y0 + ' Q ' + cx + ' ' + cy + ' ' + x1 + ' ' + y1, class: 'flecha-linea'
       }));
       // La punta mira en la dirección con la que la curva llega a la nota de destino
       const ang = Math.atan2(y1 - cy, x1 - cx);
-      const L = 0.8 * SP, A = 0.3 * SP;
+      const L = 0.95 * SP, A = 0.38 * SP;
       const pun = o => [x1 - L * Math.cos(ang) + o * Math.sin(ang), y1 - L * Math.sin(ang) - o * Math.cos(ang)];
       const p1 = pun(A), p2 = pun(-A);
       g.appendChild(el('path', {
@@ -409,14 +423,35 @@ const Reja = (() => {
     /* ---- Los rótulos de los papeles, sobre su nota ----
        Van del lado contrario a la cabeza respecto de la plica, para no cruzarla: encima si la
        plica sube y debajo si baja. */
+    const SEGUNDO = 1.25 * SP;              // lo que ocupa el renglón pequeño
+    /* TODOS LOS RÓTULOS DE UN LADO, A LA MISMA ALTURA. El renglón lo manda la nota que más
+       se aparta. Si cada uno colgara de su nota se escalonarían —las notas están a alturas
+       distintas— y el apunte, que es largo, se cruzaría con el rótulo de al lado. */
+    const baseDe = c => (c.arriba ? c.y - 4.4 * SP : c.y + 5.1 * SP);
+    const renglon = {};
     etiquetas.forEach(e => {
       const c = cabezas[e.voz] && cabezas[e.voz][e.momento];
       if (!c) return;
+      const k = c.arriba ? 'arriba' : 'abajo', b = baseDe(c);
+      renglon[k] = renglon[k] === undefined ? b : (c.arriba ? Math.min(renglon[k], b) : Math.max(renglon[k], b));
+    });
+    etiquetas.forEach(e => {
+      const c = cabezas[e.voz] && cabezas[e.voz][e.momento];
+      if (!c) return;
+      const x = c.x + ANCHO.blanca * SP / 2;
+      const fuera = c.arriba ? -1 : 1;                       // hacia dónde se aparta de la cabeza
+      const base = renglon[c.arriba ? 'arriba' : 'abajo'];
+      /* Con apunte son dos renglones: los NOMBRES de todos los rótulos se van al renglón de
+         fuera y la explicación se queda sola en el de dentro, entre ellos y las notas. Si no
+         se movieran todos, la explicación —que es larga— se cruzaría con el rótulo de al
+         lado, que es lo que pasaba al principio (Diego, 16/10). */
       svg.appendChild(el('text', {
-        x: c.x + ANCHO.blanca * SP / 2,
-        y: c.arriba ? c.y - 4.4 * SP : c.y + 5.1 * SP,
+        x, y: base + (hayApunte ? fuera * SEGUNDO : 0),
         class: 'reja-etiqueta', 'text-anchor': 'middle'
       }, e.texto));
+      if (e.apunte) svg.appendChild(el('text', {
+        x, y: base, class: 'reja-etiqueta reja-apunte', 'text-anchor': 'middle'
+      }, e.apunte));
     });
 
     /* ---- El intervalo debajo de cada columna (2.6) ---- */

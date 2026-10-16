@@ -3880,6 +3880,91 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+265. **La variante «5a» del tema 5: primeros pasos con I y V**
+    (16/10/2026, Diego: «necesito una lección 5a, previa a la que hay, en la que solo
+    aparezcan fragmentos con acordes I o V, pero no V7, para los alumnos que acaban de
+    comenzar esa lección»; y, preguntado por su forma: «no sería un nuevo tema del libro,
+    sino un subconjunto que solo aparecería en el configurador o en la app».)
+    - **NO ES UNA LECCIÓN.** No entra en `LECCIONES`, no tiene código propio, no cambia
+      ningún identificador y **no toca `banco.json`**: ni un sello, ni una huella. Es una
+      marca del FILTRO de la ficha (`sinSeptima`), que viaja en el `#f=` como cualquier
+      otra y que hace dos cosas: deja fuera los fragmentos cuyo modelo usa el V7 e impone
+      el repertorio de la variante al servir el ejercicio.
+    - **Dónde vive**: la tabla `VARIANTES` de `js/banco.js`, hoy con una sola entrada —la
+      del tema 5: repertorio `['53']`, acordes `I|53` y `V|53`, rótulo «primeros pasos:
+      I y V»—. Añadir la variante de otra lección es una línea.
+    - **Qué decide qué fragmentos entran**: que el MODELO quepa en la variante, mirando
+      **las dos voces**. Mirar solo el bajo no basta: `etiquetas.cifras` sale de la voz
+      principal, y **A-5-29** tiene el bajo cifrado 5/3 y la melodía armonizada con V7, de
+      modo que en armonización de soprano le enseñaría al alumno una solución que su propia
+      paleta no le deja escribir. De los **33** fragmentos del tema 5 quedan **16** —11 en
+      mayor y 5 en menor, 8 sin alteraciones, 14 de nivel 1—, los mismos en los cuatro
+      tipos de ejercicio.
+    - **Se impone el repertorio, no se resta el V7.** El repertorio está guardado fragmento
+      a fragmento, y en el tema 5 hay uno —**A-5-33**, la Séptima de Beethoven— que entró
+      con el repertorio del paso 3 de otra lección: todas las inversiones, el II7, el VII6,
+      el V/V. Quitarle el 7+ a esa lista lo dejaría casi entero; imponerle la de la variante
+      lo deja donde debe. (Ese fragmento sigue dando esa paleta entera en el tema 5 normal:
+      se arregla con el botón «Dar al tema 5 el repertorio del paso 3». Pendiente de Diego.)
+    - **Lo que ve el alumno**: la cabecera y la banda dicen **«Tema 5 · primeros pasos:
+      I y V»**, la paleta de cifrados trae solo la tríada y el inventario de la ficha, solo
+      **I** y **V**. El V7 no aparece en ninguna parte de la pantalla. El inventario se
+      recorta también en `app.js`: se construye de las entradas del banco y no del ejercicio
+      servido, así que sin eso la ficha anunciaría un acorde que el alumno no puede escribir.
+    - **Lo que ve el cuaderno**: el tema 5 de siempre. `ej.leccion` no se toca —es lo que
+      `registro.js` manda— y el rótulo de la variante viaja aparte, en `ej.leccionVista`
+      (Diego, 16/10: «la distinción sólo en el configurador»). Para distinguirlas en los
+      resultados basta con darle a esa ficha un título propio, que esa columna sí viaja.
+    - **El mando**: una casilla bajo «Lección», que sale **solo** cuando la lección elegida
+      tiene variante y nunca con contrapunto; al cambiar de lección se desmarca sola. El
+      párrafo del repertorio avisa de lo que se le quita. La casilla se guarda en el
+      borrador aparte de las demás, porque el reponedor de los filtros escribe `.value` y
+      esto es un `checked`.
+    - Comprobado en un navegador de verdad: `3 PROYECTO/herramientas-musica-real/probar-leccion-5a.js`,
+      **36 comprobaciones**, incluida la de A-5-29 y la de que lo registrado sigue siendo el
+      tema 5.
+
+264. **La ficha de contrapunto se puntúa, se envía y se puede repetir**
+    (16/10/2026, Diego: «discriminar en la puntuación final entre aciertos en su primer
+    intento y tras corregir; y que, al finalizar la ficha, tenga la oportunidad de ver su
+    puntuación total y el porcentaje de aciertos en el primer intento y tras corregir, y de
+    decidir si me lo envía —formulario de Google, como en los cuestionarios de práctica
+    armónica— o repetir la tarea para mejorar la puntuación».) **Con esto el piloto está
+    entero.**
+    - **LA UNIDAD ES EL EJERCICIO, Y LA NOTA VA SOBRE 10** (Diego: «la puntuación del
+      retardo, mejor una cifra sobre 10; si son 8, todo bien sería 10»). En la armonización
+      se cuenta casilla por casilla —un fragmento de doce acordes da doce oportunidades—;
+      un retardo, no: es un gesto de seis notas que o está o no está, y medio aprobado a un
+      retardo que no suena como un retardo no mide nada. De modo que **cada retardo vale
+      uno** y la nota sale de los acertados AL PRIMER INTENTO, llevados a 10. `registro.js`
+      gana `iniciarUnidad` y `anotarUnidad`; lo demás —el reloj, el resumen, el informe, el
+      envío— es el mismo de siempre.
+    - **Comprobar con el ejercicio a medias no gasta el intento**: la corrección se para
+      antes de contar nada y solo dice qué falta.
+    - **El final de la ficha**: la caja de resultado trae la **puntuación sobre 10**, el
+      desglose —«bien al primer intento: 2 de 4 (50 %) · tras corregir: 3 de 4 (75 %)»—, el
+      tiempo de trabajo y **el detalle retardo a retardo** («bien a la primera», «bien en 2
+      intentos», «sin acertar», «sin hacer»). En el último ejercicio el botón pasa a decir
+      **«Terminar y ver mi puntuación»**.
+    - **Las dos salidas**: **«Enviar al profesor»**, que abre el formulario del centro ya
+      relleno —el mismo `envio.json`, el mismo formulario y la misma hoja que la práctica
+      armónica, con la columna «Modo» en «Contrapunto»—, y **«Repetir la ficha»**, que
+      sortea otros retardos del mismo filtro para mejorar la nota. Enviar exige la ficha
+      entera (decisión 64); sin terminarla queda «Copiar el informe».
+    - **Los contenidos que viajan al cuaderno** son los TIPOS de retardo:
+      «Retardo 6–7–6=1/3 | Retardo 3–2–3=0/2», de modo que el profesor recibe los fallos
+      repartidos por tipo sin contarlos a mano.
+    - **En el cuaderno de resultados, una línea** (`MontarCuadernoPractica.gs`): la tabla
+      `MODOS` gana `{ rotulo: 'Media · Contrapunto', nombre: 'Contrapunto', busca:
+      ['contrapunto', 'retardo'] }`, que añade su columna de media. Hay que **volver a
+      implementar** la aplicación web del cuaderno para que tome el código nuevo; la
+      dirección no cambia y el acceso sigue «Solo yo».
+    - La práctica libre no se registra: no tiene final ni nota que mandar.
+    - Comprobado: `probar-pagina-contrapunto.js` sube a **150** comprobaciones, con una
+      ficha de dos hecha entera —una bien a la primera y otra al segundo intento— que acaba
+      en 5 sobre 10 y en una dirección de formulario con el nombre, el modo, el título y los
+      contenidos dentro.
+
 263. **La pantalla del alumno, con la ficha delante: seis arreglos de Diego**
     (16/10/2026, probando la ficha publicada. Van juntos porque son todos de la misma
     pantalla y de la misma sesión.)

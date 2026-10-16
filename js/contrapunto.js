@@ -397,6 +397,17 @@
        fuera del rojo aunque su momento sea el del fallo. */
     estado.mal = estado.acertada ? [] : casillas.filter(x => !esDada(x.momento, x.voz));
     estado.modelo = mejor.m;
+    /* Lo que va al informe y al cuaderno: el ejercicio entero, bien o mal, y en qué intento
+       (decisión 264). El «contenido» es el tipo de retardo, de modo que el profesor recibe
+       los fallos repartidos por tipo sin tener que contarlos a mano. */
+    if (estado.lista) Registro.anotarUnidad({
+      intento: estado.intentos,
+      bien: estado.acertada,
+      contenido: estado.tipo === 'cadena'
+        ? 'Cadena de ' + c.n + ' retardos'
+        : 'Retardo ' + (Celulas.CIFRA_TIPO[(mejor.m && mejor.m.tipo) || c.tipo] || c.tipo),
+      falla: [...new Set((r.fallos || []).map(f => f.regla))]
+    });
     pintar();
     if (estado.acertada) oir();
   }
@@ -426,6 +437,27 @@
     return 'Ni la <b>nota retardada</b> ni la <b>nota real</b> que has escrito son las que pide este retardo.';
   }
 
+  /* POR QUÉ ESTÁ BIEN: las dos cosas que hacen que un retardo sea un retardo, dichas con
+     las notas que el alumno acaba de escribir —la preparación consonante y la resolución
+     bajando un grado—. Sale del modelo con el que se le ha dado por bueno, que es el suyo. */
+  function porqueEstaBien() {
+    const m = estado.modelo || estado.celula;
+    if (!m || !m.vozRetardada || !m.momentos) return null;
+    const n = x => Teoria.nombreEs(x, true);
+    const prep = m.momentos[0], res = m.momentos[m.momentos.length - 1];
+    const ret = prep[m.vozRetardada];
+    const par = x => n(x.baja) + '–' + n(x.alta);        // siempre de grave a aguda
+    return {
+      nota: n(ret),
+      razones: [
+        'está <b>preparada</b>, sonando antes en un intervalo consonante de '
+          + m.intervalos[0] + '.ª (' + par(prep) + ')',
+        'y <b>resuelve bajando una segunda</b> (movimiento melódico '
+          + n(ret) + ' → ' + n(res[m.vozRetardada]) + ')'
+      ]
+    };
+  }
+
   /* El retardo que hay que rotular: el de la solución cuando se está viendo, y el que el
      alumno ha escrito cuando ha acertado. En la cadena no hay papeles que nombrar. */
   function paraRotular(c) {
@@ -437,7 +469,8 @@
     const m = paraRotular(c);
     if (!m) return null;
     return [{ momento: 0, voz: m.vozRetardada, texto: 'preparación' },
-      { momento: PERCUSION, voz: m.vozRetardada, texto: 'nota retardada' },
+      { momento: PERCUSION, voz: m.vozRetardada, texto: 'nota retardada',
+        apunte: '(se vuelve disonante con respecto a la nota real)' },
       { momento: m.momentos.length - 1, voz: m.vozRetardada, texto: 'resolución' },
       { momento: PERCUSION, voz: m.vozReal, texto: 'nota real' }];
   }
@@ -526,7 +559,9 @@
           este: 'este retardo', aSiguiente: 'al siguiente', ultimo: 'el último retardo',
           estas: 'Estás en el', avisa: 'El siguiente es el último.' };
     const ultima = !!estado.lista && estado.k + 1 >= estado.lista.length;
-    const rotulo = !estado.lista ? P.otro : (ultima ? P.primero : P.siguiente);
+    /* En la última, el botón lleva al FINAL de la ficha: la puntuación y las dos salidas
+       —enviarla o repetirla—, como en la práctica armónica (decisión 264). */
+    const rotulo = !estado.lista ? P.otro : (ultima ? 'Terminar y ver mi puntuación' : P.siguiente);
     $('#otra').textContent = rotulo;
     /* EL CONTADOR DE LA FICHA, debajo de los botones y junto a la leyenda (Diego, 16/10):
        «Estás en la 3 de 8», para que el alumno sepa cuánto le queda. Y un aviso en la
@@ -534,7 +569,7 @@
     if (estado.lista) {
       const n = estado.lista.length, k = estado.k + 1;
       $('#paso').innerHTML = (ultima
-        ? 'Es ' + P.ultimo + ' de la ficha. '
+        ? 'Es ' + P.ultimo + ' de la ficha: al terminarlo, pulsa «' + rotulo + '». '
         : 'Al terminar ' + P.este + ', pulsa «' + rotulo + '» para pasar ' + P.aSiguiente + '. ')
         + '<b>' + P.estas + ' ' + k + ' de ' + n + '.</b>'
         + (!ultima && k + 1 === n ? ' ' + P.avisa : '');
@@ -575,15 +610,27 @@
        nombra sobre las propias notas. */
     const p = $('#papeles');
     if (p) {
-      const txt = estado.intentos && !estado.visto ? papeles() : '';
+      const txt = estado.intentos && !estado.visto && !estado.acertada ? papeles() : '';
       p.innerHTML = txt; p.hidden = !txt;
     }
     if (estado.acertada) {
       ul.hidden = false;
       const li = document.createElement('li');
-      li.textContent = 'Bien: ' + (estado.tipo === 'cadena' ? 'la cadena' : 'el retardo')
-        + ' cumple las reglas y coincide con la realización.'
-        + (estado.intentos > 1 ? ' (en ' + estado.intentos + ' intentos)' : '');
+      /* UNA SOLA LÍNEA, Y QUE DIGA POR QUÉ ESTÁ BIEN (Diego, 16/10/2026: «simplifiquemos
+         ruido… una sola línea que diga en verde: Bien: el retardo cumple las reglas, pues la
+         nota retardada (fa3) está preparada, sonando antes en un intervalo consonante, y
+         resuelve bajando una segunda»). El renglón de quién es quién se calla aquí: lo que
+         hacía falta nombrar ya está en los rótulos sobre las notas. */
+      const por = estado.tipo === 'celula' ? porqueEstaBien() : null;
+      li.innerHTML = 'Bien: ' + (estado.tipo === 'cadena' ? 'la cadena' : 'el retardo')
+        + ' cumple las reglas' + (por ? ', pues la <b>nota retardada</b> (' + por.nota + '):' : ' y coincide con la realización.')
+        + (estado.intentos > 1 ? ' <span class="intentos">(en ' + estado.intentos + ' intentos)</span>' : '');
+      if (por) {
+        const sub = document.createElement('ul');
+        sub.className = 'porques';
+        por.razones.forEach(t => { const x = document.createElement('li'); x.innerHTML = t; sub.appendChild(x); });
+        li.appendChild(sub);
+      }
       ul.appendChild(li);
       return;
     }
@@ -643,13 +690,21 @@
     estado.mal = []; estado.fallos = []; estado.intentos = 0;
     estado.modelo = null;
     estado.acertada = false; estado.visto = false;
+    if (estado.lista) Registro.iniciarUnidad({
+      k: estado.k, id: c.id,
+      leccion: (estado.filtro && estado.filtro.leccion) || 'Co-1',
+      modo: 'contrapunto',
+      tonalidad: (() => { try { return Teoria.nombreCorto(c.tonalidad); } catch (e) { return ''; } })()
+    });
     pintar();
   }
   function otra() {
     Sonido.parar(); sonando(false);
     if (estado.lista) {
-      estado.k = (estado.k + 1) % estado.lista.length;
+      if (estado.k + 1 >= estado.lista.length) { terminarFicha(); return; }
+      estado.k++;
       empezar(estado.lista[estado.k]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
     const c = sorteaUno();
@@ -686,6 +741,117 @@
     return { filtro, lista, tipo };
   }
 
+  /* =================================================================
+     EL FINAL DE LA FICHA (decisión 264, Diego 16/10/2026)
+
+     «Que al finalizar la ficha tenga la oportunidad de ver su puntuación total y el
+     porcentaje de aciertos en el primer intento y tras corregir, y decidir si me lo envía
+     —formulario de Google, como en los cuestionarios de práctica armónica— o repetir la
+     tarea para mejorar la puntuación.»
+
+     La puntuación es **sobre 10** y cuenta POR EJERCICIO: cada retardo vale lo mismo y la
+     nota sale de los que salieron bien al primer intento (Diego: «si son 8, todo bien sería
+     10»). El envío es el de siempre: se abre el formulario del centro ya relleno y lo manda
+     el alumno, que es quien se identifica con su correo.
+     ================================================================= */
+  const coma = x => String(x).replace('.', ',');
+
+  function nombreDeEjercicio(c) {
+    const que = c.tipo ? 'Retardo ' + (Celulas.CIFRA_TIPO[c.tipo] || c.tipo)
+      : 'Cadena de ' + c.n + ' retardos';
+    let ton = '';
+    try { ton = Teoria.nombreCorto(c.tonalidad); } catch (e) { ton = ''; }
+    return que + (ton ? ' · ' + ton : '');
+  }
+
+  function terminarFicha() {
+    Sonido.parar(); sonando(false);
+    Registro.cerrarEjercicio();
+    const r = Registro.resumen();
+    const caja = $('#resultado');
+    if (!r || !caja) return;
+    const hechos = (r.ejercicios || []).filter(x => x.aciertos !== null).length;
+    let h = '<h2>Ficha terminada <span class="pct">(' + hechos + ' de ' + r.previstos + ')</span></h2>';
+    h += '<p class="nota-informe">Puntuación: <b>' + coma(r.nota10) + '</b> <span>sobre 10</span></p>';
+    h += '<p class="desglose">Bien <b>al primer intento</b>: ' + r.aciertosPrimero + ' de ' + r.notas
+      + ' (' + r.pctPrimero + ' %) · <b>tras corregir</b>: ' + r.aciertosFinal + ' de ' + r.notas
+      + ' (' + r.pctFinal + ' %) · tiempo de trabajo ' + Registro.mmss(r.segundos) + '.</p>';
+    h += '<ol class="resumen-ficha">';
+    (estado.lista || []).forEach((c, k) => {
+      const x = (r.ejercicios || []).find(e => e.k === k + 1);
+      const dice = !x || x.aciertos === null ? '<span class="cif mal">sin hacer</span>'
+        : x.aciertos ? '<span class="cif bien">bien' + (x.intentos > 1 ? ' (en ' + x.intentos + ' intentos)' : ' a la primera') + '</span>'
+          : '<span class="cif mal">sin acertar</span>';
+      h += '<li>' + nombreDeEjercicio(c) + ' — ' + dice + '</li>';
+    });
+    h += '</ol>';
+    /* Enviar exige la ficha ENTERA (decisión 64): así todas las filas que le llegan al
+       profesor miden lo mismo. */
+    const puedeEnviar = Envio.disponible() && r.completa;
+    h += '<div class="informe">';
+    if (!r.completa) {
+      h += '<p class="ayuda-informe">Has hecho <b>' + hechos + ' de ' + r.previstos + '</b>: '
+        + 'para enviar el resultado hay que comprobar todos, así todos los resultados miden lo mismo.</p>';
+    }
+    h += '<label class="campo-informe"><span>Escribe tu nombre y apellidos para el informe</span>'
+      + '<input id="cp-alumno" type="text" autocomplete="name" placeholder="Nombre y apellidos"></label>';
+    h += '<div class="botonera botonera-resultado">'
+      + (puedeEnviar ? '<button type="button" id="cp-enviar" class="primario">Enviar al profesor</button>' : '')
+      + '<button type="button" id="cp-repetir"' + (puedeEnviar ? '' : ' class="primario"') + '>Repetir la ficha</button>'
+      + (puedeEnviar ? '' : '<button type="button" id="cp-copiar">Copiar el informe</button>')
+      + '</div>';
+    h += '<p class="ayuda-informe">' + (puedeEnviar
+      ? 'Al enviar se abre el formulario del centro con tus datos ya puestos: compruébalos y pulsa Enviar. Tendrás que iniciar sesión con tu correo de murciaeduca.es. <b>Repetir la ficha</b> te da otros ejercicios del mismo tipo para mejorar la puntuación.'
+      : 'Copia el informe y pégalo en la tarea de Classroom, o repite la ficha para mejorar la puntuación.') + '</p>';
+    h += '</div>';
+    caja.innerHTML = h;
+    caja.hidden = false;
+    // De la pantalla del ejercicio no queda nada: lo que toca ahora es el resultado
+    ['#enunciado', '#tipo-pedido', '#reja', '#mandos-nota', '#pista-barra', '#papeles',
+      '#mensajes', '#momentos', '#paso'].forEach(sel => { const e = $(sel); if (e) e.hidden = true; });
+    const bot = document.querySelector('.botonera.obra'); if (bot) bot.hidden = true;
+    conectarInforme();
+    caja.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function conectarInforme() {
+    const campo = $('#cp-alumno');
+    if (campo) {
+      try { campo.value = localStorage.getItem('armonizar.alumno') || ''; } catch (e) { /* nada */ }
+      Registro.fijarAlumno(campo.value);
+      campo.addEventListener('input', () => {
+        Registro.fijarAlumno(campo.value);
+        try { localStorage.setItem('armonizar.alumno', campo.value.trim()); } catch (e) { /* nada */ }
+      });
+    }
+    const rep = $('#cp-repetir');
+    if (rep) rep.addEventListener('click', () => location.reload());
+    const env = $('#cp-enviar');
+    if (env) env.addEventListener('click', () => {
+      const r = Registro.resumen();
+      if (!r) return;
+      const url = Envio.direccion(r);
+      if (!url) { aviso('No se ha podido preparar el envío. Copia el informe y pégalo en Classroom.', 8000); return; }
+      window.open(url, '_blank', 'noopener');
+      aviso('Se ha abierto el formulario con tus datos. Revísalos y pulsa Enviar allí.', 9000);
+    });
+    const cop = $('#cp-copiar');
+    if (cop) cop.addEventListener('click', () => {
+      const t = Registro.informeTexto();
+      const ok = () => aviso('Informe copiado. Pégalo en la tarea de Classroom.', 6000);
+      if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok, () => volcar(t));
+      else volcar(t);
+    });
+  }
+
+  // Si el portapapeles no está disponible, se enseña el texto para copiarlo a mano
+  function volcar(t) {
+    const ta = document.createElement('textarea');
+    ta.className = 'informe-texto'; ta.readOnly = true; ta.rows = 10; ta.value = t;
+    $('#resultado').appendChild(ta); ta.select();
+    aviso('Copia este texto y pégalo en la tarea de Classroom.', 8000);
+  }
+
   /* ---------- El teclado ---------- */
   function teclado(e) {
     if (e.target && /^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
@@ -718,6 +884,15 @@
       mandosDelTipo();
       const lec = f.filtro.leccion || 'Co-1';
       $('#leccion').textContent = f.filtro.titulo || Banco.rotuloLeccion(lec, Banco.LECCIONES[lec] || '');
+      /* LA FICHA SE REGISTRA Y SE PUEDE ENVIAR (decisión 264). Es el mismo registro y el
+         mismo formulario que la práctica armónica, de modo que la fila llega al cuaderno de
+         siempre con su columna de modo, «Contrapunto». La práctica libre no se registra: no
+         tiene final ni nota que mandar. */
+      Registro.iniciarPractica({
+        tipo: 'ficha', titulo: f.filtro.titulo || '', leccion: lec,
+        modo: 'contrapunto', n: f.lista.length
+      });
+      Envio.preparar();            // lee envio.json en segundo plano; si no está, no pasa nada
     } else {
       $('#leccion').textContent = Banco.rotuloLeccion('Co-1', Banco.LECCIONES['Co-1'] || '') + ' · práctica libre';
       primera = sorteaUno();

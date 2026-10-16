@@ -903,6 +903,11 @@ const Banco = (() => {
     if (f.modula === true && !et.modula) return false;
     if (f.modula === false && et.modula) return false;
     if (f.cifras && f.cifras.length && !f.cifras.every(c => (et.cifras || []).includes(c))) return false;
+    /* LA VARIANTE DE LA LECCIÓN (265): fuera los fragmentos cuyo modelo no cabe en ella. */
+    if (f.sinSeptima) {
+      const vr = varianteDe(e.leccion);
+      if (!vr || !modeloCabe(e, vr)) return false;
+    }
     if (f.nivel) { const n = nivel(e, f.modo); if (n < f.nivel[0] || n > f.nivel[1]) return false; }
     // El sello (decisión 166): para repasar, «sin cerrar» convierte la tabla en una cola
     if (f.cerrado === 'si' && !e.cerrado) return false;
@@ -1194,6 +1199,12 @@ const Banco = (() => {
        que mezcla lecciones, cada fragmento se juega con los acordes de la suya. */
     const suyos = (e.leccionRepertorio && e.leccionRepertorio.length) ? e.leccionRepertorio.slice() : repertorioDe(parte, modo);
     const acordes = (e.leccionAcordes && e.leccionAcordes.length) ? e.leccionAcordes.slice() : (f.acordes || []);
+    /* Y LA VARIANTE (265) MANDA SOBRE ELLOS: es lo que hace que el botón del V7 no
+       aparezca. Se impone aquí, al servir el ejercicio, y no en el banco: el fragmento
+       sigue siendo el mismo y la misma ficha puede pedirlo con la lección entera. */
+    const vr = f.sinSeptima ? varianteDe(e.leccion) : null;
+    const repertorioFinal = vr ? vr.repertorio.slice() : suyos;
+    const acordesFinal = vr ? vr.acordes.slice() : acordes;
     const ej = {
       id: e.id || ('banco-' + (k || 0)),
       coleccion: f.titulo || (e.leccion ? rotuloLeccion(e.leccion, '') : ''),
@@ -1228,13 +1239,17 @@ const Banco = (() => {
       compasesEscritos: e.rejilla ? parte.compases : null,
       tiempos: e.rejilla ? e.rejilla.slice() : null,
       respuestas: parte.respuestas,
-      repertorio: suyos
+      repertorio: repertorioFinal
     };
+    /* Lo que LEE el alumno en la cabecera cuando la ficha va en variante. `ej.leccion` no
+       se toca: es lo que `registro.js` manda al cuaderno, y allí esto sigue siendo el
+       tema 5 de siempre. */
+    if (vr) ej.leccionVista = rotuloLeccion(e.leccion, vr.rotulo);
     if (modo !== 'armonizar') ej.modo = modo;
     if (modo === 'audicion' && f.mostrarBajo) ej.mostrarBajo = true;
     // La lista de acordes viaja en los dos casos: en la melodía limita los candidatos y en
     // el bajo dice si la lección admite las dominantes secundarias (II+6).
-    if (acordes.length) ej.acordes = acordes;
+    if (acordesFinal.length) ej.acordes = acordesFinal;
     if (modo === 'soprano' && f.formulaTST === false) ej.formulaTST = false;
     if (f.pedirRomano === false) ej.pedirRomano = false;
     if (f.reintentos === false) ej.reintentos = false;
@@ -1377,6 +1392,47 @@ const Banco = (() => {
        está a falta de su visto bueno: es lo que verán los alumnos. */
     'Co-1': 'El retardo a dos voces'
   };
+
+  /* ---------- VARIANTES DE UNA LECCIÓN (decisión 265, Diego 16/10/2026) ----------
+
+     «Una lección 5a, previa a la que hay, en la que solo aparezcan fragmentos con acordes
+     I o V, pero no V7, para los alumnos que acaban de comenzar esa lección… no sería un
+     nuevo tema del libro, sino un subconjunto que solo aparecería en el configurador o en
+     la app».
+
+     Así que NO es una lección: no entra en LECCIONES, no cambia ningún código, no viaja al
+     cuaderno y no toca el banco. Es una marca del FILTRO de la ficha que hace dos cosas:
+     deja fuera los fragmentos cuyo MODELO usa el V7 y le impone al repertorio el suyo, de
+     modo que el alumno no ve siquiera el botón. Lo único que cambia en su pantalla es el
+     rótulo; lo que se registra sigue siendo el tema 5 (Diego, 16/10: «la distinción sólo
+     en el configurador»). */
+  const VARIANTES = {
+    'A-5': {
+      clave: 'sinSeptima',
+      rotulo: 'primeros pasos: I y V',
+      mando: '5a · primeros pasos: solo I y V (sin V7)',
+      repertorio: ['53'],
+      acordes: ['I|53', 'V|53']
+    }
+  };
+  const varianteDe = lec => (lec ? (VARIANTES[leccionCanonica(lec)] || null) : null);
+  /* ¿CABE EL MODELO en lo que la variante deja? El modelo es la primera respuesta de cada
+     acorde, que es la solución que la aplicación enseña; si no cabe, el alumno vería una
+     solución que su propia paleta no le deja escribir.
+
+     Se miran LAS DOS VOCES y no solo la principal: `etiquetas.cifras` sale del bajo, y hay
+     un fragmento (A-5-29) cuyo bajo se cifra 5/3 y cuya melodía se armoniza con V7.
+
+     Y se pregunta qué CABE, no qué se quita: el repertorio está guardado fragmento a
+     fragmento, y en el tema 5 hay uno (A-5-33, la Séptima de Beethoven) que entró con el
+     repertorio del paso 3 de otra lección —todas las inversiones, el II7, el VII6—. Quitar
+     el 7+ de esa lista lo dejaría casi entero; imponer la de la variante lo deja donde
+     debe. */
+  function modeloCabe(e, vr) {
+    const dentro = (v, lista) => !e[v] || (e[v].respuestas || []).every(r =>
+      !r || !r.length || lista.includes(r[0]));
+    return dentro('bajo', vr.repertorio) && dentro('soprano', vr.acordes);
+  }
 
   /* Los códigos internos de antes del 8/10/2026 (`A3-1`…`A4-11`). Están escritos en los
      ENLACES DE FICHAS repartidos y en el redirector de los QR impresos, así que se traducen
@@ -1535,5 +1591,6 @@ const Banco = (() => {
     cifraDeLoEscrito, modeloDeLoEscrito,
     huellaDe, estaCerrada, cerrar, abrir, huellaRota, rotas, cuentaCerradas,
     leccionDeNombre, nombreDeLeccion, etiquetaLeccion, rotuloLeccion, temaDeLeccion,
-    nombresDeLecciones, repertorioDeLeccion, LECCIONES, CODIGO_ANTIGUO, leccionCanonica };
+    nombresDeLecciones, repertorioDeLeccion, LECCIONES, CODIGO_ANTIGUO, leccionCanonica,
+    VARIANTES, varianteDe, modeloCabe };
 })();

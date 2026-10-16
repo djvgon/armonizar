@@ -175,11 +175,11 @@
        «Comprobar», que es donde el alumno mira cuando termina uno. La palabra «Ficha» no
        aportaba nada, y el renglón «Lección …» que había debajo era lo mismo ocupando sitio. */
     const deDonde = ej.leccion || ej.coleccion || (f && f.filtro.titulo) || '';
-    const tema = ej.leccion || deDonde;      // ya viene como «Tema 14 · …» (1/10/2026)
+    const tema = ej.leccionVista || ej.leccion || deDonde;   // ya viene como «Tema 14 · …» (1/10/2026); con variante, la suya (265)
     /* El título del fragmento solo se añade si dice algo NUEVO: cuando el fragmento no
        tiene título propio hereda el nombre de la lección, y la banda repetía «A3-5 · El
        6/4 cadencial · El 6/4 cadencial». */
-    const suyo = ej.titulo && !tema.includes(ej.titulo) ? ej.titulo : '';
+    const suyo = (ej.titulo && !tema.includes(ej.titulo) && !String(ej.leccion || '').includes(ej.titulo)) ? ej.titulo : '';
     $('#titulo').textContent = tema + (suyo ? (tema ? ' · ' : '') + suyo : '');
     /* EL CRÉDITO DE LA OBRA, bajo la partitura y desde el principio (decisión 198, Diego
        29/9/2026). No es lo mismo que la banda de arriba, que dice de qué LECCIÓN viene el
@@ -304,7 +304,8 @@
     // El título de la pestaña dice qué tipo de ejercicio es (decisión 58)
     document.title = 'Práctica armónica · ' + Banco.modoDe(estado.modoEj).etiqueta;
     const filaLec = $('#leccion-fila');
-    if (ej.leccion) { $('#leccion').textContent = ej.leccion; filaLec.hidden = false; }
+    // Con una variante de la lección (265), el alumno lee el rótulo de la variante
+    if (ej.leccion) { $('#leccion').textContent = ej.leccionVista || ej.leccion; filaLec.hidden = false; }
     else filaLec.hidden = true;
     /* El botón de ayuda solo aparece si la lección tiene cuadro de estructuras. */
     const btnEst = $('#btn-estructuras');
@@ -325,9 +326,16 @@
        TODA la ficha —la unión de las lecciones que entran, que por ser acumulativas es
        «todo lo visto hasta la más avanzada»— y no cambia de un fragmento a otro: es la
        lista que Diego escribe en la pizarra al empezar la clase. */
-    const acordesFicha = estado.ficha
+    let acordesFicha = estado.ficha
       ? [...new Set([].concat(...estado.ficha.lista.map(e => e.leccionAcordes || [])))]
       : null;
+    /* CON UNA VARIANTE DE LA LECCIÓN (265) ese inventario se recorta igual que el
+       repertorio. Se construye de las entradas del banco y no del ejercicio servido, de
+       modo que sin esto la ficha le anunciaría al alumno un acorde —el V7— que su propia
+       paleta no le deja escribir. */
+    const fvar = (estado.ficha && estado.ficha.filtro && estado.ficha.filtro.sinSeptima)
+      ? Banco.varianteDe(estado.ficha.filtro.leccion) : null;
+    if (fvar) acordesFicha = fvar.acordes.slice();
     const inv = Ejercicios.inventario((acordesFicha && acordesFicha.length) ? acordesFicha : acordes);
     if (inv.length) {
       $('#etiqueta-repertorio').textContent = estado.ficha ? 'En esta ficha entran' : 'En este ejercicio entran';

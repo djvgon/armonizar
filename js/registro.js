@@ -222,6 +222,55 @@ const Registro = (() => {
     guardar();
   }
 
+  /* ---------- CONTRAPUNTO: LA UNIDAD ES EL EJERCICIO ENTERO (decisión 264) ----------
+     En la armonización se cuenta casilla por casilla —una cifra por nota—, y tiene sentido:
+     un fragmento de doce acordes da doce oportunidades. Un retardo, no: es un gesto de seis
+     notas que o está o no está, y dar medio aprobado a un retardo que no suena como un
+     retardo no mide nada. De modo que **cada ejercicio vale uno** y la nota sale de cuántos
+     salieron bien AL PRIMER INTENTO sobre cuántos se pidieron, llevado a 10 (Diego, 16/10:
+     «la puntuación del retardo, mejor una cifra sobre 10; si son 8, todo bien sería 10»).
+
+     Lo demás —el reloj, la copia de seguridad, el resumen, el informe y el envío— es el
+     mismo de siempre: lo único que cambia es qué se cuenta. */
+  function iniciarUnidad(datos) {
+    cerrarEjercicio();
+    reloj = nuevoReloj();
+    const d = datos || {};
+    ej = {
+      k: (d.k || 0) + 1,
+      id: d.id || '',
+      leccion: d.leccion || '',
+      modo: d.modo || '',
+      tonalidad: d.tonalidad || '',
+      modula: false,
+      notas: 1,                      // la unidad: el ejercicio entero
+      intentos: 0,
+      primero: null,
+      aciertos: null,
+      segundos: 0
+    };
+  }
+
+  /* Se llama en CADA corrección, como `anotarCorreccion`. La primera es la que cuenta para
+     la nota; las siguientes solo dicen si el alumno arregló lo suyo. */
+  function anotarUnidad(datos) {
+    if (!p || !ej) return;
+    const d = datos || {};
+    const bien = d.bien ? 1 : 0;
+    ej.intentos = d.intento || ej.intentos + 1;
+    ej.aciertos = bien;
+    if (ej.intentos === 1) {
+      ej.primero = bien;
+      p.notas.push({
+        ej: ej.k, leccion: ej.leccion, modo: ej.modo, tonalidad: ej.tonalidad, nota: 1,
+        gradoBajo: '', acorde: d.contenido || '', funcion: '', papel: '',
+        contenido: d.contenido || '', bien,
+        falla: (d.falla || []).join('+')
+      });
+    }
+    guardar();
+  }
+
   const fijarAlumno = nombre => { if (p) { p.alumno = String(nombre || '').trim().slice(0, 80); guardar(); } };
 
   /* ---------- Resumen ---------- */
@@ -375,6 +424,7 @@ const Registro = (() => {
   }
   function olvidar() { try { localStorage.removeItem(CLAVE); } catch (e) { /* nada */ } }
 
-  return { iniciarPractica, iniciarEjercicio, cerrarEjercicio, anotarCorreccion, fijarAlumno,
+  return { iniciarPractica, iniciarEjercicio, cerrarEjercicio, anotarCorreccion,
+    iniciarUnidad, anotarUnidad, fijarAlumno,
     resumen, porContenido, contenidosCompactos, porContenidoCurso, contenidosCurso, informeTexto, detalleCSV, codigo, recuperar, restaurar, olvidar, mmss, fechaLocal };
 })();

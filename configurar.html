@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261016-0649">
-  <link rel="stylesheet" href="css/estilo.css?v=20261016-0649">
+  <link rel="stylesheet" href="css/bravura.css?v=20261016-1541">
+  <link rel="stylesheet" href="css/estilo.css?v=20261016-1541">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -89,6 +89,15 @@
           <label class="campo solo-banco">
             <span>Lección</span>
             <select id="ficha-leccion"><option value="">Todas</option></select>
+          </label>
+          <!-- LA VARIANTE DE LA LECCIÓN (decisión 265, Diego 16/10/2026). No es una lección
+               nueva: es un recorte de la elegida —hoy solo el tema 5—, que deja fuera los
+               fragmentos cuyo modelo usa el V7 y le quita ese cifrado a la paleta del
+               alumno. Sale solo cuando la lección elegida tiene variante, y por eso no
+               lleva `solo-banco`: lo enseña y lo esconde `mandoVariante()`. -->
+          <label class="campo campo-linea" id="ficha-variante-campo" hidden>
+            <input id="ficha-sin-septima" type="checkbox">
+            <span id="ficha-variante-texto">Variante</span>
           </label>
           <label class="campo solo-banco">
             <span>Nivel (dificultad)</span>
@@ -801,22 +810,22 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261016-0649</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261016-1541</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261016-0649"></script>
-  <script src="js/teoria.js?v=20261016-0649"></script>
-  <script src="js/reglas.js?v=20261016-0649"></script>
-  <script src="js/ejercicios.js?v=20261016-0649"></script>
-  <script src="js/partitura.js?v=20261016-0649"></script>
-  <script src="js/musicxml.js?v=20261016-0649"></script>
-  <script src="js/musescore.js?v=20261016-0649"></script>
-  <script src="js/banco.js?v=20261016-0649"></script>
-  <script src="js/celulas.js?v=20261016-0649"></script>
-  <script src="js/cadenas.js?v=20261016-0649"></script>
-  <script src="js/realizacion.js?v=20261016-0649"></script>
-  <script src="js/tecnicas.js?v=20261016-0649"></script>
-  <script src="js/configurador.js?v=20261016-0649"></script>
+  <script src="js/qr.js?v=20261016-1541"></script>
+  <script src="js/teoria.js?v=20261016-1541"></script>
+  <script src="js/reglas.js?v=20261016-1541"></script>
+  <script src="js/ejercicios.js?v=20261016-1541"></script>
+  <script src="js/partitura.js?v=20261016-1541"></script>
+  <script src="js/musicxml.js?v=20261016-1541"></script>
+  <script src="js/musescore.js?v=20261016-1541"></script>
+  <script src="js/banco.js?v=20261016-1541"></script>
+  <script src="js/celulas.js?v=20261016-1541"></script>
+  <script src="js/cadenas.js?v=20261016-1541"></script>
+  <script src="js/realizacion.js?v=20261016-1541"></script>
+  <script src="js/tecnicas.js?v=20261016-1541"></script>
+  <script src="js/configurador.js?v=20261016-1541"></script>
 </body>
 </html>
