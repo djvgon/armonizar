@@ -39,6 +39,7 @@
          activa      : {momento, voz} | null — donde está el alumno
          mal         : [{momento, voz}] casillas en rojo (al corregir)
          intervalos  : true para escribir el intervalo bajo cada columna
+         etiquetas   : [{momento, voz, texto}] rótulos sobre notas concretas («nota real»)
          alSonar     : función(momento) — con ella, un ▶ encima de cada
                        columna
          sonando     : índice del momento que está sonando
@@ -191,7 +192,11 @@ const Reja = (() => {
        Se calcula primero CUÁNTO OCUPA el sistema —hacia arriba y hacia abajo de la línea
        base— y después dónde empieza, dejando por encima el sitio del ▶; así no hay manera de
        que el botón caiga sobre una nota ni de que una nota se salga del recuadro. */
-    const AIRE = 3.9 * SP;             // lo que añaden por fuera de la cabeza la plica y la ligadura
+    /* Con rótulos sobre las notas —«nota retardada», «nota real», al ver la solución— hace
+       falta sitio por fuera de la plica: dos espacios más a cada lado bastan, y el alto se
+       mide igual, sobre la tinta. */
+    const etiquetas = (estado.etiquetas || []).filter(e => e && e.texto);
+    const AIRE = (etiquetas.length ? 5.9 : 3.9) * SP;   // lo que añaden por fuera de la cabeza la plica, la ligadura y el rótulo
     const pasosDe = voz => modelo.concat(momentos).map(m => m && m[voz]).filter(Boolean)
       .map(x => pasoEn(x, claves[voz]));
     const limites = ps => ({ max: Math.max(8, ...(ps.length ? ps : [8])), min: Math.min(0, ...(ps.length ? ps : [0])) });
@@ -364,6 +369,19 @@ const Reja = (() => {
         d: 'M ' + x0 + ' ' + y0 + ' Q ' + ((x0 + x1) / 2) + ' ' + ((y0 + y1) / 2 + curva) + ' ' + x1 + ' ' + y1,
         class: 'ligadura'
       }));
+    });
+
+    /* ---- Los rótulos de los papeles, sobre su nota ----
+       Van del lado contrario a la cabeza respecto de la plica, para no cruzarla: encima si la
+       plica sube y debajo si baja. */
+    etiquetas.forEach(e => {
+      const c = cabezas[e.voz] && cabezas[e.voz][e.momento];
+      if (!c) return;
+      svg.appendChild(el('text', {
+        x: c.x + ANCHO.blanca * SP / 2,
+        y: c.arriba ? c.y - 4.4 * SP : c.y + 5.1 * SP,
+        class: 'reja-etiqueta', 'text-anchor': 'middle'
+      }, e.texto));
     });
 
     /* ---- El intervalo debajo de cada columna (2.6) ---- */

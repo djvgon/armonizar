@@ -2011,6 +2011,8 @@ svg.reja .nota-reja.dada .plica, svg.reja .nota-reja.dada .linea { fill: none; }
 svg.reja .nota-reja.mal text { fill: var(--mal); }
 svg.reja .nota-reja.mal .plica, svg.reja .nota-reja.mal .linea { stroke: var(--mal); }
 svg.reja .reja-intervalo { font-size: 15px; font-weight: 600; fill: var(--tinta-suave); }
+/* Los rótulos de la solución: «nota retardada» y «nota real» sobre sus notas (Diego, 16/10). */
+svg.reja .reja-etiqueta { font-size: 13px; fill: var(--tinta-suave); }
 /* LA CASILLA EN LA QUE ESTÁ EL ALUMNO: un fondo por DEBAJO de la música. La nota que él
    escribe sigue siendo tinta negra, como en el papel, y nada la tapa. */
 svg.reja .casilla-fondo { fill: var(--acento-suave); }
@@ -2050,7 +2052,11 @@ svg.reja .reja-play.suena .reja-play-triangulo { fill: #fff; }
 .mandos-nota button:disabled { opacity: .45; cursor: default; }
 .mandos-nota button.activo { background: var(--acento); color: #fff; border-color: var(--acento); }
 #pista-barra { font-size: .88rem; margin: 2px 0 0; }
-.mensajes-cp { margin: 14px 0 0; padding-left: 20px; }
+/* Quién es quién: un renglón de orientación, no un error, así que va en tinta normal y
+   encima de la lista de reglas incumplidas (Diego, 16/10/2026). */
+.papeles-cp { margin: 14px 0 0; }
+.papeles-cp b { font-weight: 600; }
+.mensajes-cp { margin: 8px 0 0; padding-left: 20px; }
 .mensajes-cp li { margin-bottom: 5px; }
 .mensajes-cp.bien { list-style: none; padding-left: 0; color: var(--bien); font-weight: 600; }
 .mensajes-cp.bien li::before { content: '✓ '; }

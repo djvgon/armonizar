@@ -3880,6 +3880,64 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+263. **La pantalla del alumno, con la ficha delante: seis arreglos de Diego**
+    (16/10/2026, probando la ficha publicada. Van juntos porque son todos de la misma
+    pantalla y de la misma sesión.)
+    - **LA LIGADURA DE LA NOTA QUE SE DA ERA IMPOSIBLE, y era un error de verdad** (Diego:
+      «no permite ligar la nota real que da el ejercicio… y dice que está mal, pero no es
+      verdad, está bien el ejercicio, lo que pasa es que se ha bloqueado»). En el 6–7–6 de
+      la **dirección B** la nota real que se da es justamente la que **se queda ligada** en
+      la resolución, de modo que esa ligadura es parte de lo que hay que escribir. El botón
+      la daba por intocable junto con la altura de la nota. Ahora: **la altura de una nota
+      dada no se mueve; su ligadura es del alumno.** Lo único que se sigue impidiendo es
+      ligar dos notas dadas que son distintas y las ligaduras que vienen dadas (el bajo de
+      la cadena).
+    - **Y UNA NOTA DADA NO SE SOBRESCRIBE NUNCA**, ni siquiera a través de una ligadura. El
+      código copiaba la nota de delante sobre la de detrás al ligar, de modo que ligar hacia
+      la nota del enunciado la machacaba con la del alumno y el ejercicio se corregía contra
+      una nota que ya no era la que se había dado. Ahora manda la dada, y en `ponNota` las
+      dadas quedan fuera del reparto.
+    - **La nota del enunciado nunca se pinta en rojo** (Diego: «la nota, o notas, que da el
+      ejercicio siempre debería aparecer en morado, para que no haya confusión»). La
+      corrección marcaba la columna entera, la nota dada incluida, que por definición no
+      puede estar mal.
+    - **El comentario nombra la nota real y la retardada** (Diego: «ayudaría que, al indicar
+      "la nota real", dijera específicamente el nombre de la nota real —si es que la ha
+      escrito bien— y, si no la ha escrito bien, que lo diga»). Debajo de la reja:
+      «La **nota retardada** es fa3 y la **nota real**, sol2», o «La **nota real** es sol2;
+      la que has escrito como **nota retardada** no es la que pide este retardo». **Se
+      nombra solo lo que está bien**, así que orienta sin chivar la solución; y se mide
+      contra el modelo con el que se acaba de corregir, que en el nivel difícil no tiene por
+      qué ser el que se sorteó.
+    - **Al ver la solución, los dos papeles sobre sus notas** (Diego: «sería bueno que, al
+      ver la solución, aparecieran indicadas la nota real y la nota retardada»): dos rótulos
+      en la reja, encima o debajo de su cabeza según la plica, y el dibujo crece para que no
+      se salgan. `Reja.dibujar` acepta `etiquetas: [{momento, voz, texto}]`.
+    - **El contador de la ficha, debajo de los botones** (Diego: «preferiría que apareciera
+      debajo de los botones de Comprobar, junto a la leyenda»): «Al terminar esta célula,
+      pulsa «Siguiente célula» para pasar a la siguiente. **Estás en la 3 de 8.**» En la
+      penúltima añade «La siguiente es la última». Sale del subtítulo, donde iba como
+      «· 3 de 8» y no se veía.
+    - **El botón dice lo que hace**: en una ficha, **«Siguiente célula»** / «Siguiente
+      cadena»; en la práctica libre, «Otra célula»; y en la última de la ficha, **«Volver a
+      la primera»**, porque no hay siguiente y lo que hace es volver a empezar. La leyenda
+      lo nombra igual —antes hablaba de un botón «Otro» que no existe—. **No lleva el
+      número** («Siguiente célula de 8»): está justo debajo, y un rótulo que cambia de largo
+      en cada ejercicio se busca peor.
+    - **«Volver a lo mío» pasa a «Volver a mi realización»** (Diego).
+    - **Y «célula» desaparece de lo que lee el alumno: es «retardo»** (Diego, 16/10: «en vez
+      de célula, que puede llevar a confusión con célula melódica —lo que vemos en
+      análisis—, mejor retardo, porque retardo es lo que está trabajando»). Cambian el
+      desplegable («Retardo suelto»), el botón («Siguiente retardo», «Otro retardo», «Volver
+      al primero»), la leyenda («Estás en el 3 de 8»), los mensajes de la corrección y la
+      cuenta del configurador. **Por dentro se sigue llamando célula**, que es como la
+      nombran el motor y el documento de Schemata: lo que cambia es lo que se lee, y las
+      frases con género van en una tabla —retardo es masculino y cadena femenina— en vez de
+      cosidas a mano.
+    - Comprobado: `probar-pagina-contrapunto.js` sube a **119** comprobaciones, con una
+      sección nueva que escribe entera por la interfaz la célula de la dirección B —la que
+      no se podía terminar— y mira los rótulos, el morado y el comentario.
+
 262. **La ficha de contrapunto, desde el configurador**
     (15/10/2026. Punto 5 del piloto: el profesor prepara una ficha de células o de cadenas y
     reparte el enlace, como con las demás.)

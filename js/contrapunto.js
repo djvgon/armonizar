@@ -58,6 +58,7 @@
     escrito: null,         // { momentos:[{alta,baja}], ligaduras:[{voz,desde}], barras:[k] }
     activa: null,          // { momento, voz }
     mal: [],               // casillas en rojo tras corregir
+    modelo: null,          // el modelo con el que se corrigió (en difícil puede no ser el sorteado)
     fallos: [],            // los mensajes de la última corrección
     intentos: 0,
     acertada: false,
@@ -227,8 +228,14 @@
     return out;
   }
 
+  /* UNA NOTA DADA NO SE TOCA NUNCA, ni siquiera a través de una ligadura (Diego, 16/10/2026).
+     Sin esto, ligar la nota del enunciado con la de al lado la machacaba con la del alumno, y
+     el ejercicio se corregía contra una nota que ya no era la que se había dado. */
   function ponNota(k, voz, nota) {
-    atadas(k, voz).forEach(c => { estado.escrito.momentos[c.momento][voz] = nota ? Object.assign({}, nota) : null; });
+    atadas(k, voz).forEach(c => {
+      if (esDada(c.momento, voz)) return;
+      estado.escrito.momentos[c.momento][voz] = nota ? Object.assign({}, nota) : null;
+    });
   }
 
   function mover(pasos) {
@@ -271,14 +278,26 @@
       aviso('La última nota no se liga con nada: no hay nota detrás.'); return;
     }
     if (esLigaduraDada(a.voz, a.momento)) { aviso('Esa ligadura viene dada: es la del bajo.'); return; }
+    /* LA LIGADURA DE UNA NOTA DADA SÍ ES DEL ALUMNO (Diego, 16/10/2026: «no permite ligar la
+       nota real que da el ejercicio»). Lo que no se toca es la ALTURA de la nota dada; la
+       ligadura es parte de lo que hay que escribir —en el 6–7–6 de la dirección B, la nota
+       real que se da es justamente la que se queda ligada en la resolución—. Lo único
+       imposible es ligar dos notas dadas que son distintas. */
+    const k = a.momento, v = a.voz;
+    const aqui = estado.escrito.momentos[k][v], alla = estado.escrito.momentos[k + 1][v];
+    const dadaAqui = esDada(k, v), dadaAlla = esDada(k + 1, v);
     const ls = estado.escrito.ligaduras;
-    const i = ls.findIndex(l => l.voz === a.voz && l.desde === a.momento);
+    const i = ls.findIndex(l => l.voz === v && l.desde === k);
     if (i >= 0) ls.splice(i, 1);
     else {
-      ls.push({ voz: a.voz, desde: a.momento });
-      // Ligadas son la misma nota: la de detrás copia a la de delante
-      const n = estado.escrito.momentos[a.momento][a.voz];
-      if (n) estado.escrito.momentos[a.momento + 1][a.voz] = Object.assign({}, n);
+      if (dadaAqui && dadaAlla && aqui && alla && Teoria.texto(aqui) !== Teoria.texto(alla)) {
+        aviso('Esas dos notas vienen dadas y son distintas: no se pueden ligar.'); return;
+      }
+      ls.push({ voz: v, desde: k });
+      /* Ligadas son LA MISMA nota. Manda la que venga dada; si no viene ninguna, la de
+         delante, que es la que el alumno acaba de escribir. */
+      if (dadaAlla) { if (alla) estado.escrito.momentos[k][v] = Object.assign({}, alla); }
+      else if (aqui) estado.escrito.momentos[k + 1][v] = Object.assign({}, aqui);
     }
     tras();
   }
@@ -330,7 +349,7 @@
       estado.mal = faltan;
       estado.fallos = [{ regla: 'incompleta', mensaje: estado.tipo === 'cadena'
         ? 'Falta alguna nota de la voz superior: una por momento.'
-        : 'Falta alguna nota: la célula tiene seis, tres en cada voz.' }];
+        : 'Falta alguna nota: el retardo tiene seis, tres en cada voz.' }];
       estado.acertada = false;
       pintar();
       return;
@@ -362,7 +381,7 @@
     if (!r.bien && !estado.fallos.length && (r.diferencias || []).length) {
       estado.fallos.push({
         regla: 'modelo',
-        mensaje: 'No hay ninguna regla rota, pero no es la célula que se pide: mira '
+        mensaje: 'No hay ninguna regla rota, pero no es el retardo que se pide: mira '
           + r.diferencias.map(x => 'el momento ' + (x.momento + 1) + ' de la voz '
             + (x.voz === 'alta' ? 'superior' : 'inferior')).join(' y ') + '.'
       });
@@ -373,9 +392,38 @@
       (f.notas || []).forEach(x => { if (typeof x.momento === 'number') VOCES.forEach(v => casillas.push({ momento: x.momento, voz: v })); });
     });
     (r.diferencias || []).forEach(x => casillas.push({ momento: x.momento, voz: x.voz }));
-    estado.mal = estado.acertada ? [] : casillas;
+    /* LA NOTA QUE DA EL ENUNCIADO NUNCA ESTÁ MAL (Diego, 16/10: «la nota, o notas, que da el
+       ejercicio siempre debería aparecer en morado, para que no haya confusión»): se queda
+       fuera del rojo aunque su momento sea el del fallo. */
+    estado.mal = estado.acertada ? [] : casillas.filter(x => !esDada(x.momento, x.voz));
+    estado.modelo = mejor.m;
     pintar();
     if (estado.acertada) oir();
+  }
+
+  /* ---------- QUIÉN ES QUIÉN (Diego, 16/10/2026) ----------
+     «Al indicar "la nota real" que dijera específicamente el nombre de la nota real —si es que
+     la ha escrito bien el estudiante—, y si no la ha escrito bien, que lo diga.»
+
+     Se nombra lo que está bien y no lo demás: la nota que se da sale siempre nombrada (es
+     suya desde el principio) y la otra solo si es la que pedía el retardo, de modo que el
+     comentario orienta sin chivar la solución. Se mide contra el modelo con el que se acaba
+     de corregir, que en el nivel difícil no tiene por qué ser el que se sorteó. */
+  const PERCUSION = 1;                       // el momento del medio: ahí están los dos papeles
+  function papeles() {
+    const m = estado.modelo;
+    if (estado.tipo !== 'celula' || !m || !m.nombres) return '';
+    const esc = estado.escrito.momentos[PERCUSION] || {};
+    const suya = (voz, texto) => {
+      const n = esc[voz];
+      return n && Teoria.texto(n) === texto ? Teoria.nombreEs(n, true) : null;
+    };
+    const ret = suya(m.vozRetardada, m.nombres.retardada);
+    const real = suya(m.vozReal, m.nombres.real);
+    if (ret && real) return 'La <b>nota retardada</b> es ' + ret + ' y la <b>nota real</b>, ' + real + '.';
+    if (ret) return 'La <b>nota retardada</b> es ' + ret + '; la que has escrito como <b>nota real</b> no es la que pide este retardo.';
+    if (real) return 'La <b>nota real</b> es ' + real + '; la que has escrito como <b>nota retardada</b> no es la que pide este retardo.';
+    return 'Ni la <b>nota retardada</b> ni la <b>nota real</b> que has escrito son las que pide este retardo.';
   }
 
   /* ---------- Dibujar ---------- */
@@ -386,8 +434,9 @@
     /* EL TIPO SOLO EN EL NIVEL FÁCIL (Diego, 15/10): «en el más fácil se dice el tipo en el
        enunciado. En el más difícil … no se indica —con lo que no se le da ninguna pista al
        alumno». En el difícil, pues, no se escribe en ninguna parte de la pantalla. */
-    $('#tipo-pedido').textContent = M().subtitulo(c)
-      + (estado.lista ? ' · ' + (estado.k + 1) + ' de ' + estado.lista.length : '');
+    /* El contador de la ficha ya no va aquí, sino debajo de los botones y con todas sus
+       palabras (Diego, 16/10): «Estás en la 3 de 8». */
+    $('#tipo-pedido').textContent = M().subtitulo(c);
 
     const mio = estado.escrito;
     Reja.dibujar($('#reja'), {
@@ -397,6 +446,12 @@
       ligaduras: estado.visto ? c.ligaduras : mio.ligaduras,
       barras: estado.visto ? (c.barras || (c.barra !== undefined ? [c.barra] : [])) : mio.barras,
       dadas: dadaDe(c),
+      /* AL VER LA SOLUCIÓN, QUIÉN ES QUIÉN SOBRE LAS NOTAS (Diego, 16/10): «sería bueno que,
+         al ver la solución, aparecieran indicadas la nota real y la nota retardada». */
+      etiquetas: estado.visto && estado.tipo === 'celula' && c.vozRetardada
+        ? [{ momento: PERCUSION, voz: c.vozRetardada, texto: 'nota retardada' },
+          { momento: PERCUSION, voz: c.vozReal, texto: 'nota real' }]
+        : null,
       activa: estado.visto ? null : estado.activa,
       mal: estado.visto ? [] : estado.mal,
       intervalos: true,
@@ -416,11 +471,42 @@
     const m = $('#momentos');
     m.hidden = !estado.visto;
     if (estado.visto) m.textContent = M().explica(c);
-    $('#ver').textContent = estado.visto ? 'Volver a lo mío' : 'Ver la solución';
+    $('#ver').textContent = estado.visto ? 'Volver a mi realización' : 'Ver la solución';
     $('#comprobar').disabled = estado.visto;
-    $('#paso').textContent = estado.lista && estado.k + 1 < estado.lista.length
-      ? 'Al terminar, «Otro» pasa al siguiente de la ficha.' : '';
-    $('#otra').textContent = estado.tipo === 'cadena' ? 'Otra cadena' : 'Otra célula';
+    /* EL BOTÓN DICE LO QUE HACE (Diego, 16/10): en una ficha pasa al SIGUIENTE ejercicio de
+       la ficha; en la práctica libre saca OTRO al azar. Y la leyenda lo nombra igual, que
+       antes hablaba de un botón «Otro» que no existía.
+
+       EN LA ÚLTIMA no puede decir «siguiente», porque no hay siguiente: lo que hace es
+       volver a empezar la ficha, y eso es lo que dice. Lo que NO lleva el botón es el
+       número —«Siguiente célula de 8»—: el número está justo debajo, en la leyenda, y un
+       rótulo que cambia de largo en cada ejercicio se busca peor. */
+    /* EL NOMBRE DEL EJERCICIO, EN PALABRAS DEL ALUMNO (Diego, 16/10/2026): «en vez de
+       célula, que puede llevar a confusión con célula melódica —lo que vemos en análisis—,
+       mejor retardo, porque retardo es lo que está trabajando». Por dentro sigue llamándose
+       célula, que es como la nombra el documento de Schemata; lo que cambia es lo que se
+       lee. Y cambia el género con ella, así que las frases van en una tabla y no cosidas. */
+    const P = estado.tipo === 'cadena'
+      ? { otro: 'Otra cadena', siguiente: 'Siguiente cadena', primero: 'Volver a la primera',
+          este: 'esta cadena', aSiguiente: 'a la siguiente', ultimo: 'la última cadena',
+          estas: 'Estás en la', avisa: 'La siguiente es la última.' }
+      : { otro: 'Otro retardo', siguiente: 'Siguiente retardo', primero: 'Volver al primero',
+          este: 'este retardo', aSiguiente: 'al siguiente', ultimo: 'el último retardo',
+          estas: 'Estás en el', avisa: 'El siguiente es el último.' };
+    const ultima = !!estado.lista && estado.k + 1 >= estado.lista.length;
+    const rotulo = !estado.lista ? P.otro : (ultima ? P.primero : P.siguiente);
+    $('#otra').textContent = rotulo;
+    /* EL CONTADOR DE LA FICHA, debajo de los botones y junto a la leyenda (Diego, 16/10):
+       «Estás en la 3 de 8», para que el alumno sepa cuánto le queda. Y un aviso en la
+       penúltima, que es cuando conviene saber que se acaba. */
+    if (estado.lista) {
+      const n = estado.lista.length, k = estado.k + 1;
+      $('#paso').innerHTML = (ultima
+        ? 'Es ' + P.ultimo + ' de la ficha. '
+        : 'Al terminar ' + P.este + ', pulsa «' + rotulo + '» para pasar ' + P.aSiguiente + '. ')
+        + '<b>' + P.estas + ' ' + k + ' de ' + n + '.</b>'
+        + (!ultima && k + 1 === n ? ' ' + P.avisa : '');
+    } else $('#paso').textContent = '';
   }
 
   function pintarMandos() {
@@ -433,9 +519,15 @@
         + (dada ? ' (la nota dada)' : '');
     dice.classList.toggle('puesta', hay && !dada);
     ['subir', 'bajar', 'alterar', 'borrar'].forEach(id => { $('#' + id).disabled = !hay || dada; });
-    /* La ligadura del bajo de una cadena viene dada, como sus notas: tampoco se toca. */
-    const puedeLigar = hay && !dada && a.momento < estado.escrito.momentos.length - 1
-      && !esLigaduraDada(a.voz, a.momento);
+    /* LIGAR SÍ SE PUEDE SOBRE UNA NOTA DADA (Diego, 16/10): lo que no se mueve es su altura.
+       Queda fuera la ligadura del bajo de una cadena, que viene dada como sus notas, y el
+       caso imposible: dos notas dadas distintas. */
+    const siguienteDada = hay && esDada(a.momento + 1, a.voz);
+    const n1 = hay && estado.escrito.momentos[a.momento][a.voz];
+    const n2 = hay && estado.escrito.momentos[a.momento + 1] && estado.escrito.momentos[a.momento + 1][a.voz];
+    const dosDistintas = dada && siguienteDada && n1 && n2 && Teoria.texto(n1) !== Teoria.texto(n2);
+    const puedeLigar = hay && a.momento < estado.escrito.momentos.length - 1
+      && !esLigaduraDada(a.voz, a.momento) && !dosDistintas;
     $('#ligar').disabled = !puedeLigar;
     $('#ligar').classList.toggle('activo', !!(puedeLigar
       && estado.escrito.ligaduras.some(l => l.voz === a.voz && l.desde === a.momento)));
@@ -447,10 +539,17 @@
     const ul = $('#mensajes');
     ul.textContent = '';
     ul.classList.toggle('bien', estado.acertada);
+    /* Quién es quién: solo después de corregir, y nunca mientras se ve la solución, que la
+       nombra sobre las propias notas. */
+    const p = $('#papeles');
+    if (p) {
+      const txt = estado.intentos && !estado.visto ? papeles() : '';
+      p.innerHTML = txt; p.hidden = !txt;
+    }
     if (estado.acertada) {
       ul.hidden = false;
       const li = document.createElement('li');
-      li.textContent = 'Bien: ' + (estado.tipo === 'cadena' ? 'la cadena' : 'la célula')
+      li.textContent = 'Bien: ' + (estado.tipo === 'cadena' ? 'la cadena' : 'el retardo')
         + ' cumple las reglas y coincide con la realización.'
         + (estado.intentos > 1 ? ' (en ' + estado.intentos + ' intentos)' : '');
       ul.appendChild(li);
@@ -510,6 +609,7 @@
     estado.escrito = M().enBlanco(c);
     estado.activa = null;
     estado.mal = []; estado.fallos = []; estado.intentos = 0;
+    estado.modelo = null;
     estado.acertada = false; estado.visto = false;
     pintar();
   }

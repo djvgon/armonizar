@@ -2160,11 +2160,14 @@
     if (!esFichaContrapunto() || typeof Celulas === 'undefined') { p.textContent = ''; return 0; }
     const f = filtroContrapunto();
     const hay = cuantosContrapunto(f);
-    const que = f.ejercicio === 'cadena' ? (hay === 1 ? 'cadena' : 'cadenas') : (hay === 1 ? 'célula' : 'células');
+    /* «Retardo» y no «célula» en lo que se lee (Diego, 16/10/2026): «célula» se confunde con
+       la célula melódica del análisis, y lo que aquí se trabaja es el retardo. */
+    const que = f.ejercicio === 'cadena' ? (hay === 1 ? 'cadena' : 'cadenas') : (hay === 1 ? 'retardo' : 'retardos');
+    const cad = f.ejercicio === 'cadena';
     p.innerHTML = hay
       ? '<b>' + hay + ' ' + que + '</b> cumplen este filtro; la ficha sacará '
         + (hay < f.n ? '<b>' + hay + '</b>, que es todo lo que hay' : '<b>' + f.n + '</b>')
-        + ', distintas en cada alumno y lejos unas de otras.'
+        + (cad ? ', distintas en cada alumno y lejos unas de otras.' : ', distintos en cada alumno y lejos unos de otros.')
       : 'Con este filtro no sale ningún ejercicio: marca algún tipo o alguna tonalidad más.';
     return hay;
   }
