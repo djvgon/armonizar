@@ -25414,34 +25414,12 @@
    "leccionNombre": "I, V y V7",
    "leccionRepertorio": [
     "53",
-    "6",
-    "65",
-    "43",
-    "42",
-    "7",
-    "7+",
-    "+6",
-    "65d",
-    "+4"
+    "7+"
    ],
    "leccionAcordes": [
     "I|53",
-    "I|6",
-    "IV|53",
-    "IV|6",
-    "II|53",
-    "II|6",
-    "II|7",
-    "II|65",
-    "II|43",
-    "II|42",
     "V|53",
-    "V|7+",
-    "V|6",
-    "V|65d",
-    "V|+6",
-    "V|+4",
-    "VII|6"
+    "V|7+"
    ],
    "fuente": "A-5. I, V y V7 - L. van Beethoven · Sinfonía n.º 7, II, cc. 16-18.musicxml",
    "titulo": "",
