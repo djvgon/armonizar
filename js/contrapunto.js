@@ -426,6 +426,26 @@
     return 'Ni la <b>nota retardada</b> ni la <b>nota real</b> que has escrito son las que pide este retardo.';
   }
 
+  /* El retardo que hay que rotular: el de la solución cuando se está viendo, y el que el
+     alumno ha escrito cuando ha acertado. En la cadena no hay papeles que nombrar. */
+  function paraRotular(c) {
+    if (estado.tipo !== 'celula') return null;
+    const m = estado.visto ? c : (estado.acertada ? (estado.modelo || c) : null);
+    return m && m.vozRetardada ? m : null;
+  }
+  function etiquetasDe(c) {
+    const m = paraRotular(c);
+    if (!m) return null;
+    return [{ momento: 0, voz: m.vozRetardada, texto: 'preparación' },
+      { momento: PERCUSION, voz: m.vozRetardada, texto: 'nota retardada' },
+      { momento: m.momentos.length - 1, voz: m.vozRetardada, texto: 'resolución' },
+      { momento: PERCUSION, voz: m.vozReal, texto: 'nota real' }];
+  }
+  function flechasDe(c) {
+    const m = paraRotular(c);
+    return m ? [{ voz: m.vozRetardada, desde: PERCUSION, hasta: m.momentos.length - 1 }] : null;
+  }
+
   /* ---------- Dibujar ---------- */
   function pintar() {
     const c = estado.celula;
@@ -446,12 +466,21 @@
       ligaduras: estado.visto ? c.ligaduras : mio.ligaduras,
       barras: estado.visto ? (c.barras || (c.barra !== undefined ? [c.barra] : [])) : mio.barras,
       dadas: dadaDe(c),
-      /* AL VER LA SOLUCIÓN, QUIÉN ES QUIÉN SOBRE LAS NOTAS (Diego, 16/10): «sería bueno que,
-         al ver la solución, aparecieran indicadas la nota real y la nota retardada». */
-      etiquetas: estado.visto && estado.tipo === 'celula' && c.vozRetardada
-        ? [{ momento: PERCUSION, voz: c.vozRetardada, texto: 'nota retardada' },
-          { momento: PERCUSION, voz: c.vozReal, texto: 'nota real' }]
-        : null,
+      /* QUIÉN ES QUIÉN SOBRE LAS NOTAS (Diego, 16/10): «aparecieran indicadas la nota real y
+         la nota retardada», y con ellas «la preparación del retardo —la nota ligada de
+         antes, que suena formando parte de un intervalo consonante— y la resolución —la nota
+         que realiza un movimiento descendente de segunda—». Los tres momentos de la voz
+         retardada, pues, y la nota real enfrente.
+
+         Sale en DOS sitios: al ver la solución y **cuando el alumno acierta** («que se le
+         muestre, no solo la leyenda en verde, sino la interpretación de lo que ha hecho»).
+         Y es una interpretación de lo SUYO: cuando valen varios retardos —el nivel difícil,
+         donde el enunciado no dice el tipo— se rotula el que él ha escrito, que es el modelo
+         con el que se le acaba de dar por bueno, y no el que se sorteó. */
+      etiquetas: etiquetasDe(c),
+      /* Y la flecha que enseña el movimiento: de la nota retardada a su resolución, que es
+         el gesto entero del retardo en un solo dibujo (Diego, 16/10). */
+      flechas: flechasDe(c),
       activa: estado.visto ? null : estado.activa,
       mal: estado.visto ? [] : estado.mal,
       intervalos: true,
@@ -468,9 +497,12 @@
     pintarMandos();
     pintarMensajes();
 
+    /* La explicación en palabras: al ver la solución y también AL ACERTAR, y entonces la de
+       lo que él ha escrito (Diego, 16/10). */
     const m = $('#momentos');
-    m.hidden = !estado.visto;
-    if (estado.visto) m.textContent = M().explica(c);
+    const explicado = estado.visto ? c : (estado.acertada ? (estado.modelo || c) : null);
+    m.hidden = !explicado;
+    if (explicado) m.textContent = M().explica(explicado);
     $('#ver').textContent = estado.visto ? 'Volver a mi realización' : 'Ver la solución';
     $('#comprobar').disabled = estado.visto;
     /* EL BOTÓN DICE LO QUE HACE (Diego, 16/10): en una ficha pasa al SIGUIENTE ejercicio de

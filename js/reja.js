@@ -40,6 +40,7 @@
          mal         : [{momento, voz}] casillas en rojo (al corregir)
          intervalos  : true para escribir el intervalo bajo cada columna
          etiquetas   : [{momento, voz, texto}] rótulos sobre notas concretas («nota real»)
+         flechas     : [{voz, desde, hasta}] flecha de una nota a otra de la misma voz
          alSonar     : función(momento) — con ella, un ▶ encima de cada
                        columna
          sonando     : índice del momento que está sonando
@@ -347,7 +348,11 @@ const Reja = (() => {
           y2: arriba ? y - 3.5 * SP : y + 3.5 * SP, class: 'plica'
         }));
         svg.appendChild(g);
-        cabezas[voz].push({ x: xN, y, arriba });
+        cabezas[voz].push({
+          x: xN, y, arriba,
+          // por dónde empieza su tinta: con alteración, el glifo va a su izquierda
+          izq: (alts[k] && alts[k][voz]) ? xN - (anchoAlt(nota.alt) + 0.25) * SP : xN
+        });
       });
     });
 
@@ -369,6 +374,36 @@ const Reja = (() => {
         d: 'M ' + x0 + ' ' + y0 + ' Q ' + ((x0 + x1) / 2) + ' ' + ((y0 + y1) / 2 + curva) + ' ' + x1 + ' ' + y1,
         class: 'ligadura'
       }));
+    });
+
+    /* ---- La flecha del movimiento (Diego, 16/10/2026) ----
+       «Una flechita que muestre visualmente el movimiento desde la nota retardada hasta la
+       resolución»: un arco fino con punta, de cabeza a cabeza, en tinta suave para que se
+       lea como una anotación y no como una ligadura. Si no cabe entre las dos, no se
+       dibuja: más vale sin flecha que con una flecha encima de una nota. */
+    (estado.flechas || []).forEach(f => {
+      const a = cabezas[f.voz] && cabezas[f.voz][f.desde];
+      const b = cabezas[f.voz] && cabezas[f.voz][f.hasta];
+      if (!a || !b) return;
+      const x0 = a.x + ANCHO.blanca * SP + 0.45 * SP;
+      const x1 = b.izq - 0.5 * SP;
+      if (x1 - x0 < 1.2 * SP) return;
+      const y0 = a.y, y1 = b.y;
+      const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - 0.95 * SP;     // un arco suave por encima
+      const g = el('g', { class: 'reja-flecha' });
+      g.appendChild(el('path', {
+        d: 'M ' + x0 + ' ' + y0 + ' Q ' + cx + ' ' + cy + ' ' + x1 + ' ' + y1, class: 'flecha-linea'
+      }));
+      // La punta mira en la dirección con la que la curva llega a la nota de destino
+      const ang = Math.atan2(y1 - cy, x1 - cx);
+      const L = 0.8 * SP, A = 0.3 * SP;
+      const pun = o => [x1 - L * Math.cos(ang) + o * Math.sin(ang), y1 - L * Math.sin(ang) - o * Math.cos(ang)];
+      const p1 = pun(A), p2 = pun(-A);
+      g.appendChild(el('path', {
+        d: 'M ' + x1 + ' ' + y1 + ' L ' + p1[0] + ' ' + p1[1] + ' L ' + p2[0] + ' ' + p2[1] + ' Z',
+        class: 'flecha-punta'
+      }));
+      svg.appendChild(g);
     });
 
     /* ---- Los rótulos de los papeles, sobre su nota ----

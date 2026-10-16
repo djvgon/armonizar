@@ -3909,10 +3909,29 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       nombra solo lo que está bien**, así que orienta sin chivar la solución; y se mide
       contra el modelo con el que se acaba de corregir, que en el nivel difícil no tiene por
       qué ser el que se sorteó.
-    - **Al ver la solución, los dos papeles sobre sus notas** (Diego: «sería bueno que, al
-      ver la solución, aparecieran indicadas la nota real y la nota retardada»): dos rótulos
-      en la reja, encima o debajo de su cabeza según la plica, y el dibujo crece para que no
-      se salgan. `Reja.dibujar` acepta `etiquetas: [{momento, voz, texto}]`.
+    - **LOS CUATRO PAPELES DEL RETARDO, ROTULADOS SOBRE SUS NOTAS** (Diego: «sería bueno
+      que, al ver la solución, aparecieran indicadas la nota real y la nota retardada», y
+      después: «además de nota retardada, indica la preparación del retardo —la nota ligada
+      de antes que suena formando parte de un intervalo consonante— y la resolución —la nota
+      que realiza un movimiento descendente de segunda—; incluso, si pudieras generar una
+      flechita que muestre visualmente el movimiento desde la nota retardada hasta la
+      resolución, sería ideal»).
+      - Cuatro rótulos: **preparación · nota retardada · resolución** en la voz que se
+        retarda, y **nota real** enfrente. Van encima o debajo de su cabeza según hacia
+        dónde salga la plica, y el dibujo crece para que no se salgan: comprobado en los
+        **193** retardos que puede sacar una ficha, con holgura de sobra con el ▶.
+      - Y **la flecha del movimiento**, un arco fino con punta de la nota retardada a su
+        resolución, en tinta suave para que se lea como una anotación y no como una
+        ligadura. No se dibuja si no cabe entre las dos cabezas; en las 193 cabe.
+      - **Salen en dos sitios: al ver la solución y AL ACERTAR** (Diego: «si la solución del
+        alumno es correcta, que se le muestre, no solo la leyenda en verde, sino la
+        interpretación de lo que ha hecho»). Al acertar se rotula **lo suyo**: cuando valen
+        varios retardos —el nivel difícil, donde el enunciado no dice el tipo— se interpreta
+        el modelo con el que se le acaba de dar por bueno, no el que se sorteó. Con los
+        rótulos sale también la explicación en palabras, que antes solo estaba en la
+        solución.
+      - `Reja.dibujar` acepta `etiquetas: [{momento, voz, texto}]` y
+        `flechas: [{voz, desde, hasta}]`.
     - **El contador de la ficha, debajo de los botones** (Diego: «preferiría que apareciera
       debajo de los botones de Comprobar, junto a la leyenda»): «Al terminar esta célula,
       pulsa «Siguiente célula» para pasar a la siguiente. **Estás en la 3 de 8.**» En la

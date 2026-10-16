@@ -2013,6 +2013,10 @@ svg.reja .nota-reja.mal .plica, svg.reja .nota-reja.mal .linea { stroke: var(--m
 svg.reja .reja-intervalo { font-size: 15px; font-weight: 600; fill: var(--tinta-suave); }
 /* Los rótulos de la solución: «nota retardada» y «nota real» sobre sus notas (Diego, 16/10). */
 svg.reja .reja-etiqueta { font-size: 13px; fill: var(--tinta-suave); }
+/* La flecha del movimiento del retardo: fina y en tinta suave, para que se lea como una
+   anotación sobre la música y no se confunda con una ligadura (Diego, 16/10). */
+svg.reja .reja-flecha .flecha-linea { fill: none; stroke: var(--tinta-suave); stroke-width: 1.3; }
+svg.reja .reja-flecha .flecha-punta { fill: var(--tinta-suave); stroke: none; }
 /* LA CASILLA EN LA QUE ESTÁ EL ALUMNO: un fondo por DEBAJO de la música. La nota que él
    escribe sigue siendo tinta negra, como en el papel, y nada la tapa. */
 svg.reja .casilla-fondo { fill: var(--acento-suave); }
