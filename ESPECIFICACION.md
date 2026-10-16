@@ -3880,6 +3880,41 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+262. **La ficha de contrapunto, desde el configurador**
+    (15/10/2026. Punto 5 del piloto: el profesor prepara una ficha de células o de cadenas y
+    reparte el enlace, como con las demás.)
+    - **«Contrapunto» entra en el desplegable «Tipo de ejercicio»** de «Preparar una ficha»,
+      detrás de los cuatro que salen del banco. Al elegirlo, el formulario **cambia de
+      mitad**: se esconde todo lo que habla de fragmentos —lecciones, nivel, procedencia,
+      armonía diatónica y cromática, compases, transporte y «cómo se le presenta al
+      alumno»— y sale el bloque propio. El título de la ficha, que es común, se queda.
+    - **Lo que se elige**: el ejercicio (célula suelta o cadena de retardos), cuántos, qué
+      nota se da, la dificultad, los tipos de retardo y las tonalidades. En la cadena no se
+      ofrecen tipo, nota dada ni dificultad —son todas 7–6 y con el bajo dado la respuesta
+      es una—: queda el largo, de dos a cuatro retardos.
+    - **Sin marcar nada entra todo.** Lo que está marcado entero no viaja en el enlace, de
+      modo que una ficha repartida hoy no envejece si algún día entra un tipo nuevo.
+    - **La cuenta, delante**: «20 células cumplen este filtro; la ficha sacará 8». Se cuenta
+      de verdad, generando el repertorio entero, porque es el dato que dice si una ficha de
+      ocho va a salir de ocho; si no llegan, lo avisa al generar.
+    - **El enlace es el mismo mecanismo que el de las demás fichas** —`contrapunto.html#f=`
+      con el filtro dentro—, que es lo que `contrapunto.js` ya sabía leer desde la decisión
+      258. Cabe en unos 300 caracteres, así que el QR sale fino. Las tonalidades viajan por
+      su nombre corto («Do M», «la m»).
+    - **Esta ficha no necesita `banco.json`**: los ejercicios los genera la propia página del
+      alumno. A diferencia de las del banco, se puede generar desde el disco.
+    - **El banco no se entera**: con «Contrapunto» elegido, la tabla de fragmentos se pinta
+      sin el filtro de tipo de ejercicio, para no quedarse en blanco sin motivo.
+    - De paso, un arreglo pequeño que sacó la prueba: **«Valores por defecto» dejaba el tipo
+      de ejercicio en «cifrar»**, el primero de la lista, y no en «armonizar», que es el que
+      sale al abrir el configurador. Ahora los dos coinciden.
+    - Comprobado: `probar-ficha-contrapunto.js`, **56 comprobaciones** en un navegador de
+      verdad —el desplegable, las dos mitades del formulario, la cuenta, el filtro que viaja
+      en el enlace, la ficha que recibe el alumno con él (células y cadenas), el borrador al
+      recargar y el botón de valores por defecto—.
+    - **Queda del piloto**: el envío al cuaderno, que pide una línea en la tabla `MODOS` del
+      `.gs` y volver a implementar la aplicación web.
+
 261. **El índice de octavas: el español, el que usa Diego (do central = do3)**
     (15/10/2026. Pregunta mía —la aplicación numeraba las octavas al modo científico y él
     había dicho «la nota más grave del chelo la denomina do1»— y respuesta suya: «**El

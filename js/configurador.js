@@ -1488,7 +1488,14 @@
         // El filtro de la ficha: es lo que se toca cada semana, y perderlo al recargar molesta
         ficha: ['#ficha-modo', '#ficha-leccion', '#ficha-modotonal', '#ficha-alteraciones', '#ficha-nivel',
           '#ficha-modula', '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max', '#ficha-titulo',
-          '#ficha-armadura', '#ficha-armadura-pct'].reduce((o, id) => { o[id] = $(id) ? $(id).value : ''; return o; }, {}),
+          '#ficha-armadura', '#ficha-armadura-pct',
+          '#cp-ejercicio', '#cp-n', '#cp-dada', '#cp-nivel'].reduce((o, id) => { o[id] = $(id) ? $(id).value : ''; return o; }, {}),
+        /* Las casillas de contrapunto van aparte: el reponedor de arriba escribe `.value`, y
+           esto son listas de marcas. Si todavía no están pintadas, se conserva lo que había
+           en lugar de guardar tres listas vacías encima (decisión 262). */
+        cpMarcas: ($('#cp-tonos') && $('#cp-tonos').children.length)
+          ? { '#cp-tipos': cpMarcados('#cp-tipos'), '#cp-largos': cpMarcados('#cp-largos'), '#cp-tonos': cpMarcados('#cp-tonos') }
+          : (estado.cpMarcas || null),
         funcionesNotas: estado.funciones,
         acordes: acordesElegidos(), formulaTST: $('#formula-tst').checked
       }));
@@ -1517,6 +1524,7 @@
          borrador anterior, que no guardaba esta opción, hereda el nuevo defecto. */
       $('#ficha-estructuras-ton').value = b.fichaEstructurasTon === '' ? '' : 'fragmento';
       estado.fichaGuardada = b.ficha && typeof b.ficha === 'object' ? b.ficha : null;
+      estado.cpMarcas = b.cpMarcas && typeof b.cpMarcas === 'object' ? b.cpMarcas : null;
       elegirModo(tipo);
       $('#bajo-audicion').value = b.bajoAudicion === 'bajo' ? 'bajo' : '';
       estado.funciones = Array.isArray(b.funcionesNotas) ? b.funcionesNotas : null;
@@ -2040,6 +2048,149 @@
     return f;
   }
 
+  /* =================================================================
+     LA FICHA DE CONTRAPUNTO (decisión 262)
+
+     Contrapunto no sale del banco: sus ejercicios se GENERAN. Su filtro, entonces, no dice
+     qué fragmentos entran sino QUÉ SE SORTEA —ejercicio, tipos, tonalidades, dirección,
+     nivel y cuántos—, y viaja en el mismo `#f=` que las demás fichas, que es lo que
+     `contrapunto.js` ya sabe leer. Dos decisiones pequeñas:
+
+     · Las tonalidades van por su NOMBRE CORTO («Do M», «la m»). Es lo que
+       `Teoria.tonalidadDesdeTexto` vuelve a convertir en tonalidad sin ambigüedad, se lee
+       en el enlace y ocupa poco: una ficha entera cabe en 236 caracteres.
+     · Lo que está marcado ENTERO no viaja: si están las diez tonalidades o los tres tipos,
+       se omiten y manda el valor por defecto del generador, que es «todos». Así el enlace
+       no envejece si algún día entra un tipo nuevo.
+     ================================================================= */
+  const esFichaContrapunto = () => { const s = $('#ficha-modo'); return !!s && s.value === 'contrapunto'; };
+  const cpMarcados = id => [...document.querySelectorAll(id + ' input:checked')].map(i => i.value);
+
+  /* Las tres listas de casillas. Se pintan una vez, al arrancar, con lo que hubiera marcado
+     en el borrador: los nombres salen del propio motor (`Celulas.TIPOS`, `TONALIDADES`), no
+     de una lista escrita aquí, para que no puedan decir una cosa y sortearse otra. */
+  function montarContrapunto(marcas) {
+    if (typeof Celulas === 'undefined') return;
+    const m = marcas || {};
+    const caja = (id, lista, nombre, valor) => {
+      const div = $(id); if (!div) return;
+      div.innerHTML = '';
+      lista.forEach(x => {
+        const v = valor(x);
+        const lab = document.createElement('label');
+        lab.className = 'opcion-cifra';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.value = v;
+        cb.checked = Array.isArray(m[id]) && m[id].includes(v);
+        cb.addEventListener('change', () => { limpiarFicha(); cuentaContrapunto(); guardarBorrador(); });
+        lab.appendChild(cb);
+        lab.appendChild(document.createTextNode(nombre(x)));
+        div.appendChild(lab);
+      });
+    };
+    caja('#cp-tipos', Object.keys(Celulas.TIPOS), t => Celulas.CIFRA_TIPO[t] || t, t => t);
+    caja('#cp-largos', [2, 3, 4], n => n + ' retardos', n => String(n));
+    caja('#cp-tonos', Celulas.TONALIDADES, t => Teoria.nombreCorto(t), t => Teoria.nombreCorto(t));
+  }
+
+  /* En la CADENA no hay nada de eso que elegir: son todas 7–6, el bajo viene dado entero y
+     por eso la respuesta es una sola. Solo quedan el largo, la tonalidad y cuántas. */
+  function mandosContrapunto() {
+    const cad = $('#cp-ejercicio') && $('#cp-ejercicio').value === 'cadena';
+    document.querySelectorAll('.cp-celula').forEach(el => { el.hidden = cad; });
+    document.querySelectorAll('.cp-cadena').forEach(el => { el.hidden = !cad; });
+  }
+
+  /* Qué mitad del formulario se ve. El tipo de ejercicio manda: con contrapunto, lo del
+     banco —lecciones, compases, transporte, lo que ve el alumno— no pinta nada. */
+  function ajustarFicha() {
+    const cp = esFichaContrapunto();
+    document.querySelectorAll('.solo-banco').forEach(el => { el.hidden = cp; });
+    if ($('#bloque-contrapunto')) $('#bloque-contrapunto').hidden = !cp;
+    if ($('#titulo-filtro')) $('#titulo-filtro').textContent = cp ? 'Qué ejercicios entran' : 'Qué fragmentos entran';
+    // Con contrapunto no hay compases que medir: ahí abajo solo queda el título
+    if ($('#rotulo-tamano')) $('#rotulo-tamano').textContent = cp ? 'Título de la ficha' : 'Tamaño y título de la ficha';
+    if (cp) mandosContrapunto();
+    cuentaContrapunto();
+  }
+
+  function filtroContrapunto() {
+    const ej = $('#cp-ejercicio') && $('#cp-ejercicio').value === 'cadena' ? 'cadena' : 'celula';
+    const n = Math.max(1, Math.min(20, parseInt($('#cp-n').value, 10) || 8));
+    const op = {};
+    const tonos = cpMarcados('#cp-tonos');
+    if (tonos.length && tonos.length < Celulas.TONALIDADES.length) op.tonalidades = tonos;
+    if (ej === 'cadena') {
+      const largos = cpMarcados('#cp-largos').map(Number);
+      if (largos.length && largos.length < 3) op.largos = largos;
+    } else {
+      const tipos = cpMarcados('#cp-tipos');
+      if (tipos.length && tipos.length < Object.keys(Celulas.TIPOS).length) op.tipos = tipos;
+      if ($('#cp-dada').value !== 'ambas') op.dada = $('#cp-dada').value;
+      if ($('#cp-nivel').value === 'dificil') op.nivel = 'dificil';
+    }
+    const f = { modo: 'contrapunto', leccion: 'Co-1', ejercicio: ej, n };
+    if (Object.keys(op).length) f.celulas = op;
+    if ($('#ficha-titulo').value.trim()) f.titulo = $('#ficha-titulo').value.trim();
+    return f;
+  }
+
+  /* Cuántos ejercicios DISTINTOS caben en este filtro. Se cuentan de verdad, generando el
+     repertorio entero —son milisegundos—, porque es el dato que dice si una ficha de ocho
+     va a salir de ocho: el generador no repite ninguno dentro de la misma ficha. */
+  function cuantosContrapunto(filtro) {
+    if (typeof Celulas === 'undefined') return 0;
+    const op = filtro.celulas || {};
+    const marcadas = (op.tonalidades || []).map(t => Teoria.tonalidadDesdeTexto(t)).filter(Boolean);
+    const tons = marcadas.length ? marcadas : Celulas.TONALIDADES;
+    let n = 0;
+    if (filtro.ejercicio === 'cadena') {
+      if (typeof Cadenas === 'undefined') return 0;
+      tons.forEach(ton => { n += Cadenas.todas({ tonalidad: ton, largos: op.largos }).cadenas.length; });
+    } else {
+      const tipos = op.tipos && op.tipos.length ? op.tipos : Object.keys(Celulas.TIPOS);
+      tons.forEach(ton => { n += Celulas.todas({ tonalidad: ton, tipos, registro: Celulas.REGISTRO_FICHA }).celulas.length; });
+    }
+    return n;
+  }
+
+  function cuentaContrapunto() {
+    const p = $('#cp-cuenta');
+    if (!p) return 0;
+    if (!esFichaContrapunto() || typeof Celulas === 'undefined') { p.textContent = ''; return 0; }
+    const f = filtroContrapunto();
+    const hay = cuantosContrapunto(f);
+    const que = f.ejercicio === 'cadena' ? (hay === 1 ? 'cadena' : 'cadenas') : (hay === 1 ? 'célula' : 'células');
+    p.innerHTML = hay
+      ? '<b>' + hay + ' ' + que + '</b> cumplen este filtro; la ficha sacará '
+        + (hay < f.n ? '<b>' + hay + '</b>, que es todo lo que hay' : '<b>' + f.n + '</b>')
+        + ', distintas en cada alumno y lejos unas de otras.'
+      : 'Con este filtro no sale ningún ejercicio: marca algún tipo o alguna tonalidad más.';
+    return hay;
+  }
+
+  function generarFichaContrapunto() {
+    const filtro = filtroContrapunto();
+    const hay = cuentaContrapunto();
+    if (!hay) { aviso('Con este filtro no sale ningún ejercicio: marca algún tipo o alguna tonalidad más.'); return; }
+    const url = baseAlumno('contrapunto') + '#f=' + Banco.codificar(filtro);
+    $('#ficha-direccion').value = url;
+    $('#btn-ficha-copiar').disabled = false;
+    if ($('#btn-ficha-qr')) $('#btn-ficha-qr').disabled = false;
+    const abrir = $('#btn-ficha-abrir');
+    abrir.href = url; abrir.setAttribute('aria-disabled', 'false');
+    if (hay < filtro.n) {
+      aviso('Con este filtro solo hay ' + hay + ' ejercicios distintos: la ficha saldrá de ' + hay
+        + ' y no de ' + filtro.n + '.', 9000);
+    }
+    if (!filtro.titulo) {
+      const auto = [filtro.leccion, Ejercicios.MODOS[filtro.modo] || 'Contrapunto',
+        filtro.n + (filtro.n === 1 ? ' ejercicio' : ' ejercicios')].join(' · ');
+      aviso('Esta ficha va sin título: en tu hoja de calificaciones saldrá como «' + auto
+        + ' · (código)». Ponle uno —«Ficha 1 · El retardo 6–7–6»— y vuelve a generarla si quieres reconocerla de un vistazo.', 11000);
+    }
+  }
+
   /* ---------- DEVOLVER EL FILTRO A SU SITIO (decisión 211, Diego 30/9/2026) ----------
      «Un botón que permita poner todos los selectores en su opción por defecto». Los valores
      no se escriben aquí: se leen del PROPIO documento —`defaultSelected` de cada opción y
@@ -2064,7 +2215,7 @@
       const cb = x.matches('input') ? x : x.querySelector('input[type="checkbox"]');
       if (cb) cb.checked = cb.defaultChecked;
     });
-    pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador();
+    pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); ajustarFicha(); guardarBorrador();
     aviso('Los filtros vuelven a sus valores por defecto.', 4000);
   }
 
@@ -2107,6 +2258,9 @@
     selLec.value = lecs.includes(antes) ? antes : '';
 
     const filtro = filtroFicha();
+    /* Con «Contrapunto» elegido, el filtro de la ficha no habla del banco: la tabla se pinta
+       sin el tipo de ejercicio, en vez de quedarse en blanco sin motivo (decisión 262). */
+    if (filtro.modo === 'contrapunto') delete filtro.modo;
     const lista = Banco.filtrar(banco, filtro);
     /* La cola de repaso (decisión 166) afecta a LA TABLA y a las flechas, no a la ficha:
        una ficha se reparte por lección y nivel, no por si el profesor ya lo ha firmado. */
@@ -3176,6 +3330,8 @@
   }
 
   function generarFicha() {
+    /* Contrapunto tiene su propio generador: no hay banco que filtrar (decisión 262). */
+    if (esFichaContrapunto()) { generarFichaContrapunto(); return; }
     const filtro = filtroFicha();
     /* AL ALUMNO SOLO SE LE SIRVEN FRAGMENTOS CERRADOS (decisión 182). La lista con la que se
        cuenta aquí —los tonos que saldrán, cuántos sitios tiene la ficha— ha de ser esa
@@ -3397,11 +3553,22 @@
 
   function arranqueBanco() {
     const sel = $('#ficha-modo');
-    /* Solo los tipos que salen DEL BANCO: «Contrapunto» genera sus ejercicios y no es un
-       filtro de fragmentos, de modo que aquí no tiene nada que hacer (su ficha se monta
-       aparte). */
-    Banco.MODOS.filter(m => m.banco !== false).forEach(m => { const o = document.createElement('option'); o.value = m.id; o.textContent = m.nombre; sel.appendChild(o); });
+    /* Primero los tipos que salen DEL BANCO y después «Contrapunto», que no filtra
+       fragmentos —sus ejercicios se generan— pero sí tiene ficha, y se prepara aquí mismo,
+       que es donde uno la busca (decisión 262). */
+    const ponModo = m => {
+      const o = document.createElement('option');
+      o.value = m.id; o.textContent = m.nombre;
+      /* «Armonizar» es el que sale al abrir, y marcarlo como la opción POR DEFECTO del
+         documento hace además que «Valores por defecto» vuelva aquí y no al primero de la
+         lista, que es lo que uno espera (lo sacó la prueba de la ficha de contrapunto). */
+      if (m.id === 'armonizar') o.defaultSelected = true;
+      sel.appendChild(o);
+    };
+    Banco.MODOS.filter(m => m.banco !== false).forEach(ponModo);
+    Banco.MODOS.filter(m => m.banco === false).forEach(ponModo);
     sel.value = 'armonizar';
+    montarContrapunto(estado.cpMarcas);
     leerBanco();
     leerSellos();          // la foto anterior, para fechar lo que cambie (decisión 227)
     pintarBanco();
@@ -3419,6 +3586,7 @@
       pintarBanco();
       ajustarCampoAudicion();
     }
+    ajustarFicha();
     /* Siempre, tenga o no banco este navegador: si no lo tiene lo carga, y si lo tiene
        compara con el publicado y avisa si no coinciden (decisión 77). */
     bancoPublicado();
@@ -3508,7 +3676,15 @@
      '#ficha-musica', '#ficha-compases-min', '#ficha-compases-max',
      '#ficha-ayuda-grados', '#ficha-preferir', '#ficha-funciones', '#ficha-tonalidades', '#ficha-estructuras-ton',
      '#ficha-armadura', '#ficha-armadura-pct'].forEach(id => {
-      $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); guardarBorrador(); });
+      $(id).addEventListener('change', () => { pintarBanco(); limpiarFicha(); ajustarCampoAudicion(); ajustarFicha(); guardarBorrador(); });
+    });
+    /* Los mandos de la ficha de contrapunto (262). No tocan el banco: lo que cambian es qué
+       se sortea, de modo que basta con invalidar la dirección y volver a contar. */
+    ['#cp-ejercicio', '#cp-dada', '#cp-nivel', '#cp-n'].forEach(id => {
+      const el = $(id); if (!el) return;
+      const al = () => { limpiarFicha(); mandosContrapunto(); cuentaContrapunto(); guardarBorrador(); };
+      el.addEventListener('change', al);
+      if (el.type === 'number') el.addEventListener('input', al);
     });
     // El título de la ficha no filtra nada, pero sí conviene no perderlo al recargar
     $('#ficha-titulo').addEventListener('input', () => { limpiarFicha(); guardarBorrador(); });

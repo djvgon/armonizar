@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Práctica armónica · Configurador</title>
-  <link rel="stylesheet" href="css/bravura.css?v=20261015-1959">
-  <link rel="stylesheet" href="css/estilo.css?v=20261015-1959">
+  <link rel="stylesheet" href="css/bravura.css?v=20261015-2031">
+  <link rel="stylesheet" href="css/estilo.css?v=20261015-2031">
 </head>
 <body class="configurador">
   <nav class="barra-app" aria-label="Secciones">
@@ -73,7 +73,7 @@
         <!-- DEVOLVER LOS FILTROS A SU SITIO (decisión 211, Diego 30/9/2026). Arriba a la
              derecha del bloque, porque es lo que se hace ANTES de empezar una ficha nueva.
              Solo toca este bloque: lo que ve el alumno y el banco se quedan como están. -->
-        <h3 class="titulo-con-boton">Qué fragmentos entran
+        <h3 class="titulo-con-boton"><span id="titulo-filtro">Qué fragmentos entran</span>
           <button type="button" id="btn-filtro-defecto" class="boton-pequeno"
             title="Devuelve todos los selectores de este bloque a su opción por defecto">Valores por defecto</button></h3>
         <!-- EL FILTRO, POR GRUPOS (decisión 230, Diego 2/10/2026). Primero lo que no es
@@ -86,11 +86,11 @@
             <span>Tipo de ejercicio</span>
             <select id="ficha-modo"></select>
           </label>
-          <label class="campo">
+          <label class="campo solo-banco">
             <span>Lección</span>
             <select id="ficha-leccion"><option value="">Todas</option></select>
           </label>
-          <label class="campo">
+          <label class="campo solo-banco">
             <span>Nivel (dificultad)</span>
             <select id="ficha-nivel">
               <option value="1-5">Todos (1 a 5)</option>
@@ -101,7 +101,7 @@
           </label>
           <!-- MÚSICA REAL O ESQUEMA (decisión 210, Diego 30/9/2026). Un fragmento es
                «música real» cuando tiene obra: viene de una partitura y lo dice (198). -->
-          <label class="campo">
+          <label class="campo solo-banco">
             <span>Procedencia</span>
             <select id="ficha-musica">
               <option value="">Música real y fragmentos de práctica</option>
@@ -111,7 +111,7 @@
           </label>
         </div>
 
-        <div class="grupo-en-linea">
+        <div class="grupo-en-linea solo-banco">
         <h4 class="rotulo-grupo">Armonía diatónica</h4>
         <div class="fila-campos fila-apretada">
           <label class="campo">
@@ -135,7 +135,7 @@
         </div>
         </div>
 
-        <div class="grupo-en-linea">
+        <div class="grupo-en-linea solo-banco">
         <h4 class="rotulo-grupo">Armonía cromática</h4>
         <div class="fila-campos fila-apretada">
           <label class="campo">
@@ -159,16 +159,76 @@
         </div>
         </div>
 
-        <h4 class="rotulo-grupo">Tamaño y título de la ficha</h4>
+        <!-- LA FICHA DE CONTRAPUNTO (decisión 262). Contrapunto no sale del banco: sus
+             ejercicios se generan, de modo que su filtro no dice qué fragmentos entran sino
+             qué se sortea. Vive DENTRO de este bloque a propósito: así «Valores por defecto»
+             lo alcanza y el título de la ficha, que es común a todas, queda justo debajo. -->
+        <div id="bloque-contrapunto" hidden>
+          <h4 class="rotulo-grupo">Qué ejercicios de contrapunto entran</h4>
+          <p class="ayuda">Contrapunto <b>no sale del banco</b>: cada ejercicio se genera. La ficha lleva el filtro —qué ejercicio, qué retardos, en qué tonalidades y cuántos—, así que cada alumno recibe un sorteo distinto, con los ejercicios <b>separados unos de otros</b> para que no pueda transportar la solución anterior.</p>
+          <div class="fila-campos fila-apretada">
+            <label class="campo">
+              <span>Ejercicio</span>
+              <select id="cp-ejercicio">
+                <option value="celula" selected>Célula suelta</option>
+                <option value="cadena">Cadena de retardos</option>
+              </select>
+            </label>
+            <label class="campo campo-estrecho">
+              <span>Cuántos</span>
+              <input id="cp-n" type="number" min="1" max="20" value="8">
+            </label>
+            <label class="campo cp-celula">
+              <span>Qué nota se da</span>
+              <select id="cp-dada">
+                <option value="ambas" selected>Las dos direcciones</option>
+                <option value="retardada">La nota retardada</option>
+                <option value="real">La nota real</option>
+              </select>
+            </label>
+            <label class="campo cp-celula">
+              <span>Dificultad</span>
+              <select id="cp-nivel">
+                <option value="facil" selected>Se dice el tipo de retardo</option>
+                <option value="dificil">No se dice el tipo</option>
+              </select>
+            </label>
+          </div>
+          <div class="fila-campos fila-apretada cp-celula">
+            <div class="campo campo-ancho">
+              <span>Tipos de retardo</span>
+              <div id="cp-tipos" class="repertorio-opciones"></div>
+              <span class="ayuda">Sin marcar ninguno entran los tres, mezclados y repartidos por turnos.</span>
+            </div>
+          </div>
+          <div class="fila-campos fila-apretada cp-cadena" hidden>
+            <div class="campo campo-ancho">
+              <span>Cuántos retardos tiene la cadena</span>
+              <div id="cp-largos" class="repertorio-opciones"></div>
+              <span class="ayuda">Sin marcar ninguno salen de dos a cuatro, al azar. Todas acaban en cadencia compuesta, perfecta o imperfecta.</span>
+            </div>
+          </div>
+          <div class="fila-campos fila-apretada">
+            <div class="campo campo-ancho">
+              <span>Tonalidades</span>
+              <div id="cp-tonos" class="repertorio-opciones"></div>
+              <span class="ayuda">Sin marcar ninguna entran las diez del curso. Aquí no hay transporte: cada ejercicio se genera ya en su tonalidad.</span>
+            </div>
+          </div>
+          <p class="ayuda" id="cp-cuenta"></p>
+          <p class="ayuda">Esta ficha <b>no necesita <code>banco.json</code></b>: los ejercicios los genera la propia página del alumno. Basta con que la aplicación esté publicada.</p>
+        </div>
+
+        <h4 class="rotulo-grupo" id="rotulo-tamano">Tamaño y título de la ficha</h4>
         <div class="fila-campos fila-apretada">
           <!-- El tamaño de la ficha se mide en COMPASES, no en número de ejercicios
                (decisiones 127 y 191): da igual si salen repartidos en fragmentos de dos
                compases o en uno solo que los incluya todos. -->
-          <label class="campo campo-estrecho">
+          <label class="campo campo-estrecho solo-banco">
             <span>Compases por ficha, de</span>
             <input id="ficha-compases-min" type="number" min="0" max="120" value="20">
           </label>
-          <label class="campo campo-estrecho">
+          <label class="campo campo-estrecho solo-banco">
             <span>… a</span>
             <input id="ficha-compases-max" type="number" min="1" max="120" value="26">
           </label>
@@ -177,14 +237,14 @@
             <input id="ficha-titulo" type="text" placeholder="Ficha 1 · El 6/4 cadencial">
           </label>
         </div>
-        <p class="ayuda">La ficha se mide en <b>compases</b>, no en número de ejercicios: lo que cansa al alumno es la música que tiene delante, y un fragmento de ocho compases da el trabajo de tres de tres. Se van tomando fragmentos al azar hasta llegar al mínimo sin pasarse del máximo, con el tope de ejercicios como red. Si pones el mínimo en 0, vuelve a mandar el número de ejercicios.</p>
+        <p class="ayuda solo-banco">La ficha se mide en <b>compases</b>, no en número de ejercicios: lo que cansa al alumno es la música que tiene delante, y un fragmento de ocho compases da el trabajo de tres de tres. Se van tomando fragmentos al azar hasta llegar al mínimo sin pasarse del máximo, con el tope de ejercicios como red. Si pones el mínimo en 0, vuelve a mandar el número de ejercicios.</p>
         <p class="ayuda">Ponle <b>título</b>: es el nombre con el que vas a reconocer esta práctica en tu hoja de calificaciones. Sin él se construye uno automático con la lección, el tipo y cuántos ejercicios lleva.</p>
         </div>
 
         <!-- Transporte (decisión 102). Ojo con no confundirlo con el filtro de arriba:
              aquel elige QUÉ fragmentos entran, por la armadura con que están escritos;
              este dice a QUÉ TONALIDAD se transportan al dárselos al alumno. -->
-        <div class="bloque-opciones">
+        <div class="bloque-opciones solo-banco">
         <h3>En qué tonalidades</h3>
         <p class="ayuda">Casi todo el banco está escrito en Do M y la menor. Aquí se elige a qué tonalidades se <b>transporta</b>: cada fragmento sale en una, y el mismo enlace da siempre las mismas, así que la ficha se puede repetir, comparar e imprimir. <b>Las respuestas no cambian</b> —son cifrados interválicos y sonidos fundamentales, que no dependen del tono—: cambia la música, no el ejercicio. No lo confundas con «Alteraciones de la armadura» de arriba, que es un filtro de qué fragmentos entran.</p>
         <div class="fila-campos fila-arriba">
@@ -226,7 +286,7 @@
         </div>
         </div>
 
-        <div class="bloque-opciones">
+        <div class="bloque-opciones solo-banco">
         <h3>Cómo se le presenta al alumno</h3>
 
         <!-- TRES GRUPOS (decisión 230, Diego 2/10/2026): qué mandos tiene delante, cómo se
@@ -308,7 +368,7 @@
           </div>
         </div>
         </div>
-        <p class="ayuda" id="ficha-cuenta"></p>
+        <p class="ayuda solo-banco" id="ficha-cuenta"></p>
 
         <div class="botonera">
           <button id="btn-ficha" type="button" class="primario">Generar la dirección de la ficha</button>
@@ -321,7 +381,7 @@
         <textarea id="ficha-direccion" rows="2" readonly spellcheck="false" placeholder="Aquí aparecerá la dirección de la ficha"></textarea>
         <!-- En qué tonos saldrá cada fragmento con ESTE enlace (decisión 102) -->
         <p class="ayuda" id="ficha-tonos-reparto" hidden></p>
-        <p class="ayuda">Genera la dirección <b>desde el configurador publicado</b>, no desde el disco: las fichas necesitan leer <code>banco.json</code> del servidor. Si has cambiado el banco, acuérdate de descargarlo y subirlo a GitHub antes de repartir el enlace.</p>
+        <p class="ayuda solo-banco">Genera la dirección <b>desde el configurador publicado</b>, no desde el disco: las fichas necesitan leer <code>banco.json</code> del servidor. Si has cambiado el banco, acuérdate de descargarlo y subirlo a GitHub antes de repartir el enlace.</p>
       </div>
     </section>
 
@@ -741,20 +801,22 @@
   </dialog>
 
   <footer class="pie">
-    <p><span id="version">Versión 20261015-1959</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
+    <p><span id="version">Versión 20261015-2031</span> · El borrador se guarda automáticamente en este navegador. <button id="btn-limpiar" type="button" class="enlace-texto">Empezar de cero</button></p>
   </footer>
   </div>
 
-  <script src="js/qr.js?v=20261015-1959"></script>
-  <script src="js/teoria.js?v=20261015-1959"></script>
-  <script src="js/reglas.js?v=20261015-1959"></script>
-  <script src="js/ejercicios.js?v=20261015-1959"></script>
-  <script src="js/partitura.js?v=20261015-1959"></script>
-  <script src="js/musicxml.js?v=20261015-1959"></script>
-  <script src="js/musescore.js?v=20261015-1959"></script>
-  <script src="js/banco.js?v=20261015-1959"></script>
-  <script src="js/realizacion.js?v=20261015-1959"></script>
-  <script src="js/tecnicas.js?v=20261015-1959"></script>
-  <script src="js/configurador.js?v=20261015-1959"></script>
+  <script src="js/qr.js?v=20261015-2031"></script>
+  <script src="js/teoria.js?v=20261015-2031"></script>
+  <script src="js/reglas.js?v=20261015-2031"></script>
+  <script src="js/ejercicios.js?v=20261015-2031"></script>
+  <script src="js/partitura.js?v=20261015-2031"></script>
+  <script src="js/musicxml.js?v=20261015-2031"></script>
+  <script src="js/musescore.js?v=20261015-2031"></script>
+  <script src="js/banco.js?v=20261015-2031"></script>
+  <script src="js/celulas.js?v=20261015-2031"></script>
+  <script src="js/cadenas.js?v=20261015-2031"></script>
+  <script src="js/realizacion.js?v=20261015-2031"></script>
+  <script src="js/tecnicas.js?v=20261015-2031"></script>
+  <script src="js/configurador.js?v=20261015-2031"></script>
 </body>
 </html>
