@@ -3887,6 +3887,110 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+270. **Cada fragmento se presenta en SU posición melódica, no todos en la fundamental**
+    (23/10/2026, Diego: «en los fragmentos de análisis, especialmente en la lección 5, donde
+    todos los fragmentos son idénticos o muy similares (I - V - I), si todos se muestran en
+    posición melódica de fundamental, todos resultan idénticos en la realización armónica y
+    el alumno no practica reconocer los acordes. Entonces, lo bueno sería que, de manera no
+    predecible, la realización de cada fragmento se presente en una de las tres posibilidades
+    de disposición melódica: Fund., 3ª o 5ª».)
+    - **El atajo que se rompe.** No era que el alumno acertara sin saber: era que no le hacía
+      falta mirar los acordes. Medido: los fragmentos A-5-01 a A-5-07 daban **la misma
+      soprano, nota por nota** (do4 · si3 · do4). Reconocido el dibujo, el ejercicio se
+      resolvía de memoria.
+    - **Las tres posiciones ya existían** —el mando «Posición melódica», Fund. · 3.ª · 5.ª, de
+      la decisión 146, y el parámetro `rotacion` de `Realizacion.realizar`—. Lo que pasaba es
+      que `estado.rotacion` nacía en 0 y nadie la elegía nunca.
+    - **La posición es una propiedad del fragmento, no un sorteo** (Diego eligió entre las dos
+      maneras): sale del número de su identificador, en rueda, de modo que en cada lección hay
+      un tercio en cada posición. Así dos alumnos con el mismo fragmento ven lo mismo —se
+      puede hablar de él en clase— y, al volver sobre él, lo reconoce. La variedad la da la
+      ficha, que toma varios fragmentos y por fuerza los mezcla: en el tema 5, los seis
+      primeros salen 3.ª · 5.ª · Fund. · 3.ª · 5.ª · Fund.
+    - **Solo entre las posiciones limpias.** Realizar en una posición puede sacar paralelas o
+      un aviso de la auditoría, y en análisis la realización es el **modelo** que el alumno
+      mira: enseñarle unas octavas seguidas sería enseñarle el error. Se prueban las tres
+      empezando por la que le toca y se toma la primera sin un solo aviso.
+    - **Medido sobre el banco entero**, las tres posiciones de los 139 fragmentos que dan
+      ejercicio de análisis: **131 están impecables en las tres** y los **33 del tema 5**,
+      también. En total, los avisos del banco son 6 con la fundamental (lo publicado hasta
+      hoy), 2 con la 3.ª y 7 con la 5.ª: el cambio no empeora. Los cinco fragmentos en que
+      alguna posición distinta de la fundamental añade un aviso son A-11-08, A-13-03, A-13-06,
+      A-14-01 y A-14-08, y la rueda se los salta.
+    - **Si ninguna está limpia, la menos mala, no la de turno.** Hoy el único caso es
+      **A-14-08**, que ya trae un aviso de séptima por salto en la fundamental; ahí la
+      fundamental es la que menos avisos da y es la que se sirve. Quedarse con la de turno
+      habría empeorado a propósito un fragmento que nadie pidió empeorar. Las paralelas pesan
+      diez veces más que un aviso: son lo que no se puede enseñar.
+    - **Dónde se decide**: en `Banco.ejercicio`, al servir el ejercicio, en el campo
+      `ej.posicion`. **No se guarda en `banco.json`**: se recalcula, así que no hay dato que
+      se quede desfasado, no se mueve ninguna huella y no hay que volver a publicar el banco.
+      `app.js` lo lee al cargar (`estado.rotacion`) y el configurador lo usa en la vista
+      previa, para que no prometa una cosa y el alumno vea otra.
+    - **Solo en análisis y audición** (Diego). En las dos armonizaciones la realización la
+      escribe el alumno, y con la melodía dada no hay posición que elegir —«la realización
+      lleva la melodía fija en la soprano, sin posición inicial»—. Tampoco en los tres
+      fragmentos que traen las cuatro voces escritas por Diego (A-8-15, A-8-17, A-14-09): ahí
+      manda su escritura y la realización ni se calcula.
+    - **El mando se queda** (Diego: «si quiere cambiarlo, que pueda cambiarlo; no creo que lo
+      hagan, porque hay varios fragmentos en cada ficha»). Lo que cambia es con qué se
+      encuentra al abrir, no lo que puede hacer.
+    - **Ninguna respuesta correcta cambia**: el cifrado y el grado salen del bajo, no de qué
+      nota va arriba. Nada de lo ya calificado queda mal.
+    - Comprobación nueva, `herramientas-interfaz/probar-posicion-melodica.js`.
+
+269. **La etiqueta del enlace en Classroom: primero el modo**
+    (23/10/2026, Diego: «cuando copio la URL de la tarea y la pego en el enlace adjunto a una
+    tarea de Google Classroom, el título que le pone Google Classroom al enlace es "Práctica
+    armónica - Análisis armónico". Esto hace difícil, cuando hay varios enlaces y solo se
+    muestra el principio de la cadena, identificar de qué tipo de tarea se trata —porque en
+    todos los enlaces se muestra "Práctica armón...". Quiero que aparezca solo el modo de la
+    tarea».)
+    - **Las portadas existen justamente para esto** (decisión 58): el `#f=…` del enlace no
+      viaja al servidor, así que la etiqueta no puede salir de él y hace falta una dirección
+      por tipo de ejercicio. Lo que se arregla ahora es que esa etiqueta **empiece por lo que
+      distingue**, no por lo que comparten.
+    - Los cinco rótulos, en el `<title>` y en el **`og:title`** —que es el que lee Classroom
+      cuando está—, con las palabras de Diego donde las dio:
+
+      | Página | Antes | Ahora |
+      |---|---|---|
+      | `analisis.html` | Práctica armónica · Análisis armónico | **Análisis armónico** |
+      | `audicion.html` | Práctica armónica · Reconocimiento auditivo | **Reconocimiento auditivo** |
+      | `armonizacion-bajo.html` | Práctica armónica · Armonización de melodía de bajo | **Bajo - Armonización** |
+      | `armonizacion-soprano.html` | Práctica armónica · Armonización de melodía de soprano | **Soprano - Armonización** |
+      | `contrapunto.html` | Práctica armónica · Contrapunto | **Contrapunto** |
+
+    - **La voz va delante en las dos armonizaciones** («Bajo - Armonización», no
+      «Armonización de bajo»), que es lo que pidió Diego y es lo que hace falta: cortadas a
+      ocho caracteres, las cinco se distinguen —`Análisis` · `Reconoci` · `Bajo - A` ·
+      `Soprano ` · `Contrapu`—, y con el nombre de la aplicación delante no se distinguía
+      ninguna.
+    - **La `description` y la `og:description` se quedan como estaban**: son la línea que
+      Classroom pone debajo del rótulo y ahí sí cabe la frase entera.
+    - **No se toca el reenvío** (`location.replace('index.html' + location.hash)`) ni el
+      título que escribe `app.js` una vez dentro, que sigue diciendo «Práctica armónica ·
+      …»: el nombre de la aplicación lo ve el alumno cuando ya ha entrado, que es donde
+      estorba menos.
+    - Comprobación nueva, `herramientas-interfaz/probar-titulos-portadas.js`: mira el HTML
+      **tal cual, sin navegador**, porque eso es lo que lee Classroom; que los cinco se
+      distingan por el principio; que el reenvío siga ahí; y que las diez páginas lleven la
+      **misma** marca de versión.
+
+268. **Fuera el «paso 3» de lo que se lee en el configurador**
+    (17/10/2026, Diego, al no entender una instrucción mía que usaba ese nombre: «¿qué es el
+    paso 3?».)
+    - El configurador dejó de tener apartados numerados al reorganizarse en **A · Preparar
+      una ficha**, **B · El banco de fragmentos** y **C · Recogida de resultados**, pero tres
+      textos del bloque «Repertorio de la lección» seguían llamándolo «el paso 3». Uno de
+      ellos era el **rótulo del botón**, que `js/configurador.js` escribía por encima del que
+      trae el HTML.
+    - Ahora el botón dice **«Dar al tema 5 el repertorio de arriba»** y la ayuda nombra el
+      bloque y dice dónde se elige la lección («Qué fragmentos entran»). El nombre viejo se
+      queda solo en los comentarios del código y en este documento, como abreviatura.
+    - Comprobación nueva, `herramientas-interfaz/probar-rotulo-repertorio.js` (11
+      comprobaciones), que además mira que no quede ningún «paso 3» a la vista en la página.
+
 267. **El apunte del retardo: dos renglones, debajo de su rótulo y centrado con él**
     (16/10/2026, Diego, mejorando lo que enseña «Ver la solución»: «el texto *se vuelve
     disonante con respecto a la nota real* ha de estar en dos renglones y centrado con

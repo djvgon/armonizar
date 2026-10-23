@@ -1187,6 +1187,60 @@ const Banco = (() => {
 
   /* ---------- De entrada a ejercicio ---------- */
 
+  /* LA POSICIÓN MELÓDICA DE SALIDA (decisión 270, Diego 23/10/2026: «en los fragmentos de
+     análisis, especialmente en la lección 5, donde todos los fragmentos son idénticos o muy
+     similares (I - V - I), si todos se muestran en posición melódica de fundamental, todos
+     resultan idénticos en la realización armónica y el alumno no practica reconocer los
+     acordes»).
+
+     Hasta hoy la realización arrancaba SIEMPRE en la fundamental, porque `estado.rotacion`
+     nacía en 0. Las tres posiciones ya estaban —son el mando «Posición melódica», Fund. ·
+     3.ª · 5.ª, de la decisión 146—: lo que faltaba era elegir una.
+
+     LA POSICIÓN ES UNA PROPIEDAD DEL FRAGMENTO, no un sorteo (Diego, 23/10, eligiendo entre
+     las dos maneras): sale del número de su identificador, en rueda, de modo que en cada
+     lección hay un tercio en cada posición, dos alumnos con el mismo fragmento ven lo mismo
+     y, al volver sobre él, lo reconoce. La variedad la da la ficha, que toma varios
+     fragmentos y por fuerza los mezcla.
+
+     Y SE ELIGEN SOLO LAS LIMPIAS. Realizar en una posición puede sacar paralelas o un aviso
+     de la auditoría, y en análisis la realización es el MODELO que el alumno mira: enseñarle
+     unas octavas seguidas sería enseñarle el error. Se prueban las tres empezando por la que
+     le toca y se toma la primera sin un solo aviso. Medido sobre el banco: 131 de los 139
+     fragmentos que dan ejercicio de análisis están impecables en las tres, y los 33 del tema
+     5, también. Si ninguna estuviera limpia —hoy solo A-14-08, que ya trae su aviso en la
+     fundamental—, se queda la que le toca: no se empeora nada que no estuviera ya así.
+
+     NO SE GUARDA EN EL BANCO: se recalcula al servir el ejercicio. Así no hay dato que se
+     quede desfasado, no se mueve ninguna huella y no hay que volver a publicar `banco.json`. */
+  const POSICIONES = 3;
+  const numeroDeId = id => { const m = String(id || '').match(/(\d+)\s*$/); return m ? Number(m[1]) : 0; };
+  function posicionLimpia(ej, base) {
+    const cifras = (ej.respuestas || []).map(x => (Array.isArray(x) ? x[0] : x));
+    if (!cifras.filter(Boolean).length) return base;
+    let bajos;
+    try { bajos = Teoria.notasDeCompases(ej.compases); } catch (e) { return base; }
+    /* Se prueban las tres EMPEZANDO POR LA QUE LE TOCA, y se toma la primera limpia: así la
+       rueda manda mientras pueda y solo se desvía cuando la posición de turno ensucia. */
+    let peorMenos = null;
+    for (let k = 0; k < POSICIONES; k++) {
+      const rot = (base + k) % POSICIONES;
+      try {
+        const out = Realizacion.realizar(ej, cifras, { modo: 'auto', rotacion: rot });
+        const avisos = (Realizacion.auditar(ej, bajos, out.acordes) || []).length;
+        if (!out.paralelas.length && !avisos) return rot;
+        /* Y SI NINGUNA ESTÁ LIMPIA, LA MENOS MALA, no la de turno: hoy el único caso es
+           A-14-08, que ya trae un aviso de séptima por salto en la fundamental, y ahí la
+           fundamental es justamente la que menos avisos da. Quedarse con la de turno sería
+           empeorar a propósito un fragmento que nadie nos ha pedido empeorar. Las paralelas
+           pesan mucho más que un aviso: son lo que no se puede enseñar. */
+        const mal = out.paralelas.length * 10 + avisos;
+        if (peorMenos === null || mal < peorMenos.mal) peorMenos = { rot, mal };
+      } catch (e) { /* esa posición no sale: se prueba la siguiente */ }
+    }
+    return peorMenos ? peorMenos.rot : base;
+  }
+
   function ejercicio(e, filtro, k) {
     const f = filtro || {};
     // El tono de este fragmento en esta ficha (decisión 102). Va aquí y no en `elegir`
@@ -1276,6 +1330,15 @@ const Banco = (() => {
     // La armadura con que se presenta puede no ser la del fragmento (decisión 185)
     const arm = armaduraAjena(e, f, k);
     if (arm) ej.armadura = arm;
+    /* La posición melódica con que se presenta (270). Solo en los dos tipos en que la
+       realización es lo que el alumno mira o escucha —análisis y audición—: en las dos
+       armonizaciones la escribe él, y con la melodía dada no hay posición que elegir
+       («la realización lleva la melodía fija en la soprano, sin posición inicial»). Y nunca
+       en los fragmentos que traen las cuatro voces escritas por Diego: ahí manda su
+       escritura y la realización ni se calcula. */
+    if ((modo === 'cifrar' || modo === 'audicion') && !ej.voces) {
+      ej.posicion = posicionLimpia(ej, numeroDeId(ej.id) % POSICIONES);
+    }
     return ej;
   }
 

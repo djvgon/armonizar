@@ -996,7 +996,9 @@
       try { return v.map(ac => (Array.isArray(ac) ? ac.map(x => Teoria.nota(x)) : null)); }
       catch (err) { return null; }
     };
-    const opReal = { modo: 'auto', rotacion: 0 };
+    /* La misma posición melódica con que se le servirá al alumno (decisión 270): si aquí
+       se dejara fija en la fundamental, la vista previa prometería otra cosa. */
+    const opReal = { modo: 'auto', rotacion: (typeof ej.posicion === 'number' ? ej.posicion : 0) };
     if (sop) {
       opReal.bajos = Ejercicios.bajosDe(ej, romanos, ver ? modelos : new Array(n).fill(null));
       opReal.sopranos = notas;

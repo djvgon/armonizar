@@ -102,6 +102,10 @@
     if (!Registro.resumen()) Registro.iniciarPractica({ tipo: 'ejercicio', titulo: ej.coleccion || ej.titulo || '', modo: Ejercicios.modo(ej), n: 1 });
     Registro.iniciarEjercicio(ej, estado.ficha ? estado.ficha.k : 0);
     estado.ejercicio = ej;
+    /* La posición melódica de salida la trae el ejercicio (decisión 270); sin ella, la
+       fundamental, como siempre. El mando sigue en la pantalla y el alumno puede cambiarla:
+       esto es solo con qué se encuentra al abrirla. */
+    estado.rotacion = (typeof ej.posicion === 'number') ? ej.posicion : 0;
     estado.respuestas = new Array(n).fill(null);
     estado.romanos = new Array(n).fill(null);
     estado.romanos2 = new Array(n).fill(null);
