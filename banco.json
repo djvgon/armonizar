@@ -19432,36 +19432,53 @@
     "VII|6",
     "I|64"
    ],
-   "fuente": "15.mscz",
+   "fuente": "A4-13. Modulación al V - Fragmentos bajo y soprano.mscz",
    "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "auditivo": null,
    "tonalidad": {
     "tonica": "C",
     "modo": "mayor"
    },
    "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
    "compas": [
     4,
     4
    ],
+   "rejilla": null,
    "bajo": {
     "compases": [
      [
       [
-       "C4",
+       "C3",
        2
       ],
       [
-       "A3",
+       "B2",
        2
       ]
      ],
      [
       [
-       "F#3",
+       "C3",
        2
       ],
       [
-       "G3",
+       "A2",
+       2
+      ]
+     ],
+     [
+      [
+       "F#2",
+       2
+      ],
+      [
+       "G2",
        2
       ]
      ],
@@ -19474,14 +19491,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 1,
+      "nota": 3,
       "tonalidad": {
        "tonica": "G",
        "modo": "mayor"
       }
      },
      {
-      "nota": 3,
+      "nota": 5,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
@@ -19489,6 +19506,13 @@
      }
     ],
     "respuestas": [
+     [
+      "53"
+     ],
+     [
+      "65d",
+      "6"
+     ],
      [
       "53"
      ],
@@ -19507,16 +19531,117 @@
      ]
     ]
    },
-   "soprano": null,
+   "soprano": {
+    "compases": [
+     [
+      [
+       "E4",
+       2
+      ],
+      [
+       "G4",
+       2
+      ]
+     ],
+     [
+      [
+       "G4",
+       2
+      ],
+      [
+       "A4",
+       2
+      ]
+     ],
+     [
+      [
+       "A4",
+       2
+      ],
+      [
+       "G4",
+       2
+      ]
+     ],
+     [
+      [
+       "E4",
+       4
+      ]
+     ]
+    ],
+    "modulaciones": [
+     {
+      "nota": 3,
+      "tonalidad": {
+       "tonica": "G",
+       "modo": "mayor"
+      }
+     },
+     {
+      "nota": 5,
+      "tonalidad": {
+       "tonica": "C",
+       "modo": "mayor"
+      }
+     }
+    ],
+    "respuestas": [
+     [
+      "I|53"
+     ],
+     [
+      "V|65d",
+      "I|53",
+      "I|6",
+      "V|53",
+      "V|+6",
+      "V|6",
+      "V|7+",
+      "V|+4"
+     ],
+     [
+      "I|53",
+      "I|6"
+     ],
+     [
+      "II|53",
+      "II|65",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7"
+     ],
+     [
+      "II|6",
+      "II|53",
+      "II|65",
+      "II|43",
+      "II|42",
+      "II|7"
+     ],
+     [
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "V|6",
+      "V|7+"
+     ],
+     [
+      "I|53"
+     ]
+    ]
+   },
    "nivelManual": null,
    "avisos": [],
    "etiquetas": {
-    "voces": "bajo",
-    "notas": 5,
-    "compases": 3,
+    "voces": "ambas",
+    "notas": 7,
+    "compases": 4,
     "modo": "mayor",
     "alteraciones": 0,
     "modula": true,
+    "cuatro": false,
     "cifras": [
      "53",
      "65d"
@@ -19524,8 +19649,7 @@
     "grados": [],
     "nivel": 2
    },
-   "cerrado": "2026-09-29",
-   "huella": "efd4d274a8c0fb13"
+   "tocado": "2026-10-28T08:49:57.671Z"
   },
   {
    "id": "A-13-07",
@@ -20485,19 +20609,36 @@
     "VII|6",
     "I|64"
    ],
-   "fuente": "A3-9. Modulación al relativo mayor - Fragmentos Bajo y soprano.mscz",
+   "fuente": "A4-14. Modulación al relativo mayor - Fragmentos bajo y soprano.mscz",
    "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "auditivo": null,
    "tonalidad": {
     "tonica": "A",
     "modo": "menor"
    },
    "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
    "compas": [
     4,
     4
    ],
+   "rejilla": null,
    "bajo": {
     "compases": [
+     [
+      [
+       "A2",
+       2
+      ],
+      [
+       "E3",
+       2
+      ]
+     ],
      [
       [
        "A2",
@@ -20525,14 +20666,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 0,
+      "nota": 3,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 3,
+      "nota": 5,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -20551,8 +20692,16 @@
       "53"
      ],
      [
-      "6",
       "53"
+     ],
+     [
+      "53"
+     ],
+     [
+      "65",
+      "6",
+      "53",
+      "+6"
      ],
      [
       "53"
@@ -20561,6 +20710,16 @@
    },
    "soprano": {
     "compases": [
+     [
+      [
+       "A4",
+       2
+      ],
+      [
+       "B4",
+       2
+      ]
+     ],
      [
       [
        "C5",
@@ -20588,14 +20747,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 0,
+      "nota": 3,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 3,
+      "nota": 5,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -20604,21 +20763,13 @@
     ],
     "respuestas": [
      [
-      "VI|53",
-      "IV|53",
-      "II|65",
-      "IV|6",
-      "II|43",
-      "IV|65",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|7"
+      "I|53",
+      "I|6"
      ],
      [
       "V|53",
-      "V|+6",
       "V|65d",
+      "V|+6",
       "II|53",
       "II|65",
       "V|6",
@@ -20637,16 +20788,37 @@
       "IV|7"
      ],
      [
+      "V|53",
+      "II|43",
+      "V|+6",
+      "V|65d",
+      "II|53",
+      "II|65",
+      "V|6",
+      "V|7+",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "VI|53",
+      "IV|65",
+      "IV|43",
+      "IV|7"
+     ],
+     [
+      "II|65",
+      "IV|6",
       "IV|53",
       "II|53",
-      "IV|6",
       "II|43",
       "II|42",
       "IV|65",
       "IV|43",
       "IV|42",
       "IV|7",
-      "II|65",
       "II|7",
       "II|6"
      ],
@@ -20659,20 +20831,20 @@
    "avisos": [],
    "etiquetas": {
     "voces": "ambas",
-    "notas": 5,
-    "compases": 2,
+    "notas": 7,
+    "compases": 3,
     "modo": "menor",
     "alteraciones": 0,
     "modula": true,
+    "cuatro": false,
     "cifras": [
      "53",
-     "6"
+     "65"
     ],
     "grados": [],
     "nivel": 3
    },
-   "cerrado": "2026-09-29",
-   "huella": "874ac1e41b5754a7"
+   "tocado": "2026-10-28T08:49:56.623Z"
   },
   {
    "id": "A-14-03",
@@ -20716,19 +20888,36 @@
     "VII|6",
     "I|64"
    ],
-   "fuente": "A3-9. Modulación al relativo mayor - Fragmentos Bajo y soprano.mscz",
+   "fuente": "A4-14. Modulación al relativo mayor - Fragmentos bajo y soprano.mscz",
    "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "auditivo": null,
    "tonalidad": {
     "tonica": "A",
     "modo": "menor"
    },
    "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
    "compas": [
     4,
     4
    ],
+   "rejilla": null,
    "bajo": {
     "compases": [
+     [
+      [
+       "A3",
+       2
+      ],
+      [
+       "E3",
+       2
+      ]
+     ],
      [
       [
        "A3",
@@ -20762,26 +20951,49 @@
       ]
      ]
     ],
-    "modulaciones": [],
+    "modulaciones": [
+     {
+      "nota": 2,
+      "tonalidad": {
+       "tonica": "C",
+       "modo": "mayor"
+      }
+     },
+     {
+      "nota": 6,
+      "tonalidad": {
+       "tonica": "A",
+       "modo": "menor"
+      }
+     }
+    ],
     "respuestas": [
      [
       "53"
      ],
      [
-      "+6",
-      "6"
-     ],
-     [
-      "6"
-     ],
-     [
       "53",
-      "6"
+      "7+"
      ],
      [
       "6",
+      "53"
+     ],
+     [
+      "65d",
+      "6"
+     ],
+     [
+      "53"
+     ],
+     [
+      "+4"
+     ],
+     [
+      "65",
+      "6",
       "53",
-      "65"
+      "+6"
      ],
      [
       "53",
@@ -20794,6 +21006,16 @@
    },
    "soprano": {
     "compases": [
+     [
+      [
+       "A4",
+       2
+      ],
+      [
+       "B4",
+       2
+      ]
+     ],
      [
       [
        "C5",
@@ -20827,66 +21049,117 @@
       ]
      ]
     ],
-    "modulaciones": [],
+    "modulaciones": [
+     {
+      "nota": 2,
+      "tonalidad": {
+       "tonica": "C",
+       "modo": "mayor"
+      }
+     },
+     {
+      "nota": 6,
+      "tonalidad": {
+       "tonica": "A",
+       "modo": "menor"
+      }
+     }
+    ],
     "respuestas": [
      [
-      "I|53"
-     ],
-     [
-      "V|65d",
-      "IV|53",
-      "V|+6",
-      "II|53",
-      "IV|6",
-      "V|7+",
-      "II|43",
-      "II|42",
-      "IV|65",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|65",
-      "II|7",
-      "VII|6",
-      "II|6"
-     ],
-     [
       "I|53",
-      "VI|53",
-      "IV|65",
-      "IV|43",
-      "IV|7"
+      "I|6"
      ],
      [
-      "I|6",
-      "I|53",
-      "IV|53",
-      "VI|53",
-      "II|65",
-      "IV|6",
-      "II|43",
-      "IV|65",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|7"
-     ],
-     [
-      "II|6",
-      "II|65",
-      "II|53",
-      "II|43",
-      "II|42",
-      "II|7"
-     ],
-     [
-      "V|7+",
       "V|53",
+      "V|65d",
       "V|+6",
+      "II|53",
+      "II|65",
+      "V|6",
+      "V|7+",
+      "II|43",
+      "V|+4",
+      "II|42",
+      "II|6",
+      "II|7",
       "VII|6"
      ],
      [
-      "I|53"
+      "IV|6",
+      "VI|53",
+      "I|53",
+      "I|6",
+      "IV|53",
+      "II|65",
+      "II|43",
+      "IV|65",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|7"
+     ],
+     [
+      "V|65d",
+      "V|+4",
+      "V|53",
+      "V|+6",
+      "II|53",
+      "II|65",
+      "V|6",
+      "V|7+",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6",
+      "IV|53",
+      "VI|53",
+      "II|65",
+      "IV|6",
+      "II|43",
+      "IV|65",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|7"
+     ],
+     [
+      "IV|53",
+      "VI|53",
+      "II|53",
+      "II|65",
+      "II|43",
+      "II|42",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|6",
+      "II|7",
+      "IV|65"
+     ],
+     [
+      "II|65",
+      "II|53",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7"
+     ],
+     [
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "I|6"
      ]
     ]
    },
@@ -20894,21 +21167,23 @@
    "avisos": [],
    "etiquetas": {
     "voces": "ambas",
-    "notas": 7,
-    "compases": 2,
+    "notas": 9,
+    "compases": 3,
     "modo": "menor",
     "alteraciones": 0,
-    "modula": false,
+    "modula": true,
+    "cuatro": false,
     "cifras": [
      "53",
-     "+6",
-     "6"
+     "6",
+     "65d",
+     "+4",
+     "65"
     ],
     "grados": [],
-    "nivel": 2
+    "nivel": 4
    },
-   "cerrado": "2026-09-29",
-   "huella": "818da07717e1549a"
+   "tocado": "2026-10-28T08:49:56.670Z"
   },
   {
    "id": "A-14-04",
@@ -20952,19 +21227,36 @@
     "VII|6",
     "I|64"
    ],
-   "fuente": "A3-9. Modulación al relativo mayor - Fragmentos Bajo y soprano.mscz",
+   "fuente": "A4-14. Modulación al relativo mayor - Fragmentos bajo y soprano.mscz",
    "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "auditivo": null,
    "tonalidad": {
     "tonica": "A",
     "modo": "menor"
    },
    "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
    "compas": [
     4,
     4
    ],
+   "rejilla": null,
    "bajo": {
     "compases": [
+     [
+      [
+       "A3",
+       2
+      ],
+      [
+       "E3",
+       2
+      ]
+     ],
      [
       [
        "A3",
@@ -21000,14 +21292,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 0,
+      "nota": 2,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 3,
+      "nota": 6,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21016,8 +21308,15 @@
     ],
     "respuestas": [
      [
+      "53"
+     ],
+     [
       "53",
-      "6"
+      "7+"
+     ],
+     [
+      "6",
+      "53"
      ],
      [
       "65d",
@@ -21027,14 +21326,13 @@
       "53"
      ],
      [
-      "53",
-      "6",
       "+4"
      ],
      [
+      "65",
       "6",
       "53",
-      "65"
+      "+6"
      ],
      [
       "53",
@@ -21049,7 +21347,17 @@
     "compases": [
      [
       [
-       "E5",
+       "C5",
+       2
+      ],
+      [
+       "B4",
+       2
+      ]
+     ],
+     [
+      [
+       "C5",
        1
       ],
       [
@@ -21082,14 +21390,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 0,
+      "nota": 2,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 3,
+      "nota": 6,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21102,8 +21410,37 @@
      ],
      [
       "V|53",
-      "V|+6",
       "V|65d",
+      "V|+6",
+      "II|53",
+      "II|65",
+      "V|6",
+      "V|7+",
+      "II|43",
+      "V|+4",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "IV|6",
+      "VI|53",
+      "I|53",
+      "I|6",
+      "IV|53",
+      "II|65",
+      "II|43",
+      "IV|65",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|7"
+     ],
+     [
+      "V|65d",
+      "V|53",
+      "V|+6",
       "II|53",
       "II|65",
       "V|6",
@@ -21122,29 +21459,38 @@
       "IV|7"
      ],
      [
-      "II|6",
-      "II|65",
       "IV|53",
-      "VI|53",
+      "II|53",
+      "IV|6",
+      "II|43",
+      "II|42",
+      "IV|65",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|65",
+      "II|7",
+      "VII|6",
+      "II|6"
+     ],
+     [
+      "II|65",
+      "IV|6",
+      "IV|53",
       "II|53",
       "II|43",
       "II|42",
+      "IV|65",
       "IV|43",
       "IV|42",
       "IV|7",
       "II|7",
-      "IV|65"
+      "II|6"
      ],
      [
-      "V|7+",
-      "V|+6",
-      "V|65d",
-      "VII|6"
-     ],
-     [
-      "V|7+",
-      "V|+6",
       "V|53",
+      "V|+6",
+      "V|7+",
       "V|+4",
       "VII|6"
      ],
@@ -21158,21 +21504,23 @@
    "avisos": [],
    "etiquetas": {
     "voces": "ambas",
-    "notas": 7,
-    "compases": 2,
+    "notas": 9,
+    "compases": 3,
     "modo": "menor",
     "alteraciones": 0,
     "modula": true,
+    "cuatro": false,
     "cifras": [
      "53",
+     "6",
      "65d",
-     "6"
+     "+4",
+     "65"
     ],
     "grados": [],
-    "nivel": 3
+    "nivel": 4
    },
-   "cerrado": "2026-09-29",
-   "huella": "9acbd7f84d1b46b3"
+   "tocado": "2026-10-28T08:49:56.715Z"
   },
   {
    "id": "A-14-05",
@@ -21216,19 +21564,36 @@
     "VII|6",
     "I|64"
    ],
-   "fuente": "A3-9. Modulación al relativo mayor - Fragmentos Bajo y soprano.mscz",
+   "fuente": "A4-14. Modulación al relativo mayor - Fragmentos bajo y soprano.mscz",
    "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "auditivo": null,
    "tonalidad": {
     "tonica": "A",
     "modo": "menor"
    },
    "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
    "compas": [
     4,
     4
    ],
+   "rejilla": null,
    "bajo": {
     "compases": [
+     [
+      [
+       "A3",
+       2
+      ],
+      [
+       "E3",
+       2
+      ]
+     ],
      [
       [
        "A3",
@@ -21264,14 +21629,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 0,
+      "nota": 2,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 3,
+      "nota": 6,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21280,28 +21645,35 @@
     ],
     "respuestas": [
      [
+      "53"
+     ],
+     [
+      "53",
+      "7+"
+     ],
+     [
       "6",
       "53"
      ],
      [
+      "65d",
       "6"
      ],
      [
       "53"
      ],
      [
-      "53",
-      "6",
       "+4"
      ],
      [
+      "65",
       "6",
       "53",
-      "65"
+      "+6"
      ],
      [
-      "7+",
-      "53"
+      "53",
+      "7+"
      ],
      [
       "53"
@@ -21310,6 +21682,16 @@
    },
    "soprano": {
     "compases": [
+     [
+      [
+       "E5",
+       2
+      ],
+      [
+       "G#5",
+       2
+      ]
+     ],
      [
       [
        "A5",
@@ -21345,14 +21727,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 0,
+      "nota": 2,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 3,
+      "nota": 6,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21361,40 +21743,49 @@
     ],
     "respuestas": [
      [
-      "VI|53",
-      "IV|53",
-      "II|53",
-      "II|65",
-      "II|43",
-      "II|42",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|6",
-      "II|7",
-      "IV|65"
+      "I|53",
+      "I|6"
      ],
      [
       "V|53",
       "V|+6",
+      "V|7+",
+      "VII|6"
+     ],
+     [
+      "VI|53"
+     ],
+     [
       "V|65d",
-      "I|53",
-      "I|6",
-      "V|6",
-      "V|7+"
+      "V|+6",
+      "V|6"
      ],
      [
       "I|53",
-      "VI|53",
+      "VI|53"
+     ],
+     [
+      "IV|53",
+      "II|53",
+      "V|+6",
+      "IV|6",
+      "V|7+",
+      "II|43",
+      "II|42",
       "IV|65",
       "IV|43",
-      "IV|7"
+      "IV|42",
+      "IV|7",
+      "II|65",
+      "II|7",
+      "VII|6",
+      "II|6"
      ],
      [
-      "VI|53",
-      "IV|53",
-      "II|53",
       "II|65",
+      "IV|53",
+      "VI|53",
+      "II|53",
       "II|43",
       "II|42",
       "IV|43",
@@ -21405,23 +21796,9 @@
       "IV|65"
      ],
      [
-      "II|6",
-      "VI|53",
-      "IV|53",
-      "II|53",
-      "II|65",
-      "II|43",
-      "II|42",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|7",
-      "IV|65"
-     ],
-     [
-      "V|7+",
-      "V|+6",
       "V|53",
+      "V|+6",
+      "V|7+",
       "V|+4",
       "VII|6"
      ],
@@ -21435,21 +21812,23 @@
    "avisos": [],
    "etiquetas": {
     "voces": "ambas",
-    "notas": 7,
-    "compases": 2,
+    "notas": 9,
+    "compases": 3,
     "modo": "menor",
     "alteraciones": 0,
     "modula": true,
+    "cuatro": false,
     "cifras": [
-     "6",
      "53",
-     "7+"
+     "6",
+     "65d",
+     "+4",
+     "65"
     ],
     "grados": [],
-    "nivel": 3
+    "nivel": 4
    },
-   "cerrado": "2026-09-29",
-   "huella": "846dced235f5fd5d"
+   "tocado": "2026-10-28T08:49:56.756Z"
   },
   {
    "id": "A-14-06",
@@ -21493,17 +21872,24 @@
     "VII|6",
     "I|64"
    ],
-   "fuente": "A3-9. Modulación al relativo mayor - Fragmentos Bajo y soprano.mscz",
+   "fuente": "A4-14. Modulación al relativo mayor - Fragmentos bajo y soprano.mscz",
    "titulo": "",
+   "autor": "",
+   "obra": "",
+   "enlace": "",
+   "auditivo": null,
    "tonalidad": {
     "tonica": "A",
     "modo": "menor"
    },
    "tonalidadSegura": true,
+   "armaduraEscrita": null,
+   "ultimaBajo": null,
    "compas": [
     4,
     4
    ],
+   "rejilla": null,
    "bajo": {
     "compases": [
      [
@@ -21522,7 +21908,7 @@
        2
       ],
       [
-       "G3",
+       "B3",
        2
       ]
      ],
@@ -21597,14 +21983,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 2,
+      "nota": 4,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 7,
+      "nota": 6,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21618,7 +22004,7 @@
       }
      },
      {
-      "nota": 14,
+      "nota": 15,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21637,6 +22023,43 @@
       "53"
      ],
      [
+      "+6",
+      "6"
+     ],
+     [
+      "53",
+      "6"
+     ],
+     [
+      "53",
+      "7+"
+     ],
+     [
+      "53",
+      "6"
+     ],
+     [
+      "65",
+      "6",
+      "53"
+     ],
+     [
+      "53",
+      "7+"
+     ],
+     [
+      "53"
+     ],
+     [
+      "53",
+      "7+"
+     ],
+     [
+      "43",
+      "6",
+      "53"
+     ],
+     [
       "53",
       "7+"
      ],
@@ -21650,40 +22073,6 @@
      [
       "53",
       "6"
-     ],
-     [
-      "65",
-      "6",
-      "53",
-      "+6"
-     ],
-     [
-      "53",
-      "7+"
-     ],
-     [
-      "53"
-     ],
-     [
-      "53",
-      "7+"
-     ],
-     [
-      "53"
-     ],
-     [
-      "53",
-      "7+"
-     ],
-     [
-      "53"
-     ],
-     [
-      "53",
-      "7+"
-     ],
-     [
-      "53"
      ],
      [
       "53",
@@ -21787,14 +22176,14 @@
     ],
     "modulaciones": [
      {
-      "nota": 2,
+      "nota": 4,
       "tonalidad": {
        "tonica": "C",
        "modo": "mayor"
       }
      },
      {
-      "nota": 7,
+      "nota": 6,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21808,7 +22197,7 @@
       }
      },
      {
-      "nota": 14,
+      "nota": 15,
       "tonalidad": {
        "tonica": "A",
        "modo": "menor"
@@ -21820,38 +22209,9 @@
       "I|53"
      ],
      [
-      "V|+6",
-      "V|65d",
       "V|53",
-      "II|53",
-      "II|65",
-      "V|6",
-      "V|7+",
-      "II|43",
-      "V|+4",
-      "II|42",
-      "II|6",
-      "II|7",
-      "VII|6"
-     ],
-     [
-      "VI|53",
-      "I|53",
-      "I|6",
-      "IV|53",
-      "II|65",
-      "IV|6",
-      "II|43",
-      "IV|65",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|7"
-     ],
-     [
-      "V|+6",
       "V|65d",
-      "V|53",
+      "V|+6",
       "II|53",
       "II|65",
       "V|6",
@@ -21872,113 +22232,10 @@
      [
       "V|+6",
       "V|65d",
-      "V|53",
-      "II|53",
-      "II|65",
-      "V|6",
-      "V|7+",
-      "II|43",
-      "V|+4",
-      "II|42",
-      "II|6",
-      "II|7",
-      "VII|6"
-     ],
-     [
-      "I|53",
-      "I|6",
-      "IV|53",
-      "VI|53",
-      "II|65",
-      "IV|6",
-      "II|43",
-      "IV|65",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|7"
-     ],
-     [
-      "V|+6",
-      "II|65",
-      "V|53",
-      "V|65d",
-      "II|53",
-      "V|6",
-      "V|7+",
-      "II|43",
-      "V|+4",
-      "II|42",
-      "II|6",
-      "II|7",
-      "VII|6"
-     ],
-     [
-      "V|+6",
-      "V|53",
-      "V|7+",
-      "V|+4",
-      "VII|6"
-     ],
-     [
-      "VI|53",
-      "I|53",
-      "I|6"
-     ],
-     [
-      "V|+6",
-      "V|53",
-      "V|65d",
-      "II|53",
-      "II|65",
-      "V|6",
-      "V|7+",
-      "II|43",
-      "V|+4",
-      "II|42",
-      "II|6",
-      "II|7",
-      "VII|6"
-     ],
-     [
-      "VI|53",
-      "I|53",
-      "I|6",
-      "IV|53",
-      "II|65",
-      "IV|6",
-      "II|43",
-      "IV|65",
-      "IV|43",
-      "IV|42",
-      "IV|7",
-      "II|7"
-     ],
-     [
-      "V|53",
-      "V|+6",
-      "V|65d",
-      "II|53",
-      "II|65",
-      "V|6",
-      "V|7+",
-      "II|43",
-      "II|42",
-      "II|6",
-      "II|7",
-      "VII|6"
-     ],
-     [
-      "I|53",
-      "VI|53",
-      "IV|65",
-      "IV|43",
-      "IV|7"
-     ],
-     [
       "IV|53",
       "II|53",
       "IV|6",
+      "V|7+",
       "II|43",
       "II|42",
       "IV|65",
@@ -21987,21 +22244,133 @@
       "IV|7",
       "II|65",
       "II|7",
+      "VII|6",
       "II|6"
      ],
      [
-      "I|64",
+      "I|53",
       "VI|53",
       "IV|65",
       "IV|43",
       "IV|7"
      ],
      [
-      "V|7+",
+      "V|53",
       "V|+6",
+      "II|53",
+      "II|65",
+      "V|7+",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "VI|53",
+      "IV|65",
+      "IV|43",
+      "IV|7"
+     ],
+     [
+      "II|65",
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "II|53",
+      "V|6",
+      "V|7+",
+      "II|43",
+      "V|+4",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "V|53",
+      "V|+6",
+      "V|7+",
+      "V|+4",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "VI|53",
+      "I|6"
+     ],
+     [
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "II|53",
+      "II|65",
+      "V|6",
+      "V|7+",
+      "II|43",
+      "V|+4",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "II|43",
+      "VI|53",
+      "I|53",
+      "I|6",
+      "IV|53",
+      "II|65",
+      "IV|6",
+      "IV|65",
+      "IV|43",
+      "IV|42",
+      "IV|7",
+      "II|7"
+     ],
+     [
       "V|53",
       "V|65d",
+      "V|+6",
+      "II|53",
+      "II|65",
       "V|6",
+      "V|7+",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7",
+      "VII|6"
+     ],
+     [
+      "I|53",
+      "VI|53",
+      "IV|65",
+      "IV|43",
+      "IV|7"
+     ],
+     [
+      "II|65",
+      "II|53",
+      "II|43",
+      "II|42",
+      "II|6",
+      "II|7"
+     ],
+     [
+      "IV|43",
+      "I|64",
+      "VI|53",
+      "IV|65",
+      "IV|7"
+     ],
+     [
+      "V|53",
+      "V|+6",
+      "V|65d",
+      "V|6",
+      "V|7+",
       "V|+4",
       "VII|6"
      ],
@@ -22020,15 +22389,17 @@
     "modo": "menor",
     "alteraciones": 0,
     "modula": true,
+    "cuatro": false,
     "cifras": [
      "53",
-     "65"
+     "+6",
+     "65",
+     "43"
     ],
     "grados": [],
     "nivel": 4
    },
-   "cerrado": "2026-09-29",
-   "huella": "da58fb18eebca353"
+   "tocado": "2026-10-28T08:49:56.810Z"
   },
   {
    "id": "A-14-07",
