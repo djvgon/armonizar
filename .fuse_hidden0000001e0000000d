@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pruebas · motor de reglas frente al corpus</title>
+  <link rel="stylesheet" href="css/bravura.css">
+  <link rel="stylesheet" href="css/estilo.css">
+  <style>
+    table { border-collapse: collapse; width: 100%; background: var(--papel); font-size: .9rem; }
+    th, td { border-bottom: 1px solid var(--linea); padding: 5px 8px; text-align: left; vertical-align: top; }
+    th { background: var(--acento-suave); }
+    .ok { color: var(--bien); } .ko { color: var(--mal); font-weight: bold; }
+    .mono { font-family: Menlo, Consolas, monospace; }
+    .resumen { font-size: 1.1rem; margin: 12px 0; }
+    details { margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <header class="cabecera">
+    <div class="cabecera-texto">
+      <p class="sobretitulo">Comprobaciones</p>
+      <h1>Motor de reglas frente al corpus</h1>
+      <p class="instruccion">Para cada nota de cada ejercicio se comparan las respuestas fijadas a mano (ejercicios.js) con lo que propone el motor (reglas.js). Una discrepancia no es necesariamente un error: puede señalar una regla que falta o una respuesta del corpus que conviene revisar. La columna «Corpus» muestra también el grado de la fundamental que se deriva de cada cifra (el que se exige al alumno).</p>
+    </div>
+  </header>
+  <main>
+    <p id="resumen" class="resumen"></p>
+    <div id="tablas"></div>
+  </main>
+
+  <script src="js/teoria.js"></script>
+  <script src="js/reglas.js"></script>
+  <script src="js/ejercicios.js"></script>
+  <script src="js/realizacion.js"></script>
+  <script>
+    (() => {
+      const et = id => (Teoria.CIFRADOS[id] ? Teoria.CIFRADOS[id].etiqueta : id);
+      let total = 0, disc = 0;
+      const cont = document.getElementById('tablas');
+      Ejercicios.CORPUS.forEach(ej => {
+        const prop = Reglas.proponer(ej);
+        const notas = Reglas.notasDe(ej);
+        let filas = '', discEj = 0;
+        prop.forEach((p, i) => {
+          total++;
+          const mano = ej.respuestas[i];
+          const igual = p.modelo === mano[0] && p.admisibles.length === mano.length && p.admisibles.every((x, k) => x === mano[k]);
+          if (!igual) { disc++; discEj++; }
+          const parejas = Ejercicios.parejas(ej, i).map(p => p.romano + ' ' + et(p.cifra));
+          filas += '<tr><td>' + (i + 1) + '</td><td>' + Teoria.nombreEs(notas[i], true) + '</td>'
+            + '<td class="mono">' + parejas.join(', ') + '</td>'
+            + '<td class="mono">' + p.admisibles.map(et).join(', ') + '</td>'
+            + '<td>' + p.regla + '</td><td>' + p.explicacion + '</td>'
+            + '<td class="' + (igual ? 'ok' : 'ko') + '">' + (igual ? '✓' : '✗') + '</td></tr>';
+        });
+        const d = document.createElement('details');
+        if (discEj) d.open = true;
+        d.innerHTML = '<summary>' + ej.coleccion + ' · ' + ej.titulo + ' — ' + (discEj ? discEj + ' discrepancia(s)' : 'sin discrepancias') + '</summary>'
+          + '<table><thead><tr><th>#</th><th>Bajo</th><th>Corpus (grado + cifra)</th><th>Motor (cifras)</th><th>Regla</th><th>Explicación</th><th></th></tr></thead><tbody>' + filas + '</tbody></table>';
+        cont.appendChild(d);
+      });
+      document.getElementById('resumen').textContent = disc === 0
+        ? 'Sin discrepancias: el motor reproduce las ' + total + ' respuestas del corpus.'
+        : disc + ' discrepancias de ' + total + ' notas.';
+
+      // Auditoría de la realización: paralelas por ejercicio en las tres posiciones rígidas y con conducción automática
+      let filas = '', totales = [0, 0, 0, 0, 0, 0];
+      Ejercicios.CORPUS.forEach(ej => {
+        const cifras = ej.respuestas.map((_, i) => Ejercicios.admisibles(ej, i)[0]);
+        const c = [];
+        for (const r of [0, 1, 2]) c.push(Realizacion.realizar(ej, cifras, { modo: 'rigida', rotacion: r }).paralelas.length);
+        for (const r of [0, 1, 2]) c.push(Realizacion.realizar(ej, cifras, { modo: 'auto', rotacion: r }).paralelas.length);
+        c.forEach((v, k) => { totales[k] += v; });
+        filas += '<tr><td>' + ej.coleccion + ' · ' + ej.titulo + '</td>' + c.map((v, k) => '<td class="' + (v ? 'ko' : 'ok') + '">' + v + '</td>').join('') + '</tr>';
+      });
+      const d = document.createElement('details');
+      d.innerHTML = '<summary>Realización a cuatro voces: quintas y octavas paralelas por ejercicio (rígida 1.ª/2.ª/3.ª · automática desde 1.ª/2.ª/3.ª) — totales: ' + totales.join(' / ') + '</summary>'
+        + '<table><thead><tr><th>Ejercicio</th><th>Rígida 1.ª</th><th>Rígida 2.ª</th><th>Rígida 3.ª</th><th>Auto 1.ª</th><th>Auto 2.ª</th><th>Auto 3.ª</th></tr></thead><tbody>' + filas + '</tbody></table>';
+      cont.insertBefore(d, cont.firstChild);
+    })();
+  </script>
+</body>
+</html>

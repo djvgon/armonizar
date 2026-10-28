@@ -504,6 +504,13 @@ const Ejercicios = (() => {
   /* ---- Bajo deducido (melodía de soprano) ----
      Para cada nota con fundamental y cifra, la nota del bajo: {letra, alt, octava}.
 
+     EL GRADO HA DE VENIR ESCRITO EN LA TONALIDAD QUE RIGE EN SU NOTA, que es la que se usa
+     aquí para resolverlo. En el acorde pivote hay DOS lecturas del mismo acorde —la casilla
+     se parte en dos (decisión 95)— y pasar la que no toca no da un rótulo distinto: da un
+     ACORDE distinto, que es la decisión 188 otra vez («el VI de Do M, la–do–mi, salía
+     fa–la–do al leerlo en la menor»). Quien llame con la lectura del pivote ha de traducirla
+     antes.
+
      LA CLASE del bajo la manda el acorde: el grado y la cifra dicen qué nota va abajo, y eso
      no se toca. Lo que hay que elegir es la OCTAVA, y esa elección es una línea melódica: el
      bajo canta.

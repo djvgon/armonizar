@@ -3887,6 +3887,49 @@ de cada nota del bajo pulsando botones y recibe la corrección al terminar.
       sin motivo.
     - Avisa antes de cambiar si hay cambios sin guardar, como las flechas de recorrido.
 
+272. **El bajo deducido en el acorde pivote: cada acorde se construye en SU tono**
+    (28/10/2026, Diego, revisando A-14-01: «el acorde 15 está mal. El bajo no debería ser fa,
+    pues el acorde seleccionado por defecto es tónica de la menor, así que debería ser la» y
+    «el acorde 8, por ejemplo: solo tiene asignado, en Do Mayor, el VI en estado fundamental
+    y, sin embargo, añade do - mi - sol - la. Ese sol no debería aparecer en ningún caso».)
+    - **Qué pasaba.** En la melodía de soprano el acorde se guarda como pareja «grado|cifra»
+      YA ESCRITA en la tonalidad que rige en esa nota, y el bajo se deduce de las dos cosas
+      (`Ejercicios.bajosDe`). En el **acorde pivote** la casilla se parte en dos (decisión 95)
+      y la mitad de arriba lleva el grado leído en la tonalidad que **termina**: eso es lo que
+      hay que enseñar, y es lo que el revisor del configurador —y la pantalla del alumno— le
+      estaban pasando a `bajosDe`, que lo resuelve en la tonalidad que **rige**. Un grado sin
+      su tonalidad no nombra un acorde: con la lectura cambiada no salía otro rótulo, salía
+      **otro acorde**.
+    - **Es la decisión 188 otra vez.** Aquella lo arregló para las parejas admisibles —«el VI
+      de Do M, la–do–mi, salía fa–la–do al leerlo en la menor»— y dejó sin arreglar el camino
+      del bajo deducido. Los dos acordes que señaló Diego son los dos sentidos del mismo
+      error:
+
+      | | Asignado | Qué salía | Qué sale ahora |
+      |---|---|---|---|
+      | nota 8 | VI 5/3 en Do M (la–do–mi) | bajo **do**, y sonaba do–mi–sol–la | bajo **la**, la–do–mi |
+      | nota 15 | I 6 en la menor (la–do–mi) | bajo la, y sonaba **fa–la–do** | bajo **do**, la–do–mi |
+
+    - **Dónde se arregla.** El rótulo del pivote se queda como está; lo que cambia es que el
+      bajo se deduce de la lectura **en el tono que rige**: `romanosBajo` en la vista previa
+      del configurador, y `romanoDelBajo` en `app.js`, que en un pivote toma la mitad de abajo
+      de la casilla (`romanos2`), que es la que se juzga en la tonalidad que rige. Mientras esa
+      mitad no esté puesta no hay grado con el que deducir el bajo, y es mejor no dibujar
+      acorde que dibujar otro. El contrato queda escrito en `bajosDe`.
+    - **Medido sobre el banco entero**: 135 fragmentos de melodía de soprano, 10 con acorde
+      pivote, 736 notas. En todas, el bajo es ahora el del acorde construido en su tono y
+      **ninguna voz canta una nota ajena al acorde**. Los avisos de paralelas de la realización
+      modelo pasan de 8 a 7 y cambian de sitio: no es efecto del arreglo, son los acordes
+      asignados.
+    - **Comprobación nueva**: `herramientas-interfaz/probar-bajo-en-pivote.js`, sin navegador
+      —los cuatro módulos del motor son JavaScript puro—. Barre el banco, comprueba las dos
+      cosas de arriba y deja a la vista, en cada pasada, los fragmentos cuya realización modelo
+      tiene paralelas.
+    - **Lo que NO se toca: los acordes que asigna Diego.** Con I 6 como primera pareja de la
+      nota 15 de A-14-01 el bajo es do —la tercera del acorde— y, contra la soprano, que
+      también hace do → re, salen octavas entre el bajo y la soprano (15→16). Con I 5/3
+      delante, el bajo es la y la paralela desaparece. Eso lo decide él.
+
 270. **Cada fragmento se presenta en SU posición melódica, no todos en la fundamental**
     (23/10/2026, Diego: «en los fragmentos de análisis, especialmente en la lección 5, donde
     todos los fragmentos son idénticos o muy similares (I - V - I), si todos se muestran en

@@ -967,6 +967,22 @@
       return Teoria.romanoEscrito(a[0], notas[i], ton);
     };
     const romanos = ver ? ej.respuestas.map((a, i) => romanoModelo(a, i, pivotes.has(i) ? Ejercicios.tonalidadAntes(ej, i) : Ejercicios.tonalidadEn(ej, i))) : new Array(n).fill(null);
+    /* EL GRADO QUE SE ESCRIBE EN EL PIVOTE NO SIRVE PARA DEDUCIR EL BAJO (decisión 272,
+       Diego 28/10/2026: «el acorde 8 solo tiene asignado, en Do Mayor, el VI en estado
+       fundamental y, sin embargo, añade do – mi – sol – la; ese sol no debería aparecer en
+       ningún caso»).
+
+       En el acorde pivote `romanos` lleva la lectura en la tonalidad que TERMINA, porque es
+       la mitad de arriba de la casilla partida (decisión 95) y es lo que hay que enseñar.
+       Pero `bajosDe` resuelve el grado en la tonalidad que RIGE: al darle esa lectura no
+       salía otro rótulo, salía OTRO ACORDE. Es la decisión 188 otra vez —«el VI de Do M,
+       la–do–mi, salía fa–la–do al leerlo en la menor»—, que allí se arregló para las parejas
+       admisibles y aquí se había quedado sin arreglar. En A-14-01 se veía en los dos
+       sentidos: la nota 8, con `VI|53` en Do M (la–do–mi), se realizaba sobre do y sonaba
+       do–mi–sol–la; y la 15, con `I|6` en la menor (la–do–mi), se realizaba como fa–la–do.
+
+       El acorde se construye SIEMPRE EN SU TONO; la otra lectura es solo un rótulo. */
+    const romanosBajo = ver ? ej.respuestas.map((a, i) => romanoModelo(a, i, Ejercicios.tonalidadEn(ej, i))) : new Array(n).fill(null);
     /* CADA EJERCICIO, SU VOZ (decisión 177, Diego 29/9/2026: «si estoy introduciendo los
        acordes de la soprano, entonces no debería aparecer la melodía del bajo, ¿no? Y
        viceversa cuando introduzco los del bajo»). Tiene razón, y **deroga la 167**, que era
@@ -1000,7 +1016,7 @@
        se dejara fija en la fundamental, la vista previa prometería otra cosa. */
     const opReal = { modo: 'auto', rotacion: (typeof ej.posicion === 'number' ? ej.posicion : 0) };
     if (sop) {
-      opReal.bajos = Ejercicios.bajosDe(ej, romanos, ver ? modelos : new Array(n).fill(null));
+      opReal.bajos = Ejercicios.bajosDe(ej, romanosBajo, ver ? modelos : new Array(n).fill(null));
       opReal.sopranos = notas;
     }
     const real = ver ? Realizacion.realizar(ej, modelos, opReal) : null;

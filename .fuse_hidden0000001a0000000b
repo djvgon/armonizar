@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Práctica armónica</title>
+  <meta name="description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
+  <meta property="og:title" content="Práctica armónica">
+  <meta property="og:description" content="Práctica de armonía con cifrado barroco: analiza, armoniza y reconoce de oído.">
+  <link rel="stylesheet" href="css/bravura.css?v=20261023-0952">
+  <link rel="stylesheet" href="css/estilo.css?v=20261023-0952">
+</head>
+<body>
+  <nav class="barra-app" aria-label="Secciones">
+    <span class="marca" title="Práctica armónica"><svg class="logo-nota" viewBox="0 0 26 24" width="26" height="24" aria-hidden="true" focusable="false"><polygon points="9.4,3.6 23.2,0.8 23.2,5.0 9.4,7.8"/><rect x="8.0" y="3.6" width="1.6" height="13.4"/><rect x="21.6" y="0.8" width="1.6" height="13.4"/><ellipse cx="5.0" cy="17.6" rx="3.9" ry="2.8" transform="rotate(-20 5 17.6)"/><ellipse cx="18.6" cy="14.8" rx="3.9" ry="2.8" transform="rotate(-20 18.6 14.8)"/></svg></span>
+    <a href="index.html" class="aqui">Ejercicio</a>
+    <a href="contrapunto.html">Contrapunto</a>
+    <a href="estructuras.html">Estructuras</a>
+    <a href="cifrados.html">Cifrados</a>
+  </nav>
+
+  <header class="cabecera">
+    <div class="cabecera-texto">
+      <!-- El nombre de la aplicación no hace falta aquí: el alumno ya sabe dónde está.
+           Se deja el hueco, que da aire a la cabecera; en pantalla estrecha no, que allí
+           el sitio se aprovecha (Diego, 27/9/2026). -->
+      <p class="sobretitulo" aria-hidden="true"></p>
+      <h1 id="titulo">Ejercicio</h1>
+    </div>
+    <label class="selector-caja">
+      <span>Ejercicio</span>
+      <select id="selector" aria-label="Elegir ejercicio"></select>
+    </label>
+  </header>
+
+  <div class="envoltorio">
+    <p class="instruccion" id="instruccion"></p>
+
+
+  <section class="repertorio-caja" aria-label="Cifrados interválicos y sonidos fundamentales del ejercicio">
+    <!-- El renglón «Tonalidad» se retira de la vista (Diego, 28/9/2026): la tonalidad la
+         dice el cifrado del ejercicio —si la ficha lo pide así— o la pone el propio alumno
+         en la fila de tonalidades, también según el configurador. Tenerla además aquí la
+         regalaba. El elemento se queda oculto porque `app.js` lo rellena. -->
+    <div class="repertorio-fila" hidden>
+      <span class="repertorio-etiqueta">Tonalidad</span>
+      <div id="tonalidad-fragmento" class="repertorio repertorio-texto"></div>
+    </div>
+    <!-- Los acordes que entran en el ejercicio (o en la ficha), otra vez a la vista
+         (Diego, 28/9/2026): se habían retirado por repetir lo que hay en la paleta, y en
+         el aula se echaban en falta. Con ellos, el acceso al cuadro de estructuras de la
+         lección, que vive aquí y no en el renglón de los grados: aquel se oculta en los
+         ejercicios que no piden el grado, y el botón se iba con él. -->
+    <div class="repertorio-fila" id="cifrados-fila">
+      <span class="repertorio-etiqueta" id="etiqueta-repertorio"></span>
+      <div id="repertorio" class="repertorio"></div>
+      <span id="leccion-fila" class="ayudas-fila" hidden>
+        <span id="leccion" hidden></span>
+        <button type="button" id="btn-estructuras" class="boton-pequeno" hidden>Estructuras armónicas que incluye este tema</button>
+      </span>
+    </div>
+    <div class="repertorio-fila" id="grados-fila">
+      <span class="repertorio-etiqueta" id="etiqueta-grados">Sonidos fundamentales en este ejercicio</span>
+      <div id="grados" class="repertorio"></div>
+    </div>
+    <!-- Solo aparece en ventana BAJA (el móvil en horizontal): allí las dos filas de
+         referencia —sonidos fundamentales y cifrados interválicos— se pliegan detrás de este
+         botón, porque son casi 60 px de preámbulo y lo que muestran está repetido en las
+         paletas de abajo. No se borran: se pliegan, y un toque las devuelve. -->
+    <button type="button" id="btn-datos" class="btn-datos" aria-expanded="false">Fundamentales y cifrados ▾</button>
+  </section>
+
+  <main>
+    <div id="realizacion-barra" class="realizacion-barra">
+      <span class="control control-sonido">
+        <button type="button" id="btn-cadencia" class="boton-pequeno" title="Cadencia I–IV–V7–I en la tonalidad inicial del ejercicio, para situar el oído">▶ Escuchar tono</button>
+        <!-- LA MISMA MÚSICA EN LAS DOS VERSIONES (Diego, 9/10/2026): el piano de la
+             aplicación y la grabación de la orquesta, como en HookTheory. «La grabación» va
+             JUSTO DEBAJO de «Escuchar propuesta», alineado con él y a un pelo de distancia,
+             pero sin añadir altura: cuelga por fuera del flujo y aprovecha el hueco libre del
+             renglón de «Grados del bajo». En pantalla pequeña los dos se ponen en fila y se
+             quedan en iconos —el piano, lo que toca la aplicación; los auriculares, la
+             grabación—, de modo que entre los dos no ocupan más que el botón de antes. Solo
+             aparece cuando el fragmento viene de un pasaje del banco auditivo. -->
+        <span class="control-apilado">
+          <button type="button" id="btn-propuesta" class="boton-pequeno" aria-label="Escuchar la propuesta del ejercicio" title="Escuchar lo que propone el ejercicio: la armonización (Análisis y Audición), el bajo solo (Armonización de bajo) o la melodía sola (Armonización de soprano)"><span class="etq-larga">▶ Escuchar propuesta</span><span class="etq-corta" aria-hidden="true">🎹</span></button>
+          <button type="button" id="btn-original" class="boton-pequeno" hidden aria-label="Escuchar la grabación de la obra" title="Escuchar estos mismos compases en la grabación de la obra de la que sale el fragmento"><span class="etq-larga">▶ La grabación</span><span class="etq-corta" aria-hidden="true">🎧</span></button>
+        </span>
+        <button type="button" id="btn-mio" class="boton-pequeno" title="Escuchar la realización de lo que has cifrado hasta ahora (las notas sin sonido fundamental y cifrado interválico suenan solo con el bajo)">▶ Escuchar mi cifrado</button>
+        <button type="button" id="btn-parar" class="boton-pequeno parar" hidden title="Detener la reproducción (también con Esc)">■ Parar</button>
+        <!-- LA INSTRUMENTACIÓN, con un ⓘ que dice QUÉ INSTRUMENTOS SUENAN y qué voz lleva cada
+             uno (decisión 253, Diego 15/10/2026). El cuadro se escribe solo a partir de las
+             capas con las que suena cada instrumentación, de modo que no puede decir una cosa
+             y sonar otra. En el globo del selector no basta: en el móvil no hay globos. -->
+        <span class="control control-instrumento">
+          <label class="control" title="Con qué instrumentación suena todo: teclados, coro, orquesta, conjuntos de viento y tres con ritmo propio"><span class="control-etiqueta">Instrumentación</span><select id="instrumento" class="selector-pequeno"></select></label>
+          <button type="button" id="btn-instrumentos" class="boton-info" aria-expanded="false" aria-controls="caja-instrumentos" aria-label="Qué instrumentos suenan" title="Qué instrumentos suenan y qué voz lleva cada uno">ⓘ</button>
+          <span id="instrumento-estado" class="instrumento-estado" hidden>cargando…</span>
+          <div id="caja-instrumentos" class="caja-instrumentos" role="dialog" aria-label="Qué instrumentos suenan" hidden></div>
+        </span>
+      </span>
+      <span id="control-grados" class="control control-vista">
+        <label class="control" title="Encima de cada nota del bajo, el grado que ocupa en la escala del tono, dentro de un circulito: enlaza el bajo con la regla de la octava"><input id="ver-grados" type="checkbox" checked><span>Grados del bajo</span></label>
+      </span>
+      <span id="control-realizacion" class="control control-vista">
+        <!-- La casilla «Realización a cuatro voces» se quitó (Diego, 27/9/2026): quien
+             decide si el alumno ve la realización es la ficha, en el configurador, y
+             tener además un interruptor en la pantalla del alumno era una opción de
+             sobra que solo añadía ruido. -->
+        <span class="control" id="posicion-control">
+          <span class="control-etiqueta">Posición melódica</span>
+          <span class="segmentos" role="group" aria-label="Posición melódica">
+            <button type="button" data-pos="0" class="activo" title="La soprano lleva la fundamental del acorde (posición de octava; para 5/3: 3–5–8)">Fund.</button>
+            <button type="button" data-pos="1" title="La soprano lleva la tercera del acorde (posición de décima; para 5/3: 5–8–3)">3.ª</button>
+            <button type="button" data-pos="2" title="La soprano lleva la quinta del acorde (para 5/3: 8–3–5)">5.ª</button>
+          </span>
+        </span>
+      </span>
+    </div>
+    <!-- DE QUÉ OBRA SALE EL FRAGMENTO (decisión 198, Diego 29/9/2026; colocado por la 208).
+         Va DENTRO del recuadro blanco de la partitura, abajo a la derecha, como el crédito
+         al pie de una ilustración: «no son controles, no son información sobre el
+         funcionamiento de la app: pertenece a la partitura». El desplazamiento lateral de
+         los fragmentos largos se queda en el lienzo de dentro, para que el crédito no se
+         vaya de la vista al desplazar. -->
+    <div class="partitura-caja partitura-marco">
+      <p id="procedencia-ej" class="procedencia-ej" hidden></p>
+      <div id="partitura" class="partitura-lienzo"></div>
+    </div>
+    <!-- LA MÚSICA REAL (acuerdo con el chat auditivo, apartado 6; 9/10/2026). El panel se
+         construye solo cuando el fragmento dice de qué pasaje del banco auditivo viene, y
+         va AQUÍ: debajo de la partitura del ejercicio, no en una ventana aparte. -->
+    <div id="escucha-sitio"></div>
+
+    <div id="paletas" class="paletas">
+      <!-- «Sonar al elegir» encabeza las paletas, en el primer renglón —el de la función
+           tonal— y pegado al borde izquierdo del recuadro de la partitura (Diego,
+           28/9/2026): no es una herramienta de audio como las de arriba, es lo que hacen
+           ESTAS teclas al pulsarlas. -->
+      <label class="control control-sonar" title="Al pulsar una tecla de estas paletas, oír el acorde que produce"><input id="sonar" type="checkbox" checked><span>Sonar al elegir</span></label>
+      <div id="paleta-funciones-caja" class="paleta-caja" hidden>
+        <span class="paleta-etiqueta"><span class="etq-larga">Función tonal</span><span class="etq-corta">Función</span></span>
+        <div id="paleta-funciones" class="paleta" role="group" aria-label="Paleta de funciones tonales"></div>
+      </div>
+      <div id="paleta-romanos-caja" class="paleta-caja">
+        <span class="paleta-etiqueta"><span class="etq-larga">Sonido fundamental</span><span class="etq-corta">Fundam.</span></span>
+        <div id="paleta-romanos" class="paleta" role="group" aria-label="Paleta de sonidos fundamentales"></div>
+      </div>
+      <div id="paleta-caja" class="paleta-caja">
+        <span class="paleta-etiqueta"><span class="etq-larga">Cifrado interválico</span><span class="etq-corta">Cifrado</span></span>
+        <div id="paleta" class="paleta" role="group" aria-label="Paleta de cifrados interválicos"></div>
+      </div>
+      <div id="paleta-tonalidades-caja" class="paleta-caja" hidden>
+        <span class="paleta-etiqueta"><span class="etq-larga">Tonalidad nueva desde la nota activa</span><span class="etq-corta">Tono</span></span>
+        <div id="paleta-tonalidades" class="paleta" role="group" aria-label="Paleta de tonalidades"></div>
+      </div>
+      <!-- El pie de las paletas: el acceso al cuadro de cifrados, centrado bajo las teclas
+           de cifrado, que es lo que explica (Diego, 28/9/2026). -->
+      <div class="paletas-pie">
+        <button type="button" id="btn-cifrados" class="boton-pequeno">Cuadro de cifrados</button>
+      </div>
+    </div>
+    <p id="progreso" class="progreso"></p>
+
+    <div class="botonera">
+      <button id="btn-corregir" type="button" class="primario">Comprobar</button>
+      <!-- Por dónde va la ficha, junto a «Comprobar» (Diego, 28/9/2026): es lo que el
+           alumno mira al terminar un ejercicio, no cuando empieza. -->
+      <span id="donde-ficha" class="donde-ficha" hidden></span>
+      <button id="btn-siguiente" type="button">Otro ejercicio</button>
+      <!-- Aquí estuvo «Reiniciar», y antes «Copiar enlace». Los dos fuera: el enlace lo
+           necesita el profesor, no el alumno; y «Reiniciar» lo pulsaban sin querer y les
+           borraba todo el trabajo del ejercicio (Diego, 3/10/2026). Para rectificar una
+           casilla está Retroceso, que borra solo esa. -->
+    </div>
+
+    <section id="resultado" class="resultado" hidden aria-live="polite"></section>
+  </main>
+
+  <p id="aviso" class="aviso" hidden></p>
+
+  <!-- El pie del alumno solo lleva instrucciones de uso (decisión 59). Fuera lo que no le
+       dice nada: la regla de la octava, Furno y el enlace al configurador del profesor.
+       Queda, en letra pequeña, el crédito de las muestras de sonido —la licencia CC BY
+       obliga a atribuirlas— con la marca de versión pegada, para poder comprobar de un
+       vistazo qué versión está publicada. -->
+  <footer class="pie">
+    <p class="teclas">Teclas: ← → para moverse entre notas · ↑ ↓ entre las casillas de una misma nota · el número pequeño de cada opción la elige en la casilla activa · Retroceso para borrar · Esc detiene el sonido.</p>
+    <p class="creditos">Sonidos: <a href="sonidos/LICENCIA-muestras.txt">FluidR3_GM</a> (CC BY 3.0) · <span id="version">20261023-0952</span></p>
+  </footer>
+  </div>
+
+  <script src="js/teoria.js?v=20261023-0952"></script>
+  <script src="js/reglas.js?v=20261023-0952"></script>
+  <script src="js/ejercicios.js?v=20261023-0952"></script>
+  <script src="js/partitura.js?v=20261023-0952"></script>
+  <script src="js/realizacion.js?v=20261023-0952"></script>
+  <script src="js/tecnicas.js?v=20261023-0952"></script>
+  <script src="js/banco.js?v=20261023-0952"></script>
+  <script src="js/registro.js?v=20261023-0952"></script>
+  <script src="js/envio.js?v=20261023-0952"></script>
+  <script src="js/sonido.js?v=20261023-0952"></script>
+  <script src="js/escucha.js?v=20261023-0952"></script>
+  <script src="js/voz.js?v=20261023-0952"></script>
+  <script src="js/app.js?v=20261023-0952"></script>
+</body>
+</html>

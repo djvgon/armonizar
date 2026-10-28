@@ -693,8 +693,8 @@
     /* Con la solución a la vista, el bajo que se dibuja es el del modelo: si no, la
        armonización buena se escribiría sobre el bajo que dedujo una respuesta equivocada. */
     estado.bajos = estado.mostrarSolucion
-      ? Ejercicios.bajosDe(estado.ejercicio, romanosSolucion(), cifrasSolucion())
-      : Ejercicios.bajosDe(estado.ejercicio, estado.romanos, estado.respuestas);
+      ? Ejercicios.bajosDe(estado.ejercicio, romanosSolucionBajo(), cifrasSolucion())
+      : Ejercicios.bajosDe(estado.ejercicio, estado.ejercicio.respuestas.map((_, i) => romanoDelBajo(i)), estado.respuestas);
     estado.bajosMal = !estado.mostrarSolucion && estado.corregido && estado.resultados ? estado.resultados.map(r => !r.ok) : null;
   }
   const melodia = () => Reglas.notasDe(estado.ejercicio);
@@ -758,6 +758,18 @@
     (acertoElAcorde(i) && estado.respuestas[i] ? estado.respuestas[i] : modeloPar(i).cifra));
   const romanosSolucion = () => estado.ejercicio.respuestas.map((_, i) =>
     (acertoElAcorde(i) && estado.romanos[i] ? estado.romanos[i] : modeloPar(i).romano));
+
+  /* EL GRADO CON EL QUE SE DEDUCE EL BAJO (decisión 272). En el acorde pivote la casilla se
+     parte en dos (decisión 95): arriba va el grado leído en la tonalidad que TERMINA y abajo
+     el de la que EMPIEZA, que es la que rige. `bajosDe` resuelve el grado en la que rige, de
+     modo que con la mitad de arriba construía otro acorde —la decisión 188 otra vez: «el VI
+     de Do M, la–do–mi, salía fa–la–do al leerlo en la menor»—. El bajo sale, pues, de la
+     mitad de abajo, que es justamente la que se juzga en la tonalidad que rige; mientras no
+     esté puesta no hay grado con el que deducirlo, y es mejor no dibujar acorde que dibujar
+     otro. */
+  const romanoDelBajo = i => (esDoble(i) ? (estado.romanos2[i] || null) : estado.romanos[i]);
+  const romanosSolucionBajo = () => estado.ejercicio.respuestas.map((_, i) =>
+    (acertoElAcorde(i) && romanoDelBajo(i)) || modeloPar(i).romano);
 
   /* ---------- EL RENGLÓN DE LA SOLUCIÓN (decisión 152, Diego 28/9/2026) ----------
      Una sola tinta y un solo sitio: bajo cada nota que falló, una línea NARANJA con
